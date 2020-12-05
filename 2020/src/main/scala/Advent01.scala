@@ -1,6 +1,6 @@
 import scala.io.Source
 
-object Advent1 extends App:
+object Advent01 extends App:
   val list: List[Int] = Source.fromResource("01.txt").getLines().map(_.toInt).toList
 
   def solve(x: Int): Option[Long] =

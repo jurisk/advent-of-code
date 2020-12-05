@@ -1,6 +1,6 @@
 import scala.io.Source
 
-object Advent2 extends App:
+object Advent02 extends App:
   final case class Item(
     a: Int,
     b: Int,

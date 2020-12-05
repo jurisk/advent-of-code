@@ -1,6 +1,6 @@
 import scala.io.Source
 
-object Advent3 extends App:
+object Advent03 extends App:
   val data = Source.fromResource("03.txt").getLines().toArray
   val Tree = '#'
 

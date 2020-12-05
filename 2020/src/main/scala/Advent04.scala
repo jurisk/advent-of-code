@@ -3,7 +3,7 @@ import cats.implicits._
 
 import scala.util.Try
 
-object Advent4 extends App:
+object Advent04 extends App:
   extension (self: String):
     def between(start: Int, end: Int): Option[Int] = 
       self.toIntOption flatMap { x =>
