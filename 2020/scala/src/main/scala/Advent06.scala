@@ -1,23 +1,22 @@
 import scala.io.Source
 
-object Advent06 extends App:
-  opaque type Answer = Char
-  opaque type Form = Set[Answer]
-  opaque type Group = Set[Form]
-  
-  val groups: List[Group] = Source
-    .fromResource("06.txt")
-    .getLines()
-    .mkString("\n")
-    .split("\n\n")
-    .map(_.split("\n").map(_.toSet).toSet)
-    .toList
-  
-  type MergeFunction[T] = (Set[T], Set[T]) => Set[T]
-  
-  val results = List[MergeFunction[Answer]](
-    _.union(_),
-    _.intersect(_),
-  ).map { f => groups.map(_.reduce(f).size).sum }
+import AdventApp.ErrorMessage
+import cats.implicits._
 
-  results foreach println
+type Answer = Char
+type Form = Set[Answer]
+type Group = Set[Form]
+
+type MergeFunction[T] = (Set[T], Set[T]) => Set[T]
+
+object Advent06 extends MultiLineAdventApp[Group, Int]:
+  def fileName: String = "06.txt"
+
+  def solve(testCases: List[Group], f: MergeFunction[Answer]): Int =
+    testCases.map(_.reduce(f).size).sum
+    
+  def solution1(testCases: List[Group]): Int = solve(testCases, _.union(_))
+  def solution2(testCases: List[Group]): Int = solve(testCases, _.intersect(_))
+
+  def parseLines(lines: List[String]): Either[ErrorMessage, Group] =
+    lines.map(_.toSet).toSet.asRight

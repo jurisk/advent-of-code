@@ -1,15 +1,17 @@
-import scala.io.Source
+import AdventApp.ErrorMessage
 
-object Advent01 extends App:
-  val list: List[Int] = Source.fromResource("01.txt").getLines().map(_.toInt).toList
+object Advent01 extends SingleLineAdventApp[Int, Long]:
+  def fileName: String = "01.txt"
 
-  def solve(x: Int): Option[Long] =
-    list
-      .combinations(x)
+  def solve(testCases: List[Int], n: Int): Long =
+    testCases
+      .combinations(n)
       .find { _.sum == 2020 }
-      .map { _.product }
+      .getOrElse(sys.error("Failed"))
+      .product
+
+  def solution1(testCases: List[Int]): Long = solve(testCases, 2)
+  def solution2(testCases: List[Int]): Long = solve(testCases, 3)
   
-  def f(x: Int) =
-    println(solve(x).getOrElse("Failed"))
-  
-  List(2, 3) foreach f
+  def parseLine(line: String): Either[ErrorMessage, Int] = 
+    line.toIntOption.toRight(ErrorMessage("Failed to parse"))
