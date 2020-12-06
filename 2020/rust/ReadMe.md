@@ -1,0 +1,4 @@
+```
+cargo clippy
+cargo fmt
+```

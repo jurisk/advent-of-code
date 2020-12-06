@@ -1,7 +1,8 @@
 import scala.io.Source
 
 object Advent06 extends App:
-  opaque type Form = Set[Char]
+  opaque type Answer = Char
+  opaque type Form = Set[Answer]
   opaque type Group = Set[Form]
   
   val groups: List[Group] = Source
@@ -12,9 +13,11 @@ object Advent06 extends App:
     .map(_.split("\n").map(_.toSet).toSet)
     .toList
   
-  val results = List[Group => Int](
-    _.flatten.size,
-    _.reduce { _.intersect(_) }.size,
-  ).map { f => groups.map(f).sum }
+  type MergeFunction[T] = (Set[T], Set[T]) => Set[T]
+  
+  val results = List[MergeFunction[Answer]](
+    _.union(_),
+    _.intersect(_),
+  ).map { f => groups.map(_.reduce(f).size).sum }
 
   results foreach println
