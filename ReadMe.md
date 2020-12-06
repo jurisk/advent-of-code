@@ -4,7 +4,7 @@
 
 | Day | Scala                                            | Rust                                   | Haskell                          |
 | --- | ------------------------------------------------ | -------------------------------------- | -------------------------------- |
-|   1 | [Code](2020/scala/src/main/scala/Advent01.scala) |                                        |                                  |
+|   1 | [Code](2020/scala/src/main/scala/Advent01.scala) |                                        | [Code](2020/haskell/Advent01.hs) |
 |   2 | [Code](2020/scala/src/main/scala/Advent02.scala) |                                        |                                  |
 |   3 | [Code](2020/scala/src/main/scala/Advent03.scala) |                                        |                                  |
 |   4 | [Code](2020/scala/src/main/scala/Advent04.scala) |                                        |                                  |
