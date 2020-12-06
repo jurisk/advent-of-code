@@ -5,7 +5,7 @@ use std::collections::HashSet;
 fn parse_multi_line(input: &str) -> Vec<Vec<&str>> {
     input
         .split("\n\n")
-        .map(|x| x.split('\n').collect::<Vec<_>>())
+        .map(|x| x.lines().collect::<Vec<_>>())
         .collect::<Vec<_>>()
 }
 
