@@ -1,10 +1,10 @@
+import AdventApp.ErrorMessage
+
 import scala.io.Source
 import cats.effect._
 import cats.implicits._
 
 object Advent05 extends IOApp:
-  opaque type ErrorMessage = String
-
   def decode(zero: Char, one: Char)(input: String): Either[ErrorMessage, Int] =
     input.map { c =>
       c match

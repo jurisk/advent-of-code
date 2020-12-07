@@ -13,5 +13,6 @@ lazy val root = project
     scalaVersion := dottyVersion,
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-effect" % "3.0.0-M4",
+      "org.scalatest" %% "scalatest" % "3.2.3" % Test, // didn't work
     ),
   )

@@ -14,4 +14,3 @@ object Advent05Spec extends App:
   check("BBFFBBFRLL", 820)
 
   println("Passed")
-
