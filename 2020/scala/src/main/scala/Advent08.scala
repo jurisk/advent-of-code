@@ -2,6 +2,8 @@ import Advent08.Instruction
 import AdventApp.ErrorMessage
 import cats.implicits._
 
+import scala.annotation.tailrec
+
 object Advent08 extends SingleLineAdventApp[Instruction, Int]:
   type Accumulator = Int
   type InstructionIdx = Int
@@ -18,20 +20,17 @@ object Advent08 extends SingleLineAdventApp[Instruction, Int]:
   case class Program(
     private val instructions: Vector[Instruction],
   ):
-    def instructionAt(idx: InstructionIdx): Option[Instruction] =
-      instructions.lift(idx)
+    def indices: Range = instructions.indices
     
-    def filterInstructions[B <: Instruction](
-      pf: PartialFunction[Instruction, B],
-    ): List[(B, InstructionIdx)] =
-      instructions
-        .zipWithIndex
-        .toList
-        .collect { case (x, idx) if pf.isDefinedAt(x) => pf(x) -> idx }
+    def instructionAt(idx: InstructionIdx): Option[Instruction] = instructions.lift(idx)
       
-    def replaceInstruction(instructionId: InstructionIdx, instruction: Instruction): Program =
-      copy(instructions = instructions.updated(instructionId, instruction))
-  
+    def replaceInstruction(instructionIdx: InstructionIdx, instruction: Instruction): Option[Program] = {
+      if indices.contains(instructionIdx) then
+        copy(instructions = instructions.updated(instructionIdx, instruction)).some
+      else
+        none
+    }
+
   object Program:
     def apply(instructions: Seq[Instruction]): Program = Program(instructions.toVector)
   
@@ -40,7 +39,8 @@ object Advent08 extends SingleLineAdventApp[Instruction, Int]:
     accumulator: Accumulator = 0,
     nextInstructionId: InstructionIdx = 0,
   ):
-    def run(alreadyVisited: Set[InstructionIdx] = Set.empty): ExecutionResult =
+    @tailrec
+    final def run(alreadyVisited: Set[InstructionIdx] = Set.empty): ExecutionResult =
       if alreadyVisited.contains(nextInstructionId) then
         ExecutionResult.LoopDetected(nextInstructionId, accumulator)
       else
@@ -82,17 +82,16 @@ object Advent08 extends SingleLineAdventApp[Instruction, Int]:
   def solution2(testCases: List[Instruction]): Int =
     val program = toProgram(testCases)
     
-    val jmps = program.filterInstructions { case x: Instruction.Jmp => x }
-    val changeOneJumpToNop: List[Program] = jmps.map { (jmp, jmpIdx) =>
-      program.replaceInstruction(jmpIdx, Instruction.Nop(jmp.jump))
+    val potentiallyFixedPrograms = program.indices.toList flatMap { idx =>
+      program.instructionAt(idx) match
+        case Some(Instruction.Jmp(jump)) => // replace a `jmp` with `nop`
+          program.replaceInstruction(idx, Instruction.Nop(jump))
+        case Some(Instruction.Nop(value)) =>  // replace a `nop` with `jmp` 
+          program.replaceInstruction(idx, Instruction.Jmp(value))
+        case _ => 
+          none
     }
     
-    val nops = program.filterInstructions { case x: Instruction.Nop => x }
-    val changeOneNopToJump: List[Program] = nops.map { (nop, nopIdx) =>
-      program.replaceInstruction(nopIdx, Instruction.Jmp(nop.value))
-    }
-
-    val potentiallyFixedPrograms = changeOneJumpToNop ++ changeOneNopToJump
     val successes = potentiallyFixedPrograms
       .map { x => Execution(x).run() }
       .collect { case x: ExecutionResult.FinishedSuccessfully => x }
@@ -106,16 +105,13 @@ object Advent08 extends SingleLineAdventApp[Instruction, Int]:
   private val JmpR = """jmp ([+|-]\d+)""".r
   private val NopR = """nop ([+|-]\d+)""".r
   
+  extension [T](self: String):
+    def parseInt(f: Int => T): Either[ErrorMessage, T] =
+      self.toIntOption.map(f).toRight(ErrorMessage(s"Failed to parse $self"))
+  
   def parseLine(line: String): Either[ErrorMessage, Instruction] =
     line match
-      case AccR(x) =>
-        x.toIntOption.map(Instruction.Acc(_)).toRight(ErrorMessage(s"Failed to parse $x"))
-
-      case JmpR(x) =>
-        x.toIntOption.map(Instruction.Jmp(_)).toRight(ErrorMessage(s"Failed to parse $x"))
-
-      case NopR(x) =>
-        x.toIntOption.map(Instruction.Nop(_)).toRight(ErrorMessage(s"Failed to parse $x"))
-        
-      case _ => 
-        ErrorMessage(line).asLeft
+      case AccR(x) => x.parseInt(Instruction.Acc(_))
+      case JmpR(x) => x.parseInt(Instruction.Jmp(_))
+      case NopR(x) => x.parseInt(Instruction.Nop(_))
+      case _ => ErrorMessage(line).asLeft
