@@ -12,3 +12,4 @@
 |   6 | [Code](2020/scala/src/main/scala/Advent06.scala) | [Code](2020/rust/src/bin/advent_06.rs) | [Code](2020/haskell/Advent06.hs) |
 |   7 | [Code](2020/scala/src/main/scala/Advent07.scala) |                                        |                                  |
 |   8 | [Code](2020/scala/src/main/scala/Advent08.scala) |                                        |                                  |
+|   9 | [Code](2020/scala/src/main/scala/Advent09.scala) |                                        |                                  |
