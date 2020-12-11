@@ -13,12 +13,11 @@ object Advent10 extends SingleLineAdventApp[Int, Long]:
     val diffs = (sorted.init zip sorted.tail).map { case (a, b) => b - a }
     
     val solution = diffs.foldLeft(Solution()) { (acc, x) =>
-      x match {
+      x match
         case 1 => acc.copy(d1 = acc.d1 + 1)
         case 2 => acc.copy(d2 = acc.d2 + 1)
         case 3 => acc.copy(d3 = acc.d3 + 1)
         case _ => sys.error(s"Unexpected diff $x")
-      }
     }
     
     solution.d1 * solution.d3
@@ -28,7 +27,7 @@ object Advent10 extends SingleLineAdventApp[Int, Long]:
       override def apply(key: I) = self.synchronized(getOrElseUpdate(key, f(key)))
     }
 
-  def solution2(testCases: List[Int]): Long = {
+  def solution2(testCases: List[Int]): Long =
     val sorted = testCases.sorted.toVector
 
     lazy val m = memoize[(Int, Int), Long](f)
@@ -46,7 +45,6 @@ object Advent10 extends SingleLineAdventApp[Int, Long]:
     }
 
     m((0, 0))
-  }
 
   def parseLine(line: String): Either[ErrorMessage, Int] =
     line.toIntOption.toRight(ErrorMessage(s"Failed to parse $line"))

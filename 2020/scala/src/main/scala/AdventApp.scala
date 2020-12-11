@@ -14,8 +14,8 @@ sealed private trait AdventApp[TestCase, Output] extends IOApp:
   
   def parseTestCases(lines: List[String]): Either[ErrorMessage, List[TestCase]]
   
-  def solution1(testCases: List[TestCase]): Output
-  def solution2(testCases: List[TestCase]): Output
+  def solution1(input: List[TestCase]): Output
+  def solution2(input: List[TestCase]): Output
   
   def run(args: List[String]): IO[ExitCode] = {
     def printOutput(answer: Either[ErrorMessage, Output]): IO[Unit] =

@@ -14,3 +14,4 @@
 |   8 | [Code](2020/scala/src/main/scala/Advent08.scala) |                                        |                                  |
 |   9 | [Code](2020/scala/src/main/scala/Advent09.scala) |                                        |                                  |
 |  10 | [Code](2020/scala/src/main/scala/Advent10.scala) |                                        |                                  |
+|  11 | [Code](2020/scala/src/main/scala/Advent11.scala) |                                        |                                  |
