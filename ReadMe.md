@@ -15,3 +15,4 @@
 |   9 | [Code](2020/scala/src/main/scala/Advent09.scala) |                                        |                                  |
 |  10 | [Code](2020/scala/src/main/scala/Advent10.scala) |                                        |                                  |
 |  11 | [Code](2020/scala/src/main/scala/Advent11.scala) |                                        |                                  |
+|  12 |                                                  | [Code](2020/rust/src/bin/advent_12.rs) |                                  |
