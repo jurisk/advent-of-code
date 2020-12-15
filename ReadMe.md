@@ -18,3 +18,4 @@
 |  12 |                                                  | [Code](2020/rust/src/bin/advent_12.rs) |                                  |
 |  13 |                                                  | [Code](2020/rust/src/bin/advent_13.rs) |                                  |
 |  14 |                                                  | [Code](2020/rust/src/bin/advent_14.rs) |                                  |
+|  15 |                                                  | [Code](2020/rust/src/bin/advent_15.rs) |                                  |
