@@ -126,8 +126,7 @@ object Advent16 extends IOApp:
     _         =   assert(result1 == 21980)
     _         <-  IO(println(result1))
 
-    clazz     =   solve2(testData, "class")
-    _         =   assert(clazz == 12, s"class should be 12 but was $clazz")
+    _         =   assert(solve2(testData, "class") == 12)
     _         =   assert(solve2(testData, "row") == 11)
     _         =   assert(solve2(testData, "seat") == 13)
 
