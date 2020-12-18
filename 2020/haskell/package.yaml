@@ -51,6 +51,8 @@ executables:
       - -with-rtsopts=-N
     dependencies:
       - advent-of-code
+      - parsec
+      - lens
 
 tests:
   advent-of-code-test:
@@ -62,3 +64,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - advent-of-code
+    - hspec

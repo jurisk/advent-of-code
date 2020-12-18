@@ -1,8 +1,9 @@
 ```shell
 stack setup
+stack test
+stack run advent-XY-exe
 stack build
-stack exec advent-01-exe
-stack exec advent-06-exe
-stack exec advent-18-exe
-hlint AdventXY.hs
+stack ghci advent-of-code:exe:advent-XY-exe
+stack exec advent-XY-exe
+hlint dayXY
 ```
