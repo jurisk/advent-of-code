@@ -1,0 +1,81 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 1d8ed5ed5e4dabbd3bfc1af5db1425d470e61e5411a3a1ce238ad600fdf9200d
+
+name:           advent-of-code
+version:        0.1.0.0
+description:    Please see on GitHub at <https://github.com/jurisk/advent-of-code>
+homepage:       https://github.com/jurisk/advent-of-code#readme
+bug-reports:    https://github.com/jurisk/advent-of-code/issues
+build-type:     Simple
+extra-source-files:
+    ReadMe.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/jurisk/advent-of-code
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_advent_of_code
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable advent-01-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_advent_of_code
+  hs-source-dirs:
+      day01
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      advent-of-code
+    , base >=4.7 && <5
+  default-language: Haskell2010
+
+executable advent-06-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_advent_of_code
+  hs-source-dirs:
+      day06
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      advent-of-code
+    , base >=4.7 && <5
+  default-language: Haskell2010
+
+executable advent-18-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_advent_of_code
+  hs-source-dirs:
+      day18
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      advent-of-code
+    , base >=4.7 && <5
+  default-language: Haskell2010
+
+test-suite advent-of-code-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_advent_of_code
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      advent-of-code
+    , base >=4.7 && <5
+  default-language: Haskell2010
