@@ -54,6 +54,18 @@ executables:
       - parsec
       - lens
 
+  advent-19-exe:
+    main:                Main.hs
+    source-dirs:         day19
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - advent-of-code
+      - containers
+      - parsec
+
 tests:
   advent-of-code-test:
     main:                Spec.hs

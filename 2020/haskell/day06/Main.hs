@@ -20,6 +20,6 @@ solve :: TestCases -> MergeFunction -> IO ()
 solve d f = print $ calculate f d
 
 main = do
-  rawData <- readFile "day06/06.txt"
+  rawData <- readFile "day06/input.txt"
   let parsed = parseMultiLine rawData
   mapM (solve parsed) [union, intersect]

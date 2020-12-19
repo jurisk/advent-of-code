@@ -1,12 +1,12 @@
 module Main where
 
+import Lib
+
 import Data.List
 import Text.Parsec.String (Parser)
-import Control.Monad (void, guard)
-import Text.Parsec
-    ( char, digit, string, between, many1, many, oneOf, (<|>), parse )
-import Text.Parsec.Expr
-    ( buildExpressionParser, Assoc(AssocLeft), Operator(Infix) )
+import Control.Monad (void)
+import Text.Parsec (char, digit, string, between, many1, many, oneOf, (<|>), parse)
+import Text.Parsec.Expr (buildExpressionParser, Assoc(AssocLeft), Operator(Infix))
 import Control.Lens (Identity)
 
 data Expression =   Number Int
@@ -66,6 +66,5 @@ solve input parser = print $ sum $ evaluate . run parser <$> input
     run parser text = either (error . show) id $ parse parser text text
 
 main = do
-  rawData <- readFile "day18/18.txt"
-  let input = lines rawData
+  input <- readFileLines "day18/input.txt"
   mapM (solve input) [parser1, parser2]
