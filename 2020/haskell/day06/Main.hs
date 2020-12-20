@@ -1,14 +1,11 @@
 module Main where
 
-import Data.List
+import Lib
+
+import Data.List (union, intersect)
 
 type MergeFunction = (String -> String -> String)
 type TestCases = [[String]]
-
-parseMultiLine :: String -> TestCases
-parseMultiLine s = groupBy (\x y -> notNull x && notNull y) $ lines s
-  where
-    notNull x = not $ null x
 
 calculateGroup :: MergeFunction -> [String] -> Int
 calculateGroup f d = length $ foldl1 f d
@@ -20,6 +17,5 @@ solve :: TestCases -> MergeFunction -> IO ()
 solve d f = print $ calculate f d
 
 main = do
-  rawData <- readFile "day06/input.txt"
-  let parsed = parseMultiLine rawData
-  mapM (solve parsed) [union, intersect]
+  input <- readFileMultiLines "day06/input.txt"
+  mapM (solve input) [union, intersect]

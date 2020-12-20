@@ -7,7 +7,7 @@ solve n list = product $ head $ filter (\x -> sum x == 2020) (combinations n lis
 
 main :: IO ()
 main = do
-  raw <- readFile "day01/input.txt"
-  let input = toInt <$> lines raw
-  print $ solve 2 input
-  print $ solve 3 input
+  input <- readFileLines "day01/input.txt"
+  let parsed = toInt <$> input
+  print $ solve 2 parsed
+  print $ solve 3 parsed
