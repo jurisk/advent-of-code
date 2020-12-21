@@ -24,3 +24,4 @@
 |  18 |                                                  |                                        | [Code](2020/haskell/day18/Main.hs) |
 |  19 |                                                  |                                        | [Code](2020/haskell/day19/Main.hs) |
 |  20 | [Code](2020/scala/src/main/scala/Advent20.scala) |                                        |                                    |
+|  21 | [Code](2020/scala/src/main/scala/Advent21.scala) |                                        |                                    |
