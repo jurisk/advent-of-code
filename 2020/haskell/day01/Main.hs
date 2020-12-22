@@ -3,7 +3,7 @@ module Main where
 import Lib
 
 solve :: Int -> [Int] -> Int
-solve n list = product $ head $ filter (\x -> sum x == 2020) (combinations n list)
+solve n list = product $ head $ filter $ (==) 2020 $ combinations n list
 
 main :: IO ()
 main = do
