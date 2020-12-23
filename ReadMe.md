@@ -26,3 +26,4 @@
 |  20 | [Code](2020/scala/src/main/scala/Advent20.scala) |                                        |                                    |
 |  21 | [Code](2020/scala/src/main/scala/Advent21.scala) |                                        |                                    |
 |  22 | [Code](2020/scala/src/main/scala/Advent22.scala) |                                        |                                    |
+|  23 |                                                  | [Code](2020/rust/src/bin/advent_23.rs) |                                    |
