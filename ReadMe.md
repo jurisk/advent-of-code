@@ -28,3 +28,4 @@
 |  22 | [Code](2020/scala/src/main/scala/Advent22.scala) |                                        |                                    |
 |  23 |                                                  | [Code](2020/rust/src/bin/advent_23.rs) |                                    |
 |  24 | [Code](2020/scala/src/main/scala/Advent24.scala) |                                        |                                    |
+|  25 |                                                  | [Code](2020/rust/src/bin/advent_25.rs) |                                    |
