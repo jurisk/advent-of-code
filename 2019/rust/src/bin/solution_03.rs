@@ -54,7 +54,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
             }
 
             Command::Right(n) => {
-                ((current.x + 1)..(current.x + n + 1)).for_each(|x| {
+                ((current.x + 1)..=(current.x + n)).for_each(|x| {
                     steps += 1;
                     let _ = result.try_insert(Coords { x, y: current.y }, steps);
                 });
@@ -63,7 +63,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
             }
 
             Command::Up(n) => {
-                ((current.y + 1)..(current.y + n + 1)).for_each(|y| {
+                ((current.y + 1)..=(current.y + n)).for_each(|y| {
                     steps += 1;
                     let _ = result.try_insert(Coords { x: current.x, y }, steps);
                 });
