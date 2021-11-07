@@ -1,13 +1,14 @@
-use advent_of_code::intcode::{parse_machine_code, run_program, Entry, MachineCodeRef};
+use advent_of_code::intcode::{parse_machine_code, Entry, MachineCodeRef, Process};
 
 fn run_with_modifications(incoming: &MachineCodeRef, noun: Entry, verb: Entry) -> Entry {
     let mut program = incoming.to_owned();
     program[1] = noun;
     program[2] = verb;
 
-    let (after, _output) = run_program(&program, &[]);
+    let mut process = Process::new(&program);
+    process.run_to_halt();
 
-    after[0]
+    process.memory[0]
 }
 
 fn main() {
@@ -38,9 +39,11 @@ mod tests {
     use super::*;
 
     fn run_program_as_strings(s: &str) -> String {
-        let (resulting, _output) = run_program(&mut parse_machine_code(s), &[]);
+        let mut process = Process::new(&parse_machine_code(s));
+        process.run_to_halt();
 
-        resulting
+        process
+            .memory
             .iter()
             .map(|x| format!("{}", x))
             .collect::<Vec<String>>()
