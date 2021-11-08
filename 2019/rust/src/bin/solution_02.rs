@@ -51,7 +51,7 @@ mod tests {
     }
 
     #[test]
-    fn test_intcode_day_2() {
+    fn test_day_2() {
         assert_eq!(
             run_program_as_strings("1,9,10,3,2,3,11,0,99,30,40,50"),
             "3500,9,10,70,2,3,11,0,99,30,40,50"
