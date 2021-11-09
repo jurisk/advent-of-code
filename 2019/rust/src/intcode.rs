@@ -1,14 +1,13 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
-use std::cell::Cell;
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 
-pub type Entry = i32;
+pub type Entry = i128;
 pub type MachineCode = Vec<Entry>;
 pub type MachineCodeRef = [Entry];
 pub type Input = VecDeque<Entry>;
 pub type Output = VecDeque<Entry>;
-type Index = usize;
+pub type Index = i128;
 
 #[derive(Eq, PartialEq, Debug, FromPrimitive)]
 #[repr(u8)]
@@ -21,6 +20,7 @@ enum OperationCode {
     JumpIfFalse = 6,
     LessThan = 7,
     Equals = 8,
+    AdjustRelativeBase = 9,
     Halt = 99,
 }
 
@@ -29,22 +29,27 @@ enum OperationCode {
 enum ParameterMode {
     Position = 0,
     Immediate = 1,
+    Relative = 2,
 }
 
+#[derive(Debug)]
 enum Parameter {
     Position(Index),
     Immediate(Entry),
+    Relative(Index),
 }
 
+#[derive(Debug)]
 enum Operation {
-    Add(Parameter, Parameter, Index),
-    Multiply(Parameter, Parameter, Index),
-    Input(Index),
+    Add(Parameter, Parameter, Parameter),
+    Multiply(Parameter, Parameter, Parameter),
+    Input(Parameter),
     Output(Parameter),
     JumpIfTrue(Parameter, Parameter),
     JumpIfFalse(Parameter, Parameter),
-    LessThan(Parameter, Parameter, Index),
-    Equals(Parameter, Parameter, Index),
+    LessThan(Parameter, Parameter, Parameter),
+    Equals(Parameter, Parameter, Parameter),
+    AdjustRelativeBase(Parameter),
     Halt,
 }
 
@@ -57,12 +62,48 @@ pub fn parse_machine_code(input: &str) -> MachineCode {
         .collect()
 }
 
+pub fn test_program_as_string(program: &str, expected: &str) {
+    let program = parse_machine_code(program);
+    let mut process = Process::new(&program);
+    process.run_to_halt();
+    let obtained = process.memory_as_comma_delimited_string(program.len() as Index);
+    assert_eq!(expected, obtained)
+}
+
+pub struct Memory {
+    map: HashMap<Index, Entry>,
+}
+
+impl Memory {
+    pub fn from_program(program: &MachineCodeRef) -> Memory {
+        let mut result = Memory {
+            map: HashMap::new(),
+        };
+
+        program
+            .iter()
+            .enumerate()
+            .for_each(|(index, value)| result.write(index as Index, *value));
+
+        result
+    }
+
+    pub fn read(&self, index: Index) -> Entry {
+        *self.map.get(&index).unwrap_or(&0)
+    }
+
+    pub fn write(&mut self, index: Index, value: Entry) {
+        self.map.insert(index, value);
+    }
+}
+
 pub struct Process {
     input: Input,
     pub output: Output,
 
-    pub memory: Vec<Entry>,
-    ip: Cell<Index>,
+    memory: Memory,
+    ip: Index,
+    relative_base: Index,
 }
 
 impl Process {
@@ -70,44 +111,51 @@ impl Process {
         Process {
             input: VecDeque::new(),
             output: VecDeque::new(),
-            memory: program.to_vec(),
-            ip: Cell::new(0),
+            memory: Memory::from_program(program),
+            ip: 0,
+            relative_base: 0,
         }
+    }
+
+    pub fn from_string(s: &str) -> Process {
+        let program = parse_machine_code(s);
+        Process::new(&program)
     }
 
     pub fn provide_input(&mut self, x: Entry) {
         self.input.push_back(x);
     }
 
-    fn param(&self, offset: Index, mode: i32) -> Parameter {
-        let x = self.memory[self.ip.get() + offset];
+    fn param(&self, offset: Index, mode: Entry) -> Parameter {
+        let x = self.read_from_memory_offset_by_ip(offset);
 
-        match FromPrimitive::from_i32(mode) {
+        match FromPrimitive::from_i128(mode) {
             Some(ParameterMode::Position) => Parameter::Position(x as Index),
             Some(ParameterMode::Immediate) => Parameter::Immediate(x),
+            Some(ParameterMode::Relative) => Parameter::Relative(x as Index),
             None => panic!("Unexpected parameter mode {}", mode),
         }
     }
 
     fn op_at_ip(&self) -> Operation {
-        let op = self.memory[self.ip.get()];
+        let op = self.read_from_memory_offset_by_ip(0);
         let op_code = (op % 100) as u8;
         let mode_1 = (op / 100) % 10;
         let mode_2 = (op / 1_000) % 10;
-        let _mode_3 = op / 10_000;
+        let mode_3 = op / 10_000;
 
         match FromPrimitive::from_u8(op_code) {
             Some(OperationCode::Add) => Operation::Add(
                 self.param(1, mode_1),
                 self.param(2, mode_2),
-                self.memory[self.ip.get() + 3] as Index,
+                self.param(3, mode_3),
             ),
             Some(OperationCode::Multiply) => Operation::Multiply(
                 self.param(1, mode_1),
                 self.param(2, mode_2),
-                self.memory[self.ip.get() + 3] as Index,
+                self.param(3, mode_3),
             ),
-            Some(OperationCode::Input) => Operation::Input(self.memory[self.ip.get() + 1] as Index),
+            Some(OperationCode::Input) => Operation::Input(self.param(1, mode_1)),
             Some(OperationCode::Output) => Operation::Output(self.param(1, mode_1)),
             Some(OperationCode::JumpIfTrue) => {
                 Operation::JumpIfTrue(self.param(1, mode_1), self.param(2, mode_2))
@@ -118,56 +166,81 @@ impl Process {
             Some(OperationCode::LessThan) => Operation::LessThan(
                 self.param(1, mode_1),
                 self.param(2, mode_2),
-                self.memory[self.ip.get() + 3] as Index,
+                self.param(3, mode_3),
+                //                 self.read_from_memory_offset_by_ip(3) as Index,
             ),
             Some(OperationCode::Equals) => Operation::Equals(
                 self.param(1, mode_1),
                 self.param(2, mode_2),
-                self.memory[self.ip.get() + 3] as Index,
+                self.param(3, mode_3),
+                //                self.read_from_memory_offset_by_ip(3) as Index,
             ),
+            Some(OperationCode::AdjustRelativeBase) => {
+                Operation::AdjustRelativeBase(self.param(1, mode_1))
+            }
             Some(OperationCode::Halt) => Operation::Halt,
-            None => panic!(
-                "Unexpected opcode at {}: {:?}",
-                self.ip.get(),
-                self.memory[self.ip.get()]
-            ),
+            None => {
+                panic!("Unexpected opcode at IP {}: {:?}", self.ip, op_code,)
+            }
         }
     }
 
     fn resolve(&self, parameter: Parameter) -> Entry {
         match parameter {
-            Parameter::Position(index) => self.memory[index],
+            Parameter::Position(index) => self.read_from_memory(index),
             Parameter::Immediate(x) => x,
+            Parameter::Relative(index) => self.read_from_memory(self.relative_base + index),
         }
     }
 
+    pub fn read_from_memory(&self, index: Index) -> Entry {
+        self.memory.read(index)
+    }
+
+    pub fn read_from_memory_offset_by_ip(&self, offset: Index) -> Entry {
+        self.memory.read(self.ip + offset)
+    }
+
     fn write_to_memory(&mut self, index: Index, value: Entry) {
-        self.memory[index] = value;
+        self.memory.write(index, value);
     }
 
     fn adjust_ip(&mut self, delta: Index) {
-        self.set_ip(self.ip.get() + delta);
+        self.set_ip(self.ip + delta);
     }
 
     fn set_ip(&mut self, new_ip: Index) {
-        self.ip.set(new_ip);
+        self.ip = new_ip;
+    }
+
+    fn resolve_index(&self, parameter: Parameter) -> Index {
+        match parameter {
+            Parameter::Position(x) => x,
+            // can be done cleaner with stronger types, but it is OK for now
+            Parameter::Immediate(_) => panic!("Did not expect immediate parameter for resolving index"),
+            Parameter::Relative(x) => x + self.relative_base,
+        }
     }
 
     fn execute_op(&mut self, op: Operation) {
+        // println!("{:04}: {:?}", self.ip, op);
         match op {
             // Opcode 1 adds together numbers read from two positions and stores the result in a third position. The three integers immediately after the opcode tell you these three positions - the first two indicate the positions from which you should read the input values, and the third indicates the position at which the output should be stored.
             Operation::Add(a, b, destination) => {
-                self.write_to_memory(destination, self.resolve(a) + self.resolve(b));
+                let index = self.resolve_index(destination);
+                self.write_to_memory(index, self.resolve(a) + self.resolve(b));
                 self.adjust_ip(4);
             }
             // Opcode 2 works exactly like opcode 1, except it multiplies the two inputs instead of adding them. Again, the three integers after the opcode indicate where the inputs and outputs are, not their values.
             Operation::Multiply(a, b, destination) => {
-                self.write_to_memory(destination, self.resolve(a) * self.resolve(b));
+                let index = self.resolve_index(destination);
+                self.write_to_memory(index, self.resolve(a) * self.resolve(b));
                 self.adjust_ip(4);
             }
             // Opcode 3 takes a single integer as input and saves it to the position given by its only parameter. For example, the instruction 3,50 would take an input value and store it at address 50.
-            Operation::Input(index) => {
+            Operation::Input(parameter) => {
                 let value = self.input.pop_front().unwrap();
+                let index = self.resolve_index(parameter);
                 self.write_to_memory(index, value);
                 self.adjust_ip(2);
             }
@@ -195,16 +268,22 @@ impl Process {
             // Opcode 7 is less than: if the first parameter is less than the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
             Operation::LessThan(a, b, c) => {
                 let value = (self.resolve(a) < self.resolve(b)) as Entry;
-                self.write_to_memory(c, value);
+                self.write_to_memory(self.resolve_index(c), value);
                 self.adjust_ip(4);
             }
             // Opcode 8 is equals: if the first parameter is equal to the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
             Operation::Equals(a, b, c) => {
                 let value = (self.resolve(a) == self.resolve(b)) as Entry;
-                self.write_to_memory(c, value);
+                self.write_to_memory(self.resolve_index(c), value);
                 self.adjust_ip(4);
             }
-            Operation::Halt => panic!("Halt was supposed to handled above"),
+            Operation::AdjustRelativeBase(x) => {
+                self.relative_base += self.resolve(x);
+                self.adjust_ip(2);
+            }
+            Operation::Halt => {
+                panic!("Halt was supposed to handled above")
+            }
         }
     }
 
@@ -231,5 +310,12 @@ impl Process {
                 other => self.execute_op(other),
             }
         }
+    }
+
+    pub fn memory_as_comma_delimited_string(&self, max_index: Index) -> String {
+        (0..max_index)
+            .map(|idx| format!("{}", self.read_from_memory(idx)))
+            .collect::<Vec<String>>()
+            .join(",")
     }
 }

@@ -77,6 +77,6 @@ mod tests {
 
     #[test]
     fn test_day_8_part_1() {
-        assert_eq!(part_1("123456789012", 3, 2), 1);
+        assert_eq!(solve_1("123456789012", 3, 2), 1);
     }
 }
