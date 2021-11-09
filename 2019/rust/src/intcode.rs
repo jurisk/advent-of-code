@@ -24,12 +24,24 @@ enum OperationCode {
     Halt = 99,
 }
 
+impl OperationCode {
+    fn of(x: u8) -> OperationCode {
+        FromPrimitive::from_u8(x).unwrap_or_else(|| panic!("Unexpected operation code: {}", x))
+    }
+}
+
 #[derive(Eq, PartialEq, Debug, FromPrimitive)]
 #[repr(u8)]
 enum ParameterMode {
     Position = 0,
     Immediate = 1,
     Relative = 2,
+}
+
+impl ParameterMode {
+    fn of(x: Entry) -> ParameterMode {
+        FromPrimitive::from_i128(x).unwrap_or_else(|| panic!("Unexpected parameter mode: {}", x))
+    }
 }
 
 #[derive(Debug)]
@@ -126,62 +138,56 @@ impl Process {
         self.input.push_back(x);
     }
 
-    fn param(&self, offset: Index, mode: Entry) -> Parameter {
+    fn param(&self, offset: Index, mode: ParameterMode) -> Parameter {
         let x = self.read_from_memory_offset_by_ip(offset);
 
-        match FromPrimitive::from_i128(mode) {
-            Some(ParameterMode::Position) => Parameter::Position(x as Index),
-            Some(ParameterMode::Immediate) => Parameter::Immediate(x),
-            Some(ParameterMode::Relative) => Parameter::Relative(x as Index),
-            None => panic!("Unexpected parameter mode {}", mode),
+        match mode {
+            ParameterMode::Position => Parameter::Position(x as Index),
+            ParameterMode::Immediate => Parameter::Immediate(x),
+            ParameterMode::Relative => Parameter::Relative(x as Index),
         }
     }
 
     fn op_at_ip(&self) -> Operation {
         let op = self.read_from_memory_offset_by_ip(0);
-        let op_code = (op % 100) as u8;
-        let mode_1 = (op / 100) % 10;
-        let mode_2 = (op / 1_000) % 10;
-        let mode_3 = op / 10_000;
+        let op_code = OperationCode::of((op % 100) as u8);
+        let mode_1 = ParameterMode::of((op / 100) % 10);
+        let mode_2 = ParameterMode::of((op / 1_000) % 10);
+        let mode_3 = ParameterMode::of(op / 10_000);
 
-        match FromPrimitive::from_u8(op_code) {
-            Some(OperationCode::Add) => Operation::Add(
+        match op_code {
+            OperationCode::Add => Operation::Add(
                 self.param(1, mode_1),
                 self.param(2, mode_2),
                 self.param(3, mode_3),
             ),
-            Some(OperationCode::Multiply) => Operation::Multiply(
+            OperationCode::Multiply => Operation::Multiply(
                 self.param(1, mode_1),
                 self.param(2, mode_2),
                 self.param(3, mode_3),
             ),
-            Some(OperationCode::Input) => Operation::Input(self.param(1, mode_1)),
-            Some(OperationCode::Output) => Operation::Output(self.param(1, mode_1)),
-            Some(OperationCode::JumpIfTrue) => {
+            OperationCode::Input => Operation::Input(self.param(1, mode_1)),
+            OperationCode::Output => Operation::Output(self.param(1, mode_1)),
+            OperationCode::JumpIfTrue => {
                 Operation::JumpIfTrue(self.param(1, mode_1), self.param(2, mode_2))
             }
-            Some(OperationCode::JumpIfFalse) => {
+            OperationCode::JumpIfFalse => {
                 Operation::JumpIfFalse(self.param(1, mode_1), self.param(2, mode_2))
             }
-            Some(OperationCode::LessThan) => Operation::LessThan(
+            OperationCode::LessThan => Operation::LessThan(
                 self.param(1, mode_1),
                 self.param(2, mode_2),
                 self.param(3, mode_3),
-                //                 self.read_from_memory_offset_by_ip(3) as Index,
             ),
-            Some(OperationCode::Equals) => Operation::Equals(
+            OperationCode::Equals => Operation::Equals(
                 self.param(1, mode_1),
                 self.param(2, mode_2),
                 self.param(3, mode_3),
-                //                self.read_from_memory_offset_by_ip(3) as Index,
             ),
-            Some(OperationCode::AdjustRelativeBase) => {
+            OperationCode::AdjustRelativeBase => {
                 Operation::AdjustRelativeBase(self.param(1, mode_1))
             }
-            Some(OperationCode::Halt) => Operation::Halt,
-            None => {
-                panic!("Unexpected opcode at IP {}: {:?}", self.ip, op_code,)
-            }
+            OperationCode::Halt => Operation::Halt,
         }
     }
 
@@ -217,7 +223,9 @@ impl Process {
         match parameter {
             Parameter::Position(x) => x,
             // can be done cleaner with stronger types, but it is OK for now
-            Parameter::Immediate(_) => panic!("Did not expect immediate parameter for resolving index"),
+            Parameter::Immediate(_) => {
+                panic!("Did not expect immediate parameter for resolving index")
+            }
             Parameter::Relative(x) => x + self.relative_base,
         }
     }
