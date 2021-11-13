@@ -302,6 +302,17 @@ impl Process {
         self.output.len()
     }
 
+    pub fn run_next_op(&mut self) -> bool {
+        let next = self.op_at_ip();
+        match next {
+            Operation::Halt => true,
+            _ => {
+                self.execute_op(self.op_at_ip());
+                false
+            }
+        }
+    }
+
     fn run_to_condition<F>(&mut self, f: F) -> bool
     where
         F: Fn(&Process) -> bool,
@@ -319,8 +330,21 @@ impl Process {
         }
     }
 
+    pub fn unsatisfied_input(&self) -> bool {
+        match self.op_at_ip() {
+            Operation::Input(_) => self.input.is_empty(),
+            _ => false,
+        }
+    }
+
     pub fn next_output_unsafe(&mut self) -> Entry {
         self.output.pop_front().expect("No output found")
+    }
+
+    pub fn read_output(&mut self) -> Vec<Entry> {
+        let result = self.output.iter().cloned().collect();
+        self.output.clear();
+        result
     }
 
     pub fn output_as_string(&self) -> String {
