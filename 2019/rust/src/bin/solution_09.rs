@@ -4,12 +4,12 @@ fn solve(program: &MachineCodeRef, input: Entry, expected_output: Entry) {
     let mut process = Process::new(program);
     process.provide_input(input);
     process.run_to_halt();
-    if process.output.len() == 1 {
-        let result_1 = process.output.pop_front().unwrap();
+    if process.output_len() == 1 {
+        let result_1 = process.next_output_unsafe();
         println!("Output for input {}: {}", input, result_1);
         assert_eq!(result_1, expected_output);
     } else {
-        panic!("Invalid output: {:?}", process.output);
+        panic!("Invalid output: {:?}", process.output_as_string());
     }
 }
 
@@ -63,7 +63,7 @@ mod tests {
     fn test_2() {
         let mut process = Process::from_string("1102,34915192,34915192,7,4,7,99,0");
         process.run_to_halt();
-        let result = process.output.pop_front().unwrap();
+        let result = process.next_output_unsafe();
         // should output a 16-digit number
         assert_eq!(result, 1219070632396864);
     }
@@ -74,7 +74,7 @@ mod tests {
         let program = "104,1125899906842624,99";
         let mut process = Process::from_string(program);
         process.run_to_halt();
-        let result = process.output.pop_front().unwrap();
+        let result = process.next_output_unsafe();
         // should output the large number in the middle
         assert_eq!(result, number);
     }

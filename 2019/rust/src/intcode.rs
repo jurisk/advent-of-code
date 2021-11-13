@@ -70,7 +70,10 @@ pub fn parse_machine_code(input: &str) -> MachineCode {
         .split(',')
         .map(|x| x.trim())
         .filter(|x| !x.is_empty())
-        .map(|str| str.parse::<Entry>().unwrap())
+        .map(|str| {
+            str.parse::<Entry>()
+                .unwrap_or_else(|_| panic!("Unrecognized: {}", str))
+        })
         .collect()
 }
 
@@ -111,7 +114,7 @@ impl Memory {
 
 pub struct Process {
     input: Input,
-    pub output: Output,
+    output: Output,
 
     memory: Memory,
     ip: Index,
@@ -295,10 +298,16 @@ impl Process {
         }
     }
 
-    /* Returns true if Halt was encountered, false if Output was encountered instead */
-    pub fn run_to_halt_or_output(&mut self) -> bool {
+    pub fn output_len(&self) -> usize {
+        self.output.len()
+    }
+
+    fn run_to_condition<F>(&mut self, f: F) -> bool
+    where
+        F: Fn(&Process) -> bool,
+    {
         loop {
-            if !self.output.is_empty() {
+            if f(self) {
                 return false;
             } else {
                 let next_op: Operation = self.op_at_ip();
@@ -310,14 +319,26 @@ impl Process {
         }
     }
 
+    pub fn next_output_unsafe(&mut self) -> Entry {
+        self.output.pop_front().expect("No output found")
+    }
+
+    pub fn output_as_string(&self) -> String {
+        format!("{:?}", self.output)
+    }
+
+    pub fn run_to_halt_or_output_size(&mut self, min_output_size: usize) -> bool {
+        let compare_with = min_output_size;
+        self.run_to_condition(|x| x.output_len() >= compare_with)
+    }
+
+    /* Returns true if Halt was encountered, false if Output was encountered instead */
+    pub fn run_to_halt_or_output(&mut self) -> bool {
+        self.run_to_halt_or_output_size(1)
+    }
+
     pub fn run_to_halt(&mut self) {
-        loop {
-            let next_op: Operation = self.op_at_ip();
-            match next_op {
-                Operation::Halt => break,
-                other => self.execute_op(other),
-            }
-        }
+        self.run_to_condition(|_| false);
     }
 
     pub fn memory_as_comma_delimited_string(&self, max_index: Index) -> String {

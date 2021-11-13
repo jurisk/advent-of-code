@@ -7,8 +7,8 @@ fn amplifier(program: &MachineCodeRef, phase_setting: u8, input: Entry) -> Entry
     process.provide_input(phase_setting as Entry);
     process.provide_input(input);
     process.run_to_halt();
-    assert_eq!(process.output.len(), 1);
-    process.output.pop_front().unwrap()
+    assert_eq!(process.output_len(), 1);
+    process.next_output_unsafe()
 }
 
 fn signal_1(program: &MachineCodeRef, phases: Vec<u8>) -> Entry {
@@ -35,7 +35,7 @@ fn signal_2(program: &MachineCodeRef, phases: Vec<u8>) -> Entry {
         if was_halted {
             break;
         }
-        next_input = processes[i].output.pop_front().expect("No output");
+        next_input = processes[i].next_output_unsafe()
     }
 
     next_input
