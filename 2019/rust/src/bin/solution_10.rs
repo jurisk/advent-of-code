@@ -59,7 +59,7 @@ fn asteroid_angle(from: &Coords, to: &Coords) -> Angle {
     (res * 1000000f64) as Angle
 }
 
-// Note - Using a sorted set would make a lot of operations on these angles better
+// Note - Using a sorted set (e.g. BTreeSet) would make a lot of operations on these angles better
 fn asteroid_angles(from: &Coords, asteroid_coordinates: &HashSet<Coords>) -> Vec<Angle> {
     asteroid_coordinates
         .iter()
