@@ -83,8 +83,7 @@ impl HeightMap {
             *self
                 .data
                 .get(coords.y as usize)
-                .map(|row| row.get(coords.x as usize))
-                .flatten()
+                .and_then(|row| row.get(coords.x as usize))
                 .unwrap_or(&HeightMap::MAX_HEIGHT)
         }
     }

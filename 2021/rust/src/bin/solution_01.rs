@@ -9,7 +9,7 @@ fn parse(input: &str) -> Vec<u32> {
 }
 
 fn count_larger(data: &[u32]) -> usize {
-    (&data[0..data.len() - 1])
+    data[0..data.len() - 1]
         .iter()
         .zip(&data[1..])
         .filter(|(a, b)| a < b)
