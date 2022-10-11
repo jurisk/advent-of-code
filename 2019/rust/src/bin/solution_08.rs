@@ -14,9 +14,7 @@ enum PixelType {
 
 fn parse_layers(data: &str, width: Number, height: Number) -> Vec<Vec<u8>> {
     let layer_size = width * height;
-    if data.len() % layer_size != 0 {
-        panic!("Invalid sizes");
-    }
+    assert_eq!(data.len() % layer_size, 0, "Invalid sizes");
 
     let numbers: Vec<_> = data.chars().map(|x| (x as u8) - b'0').collect();
     let layers: Vec<_> = numbers

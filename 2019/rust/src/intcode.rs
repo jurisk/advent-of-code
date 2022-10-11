@@ -148,6 +148,11 @@ impl Process {
         Process::new(&program)
     }
 
+    pub fn provide_input_as_string(&mut self, x: &str) {
+        x.chars()
+            .for_each(|ch| self.provide_input(Entry::from(ch as u8)));
+    }
+
     pub fn provide_input(&mut self, x: Entry) {
         self.input.push_back(x);
     }
@@ -364,6 +369,11 @@ impl Process {
     #[must_use]
     pub fn output_as_string(&self) -> String {
         format!("{:?}", self.output)
+    }
+
+    #[must_use]
+    pub fn output_as_ascii(&mut self) -> String {
+        self.output.iter().map(|x| (*x as u8) as char).collect()
     }
 
     pub fn run_to_halt_or_output_size(&mut self, min_output_size: usize) -> bool {
