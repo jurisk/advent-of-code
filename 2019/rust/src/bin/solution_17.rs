@@ -1,5 +1,4 @@
 use advent_of_code::intcode::{parse_machine_code, Process};
-use itertools::Itertools;
 use num_enum::TryFromPrimitive;
 use std::fmt;
 use std::fmt::Formatter;
@@ -30,42 +29,91 @@ impl MapSquare {
     }
 }
 
-type Board = Vec<Vec<MapSquare>>;
-
-trait BoardExt {
-    fn is_intersection(&self, c: Coords) -> bool;
-    fn at(&self, c: Coords) -> MapSquare;
-    fn find_robot(&self) -> Coords;
-}
-
-impl BoardExt for Board {
-    fn is_intersection(&self, c: Coords) -> bool {
-        let mut coords: Vec<Coords> =  Direction::all().iter().map(|n| c + n.diff()).collect();
-        coords.push(c);
-        coords.iter().all(|x| self.at(*x).is_scaffold())
-    }
-
-    fn at(&self, c: Coords) -> MapSquare {
-        self[c.y as usize][c.x as usize]
-    }
-
-    fn find_robot(&self) -> Coords {
-        let robots: Vec<Coords> = (0..self.len() - 1).flat_map(|y|
-            (0..self[y].len() -1).filter_map(move |x| {
-                let sq = self[y][x];
+fn find_robot(map_squares: &Vec<Vec<MapSquare>>) -> Coords {
+    let robots: Vec<Coords> = (0..map_squares.len())
+        .flat_map(|y| {
+            (0..map_squares[y].len()).filter_map(move |x| {
+                let sq = map_squares[y][x];
                 if sq.is_robot() {
-                    Some(Coords { x: x as i32, y: y as i32 })
+                    Some(Coords {
+                        x: x as i32,
+                        y: y as i32,
+                    })
                 } else {
                     None
                 }
             })
-        ).collect();
+        })
+        .collect();
 
-        assert_eq!(robots.len(), 1);
-        robots[0]
+    assert_eq!(robots.len(), 1);
+    robots[0]
+}
+
+struct Board {
+    scaffolds: Vec<Vec<bool>>,
+    robot_location: Coords,
+    robot_direction: Direction,
+}
+
+impl Board {
+    fn parse(s: &str) -> Board {
+        let map_squares: Vec<Vec<MapSquare>> = s
+            .split('\n')
+            .filter(|x| !x.is_empty())
+            .map(|x| x.chars().map(MapSquare::from_char).collect())
+            .collect();
+
+        let robot_location = find_robot(&map_squares);
+        let robot_square = map_squares[robot_location.y as usize][robot_location.x as usize];
+        let robot_direction = match robot_square {
+            MapSquare::RobotPointingUp => Direction::Up,
+            MapSquare::RobotPointingRight => Direction::Right,
+            MapSquare::RobotPointingLeft => Direction::Left,
+            MapSquare::RobotPointingDown => Direction::Down,
+            sq => panic!("Unexpected map square {:?}", sq),
+        };
+
+        let scaffolds = map_squares
+            .iter()
+            .map(|r| r.iter().map(|sq| sq.is_scaffold()).collect())
+            .collect();
+
+        Board {
+            scaffolds,
+            robot_location,
+            robot_direction,
+        }
+    }
+
+    fn all_coordinates(&self) -> Vec<Coords> {
+        (0..self.scaffolds.len())
+            .flat_map(|y| {
+                (0..self.scaffolds[y].len())
+                    .map(|x| Coords {
+                        x: x as i32,
+                        y: y as i32,
+                    })
+                    .collect::<Vec<Coords>>()
+            })
+            .collect()
+    }
+
+    fn is_intersection(&self, c: Coords) -> bool {
+        let mut coords: Vec<Coords> = Direction::all().iter().map(|n| c + n.diff()).collect();
+        coords.push(c);
+        coords.iter().all(|x| self.is_scaffold(*x))
+    }
+
+    fn is_scaffold(&self, c: Coords) -> bool {
+        *self
+            .scaffolds
+            .get(c.y as usize)
+            .map_or(&false, |r| r.get(c.x as usize).unwrap_or(&false))
     }
 }
 
+#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
 enum Direction {
     Up,
     Down,
@@ -110,16 +158,26 @@ impl Add for Coords {
     }
 }
 
-type Route = Vec<Step>;
+struct Route {
+    steps: Vec<Step>,
+}
+
 enum Step {
     F(usize),
     L,
     R,
 }
 
-impl Step {
-    fn route_to_string(route: &Route) -> String {
-        route.iter().map(|x| format!("{}", x)).join(",")
+impl fmt::Display for Route {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(
+            &self
+                .steps
+                .iter()
+                .map(|x| format!("{}", x))
+                .collect::<Vec<_>>()
+                .join(","),
+        )
     }
 }
 
@@ -133,31 +191,13 @@ impl fmt::Display for Step {
     }
 }
 
-fn parse_board(s: &str) -> Board {
-    s.split('\n')
-        .filter(|x| !x.is_empty())
-        .map(|x| x.chars().map(MapSquare::from_char).collect())
-        .collect()
-}
-
 fn sum_of_scaffold_intersection_alignment_parameters(board: &Board) -> i32 {
-    let intersections: Vec<Coords> = (1..board.len() - 2)
-        .flat_map(|y| {
-            (1..board[y].len() - 2).filter_map(move |x| {
-                let c = Coords {
-                    x: x as i32,
-                    y: y as i32,
-                };
-                if board.is_intersection(c) {
-                    Some(c)
-                } else {
-                    None
-                }
-            })
-        })
-        .collect();
-
-    intersections.iter().map(|x| x.x * x.y).sum()
+    board
+        .all_coordinates()
+        .iter()
+        .filter(|c| board.is_intersection(**c))
+        .map(|x| x.x * x.y)
+        .sum()
 }
 
 fn program_as_str() -> String {
@@ -169,7 +209,7 @@ fn board() -> Board {
     process.run_to_halt();
     let board_as_str = process.output_as_ascii();
     println!("{}", &board_as_str);
-    parse_board(&board_as_str)
+    Board::parse(&board_as_str)
 }
 
 fn solve_1() {
@@ -181,15 +221,14 @@ fn solve_1() {
 
 fn simple_path(board: &Board) -> Route {
     // TODO
-    let robot_location = board.find_robot();
-    println!("{:?} {:?}", robot_location, board.at(robot_location));
-    vec![]
+    println!("{:?} {:?}", board.robot_location, board.robot_direction);
+    Route { steps: vec![] }
 }
 
 fn solve_2() {
     let board = board();
     let simple_path = simple_path(&board);
-    println!("{}", Step::route_to_string(&simple_path));
+    println!("{}", simple_path);
 
     let mut program = parse_machine_code(&program_as_str());
     assert_eq!(program[0], 1);
@@ -219,7 +258,7 @@ mod tests {
 ..#####...^.."
             .replace('O', "#");
 
-        let result = sum_of_scaffold_intersection_alignment_parameters(&parse_board(&data));
+        let result = sum_of_scaffold_intersection_alignment_parameters(&Board::parse(&data));
         assert_eq!(result, 76);
     }
 
@@ -241,15 +280,12 @@ mod tests {
 ....#...#......
 ....#####......";
 
-        let board = parse_board(data);
+        let board = Board::parse(data);
 
         let expected_simple_path = "R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2";
         let obtained_simple_path = simple_path(&board);
 
-        assert_eq!(
-            expected_simple_path,
-            Step::route_to_string(&obtained_simple_path)
-        );
+        assert_eq!(expected_simple_path, format!("{}", obtained_simple_path),);
     }
 
     #[test]
