@@ -94,7 +94,7 @@ fn ore_for_n_fuel(conversions: &HashMap<Ingredient, Conversion>, fuel_required: 
         } else {
             let amount_needed = order_amount - leftovers.get(&order_ingredient).unwrap_or(&0);
             let recipe = conversions.get(&order_ingredient).unwrap();
-            let batches_to_make = amount_needed.unstable_div_ceil(recipe.to_quantity);
+            let batches_to_make = amount_needed.div_ceil(recipe.to_quantity);
             recipe.from.iter().for_each(|(k, v)| {
                 orders.push_back((k.clone(), v * batches_to_make));
             });
@@ -137,9 +137,9 @@ fn ore_for_1_fuel_str(data: &str) -> Number {
 fn fuel_from_mega_ore(conversions: &HashMap<Ingredient, Conversion>) -> Number {
     let one_fuel_cost = ore_for_n_fuel(conversions, 1);
     println!("One fuel cost {}", one_fuel_cost);
-    let mut start: Number = MEGA_ORE.unstable_div_floor(one_fuel_cost);
+    let mut start: Number = MEGA_ORE.div_floor(one_fuel_cost);
     assert!(ore_for_n_fuel(conversions, start) < MEGA_ORE);
-    let mut end: Number = (MEGA_ORE * 2).unstable_div_floor(one_fuel_cost);
+    let mut end: Number = (MEGA_ORE * 2).div_floor(one_fuel_cost);
     assert!(ore_for_n_fuel(conversions, end) > MEGA_ORE);
 
     // binary search

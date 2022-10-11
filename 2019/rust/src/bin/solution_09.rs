@@ -19,12 +19,12 @@ fn test_program() -> MachineCode {
 
 fn solve_1() {
     let program = test_program();
-    solve(&program, 1, 2351176124);
+    solve(&program, 1, 2_351_176_124);
 }
 
 fn solve_2() {
     let program = test_program();
-    solve(&program, 2, 73110);
+    solve(&program, 2, 73_110);
 }
 
 fn main() {
@@ -56,7 +56,7 @@ mod tests {
         process.provide_input(1);
         process.run_to_halt();
         let result = process.memory_as_comma_delimited_string(program.len() as Index);
-        assert_eq!(result, input)
+        assert_eq!(result, input);
     }
 
     #[test]

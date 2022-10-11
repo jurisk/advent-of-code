@@ -23,7 +23,7 @@ fn solve_1() {
         .map(|arr| Tile::from_i128(arr[2]).unwrap())
         .collect();
     let result = tiles.iter().filter(|x| **x == Tile::Block).count();
-    println!("Part 1: {:?}", result)
+    println!("Part 1: {:?}", result);
 }
 
 fn solve_2() {

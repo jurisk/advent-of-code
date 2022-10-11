@@ -63,16 +63,10 @@ impl Coords {
 
     fn movement(&self, direction: &Direction) -> Coords {
         Coords {
-            x: self.x
-                + if *direction == Direction::East { 1 } else { 0 }
-                + if *direction == Direction::West { -1 } else { 0 },
-            y: self.y
-                + if *direction == Direction::North {
-                    -1
-                } else {
-                    0
-                }
-                + if *direction == Direction::South { 1 } else { 0 },
+            x: self.x + i32::from(*direction == Direction::East)
+                - i32::from(*direction == Direction::West),
+            y: self.y - i32::from(*direction == Direction::North)
+                + i32::from(*direction == Direction::South),
         }
     }
 
