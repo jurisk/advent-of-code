@@ -1,8 +1,13 @@
+#![feature(slice_group_by)]
+
+use std::cmp::min;
+use std::collections::HashMap;
 use advent_of_code::intcode::{parse_machine_code, Process};
 use num_enum::TryFromPrimitive;
 use std::fmt;
 use std::fmt::Formatter;
 use std::ops::Add;
+use itertools::Itertools;
 
 #[repr(u8)]
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy, TryFromPrimitive)]
@@ -50,6 +55,7 @@ fn find_robot(map_squares: &Vec<Vec<MapSquare>>) -> Coords {
     robots[0]
 }
 
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
 struct Board {
     scaffolds: Vec<Vec<bool>>,
     robot_location: Coords,
@@ -111,6 +117,18 @@ impl Board {
             .get(c.y as usize)
             .map_or(&false, |r| r.get(c.x as usize).unwrap_or(&false))
     }
+
+    fn pointing_at_scaffolding(&self) -> bool {
+        self.is_scaffold(self.robot_location + self.robot_direction.diff())
+    }
+
+    fn left_is_scaffolding(&self) -> bool {
+        self.is_scaffold(self.robot_location + self.robot_direction.turn_left().diff())
+    }
+
+    fn right_is_scaffolding(&self) -> bool {
+        self.is_scaffold(self.robot_location + self.robot_direction.turn_right().diff())
+    }
 }
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
@@ -119,6 +137,26 @@ enum Direction {
     Down,
     Left,
     Right,
+}
+
+impl Direction {
+    fn turn_left(self) -> Direction {
+        match self {
+            Direction::Up => Direction::Left,
+            Direction::Down => Direction::Right,
+            Direction::Left => Direction::Down,
+            Direction::Right => Direction::Up,
+        }
+    }
+
+    fn turn_right(self) -> Direction {
+        match self {
+            Direction::Up => Direction::Right,
+            Direction::Down => Direction::Left,
+            Direction::Left => Direction::Up,
+            Direction::Right => Direction::Down,
+        }
+    }
 }
 
 impl Direction {
@@ -131,10 +169,10 @@ impl Direction {
         ]
     }
 
-    fn diff(&self) -> Coords {
+    fn diff(self) -> Coords {
         match self {
-            Direction::Up => Coords { x: 0, y: 1 },
-            Direction::Down => Coords { x: 0, y: -1 },
+            Direction::Up => Coords { x: 0, y: -1 },
+            Direction::Down => Coords { x: 0, y: 1 },
             Direction::Left => Coords { x: -1, y: 0 },
             Direction::Right => Coords { x: 1, y: 0 },
         }
@@ -158,14 +196,54 @@ impl Add for Coords {
     }
 }
 
-struct Route {
-    steps: Vec<Step>,
-}
-
+#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
 enum Step {
     F(usize),
     L,
     R,
+}
+
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
+struct Route {
+    steps: Vec<Step>,
+}
+
+impl Route {
+    fn compress(&self) -> Route {
+        let mut steps: Vec<Step> = vec![];
+        let mut current: usize = 0;
+        for step in &self.steps {
+            match step {
+                Step::F(n) => {
+                    current += n;
+                },
+                Step::L => {
+                    if current > 0 {
+                        steps.push(Step::F(current));
+                        current = 0;
+                    }
+
+                    steps.push(Step::L);
+                },
+                Step::R => {
+                    if current > 0 {
+                        steps.push(Step::F(current));
+                        current = 0;
+                    }
+
+                    steps.push(Step::R);
+                },
+            }
+        }
+
+        if current > 0 {
+            steps.push(Step::F(current));
+        }
+
+        Route {
+            steps
+        }
+    }
 }
 
 impl fmt::Display for Route {
@@ -219,23 +297,145 @@ fn solve_1() {
     println!("{}", result);
 }
 
-fn simple_path(board: &Board) -> Route {
-    // TODO
-    println!("{:?} {:?}", board.robot_location, board.robot_direction);
-    Route { steps: vec![] }
+fn compressed_path(board: &Board) -> Route {
+    simple_path(board).compress()
+}
+
+fn simple_path(input_board: &Board) -> Route {
+    let mut board: Board = input_board.clone();
+    let mut steps: Vec<Step> = vec![];
+
+    loop {
+        if board.pointing_at_scaffolding() {
+            steps.push(Step::F(1));
+            board = Board {
+                scaffolds: board.scaffolds,
+                robot_location: board.robot_location + board.robot_direction.diff(),
+                robot_direction: board.robot_direction,
+            }
+        } else if board.left_is_scaffolding() {
+            steps.push(Step::L);
+            steps.push(Step::F(1));
+            let new_direction = board.robot_direction.turn_left();
+            board = Board {
+                scaffolds: board.scaffolds,
+                robot_location: board.robot_location + new_direction.diff(),
+                robot_direction: new_direction,
+            }
+        } else if board.right_is_scaffolding() {
+            steps.push(Step::R);
+            steps.push(Step::F(1));
+            let new_direction = board.robot_direction.turn_right();
+            board = Board {
+                scaffolds: board.scaffolds,
+                robot_location: board.robot_location + new_direction.diff(),
+                robot_direction: board.robot_direction.turn_right(),
+            }
+        } else {
+            break;
+        }
+    }
+
+    Route { steps }
+}
+
+type SubroutineName = char;
+
+#[derive(PartialEq, Eq, Debug, Clone)]
+struct WithSubroutines {
+    main: Vec<SubroutineName>,
+    subroutines: HashMap<SubroutineName, Route>,
+}
+
+impl WithSubroutines {
+    fn empty() -> WithSubroutines {
+        WithSubroutines {
+            main: vec![],
+            subroutines: HashMap::new(),
+        }
+    }
+
+    fn extract_subroutines(
+        steps_to_allocate: &[Step],
+        subroutine_names_remaining: &[SubroutineName],
+        acc: WithSubroutines,
+    ) -> Option<WithSubroutines> {
+        // println!("steps_to_allocate: {}\nsubroutine_names_remaining: {:?}\nacc: {:?}\n\n", Route { steps: Vec::from(steps_to_allocate) } , subroutine_names_remaining, acc);
+
+        if steps_to_allocate.is_empty() {
+            return Some(acc);
+        }
+
+        for (k, v) in &acc.subroutines {
+            if steps_to_allocate.starts_with(&v.steps) {
+                return WithSubroutines::extract_subroutines(
+                    &steps_to_allocate[v.steps.len()..],
+                    subroutine_names_remaining,
+                    WithSubroutines {
+                        main: vec![acc.main, vec![*k]].concat(),
+                        subroutines: acc.subroutines,
+                    }
+                )
+            }
+        }
+
+        if subroutine_names_remaining.is_empty() {
+            return None;
+        }
+
+        let max_n = min(steps_to_allocate.len(), 20 - subroutine_names_remaining.len() + 1);
+        for n in 3..max_n {
+            let candidate = &steps_to_allocate[0..n];
+            let this_name = subroutine_names_remaining[0];
+            let mut new_subroutines = acc.subroutines.clone();
+            new_subroutines.insert(this_name, Route { steps: Vec::from(candidate) } );
+            let result = WithSubroutines::extract_subroutines(
+                &steps_to_allocate[n..],
+                &subroutine_names_remaining[1..],
+                WithSubroutines {
+                    main: [acc.main.clone(), vec![this_name]].concat(),
+                    subroutines: new_subroutines,
+                }
+            );
+
+            if result.is_some() {
+                return result;
+            }
+        }
+
+        None
+    }
+
+    fn prepare_for_input(&self, subroutine_names: &[char]) -> String {
+        let main_program = self.main.iter().map(ToString::to_string).join(",");
+        let subroutines = subroutine_names.iter().map(|sr| format!("{}", self.subroutines[sr])).join("\n");
+        format!("{}\n{}\nn\n", main_program, subroutines)
+    }
 }
 
 fn solve_2() {
     let board = board();
-    let simple_path = simple_path(&board);
-    println!("{}", simple_path);
+    let steps = compressed_path(&board);
+    println!("{}", steps);
+
+    let subroutine_names = vec!['A', 'B', 'C'];
+    let with_subroutines = WithSubroutines::extract_subroutines(&steps.steps, &subroutine_names, WithSubroutines::empty()).unwrap();
 
     let mut program = parse_machine_code(&program_as_str());
     assert_eq!(program[0], 1);
     program[0] = 2;
 
     let mut process = Process::new(&program);
-    process.provide_input_as_string("");
+
+    let input = WithSubroutines::prepare_for_input(&with_subroutines, &subroutine_names);
+
+    process.provide_input_as_string(&input);
+    process.run_to_halt();
+
+    let output = process.read_output();
+    let result = *output.last().unwrap();
+    println!("Part2: {}", result);
+    assert_eq!(result, 597_517);
 }
 
 fn main() {
@@ -262,8 +462,24 @@ mod tests {
         assert_eq!(result, 76);
     }
 
+    fn test(data: &str, expected_compressed_path: &str, with_subroutines_expected: &str) {
+        let board = Board::parse(data);
+
+        let obtained_compressed_path = compressed_path(&board);
+
+        assert_eq!(expected_compressed_path, format!("{}", obtained_compressed_path));
+
+        let subroutine_names = vec!['A', 'B', 'C'];
+        let with_subroutines = WithSubroutines::extract_subroutines(&obtained_compressed_path.steps, &subroutine_names, WithSubroutines::empty()).unwrap();
+
+        let obtained = WithSubroutines::prepare_for_input(&with_subroutines, &subroutine_names);
+
+        // The test assumes a particular implementation, because multiple valid solutions can exist
+        assert_eq!(obtained, with_subroutines_expected);
+    }
+
     #[test]
-    fn test_simplest_path_2() {
+    fn test_complex_1() {
         let data = "#######...#####
 #.....#...#...#
 #.....#...#...#
@@ -280,12 +496,64 @@ mod tests {
 ....#...#......
 ....#####......";
 
-        let board = Board::parse(data);
+        let expected_compressed_path = "R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2";
 
-        let expected_simple_path = "R,8,R,8,R,4,R,4,R,8,L,6,L,2,R,4,R,4,R,8,R,8,R,8,L,6,L,2";
-        let obtained_simple_path = simple_path(&board);
+        let with_subroutines_expected = "A,B,C,B,A,C
+R,8,R,8
+R,4,R,4
+R,8,L,6,L,2
+n
+";
 
-        assert_eq!(expected_simple_path, format!("{}", obtained_simple_path),);
+        test(data, expected_compressed_path, with_subroutines_expected);
+    }
+
+    #[test]
+    fn test_complex_2() {
+        let data = "####^..................................
+#......................................
+#......................................
+#......................................
+###########...###########..............
+..........#...#........................
+..........#...#........................
+..........#...#........................
+......#####...#........................
+......#.......#........................
+......#.......#.###########...#########
+......#.......#.#.........#...#.......#
+......#####...#####.......#...#.......#
+..........#.....#.#.......#...#.......#
+....#####.#.....#.#.......#####.......#
+....#...#.#.....#.#...................#
+....#...#.#...#####...................#
+....#...#.#...#.#.....................#
+....#...###########...................#
+....#.....#...#.#.#...................#
+###########.#####.#...............#####
+#...#.......#.#...#...............#....
+#...#.......#.#...#...............#....
+#...#.......#.#...#...............#....
+#####.......###########...........#....
+..............#...#...#...........#....
+..............###########.........#....
+..................#...#.#.........#....
+..................#####.#.........#....
+........................#.........#....
+........................###########....";
+
+        println!("{}", data);
+
+        let expected_compressed_path = "L,4,L,4,L,10,R,4,R,4,L,4,L,4,R,8,R,10,L,4,L,4,L,10,R,4,R,4,L,10,R,10,L,4,L,4,L,10,R,4,R,4,L,10,R,10,R,4,L,4,L,4,R,8,R,10,R,4,L,10,R,10,R,4,L,10,R,10,R,4,L,4,L,4,R,8,R,10";
+
+        let with_subroutines_expected = "A,B,A,C,A,C,B,C,C,B
+L,4,L,4,L,10,R,4
+R,4,L,4,L,4,R,8,R,10
+R,4,L,10,R,10
+n
+";
+
+        test(data, expected_compressed_path, with_subroutines_expected);
     }
 
     #[test]
