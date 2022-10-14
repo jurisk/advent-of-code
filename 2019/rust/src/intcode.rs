@@ -348,6 +348,10 @@ impl Process {
         }
     }
 
+    pub fn run_to_unsatisfied_input(&mut self) -> bool {
+        self.run_to_condition(Process::unsatisfied_input)
+    }
+
     #[must_use]
     pub fn unsatisfied_input(&self) -> bool {
         match self.op_at_ip() {
@@ -372,8 +376,10 @@ impl Process {
     }
 
     #[must_use]
-    pub fn output_as_ascii(&mut self) -> String {
-        self.output.iter().map(|x| (*x as u8) as char).collect()
+    pub fn read_output_as_ascii(&mut self) -> String {
+        let result = self.output.iter().map(|x| (*x as u8) as char).collect();
+        self.output.clear();
+        result
     }
 
     pub fn run_to_halt_or_output_size(&mut self, min_output_size: usize) -> bool {

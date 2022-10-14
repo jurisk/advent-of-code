@@ -285,7 +285,7 @@ fn program_as_str() -> String {
 fn board() -> Board {
     let mut process = Process::from_string(&program_as_str());
     process.run_to_halt();
-    let board_as_str = process.output_as_ascii();
+    let board_as_str = process.read_output_as_ascii();
     println!("{}", &board_as_str);
     Board::parse(&board_as_str)
 }
