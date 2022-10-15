@@ -1,13 +1,13 @@
 #![feature(slice_group_by)]
 
+use advent_of_code::intcode::{parse_machine_code, Process};
+use itertools::Itertools;
+use num_enum::TryFromPrimitive;
 use std::cmp::min;
 use std::collections::HashMap;
-use advent_of_code::intcode::{parse_machine_code, Process};
-use num_enum::TryFromPrimitive;
 use std::fmt;
 use std::fmt::Formatter;
 use std::ops::Add;
-use itertools::Itertools;
 
 #[repr(u8)]
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy, TryFromPrimitive)]
@@ -216,7 +216,7 @@ impl Route {
             match step {
                 Step::F(n) => {
                     current += n;
-                },
+                }
                 Step::L => {
                     if current > 0 {
                         steps.push(Step::F(current));
@@ -224,7 +224,7 @@ impl Route {
                     }
 
                     steps.push(Step::L);
-                },
+                }
                 Step::R => {
                     if current > 0 {
                         steps.push(Step::F(current));
@@ -232,7 +232,7 @@ impl Route {
                     }
 
                     steps.push(Step::R);
-                },
+                }
             }
         }
 
@@ -240,9 +240,7 @@ impl Route {
             steps.push(Step::F(current));
         }
 
-        Route {
-            steps
-        }
+        Route { steps }
     }
 }
 
@@ -374,8 +372,8 @@ impl WithSubroutines {
                     WithSubroutines {
                         main: vec![acc.main, vec![*k]].concat(),
                         subroutines: acc.subroutines,
-                    }
-                )
+                    },
+                );
             }
         }
 
@@ -383,19 +381,27 @@ impl WithSubroutines {
             return None;
         }
 
-        let max_n = min(steps_to_allocate.len(), 20 - subroutine_names_remaining.len() + 1);
+        let max_n = min(
+            steps_to_allocate.len(),
+            20 - subroutine_names_remaining.len() + 1,
+        );
         for n in 3..max_n {
             let candidate = &steps_to_allocate[0..n];
             let this_name = subroutine_names_remaining[0];
             let mut new_subroutines = acc.subroutines.clone();
-            new_subroutines.insert(this_name, Route { steps: Vec::from(candidate) } );
+            new_subroutines.insert(
+                this_name,
+                Route {
+                    steps: Vec::from(candidate),
+                },
+            );
             let result = WithSubroutines::extract_subroutines(
                 &steps_to_allocate[n..],
                 &subroutine_names_remaining[1..],
                 WithSubroutines {
                     main: [acc.main.clone(), vec![this_name]].concat(),
                     subroutines: new_subroutines,
-                }
+                },
             );
 
             if result.is_some() {
@@ -408,7 +414,10 @@ impl WithSubroutines {
 
     fn prepare_for_input(&self, subroutine_names: &[char]) -> String {
         let main_program = self.main.iter().map(ToString::to_string).join(",");
-        let subroutines = subroutine_names.iter().map(|sr| format!("{}", self.subroutines[sr])).join("\n");
+        let subroutines = subroutine_names
+            .iter()
+            .map(|sr| format!("{}", self.subroutines[sr]))
+            .join("\n");
         format!("{}\n{}\nn\n", main_program, subroutines)
     }
 }
@@ -419,7 +428,12 @@ fn solve_2() {
     println!("{}", steps);
 
     let subroutine_names = vec!['A', 'B', 'C'];
-    let with_subroutines = WithSubroutines::extract_subroutines(&steps.steps, &subroutine_names, WithSubroutines::empty()).unwrap();
+    let with_subroutines = WithSubroutines::extract_subroutines(
+        &steps.steps,
+        &subroutine_names,
+        WithSubroutines::empty(),
+    )
+    .unwrap();
 
     let mut program = parse_machine_code(&program_as_str());
     assert_eq!(program[0], 1);
@@ -467,10 +481,18 @@ mod tests {
 
         let obtained_compressed_path = compressed_path(&board);
 
-        assert_eq!(expected_compressed_path, format!("{}", obtained_compressed_path));
+        assert_eq!(
+            expected_compressed_path,
+            format!("{}", obtained_compressed_path)
+        );
 
         let subroutine_names = vec!['A', 'B', 'C'];
-        let with_subroutines = WithSubroutines::extract_subroutines(&obtained_compressed_path.steps, &subroutine_names, WithSubroutines::empty()).unwrap();
+        let with_subroutines = WithSubroutines::extract_subroutines(
+            &obtained_compressed_path.steps,
+            &subroutine_names,
+            WithSubroutines::empty(),
+        )
+        .unwrap();
 
         let obtained = WithSubroutines::prepare_for_input(&with_subroutines, &subroutine_names);
 

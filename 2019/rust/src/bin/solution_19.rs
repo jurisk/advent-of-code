@@ -1,5 +1,5 @@
+use advent_of_code::intcode::{parse_machine_code, Entry, MachineCode, Process};
 use std::cmp::max;
-use advent_of_code::intcode::{Entry, MachineCode, parse_machine_code, Process};
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
 struct Coords {
@@ -21,13 +21,11 @@ fn beam_at_position(coords: Coords) -> bool {
 }
 
 fn solve_1() {
-    let coords: Vec<Coords> = (0..50).flat_map(|x| {
-        (0..50).map(move |y| Coords { x, y })
-    }).collect();
+    let coords: Vec<Coords> = (0..50)
+        .flat_map(|x| (0..50).map(move |y| Coords { x, y }))
+        .collect();
 
-    let result: u32 = coords.iter().map(|c|
-        u32::from(beam_at_position(*c))
-    ).sum();
+    let result: u32 = coords.iter().map(|c| u32::from(beam_at_position(*c))).sum();
 
     println!("Part 1: {}", result);
     assert_eq!(result, 150);
@@ -39,8 +37,8 @@ fn find_leftmost_x(y: i32, bound_x: i32) -> i32 {
     }
 
     for x in (bound_x - 1).. {
-        if !beam_at_position(Coords { x, y }) && beam_at_position( Coords { x: x + 1, y }) {
-            return x + 1
+        if !beam_at_position(Coords { x, y }) && beam_at_position(Coords { x: x + 1, y }) {
+            return x + 1;
         }
     }
 
@@ -68,7 +66,11 @@ fn solve_2() {
             y: bottom_left.y,
         };
 
-        if beam_at_position(bottom_left) && beam_at_position(top_left) && beam_at_position(top_right) && beam_at_position(bottom_right) {
+        if beam_at_position(bottom_left)
+            && beam_at_position(top_left)
+            && beam_at_position(top_right)
+            && beam_at_position(bottom_right)
+        {
             let result = 10000 * top_left.x + top_left.y;
             println!("Part 2: {}", result);
             assert_eq!(result, 12_201_460);

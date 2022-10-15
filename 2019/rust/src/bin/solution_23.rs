@@ -1,6 +1,6 @@
+use advent_of_code::intcode::{parse_machine_code, Entry, MachineCode, Process};
 use std::collections::HashMap;
 use std::hash::Hash;
-use advent_of_code::intcode::{Entry, MachineCode, parse_machine_code, Process};
 
 const NAT_ADDRESS: Entry = 255;
 const COMPUTER_COUNT: ComputerIndex = 50;
@@ -11,11 +11,11 @@ struct XYPair {
     y: Entry,
 }
 
-struct MessageBuffers<K : Eq + Hash, V : Clone> {
+struct MessageBuffers<K: Eq + Hash, V: Clone> {
     map: HashMap<K, Vec<V>>,
 }
 
-impl<K : Eq + Hash, V : Clone> MessageBuffers<K, V> {
+impl<K: Eq + Hash, V: Clone> MessageBuffers<K, V> {
     fn new() -> MessageBuffers<K, V> {
         MessageBuffers {
             map: HashMap::new(),
@@ -43,14 +43,19 @@ fn machine_code() -> MachineCode {
 type ComputerIndex = usize;
 
 fn create_computers() -> Vec<Process> {
-    (0..COMPUTER_COUNT).map(|i| {
-        let mut process = Process::new(&machine_code());
-        process.provide_input(i as Entry);
-        process
-    }).collect()
+    (0..COMPUTER_COUNT)
+        .map(|i| {
+            let mut process = Process::new(&machine_code());
+            process.provide_input(i as Entry);
+            process
+        })
+        .collect()
 }
 
-fn send_message_buffers_to_computers(computers: &mut [Process], buffers: &mut MessageBuffers<usize, XYPair>) {
+fn send_message_buffers_to_computers(
+    computers: &mut [Process],
+    buffers: &mut MessageBuffers<usize, XYPair>,
+) {
     for idx in 0..computers.len() {
         let computer = &mut computers[idx];
 
@@ -127,9 +132,10 @@ fn solve_2() {
             }
         }
 
-        let idle_computer_count = computers.iter().filter(|c| {
-            c.unsatisfied_input() && c.output_len() == 0
-        }).count();
+        let idle_computer_count = computers
+            .iter()
+            .filter(|c| c.unsatisfied_input() && c.output_len() == 0)
+            .count();
 
         if idle_computer_count == computer_count {
             if let Some(p) = last_packet_received_by_nat {
