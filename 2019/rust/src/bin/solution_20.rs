@@ -1,6 +1,6 @@
 use bimap::BiMap;
 use itertools::Itertools;
-use pathfinding::prelude::dijkstra;
+use pathfinding::prelude::bfs;
 use std::collections::HashMap;
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone, Debug)]
@@ -9,45 +9,72 @@ struct CoordsXY {
     y: i32,
 }
 
+impl CoordsXY {
+    fn all_directions(self) -> Vec<CoordsXY> {
+        vec![
+            CoordsXY {
+                x: self.x + 1,
+                y: self.y,
+            },
+            CoordsXY {
+                x: self.x - 1,
+                y: self.y,
+            },
+            CoordsXY {
+                x: self.x,
+                y: self.y + 1,
+            },
+            CoordsXY {
+                x: self.x,
+                y: self.y - 1,
+            },
+        ]
+    }
+}
+
+impl CoordsXY {
+    fn with_level(self, level: u32) -> CoordsXYL {
+        CoordsXYL {
+            x: self.x,
+            y: self.y,
+            level,
+        }
+    }
+}
+
+impl CoordsXY {
+    fn outermost(self) -> CoordsXYL {
+        CoordsXYL {
+            x: self.x,
+            y: self.y,
+            level: 0,
+        }
+    }
+}
+
+#[derive(Eq, PartialEq, Hash, Copy, Clone, Debug)]
+struct CoordsXYL {
+    x: i32,
+    y: i32,
+    level: u32,
+}
+
 #[derive(Debug)]
 struct Maze {
     open_passages: Vec<Vec<bool>>,
     start: CoordsXY,
     end: CoordsXY,
-    portals: BiMap<CoordsXY, CoordsXY>,
+    portals: BiMap<CoordsXY, CoordsXY>, // left side is outer - right side is inner
 }
 
 const PASSAGE: char = '.';
 
+type Name = [char; 2];
+
 impl Maze {
-    fn new(data: &str) -> Maze {
-        type Name = [char; 2];
-
-        let rows: Vec<&str> = data.split('\n').collect();
-
-        let width = rows[2].len() - 2; // we assume the first row of the maze never has a portal on the right side
-        let height = rows.len() - 4; // we assume there are always portals on the top & the bottom
-
-        let chars: Vec<Vec<char>> = rows
-            .iter()
-            .filter(|x| !x.is_empty())
-            .map(|x| x.chars().pad_using(width + 4, |_| ' ').collect())
-            .collect();
-
-        println!("{}", data);
-
-        println!("width = {}, height = {}", width, height);
-
-        let open_passages: Vec<Vec<bool>> = (0..height)
-            .map(|y| (0..width).map(|x| chars[y + 2][x + 2] == PASSAGE).collect())
-            .collect();
-
-        assert_eq!(open_passages.len(), height);
-        for row in &open_passages {
-            assert_eq!(row.len(), width);
-        }
-
+    fn build_temp_portals(chars: &Vec<Vec<char>>) -> Vec<(Name, CoordsXY)> {
         let mut temp_portals: Vec<(Name, CoordsXY)> = Vec::new();
+
         for y in 0..chars.len() {
             let r = &chars[y];
             for x in 0..r.len() - 2 {
@@ -109,6 +136,35 @@ impl Maze {
             }
         }
 
+        temp_portals
+    }
+
+    fn new(data: &str) -> Maze {
+        let rows: Vec<&str> = data.split('\n').collect();
+
+        let width = rows[2].len() - 2; // we assume the first row of the maze never has a portal on the right side
+
+        let chars: Vec<Vec<char>> = rows
+            .iter()
+            .filter(|x| !x.is_empty())
+            .map(|x| x.chars().pad_using(width + 4, |_| ' ').collect())
+            .collect();
+
+        let height = chars.len() - 4; // we assume there are always portals on the top & the bottom
+
+        println!("width = {}, height = {}", width, height);
+
+        let open_passages: Vec<Vec<bool>> = (0..height)
+            .map(|y| (0..width).map(|x| chars[y + 2][x + 2] == PASSAGE).collect())
+            .collect();
+
+        assert_eq!(open_passages.len(), height);
+        for row in &open_passages {
+            assert_eq!(row.len(), width);
+        }
+
+        let temp_portals = Maze::build_temp_portals(&chars);
+
         let mut portals = BiMap::new();
         let mut temporary_map: HashMap<Name, CoordsXY> = HashMap::new();
         for (name, coords) in temp_portals {
@@ -118,13 +174,25 @@ impl Maze {
                     temporary_map.insert(name, coords);
                 }
                 Some(existing) => {
-                    println!("Matched {:?} and {:?}", coords, existing);
-                    portals.insert(coords, existing);
+                    if (coords.x == 0 || coords.x == (width - 1) as i32)
+                        || (coords.y == 0 || coords.y == (height - 1) as i32)
+                    {
+                        println!(
+                            "Matched {:?} as outer {:?} and inner {:?}",
+                            name, coords, existing
+                        );
+                        portals.insert(coords, existing);
+                    } else {
+                        println!(
+                            "Matched {:?} as outer {:?} and inner {:?}",
+                            name, existing, coords
+                        );
+                        portals.insert(existing, coords);
+                    }
                 }
             }
         }
 
-        println!("{:?}", temporary_map);
         assert_eq!(temporary_map.len(), 2); // only the start & finish coordinates left
 
         Maze {
@@ -142,55 +210,82 @@ impl Maze {
             == Some(Some(&true))
     }
 
-    fn neighbours_iter(&self, from: &CoordsXY) -> Vec<(CoordsXY, i32)> {
-        let a_binding = self.portals.get_by_left(from).copied();
-        let a: Vec<&CoordsXY> = a_binding.iter().collect();
-        let b_binding = self.portals.get_by_right(from).copied();
-        let b: Vec<&CoordsXY> = b_binding.iter().collect();
-        let neigbours = vec![
-            CoordsXY {
-                x: from.x + 1,
-                y: from.y,
-            },
-            CoordsXY {
-                x: from.x - 1,
-                y: from.y,
-            },
-            CoordsXY {
-                x: from.x,
-                y: from.y + 1,
-            },
-            CoordsXY {
-                x: from.x,
-                y: from.y - 1,
-            },
-        ];
-        let c: Vec<&CoordsXY> = neigbours.iter().filter(|c| self.passage_at(**c)).collect();
+    fn part_1_rules_neighbours(&self, from: CoordsXY) -> Vec<CoordsXY> {
+        let a_binding = self.portals.get_by_left(&from).copied();
+        let a: Vec<CoordsXY> = a_binding.iter().copied().collect();
+        let b_binding = self.portals.get_by_right(&from).copied();
+        let b: Vec<CoordsXY> = b_binding.iter().copied().collect();
+        let neighbours = from.all_directions();
+        let c: Vec<CoordsXY> = neighbours
+            .iter()
+            .filter(|c| self.passage_at(**c))
+            .copied()
+            .collect();
+        let results: Vec<Vec<CoordsXY>> = vec![a, b, c];
+        results.concat()
+    }
 
-        let results: Vec<Vec<&CoordsXY>> = vec![a, b, c];
+    fn part_2_rules_neighbours(&self, from: CoordsXYL) -> Vec<CoordsXYL> {
+        let from_xy: CoordsXY = CoordsXY {
+            x: from.x,
+            y: from.y,
+        };
 
-        results.concat().iter().map(|n| (**n, 1)).collect()
+        // Remember - in self.portals left is outer, right is inner
+        let a: Vec<CoordsXYL> = if from.level == 0 {
+            vec![]
+        } else {
+            let a_binding = self.portals.get_by_left(&from_xy).copied();
+            a_binding
+                .iter()
+                .map(|c| c.with_level(from.level - 1))
+                .collect()
+        };
+
+        let b_binding = self.portals.get_by_right(&from_xy).copied();
+        let b: Vec<CoordsXYL> = b_binding
+            .iter()
+            .map(|c| c.with_level(from.level + 1))
+            .collect();
+
+        let c: Vec<CoordsXYL> = from_xy
+            .all_directions()
+            .iter()
+            .filter(|c| self.passage_at(**c))
+            .map(|c| c.with_level(from.level))
+            .collect();
+
+        vec![a, b, c].concat()
     }
 }
 
-fn solve_1(data: &str, expected: i32) {
+fn solve_1(data: &str, expected: Option<i32>) {
     let maze = Maze::new(data);
-    println!("{:?}", maze);
-    let (route, cost) =
-        dijkstra(&maze.start, |n| maze.neighbours_iter(n), |n| *n == maze.end).unwrap();
-    println!("{:?}", route);
-    assert_eq!(cost, expected);
+    let result = bfs(
+        &maze.start,
+        |n| maze.part_1_rules_neighbours(*n),
+        |n| *n == maze.end,
+    );
+    assert_eq!(result.map(|r| (r.len() - 1) as i32), expected);
+    println!("{:?}", expected);
 }
 
-fn solve_2(data: &str, expected: i32) {
-    todo!();
+fn solve_2(data: &str, expected: Option<i32>) {
+    let maze = Maze::new(data);
+    let result = bfs(
+        &maze.start.outermost(),
+        |n| maze.part_2_rules_neighbours(*n),
+        |n| *n == maze.end.outermost(),
+    );
+    assert_eq!(result.map(|r| (r.len() - 1) as i32), expected);
+    println!("{:?}", expected);
 }
 
 const DATA_3: &str = include_str!("../../resources/20.txt");
 
 fn main() {
-    solve_1(DATA_3, 123_456);
-    solve_2(DATA_3, 123_456);
+    solve_1(DATA_3, Some(606));
+    solve_2(DATA_3, Some(123_456));
 }
 
 #[cfg(test)]
@@ -199,24 +294,35 @@ mod tests {
 
     const DATA_1: &str = include_str!("../../resources/20-test-1.txt");
     const DATA_2: &str = include_str!("../../resources/20-test-2.txt");
+    const DATA_4: &str = include_str!("../../resources/20-test-3.txt");
 
     #[test]
     fn test_solve_1_1() {
-        solve_1(DATA_1, 23);
+        solve_1(DATA_1, Some(23));
     }
 
     #[test]
     fn test_solve_1_2() {
-        solve_1(DATA_2, 58);
+        solve_1(DATA_2, Some(58));
     }
 
     #[test]
     fn test_solve_1_3() {
-        solve_1(DATA_3, 606);
+        solve_1(DATA_3, Some(606));
     }
 
     #[test]
-    fn test_solve_2() {
-        solve_2(DATA_3, 123_456);
+    fn test_solve_2_1() {
+        solve_2(DATA_1, Some(26));
+    }
+
+    #[test]
+    fn test_solve_2_3() {
+        solve_2(DATA_4, Some(396));
+    }
+
+    #[test]
+    fn test_solve_2_4() {
+        solve_2(DATA_3, Some(7_186));
     }
 }
