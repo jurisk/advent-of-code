@@ -61,16 +61,16 @@ impl Square {
     }
 }
 
-struct Maze {
-    field: Vec<Vec<Square>>,
-    key_count: usize,
-    entrance: CoordsXY,
-}
-
 #[derive(PartialEq, Eq, Debug, Clone, Hash)]
 struct State {
-    position: CoordsXY,
+    positions: Vec<CoordsXY>,
     keys_obtained: Vec<DoorKeyPair>,
+}
+
+struct Maze {
+    field: Vec<Vec<Square>>,
+    entrances: Vec<CoordsXY>,
+    key_count: usize,
 }
 
 impl Maze {
@@ -99,8 +99,6 @@ impl Maze {
             })
             .collect();
 
-        assert_eq!(entrances.len(), 1);
-
         let keys: HashSet<DoorKeyPair> = field
             .iter()
             .flat_map(|r| {
@@ -110,17 +108,18 @@ impl Maze {
                 })
             })
             .collect();
+        let key_count = keys.len();
 
         Maze {
             field,
-            key_count: keys.len(),
-            entrance: entrances[0],
+            entrances,
+            key_count,
         }
     }
 
     fn start_state(&self) -> State {
         State {
-            position: self.entrance,
+            positions: self.entrances.clone(),
             keys_obtained: vec![],
         }
     }
@@ -133,22 +132,34 @@ impl Maze {
         self.field[coords.y as usize][coords.x as usize]
     }
 
-    fn can_go_from_to(&self, state: &State, position: CoordsXY) -> Option<State> {
-        match self.at(position) {
+    fn can_go_from_to(
+        &self,
+        state: &State,
+        position_idx: usize,
+        new_position: CoordsXY,
+    ) -> Option<State> {
+        let mut positions = state.positions.clone();
+        positions[position_idx] = new_position;
+
+        match self.at(new_position) {
             Square::Empty => Some(State {
-                position,
+                positions,
                 keys_obtained: state.keys_obtained.clone(),
             }),
             Square::Key(k) if state.keys_obtained.contains(&k) => Some(State {
-                position,
+                positions,
                 keys_obtained: state.keys_obtained.clone(),
             }),
             Square::Key(k) => Some(State {
-                position,
-                keys_obtained: vec![state.keys_obtained.clone(), vec![k]].concat(),
+                positions,
+                keys_obtained: {
+                    let mut tmp = vec![state.keys_obtained.clone(), vec![k]].concat();
+                    tmp.sort_unstable();
+                    tmp
+                },
             }),
             Square::Door(d) if state.keys_obtained.contains(&d) => Some(State {
-                position,
+                positions,
                 keys_obtained: state.keys_obtained.clone(),
             }),
             Square::Door(_) | Square::Wall => None,
@@ -156,16 +167,19 @@ impl Maze {
     }
 
     fn successors(&self, state: &State) -> Vec<State> {
-        state
-            .position
-            .neighbours()
-            .iter()
-            .filter_map(|n| self.can_go_from_to(state, *n))
+        (0..state.positions.len())
+            .flat_map(|position_idx| {
+                state.positions[position_idx]
+                    .neighbours()
+                    .iter()
+                    .filter_map(|n| self.can_go_from_to(state, position_idx, *n))
+                    .collect::<Vec<_>>()
+            })
             .collect()
     }
 }
 
-fn solve_1(data: &str) -> Option<usize> {
+fn solve(data: &str) -> Option<usize> {
     let maze = Maze::parse(data);
     bfs(
         &maze.start_state(),
@@ -175,9 +189,33 @@ fn solve_1(data: &str) -> Option<usize> {
     .map(|s| s.len() - 1)
 }
 
+fn hack_line(data: &str, what: &str, idx_at: usize) -> String {
+    let mut result: String = String::new();
+    result.push_str(&data[0..idx_at]);
+    result.push_str(what);
+    result.push_str(&data[(idx_at + what.len())..]);
+    result
+}
+
+fn hack_to_convert_part_1_to_part_2(data: &str) -> String {
+    let mut lines: Vec<&str> = data.split('\n').collect();
+    let l_39 = &hack_line(lines[39], "@#@", 39);
+    lines[39] = l_39;
+    let l_40 = &hack_line(lines[40], "###", 39);
+    lines[40] = l_40;
+    let l_41 = &hack_line(lines[41], "@#@", 39);
+    lines[41] = l_41;
+    let result = lines.join("\n");
+    assert_eq!(data.len(), result.len());
+    result
+}
+
 fn main() {
-    let result = solve_1(DATA);
+    let result = solve(DATA);
     println!("Part 1: {:?}", result);
+
+    let result = solve(&hack_to_convert_part_1_to_part_2(DATA));
+    println!("Part 2: {:?}", result);
 }
 
 #[cfg(test)]
@@ -190,7 +228,7 @@ mod tests {
 #b.A.@.a#
 #########";
 
-        assert_eq!(solve_1(data), Some(8));
+        assert_eq!(solve(data), Some(8));
     }
 
     #[test]
@@ -201,7 +239,7 @@ mod tests {
 #d.....................#
 ########################";
 
-        assert_eq!(solve_1(data), Some(86));
+        assert_eq!(solve(data), Some(86));
     }
 
     #[test]
@@ -212,7 +250,7 @@ mod tests {
 #.....@.a.B.c.d.A.e.F.g#
 ########################";
 
-        assert_eq!(solve_1(data), Some(132));
+        assert_eq!(solve(data), Some(132));
     }
 
     #[test]
@@ -227,7 +265,7 @@ mod tests {
 #l.F..d...h..C.m#
 #################";
 
-        assert_eq!(solve_1(data), Some(136));
+        assert_eq!(solve(data), Some(136));
     }
 
     #[test]
@@ -239,11 +277,69 @@ mod tests {
 ###g#h#i################
 ########################";
 
-        assert_eq!(solve_1(data), Some(81));
+        assert_eq!(solve(data), Some(81));
     }
 
     #[test]
-    fn test_solve_1_6() {
-        assert_eq!(solve_1(DATA), Some(123_456));
+    fn test_solve_1_real() {
+        assert_eq!(solve(DATA), Some(5808));
+    }
+
+    #[test]
+    fn test_solve_2_1() {
+        let data = "#######
+#a.#Cd#
+##@#@##
+#######
+##@#@##
+#cB#Ab#
+#######";
+        assert_eq!(solve(data), Some(8));
+    }
+
+    #[test]
+    fn test_solve_2_2() {
+        let data = "###############
+#d.ABC.#.....a#
+######@#@######
+###############
+######@#@######
+#b.....#.....c#
+###############";
+        assert_eq!(solve(data), Some(24));
+    }
+
+    #[test]
+    fn test_solve_2_3() {
+        let data = "#############
+#DcBa.#.GhKl#
+#.###@#@#I###
+#e#d#####j#k#
+###C#@#@###J#
+#fEbA.#.FgHi#
+#############";
+        assert_eq!(solve(data), Some(32));
+    }
+
+    #[test]
+    fn test_solve_2_4() {
+        let data = "#############
+#g#f.D#..h#l#
+#F###e#E###.#
+#dCba@#@BcIJ#
+#############
+#nK.L@#@G...#
+#M###N#H###.#
+#o#m..#i#jk.#
+#############";
+        assert_eq!(solve(data), Some(72));
+    }
+
+    #[test]
+    fn test_solve_2_real() {
+        assert_eq!(
+            solve(&hack_to_convert_part_1_to_part_2(DATA)),
+            Some(123_456)
+        );
     }
 }
