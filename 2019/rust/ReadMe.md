@@ -9,5 +9,7 @@ cargo test
 
 ```shell
 brew install cargo-instruments
-cargo instruments --open --bin solution_XY
+xcode-select --version
+cargo instruments --list-templates
+cargo instruments --bin solution_<XY> --template 'CPU Profiler'
 ```

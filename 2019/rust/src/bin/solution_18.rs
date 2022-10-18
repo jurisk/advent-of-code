@@ -1,6 +1,6 @@
 extern crate core;
 
-use pathfinding::prelude::bfs;
+use pathfinding::prelude::astar;
 use std::collections::HashSet;
 use std::hash::Hash;
 
@@ -62,15 +62,47 @@ impl Square {
 }
 
 #[derive(PartialEq, Eq, Debug, Clone, Hash)]
+struct DoorKeyPairSet {
+    data: u32,
+}
+
+impl DoorKeyPairSet {
+    fn bit_repr(p: DoorKeyPair) -> u32 {
+        let how_many = p as u32 - 'A' as u32;
+        1_u32 << how_many
+    }
+
+    fn add(&self, p: DoorKeyPair) -> DoorKeyPairSet {
+        DoorKeyPairSet {
+            data: self.data | DoorKeyPairSet::bit_repr(p),
+        }
+    }
+
+    fn contains(&self, p: DoorKeyPair) -> bool {
+        (DoorKeyPairSet::bit_repr(p) & self.data) != 0
+    }
+
+    fn len(&self) -> u32 {
+        self.data.count_ones()
+    }
+}
+
+impl DoorKeyPairSet {
+    fn new() -> DoorKeyPairSet {
+        DoorKeyPairSet { data: 0 }
+    }
+}
+
+#[derive(PartialEq, Eq, Debug, Clone, Hash)]
 struct State {
     positions: Vec<CoordsXY>,
-    keys_obtained: Vec<DoorKeyPair>,
+    keys_obtained: DoorKeyPairSet,
 }
 
 struct Maze {
     field: Vec<Vec<Square>>,
     entrances: Vec<CoordsXY>,
-    key_count: usize,
+    all_keys: DoorKeyPairSet,
 }
 
 impl Maze {
@@ -108,24 +140,28 @@ impl Maze {
                 })
             })
             .collect();
-        let key_count = keys.len();
+
+        let mut all_keys = DoorKeyPairSet::new();
+        for key in keys {
+            all_keys = all_keys.add(key);
+        }
 
         Maze {
             field,
             entrances,
-            key_count,
+            all_keys,
         }
     }
 
     fn start_state(&self) -> State {
         State {
             positions: self.entrances.clone(),
-            keys_obtained: vec![],
+            keys_obtained: DoorKeyPairSet::new(),
         }
     }
 
     fn is_finished(&self, state: &State) -> bool {
-        state.keys_obtained.len() == self.key_count
+        state.keys_obtained == self.all_keys
     }
 
     fn at(&self, coords: CoordsXY) -> Square {
@@ -141,29 +177,18 @@ impl Maze {
         let mut positions = state.positions.clone();
         positions[position_idx] = new_position;
 
-        match self.at(new_position) {
-            Square::Empty => Some(State {
-                positions,
-                keys_obtained: state.keys_obtained.clone(),
-            }),
-            Square::Key(k) if state.keys_obtained.contains(&k) => Some(State {
-                positions,
-                keys_obtained: state.keys_obtained.clone(),
-            }),
-            Square::Key(k) => Some(State {
-                positions,
-                keys_obtained: {
-                    let mut tmp = vec![state.keys_obtained.clone(), vec![k]].concat();
-                    tmp.sort_unstable();
-                    tmp
-                },
-            }),
-            Square::Door(d) if state.keys_obtained.contains(&d) => Some(State {
-                positions,
-                keys_obtained: state.keys_obtained.clone(),
-            }),
+        let new_keys = match self.at(new_position) {
+            Square::Empty => Some(state.keys_obtained.clone()),
+            Square::Key(k) if state.keys_obtained.contains(k) => Some(state.keys_obtained.clone()),
+            Square::Key(k) => Some(state.keys_obtained.add(k)),
+            Square::Door(d) if state.keys_obtained.contains(d) => Some(state.keys_obtained.clone()),
             Square::Door(_) | Square::Wall => None,
-        }
+        };
+
+        new_keys.map(|keys_obtained| State {
+            positions,
+            keys_obtained,
+        })
     }
 
     fn successors(&self, state: &State) -> Vec<State> {
@@ -177,16 +202,21 @@ impl Maze {
             })
             .collect()
     }
+
+    fn heuristic(&self, state: &State) -> u32 {
+        ('Z' as u32 - 'A' as u32 + 1) - state.keys_obtained.len()
+    }
 }
 
 fn solve(data: &str) -> Option<usize> {
     let maze = Maze::parse(data);
-    bfs(
+    astar(
         &maze.start_state(),
-        |s| maze.successors(s),
+        |s| maze.successors(s).iter().map(|n| (n.clone(), 1)).collect::<Vec<_>>(),
+        |s| maze.heuristic(s),
         |s| maze.is_finished(s),
     )
-    .map(|s| s.len() - 1)
+    .map(|(path, _)| path.len() - 1)
 }
 
 fn hack_line(data: &str, what: &str, idx_at: usize) -> String {
