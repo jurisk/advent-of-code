@@ -1,6 +1,6 @@
 extern crate core;
 
-use pathfinding::prelude::astar;
+use pathfinding::prelude::{bfs, dijkstra};
 use std::collections::HashSet;
 use std::hash::Hash;
 
@@ -61,7 +61,7 @@ impl Square {
     }
 }
 
-#[derive(PartialEq, Eq, Debug, Clone, Hash)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
 struct DoorKeyPairSet {
     data: u32,
 }
@@ -72,18 +72,14 @@ impl DoorKeyPairSet {
         1_u32 << how_many
     }
 
-    fn add(&self, p: DoorKeyPair) -> DoorKeyPairSet {
+    fn add(self, p: DoorKeyPair) -> DoorKeyPairSet {
         DoorKeyPairSet {
             data: self.data | DoorKeyPairSet::bit_repr(p),
         }
     }
 
-    fn contains(&self, p: DoorKeyPair) -> bool {
+    fn contains(self, p: DoorKeyPair) -> bool {
         (DoorKeyPairSet::bit_repr(p) & self.data) != 0
-    }
-
-    fn len(&self) -> u32 {
-        self.data.count_ones()
     }
 }
 
@@ -168,55 +164,119 @@ impl Maze {
         self.field[coords.y as usize][coords.x as usize]
     }
 
-    fn can_go_from_to(
-        &self,
-        state: &State,
+    // TODO: belongs elsewhere, perhaps in State
+    fn update_positions(
+        positions: &[CoordsXY],
         position_idx: usize,
         new_position: CoordsXY,
-    ) -> Option<State> {
-        let mut positions = state.positions.clone();
+    ) -> Vec<CoordsXY> {
+        let mut positions = positions.to_vec();
         positions[position_idx] = new_position;
-
-        let new_keys = match self.at(new_position) {
-            Square::Empty => Some(state.keys_obtained.clone()),
-            Square::Key(k) if state.keys_obtained.contains(k) => Some(state.keys_obtained.clone()),
-            Square::Key(k) => Some(state.keys_obtained.add(k)),
-            Square::Door(d) if state.keys_obtained.contains(d) => Some(state.keys_obtained.clone()),
-            Square::Door(_) | Square::Wall => None,
-        };
-
-        new_keys.map(|keys_obtained| State {
-            positions,
-            keys_obtained,
-        })
+        positions
     }
 
-    fn successors(&self, state: &State) -> Vec<State> {
-        (0..state.positions.len())
-            .flat_map(|position_idx| {
-                state.positions[position_idx]
-                    .neighbours()
-                    .iter()
-                    .filter_map(|n| self.can_go_from_to(state, position_idx, *n))
-                    .collect::<Vec<_>>()
+    fn can_pass(&self, position: CoordsXY, keys_held: DoorKeyPairSet) -> bool {
+        match self.at(position) {
+            Square::Key(_) | Square::Empty => true,
+            Square::Door(d) if keys_held.contains(d) => true,
+            Square::Door(_) | Square::Wall => false,
+        }
+    }
+
+    fn simple_successors(&self, position: CoordsXY, keys_held: DoorKeyPairSet) -> Vec<CoordsXY> {
+        position
+            .neighbours()
+            .iter()
+            .filter(|n| self.can_pass(**n, keys_held))
+            .copied()
+            .collect::<Vec<_>>()
+    }
+
+    fn cost_from_to(
+        &self,
+        from: CoordsXY,
+        to: CoordsXY,
+        keys_held: DoorKeyPairSet,
+    ) -> Option<usize> {
+        bfs(
+            &from,
+            |c| self.simple_successors(*c, keys_held),
+            |c| *c == to,
+        )
+        .map(|path| path.len() - 1)
+    }
+
+    fn all_coords(&self) -> Vec<CoordsXY> {
+        (0..self.field.len())
+            .flat_map(|y| {
+                let r = &self.field[y];
+                (0..r.len()).map(move |x| CoordsXY {
+                    x: x as i32,
+                    y: y as i32,
+                })
             })
             .collect()
     }
 
-    fn heuristic(&self, state: &State) -> u32 {
-        ('Z' as u32 - 'A' as u32 + 1) - state.keys_obtained.len()
+    fn positions_for_keys_not_held_yet(
+        &self,
+        keys_held: DoorKeyPairSet,
+    ) -> Vec<(CoordsXY, DoorKeyPair)> {
+        self.all_coords()
+            .iter()
+            .filter_map(|c| match self.at(*c) {
+                Square::Empty | Square::Door(_) | Square::Wall => None,
+                Square::Key(k) if keys_held.contains(k) => None,
+                Square::Key(k) => Some((*c, k)),
+            })
+            .collect()
+    }
+
+    fn reachable_keys(
+        &self,
+        from_position: CoordsXY,
+        keys_held: DoorKeyPairSet,
+    ) -> Vec<(CoordsXY, DoorKeyPair, usize)> {
+        self.positions_for_keys_not_held_yet(keys_held)
+            .iter()
+            .filter_map(|(to_position, key)| {
+                let cost = self.cost_from_to(from_position, *to_position, keys_held);
+                cost.map(|cost| (*to_position, *key, cost))
+            })
+            .collect()
+    }
+
+    fn successors_from_position(&self, state: &State, position_idx: usize) -> Vec<(State, usize)> {
+        let from_position = state.positions[position_idx];
+        let reachable_keys_with_distances: Vec<(CoordsXY, DoorKeyPair, usize)> =
+            self.reachable_keys(from_position, state.keys_obtained);
+        reachable_keys_with_distances
+            .iter()
+            .map(|(coords, key, cost)| {
+                let new_state = State {
+                    positions: Maze::update_positions(&state.positions, position_idx, *coords),
+                    keys_obtained: state.keys_obtained.add(*key),
+                };
+                (new_state, *cost)
+            })
+            .collect()
+    }
+
+    fn successors(&self, state: &State) -> Vec<(State, usize)> {
+        (0..state.positions.len())
+            .flat_map(|position_idx| self.successors_from_position(state, position_idx))
+            .collect()
     }
 }
 
 fn solve(data: &str) -> Option<usize> {
     let maze = Maze::parse(data);
-    astar(
+    dijkstra(
         &maze.start_state(),
-        |s| maze.successors(s).iter().map(|n| (n.clone(), 1)).collect::<Vec<_>>(),
-        |s| maze.heuristic(s),
+        |s| maze.successors(s),
         |s| maze.is_finished(s),
     )
-    .map(|(path, _)| path.len() - 1)
+    .map(|(_, cost)| cost)
 }
 
 fn hack_line(data: &str, what: &str, idx_at: usize) -> String {
