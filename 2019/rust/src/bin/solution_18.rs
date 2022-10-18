@@ -1,7 +1,7 @@
 extern crate core;
 
 use pathfinding::prelude::{bfs, dijkstra};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
 const DATA: &str = include_str!("../../resources/18.txt");
@@ -99,6 +99,17 @@ struct Maze {
     field: Vec<Vec<Square>>,
     entrances: Vec<CoordsXY>,
     all_keys: DoorKeyPairSet,
+    cached_sub_solutions: HashMap<(CoordsXY, DoorKeyPairSet), Vec<(CoordsXY, DoorKeyPair, usize)>>,
+}
+
+fn update_element_at<T : Clone>(
+    positions: &[T],
+    position_idx: usize,
+    new_position: T,
+) -> Vec<T> {
+    let mut positions = positions.to_vec();
+    positions[position_idx] = new_position;
+    positions
 }
 
 impl Maze {
@@ -146,6 +157,7 @@ impl Maze {
             field,
             entrances,
             all_keys,
+            cached_sub_solutions: HashMap::new(),
         }
     }
 
@@ -162,17 +174,6 @@ impl Maze {
 
     fn at(&self, coords: CoordsXY) -> Square {
         self.field[coords.y as usize][coords.x as usize]
-    }
-
-    // TODO: belongs elsewhere, perhaps in State
-    fn update_positions(
-        positions: &[CoordsXY],
-        position_idx: usize,
-        new_position: CoordsXY,
-    ) -> Vec<CoordsXY> {
-        let mut positions = positions.to_vec();
-        positions[position_idx] = new_position;
-        positions
     }
 
     fn can_pass(&self, position: CoordsXY, keys_held: DoorKeyPairSet) -> bool {
@@ -233,20 +234,30 @@ impl Maze {
     }
 
     fn reachable_keys(
-        &self,
+        &mut self,
         from_position: CoordsXY,
         keys_held: DoorKeyPairSet,
     ) -> Vec<(CoordsXY, DoorKeyPair, usize)> {
-        self.positions_for_keys_not_held_yet(keys_held)
-            .iter()
-            .filter_map(|(to_position, key)| {
-                let cost = self.cost_from_to(from_position, *to_position, keys_held);
-                cost.map(|cost| (*to_position, *key, cost))
-            })
-            .collect()
+        let cache_key = (from_position, keys_held);
+        let result = self.cached_sub_solutions.get(&cache_key);
+
+        match result {
+            None => {
+                let created: Vec<(CoordsXY, DoorKeyPair, usize)> = self.positions_for_keys_not_held_yet(keys_held)
+                    .iter()
+                    .filter_map(|(to_position, key)| {
+                        let cost = self.cost_from_to(from_position, *to_position, keys_held);
+                        cost.map(|cost| (*to_position, *key, cost))
+                    })
+                    .collect();
+                self.cached_sub_solutions.insert(cache_key, created.clone());
+                created
+            },
+            Some(found) => found.clone(),
+        }
     }
 
-    fn successors_from_position(&self, state: &State, position_idx: usize) -> Vec<(State, usize)> {
+    fn successors_from_position(&mut self, state: &State, position_idx: usize) -> Vec<(State, usize)> {
         let from_position = state.positions[position_idx];
         let reachable_keys_with_distances: Vec<(CoordsXY, DoorKeyPair, usize)> =
             self.reachable_keys(from_position, state.keys_obtained);
@@ -254,7 +265,7 @@ impl Maze {
             .iter()
             .map(|(coords, key, cost)| {
                 let new_state = State {
-                    positions: Maze::update_positions(&state.positions, position_idx, *coords),
+                    positions: update_element_at(&state.positions, position_idx, *coords),
                     keys_obtained: state.keys_obtained.add(*key),
                 };
                 (new_state, *cost)
@@ -262,7 +273,7 @@ impl Maze {
             .collect()
     }
 
-    fn successors(&self, state: &State) -> Vec<(State, usize)> {
+    fn successors(&mut self, state: &State) -> Vec<(State, usize)> {
         (0..state.positions.len())
             .flat_map(|position_idx| self.successors_from_position(state, position_idx))
             .collect()
@@ -270,11 +281,13 @@ impl Maze {
 }
 
 fn solve(data: &str) -> Option<usize> {
-    let maze = Maze::parse(data);
+    let mut maze = Maze::parse(data);
+    let all_keys = maze.all_keys;
+
     dijkstra(
         &maze.start_state(),
         |s| maze.successors(s),
-        |s| maze.is_finished(s),
+        |s| s.keys_obtained == all_keys,
     )
     .map(|(_, cost)| cost)
 }
