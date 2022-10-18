@@ -98,15 +98,9 @@ struct State {
 struct Maze {
     field: Vec<Vec<Square>>,
     entrances: Vec<CoordsXY>,
-    all_keys: DoorKeyPairSet,
-    cached_sub_solutions: HashMap<(CoordsXY, DoorKeyPairSet), Vec<(CoordsXY, DoorKeyPair, usize)>>,
 }
 
-fn update_element_at<T : Clone>(
-    positions: &[T],
-    position_idx: usize,
-    new_position: T,
-) -> Vec<T> {
+fn update_element_at<T: Clone>(positions: &[T], position_idx: usize, new_position: T) -> Vec<T> {
     let mut positions = positions.to_vec();
     positions[position_idx] = new_position;
     positions
@@ -138,7 +132,66 @@ impl Maze {
             })
             .collect();
 
-        let keys: HashSet<DoorKeyPair> = field
+        Maze { field, entrances }
+    }
+
+    fn at(&self, coords: CoordsXY) -> Square {
+        self.field[coords.y as usize][coords.x as usize]
+    }
+
+    fn neighbours_only_empty_squares(&self, c: CoordsXY, goal: CoordsXY) -> Vec<CoordsXY> {
+        c.neighbours()
+            .iter()
+            .filter(|n| {
+                if goal == **n {
+                    true
+                } else {
+                    let sq = self.at(**n);
+                    match sq {
+                        Square::Empty => true,
+                        Square::Key(_) | Square::Door(_) | Square::Wall => false,
+                    }
+                }
+            })
+            .copied()
+            .collect()
+    }
+
+    fn distance_only_using_empty_squares(&self, from: CoordsXY, to: CoordsXY) -> Option<usize> {
+        bfs(
+            &from,
+            |sq| self.neighbours_only_empty_squares(*sq, to),
+            |sq| *sq == to,
+        )
+        .map(|v| v.len() - 1)
+    }
+
+    fn all_coords(&self) -> Vec<CoordsXY> {
+        (0..self.field.len())
+            .flat_map(|y| {
+                let r = &self.field[y];
+                (0..r.len()).map(move |x| CoordsXY {
+                    x: x as i32,
+                    y: y as i32,
+                })
+            })
+            .collect()
+    }
+}
+
+struct Graph {
+    entrances: Vec<CoordsXY>,
+    vertices: HashMap<CoordsXY, Square>,
+    distances: HashMap<(CoordsXY, CoordsXY), usize>,
+    all_keys: DoorKeyPairSet,
+}
+
+impl Graph {
+    fn create(maze: &Maze) -> Graph {
+        let entrances = maze.entrances.clone();
+
+        let keys: HashSet<DoorKeyPair> = maze
+            .field
             .iter()
             .flat_map(|r| {
                 r.iter().filter_map(|sq| match sq {
@@ -153,12 +206,43 @@ impl Maze {
             all_keys = all_keys.add(key);
         }
 
-        Maze {
-            field,
-            entrances,
-            all_keys,
-            cached_sub_solutions: HashMap::new(),
+        let vertices: HashMap<CoordsXY, Square> = maze
+            .all_coords()
+            .iter()
+            .map(|c| (c, maze.at(*c)))
+            .filter(|(c, sq)| match sq {
+                Square::Wall => false,
+                Square::Empty => entrances.contains(c),
+                Square::Key(_) | Square::Door(_) => true,
+            })
+            .map(|(c, sq)| (*c, sq))
+            .collect();
+
+        println!("vertices length {:?}", vertices.len());
+
+        let mut distances: HashMap<(CoordsXY, CoordsXY), usize> = HashMap::new();
+        for from in vertices.keys() {
+            for to in vertices.keys() {
+                if *from != *to {
+                    if let Some(cost) = maze.distance_only_using_empty_squares(*from, *to) {
+                        // we insert in both directions as it is the same distance
+                        distances.insert((*from, *to), cost);
+                        distances.insert((*to, *from), cost);
+                    }
+                }
+            }
         }
+
+        Graph {
+            entrances,
+            vertices,
+            distances,
+            all_keys,
+        }
+    }
+
+    fn at(&self, coords: CoordsXY) -> Square {
+        self.vertices[&coords]
     }
 
     fn start_state(&self) -> State {
@@ -168,126 +252,59 @@ impl Maze {
         }
     }
 
-    fn is_finished(&self, state: &State) -> bool {
-        state.keys_obtained == self.all_keys
-    }
-
-    fn at(&self, coords: CoordsXY) -> Square {
-        self.field[coords.y as usize][coords.x as usize]
-    }
-
-    fn can_pass(&self, position: CoordsXY, keys_held: DoorKeyPairSet) -> bool {
-        match self.at(position) {
-            Square::Key(_) | Square::Empty => true,
-            Square::Door(d) if keys_held.contains(d) => true,
-            Square::Door(_) | Square::Wall => false,
-        }
-    }
-
-    fn simple_successors(&self, position: CoordsXY, keys_held: DoorKeyPairSet) -> Vec<CoordsXY> {
-        position
-            .neighbours()
+    fn successors_from_position(&self, state: &State, position_idx: usize) -> Vec<(State, usize)> {
+        let from_position = state.positions[position_idx];
+        let candidates: Vec<(CoordsXY, usize)> = self
+            .distances
             .iter()
-            .filter(|n| self.can_pass(**n, keys_held))
-            .copied()
-            .collect::<Vec<_>>()
-    }
+            .filter(|((from, _), _)| *from == from_position)
+            .map(|((_, to), cost)| (*to, *cost))
+            .collect();
 
-    fn cost_from_to(
-        &self,
-        from: CoordsXY,
-        to: CoordsXY,
-        keys_held: DoorKeyPairSet,
-    ) -> Option<usize> {
-        bfs(
-            &from,
-            |c| self.simple_successors(*c, keys_held),
-            |c| *c == to,
-        )
-        .map(|path| path.len() - 1)
-    }
+        candidates
+            .iter()
+            .filter_map(|(to, cost)| {
+                let positions = update_element_at(&state.positions, position_idx, *to);
+                let new_keys = match self.at(*to) {
+                    Square::Empty => Some(state.keys_obtained),
+                    Square::Key(k) if state.keys_obtained.contains(k) => Some(state.keys_obtained),
+                    Square::Key(k) => Some(state.keys_obtained.add(k)),
+                    Square::Door(d) if state.keys_obtained.contains(d) => Some(state.keys_obtained),
+                    Square::Door(_) | Square::Wall => None,
+                };
 
-    fn all_coords(&self) -> Vec<CoordsXY> {
-        (0..self.field.len())
-            .flat_map(|y| {
-                let r = &self.field[y];
-                (0..r.len()).map(move |x| CoordsXY {
-                    x: x as i32,
-                    y: y as i32,
+                new_keys.map(|keys_obtained| {
+                    (
+                        State {
+                            positions,
+                            keys_obtained,
+                        },
+                        *cost,
+                    )
                 })
             })
             .collect()
     }
 
-    fn positions_for_keys_not_held_yet(
-        &self,
-        keys_held: DoorKeyPairSet,
-    ) -> Vec<(CoordsXY, DoorKeyPair)> {
-        self.all_coords()
-            .iter()
-            .filter_map(|c| match self.at(*c) {
-                Square::Empty | Square::Door(_) | Square::Wall => None,
-                Square::Key(k) if keys_held.contains(k) => None,
-                Square::Key(k) => Some((*c, k)),
-            })
-            .collect()
-    }
-
-    fn reachable_keys(
-        &mut self,
-        from_position: CoordsXY,
-        keys_held: DoorKeyPairSet,
-    ) -> Vec<(CoordsXY, DoorKeyPair, usize)> {
-        let cache_key = (from_position, keys_held);
-        let result = self.cached_sub_solutions.get(&cache_key);
-
-        match result {
-            None => {
-                let created: Vec<(CoordsXY, DoorKeyPair, usize)> = self.positions_for_keys_not_held_yet(keys_held)
-                    .iter()
-                    .filter_map(|(to_position, key)| {
-                        let cost = self.cost_from_to(from_position, *to_position, keys_held);
-                        cost.map(|cost| (*to_position, *key, cost))
-                    })
-                    .collect();
-                self.cached_sub_solutions.insert(cache_key, created.clone());
-                created
-            },
-            Some(found) => found.clone(),
-        }
-    }
-
-    fn successors_from_position(&mut self, state: &State, position_idx: usize) -> Vec<(State, usize)> {
-        let from_position = state.positions[position_idx];
-        let reachable_keys_with_distances: Vec<(CoordsXY, DoorKeyPair, usize)> =
-            self.reachable_keys(from_position, state.keys_obtained);
-        reachable_keys_with_distances
-            .iter()
-            .map(|(coords, key, cost)| {
-                let new_state = State {
-                    positions: update_element_at(&state.positions, position_idx, *coords),
-                    keys_obtained: state.keys_obtained.add(*key),
-                };
-                (new_state, *cost)
-            })
-            .collect()
-    }
-
-    fn successors(&mut self, state: &State) -> Vec<(State, usize)> {
+    fn successors(&self, state: &State) -> Vec<(State, usize)> {
         (0..state.positions.len())
             .flat_map(|position_idx| self.successors_from_position(state, position_idx))
             .collect()
     }
+
+    fn is_finished(&self, state: &State) -> bool {
+        state.keys_obtained == self.all_keys
+    }
 }
 
 fn solve(data: &str) -> Option<usize> {
-    let mut maze = Maze::parse(data);
-    let all_keys = maze.all_keys;
+    let maze = Maze::parse(data);
+    let graph = Graph::create(&maze);
 
     dijkstra(
-        &maze.start_state(),
-        |s| maze.successors(s),
-        |s| s.keys_obtained == all_keys,
+        &graph.start_state(),
+        |s| graph.successors(s),
+        |s| graph.is_finished(s),
     )
     .map(|(_, cost)| cost)
 }
@@ -440,9 +457,6 @@ mod tests {
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(
-            solve(&hack_to_convert_part_1_to_part_2(DATA)),
-            Some(123_456)
-        );
+        assert_eq!(solve(&hack_to_convert_part_1_to_part_2(DATA)), Some(1992));
     }
 }
