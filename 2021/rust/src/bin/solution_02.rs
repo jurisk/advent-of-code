@@ -75,11 +75,11 @@ impl Command {
         assert_eq!(elements.len(), 2);
         let number = elements[1].parse::<i32>().unwrap();
 
-        match elements[0] {
-            "forward" => Command::Forward(number),
-            "up" => Command::Up(number),
-            "down" => Command::Down(number),
-            x => panic!("Unrecognized: {}", x),
+        match elements.first() {
+            Some(&"forward") => Command::Forward(number),
+            Some(&"up") => Command::Up(number),
+            Some(&"down") => Command::Down(number),
+            x => panic!("Unrecognized: {:?}", x),
         }
     }
 }
@@ -114,6 +114,7 @@ fn part_2(input: &str) -> i32 {
     solve_2(&data)
 }
 
+#[allow(clippy::unreadable_literal)]
 fn main() {
     let test_data = "forward 5
 down 5

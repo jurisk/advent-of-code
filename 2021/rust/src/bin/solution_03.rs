@@ -60,7 +60,7 @@ fn solve_2(numbers: &[Vec<char>], idx: usize, f: fn(&[char]) -> char) -> Vec<cha
         let valid: Vec<_> = numbers
             .iter()
             .filter(|s| s[idx] == needed)
-            .map(|s| s.to_vec())
+            .cloned()
             .collect();
         solve_2(&valid, idx + 1, f)
     }
@@ -73,6 +73,7 @@ fn part_2(input: &str) -> usize {
     binary_mult(&oxygen_generator_rating, &co2_scrubber_rating)
 }
 
+#[allow(clippy::unreadable_literal)]
 fn main() {
     let test_data = "00100
 11110

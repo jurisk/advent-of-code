@@ -3,9 +3,10 @@ name = "advent-of-code"
 version = "0.1.0"
 authors = ["jurisk <jurisk@users.noreply.github.com>"]
 edition = "2021"
+rust-version = "1.64.0"
 
 [dependencies]
 regex = "1.5"
-itertools = "0.10.2"
+itertools = "0.10"
 num-traits = "0.2"
 num-derive = "0.3"

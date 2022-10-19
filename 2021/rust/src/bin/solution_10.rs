@@ -21,7 +21,7 @@ impl OpeningBracketType {
         }
     }
 
-    fn completion_score(self) -> u32 {
+    fn completion_score(self) -> u64 {
         match self {
             OpeningBracketType::Round => 1,
             OpeningBracketType::Square => 2,
@@ -74,17 +74,15 @@ enum ParsingResult {
 impl ParsingResult {
     fn error_score(self) -> u32 {
         match self {
-            ParsingResult::Valid => 0,
-            ParsingResult::Incomplete { .. } => 0,
+            ParsingResult::Incomplete { .. } | ParsingResult::Valid => 0,
             ParsingResult::Corrupted { corrupted_score } => corrupted_score,
         }
     }
 
     fn completion_score(self) -> u64 {
         match self {
-            ParsingResult::Valid => 0,
             ParsingResult::Incomplete { incomplete_score } => incomplete_score,
-            ParsingResult::Corrupted { .. } => 0,
+            ParsingResult::Corrupted { .. } | ParsingResult::Valid => 0,
         }
     }
 }
@@ -103,14 +101,14 @@ fn parse_line(x: &str) -> ParsingResult {
                     return ParsingResult::Corrupted {
                         corrupted_score: closing_bracket.error_score(),
                     }
-                }
+                },
                 Some(opening_bracket) => {
                     if opening_bracket.matching_closing_bracket() != *closing_bracket {
                         return ParsingResult::Corrupted {
                             corrupted_score: closing_bracket.error_score(),
                         };
                     }
-                }
+                },
             },
             OpeningBracket(opening_bracket) => stack.push(*opening_bracket),
         }
@@ -119,9 +117,10 @@ fn parse_line(x: &str) -> ParsingResult {
     if stack.is_empty() {
         ParsingResult::Valid
     } else {
-        let incomplete_score: u64 = stack.iter().rev().fold(0, |acc, bracket| {
-            acc * 5 + bracket.completion_score() as u64
-        });
+        let incomplete_score: u64 = stack
+            .iter()
+            .rev()
+            .fold(0, |acc, bracket| acc * 5 + bracket.completion_score());
         ParsingResult::Incomplete { incomplete_score }
     }
 }
@@ -138,9 +137,8 @@ fn part_2(data: &[ParsingResult]) -> u64 {
     let mut completion_scores: Vec<u64> = data
         .iter()
         .filter(|x| match x {
-            ParsingResult::Valid => false,
             ParsingResult::Incomplete { .. } => true,
-            ParsingResult::Corrupted { .. } => false,
+            ParsingResult::Corrupted { .. } | ParsingResult::Valid => false,
         })
         .map(|x| x.completion_score())
         .collect();
@@ -150,6 +148,7 @@ fn part_2(data: &[ParsingResult]) -> u64 {
     completion_scores[completion_scores.len() / 2]
 }
 
+#[allow(clippy::unreadable_literal)]
 fn main() {
     let test_data = parse_data(
         "[({(<(())[]>[[{[]{<()<>>

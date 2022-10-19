@@ -36,6 +36,7 @@ struct HeightMap {
 impl HeightMap {
     const MAX_HEIGHT: u8 = 9;
 
+    #[allow(clippy::cast_possible_truncation)]
     fn parse(input: &str) -> HeightMap {
         HeightMap {
             data: input
@@ -49,6 +50,7 @@ impl HeightMap {
         }
     }
 
+    #[allow(clippy::cast_possible_wrap)]
     fn coordinates(&self) -> Vec<Coords> {
         self.data
             .iter()
@@ -76,6 +78,7 @@ impl HeightMap {
             .collect()
     }
 
+    #[allow(clippy::cast_sign_loss)]
     fn height(&self, coords: &Coords) -> u8 {
         if coords.x < 0 || coords.y < 0 {
             HeightMap::MAX_HEIGHT
@@ -101,9 +104,9 @@ impl HeightMap {
 
                 next.neighbours().iter().for_each(|n| {
                     if !visited.contains(n) {
-                        queue.push_back(*n)
+                        queue.push_back(*n);
                     }
-                })
+                });
             }
         }
 
@@ -111,6 +114,7 @@ impl HeightMap {
     }
 }
 
+#[allow(clippy::cast_lossless)]
 fn part_1(height_map: &HeightMap) -> u32 {
     height_map
         .low_points()
@@ -131,6 +135,7 @@ fn part_2(height_map: &HeightMap) -> usize {
     basin_sizes.iter().rev().take(3).product()
 }
 
+#[allow(clippy::unreadable_literal)]
 fn main() {
     let test_data = HeightMap::parse(
         "2199943210
@@ -152,5 +157,5 @@ fn main() {
 
     let result_2 = part_2(&data);
     println!("Part 2: {}", result_2);
-    assert_eq!(result_2, 1234);
+    assert_eq!(result_2, 950600);
 }
