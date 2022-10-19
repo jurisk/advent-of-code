@@ -39,18 +39,18 @@ fn is_valid_2(x: Number) -> bool {
 }
 
 fn main() {
-    assert!(is_valid_1(111111));
-    assert!(!is_valid_1(223450));
-    assert!(!is_valid_1(123789));
+    assert!(is_valid_1(111_111));
+    assert!(!is_valid_1(223_450));
+    assert!(!is_valid_1(123_789));
 
-    let range: RangeInclusive<Number> = 387638..=919123;
+    let range: RangeInclusive<Number> = 387_638..=919_123;
     let part_1 = range.clone().filter(|x| is_valid_1(*x)).count();
     assert_eq!(part_1, 466);
     println!("Part 1: {}", part_1);
 
-    assert!(is_valid_2(112233));
-    assert!(!is_valid_2(123444));
-    assert!(is_valid_2(111122));
+    assert!(is_valid_2(112_233));
+    assert!(!is_valid_2(123_444));
+    assert!(is_valid_2(111_122));
 
     let part_2 = range.filter(|x| is_valid_2(*x)).count();
     assert_eq!(part_2, 292);

@@ -47,11 +47,11 @@ fn apply_phases_1(numbers: Vec<u8>, phases: u8) -> Vec<u8> {
 fn apply_phase_2(numbers: &[u8]) -> Vec<u8> {
     let mut sum: i32 = numbers.iter().map(|x| *x as i32).sum();
     let mut out: Vec<u8> = Vec::new();
-    numbers.iter().for_each(|x| {
+    for x in numbers.iter() {
         let res = sum % 10;
         out.push(res as u8);
         sum -= *x as i32;
-    });
+    }
     out
 }
 

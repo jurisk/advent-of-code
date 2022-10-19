@@ -65,12 +65,12 @@ mod tests {
         process.run_to_halt();
         let result = process.next_output_unsafe();
         // should output a 16-digit number
-        assert_eq!(result, 1219070632396864);
+        assert_eq!(result, 1_219_070_632_396_864);
     }
 
     #[test]
     fn test_3() {
-        let number = 1125899906842624;
+        let number = 1_125_899_906_842_624;
         let program = "104,1125899906842624,99";
         let mut process = Process::from_string(program);
         process.run_to_halt();

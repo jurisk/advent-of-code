@@ -164,19 +164,19 @@ impl Robot {
     fn move_result(&mut self, tile: Tile) {
         let target_position = self.current_position.movement(&self.current_direction);
         println!("Found {:?} at {:?}", tile, target_position);
-        if tile != Tile::Wall {
+        if tile == Tile::Wall {
+            self.current_direction = self.current_direction.rotate_left();
+            println!(
+                "Rotated to face {:?}, currently at {:?}",
+                self.current_direction, self.current_position
+            );
+        } else {
             self.current_position = target_position.clone();
             self.current_direction = self.current_direction.rotate_right();
             println!(
                 "Moved to {:?}, known is\n{}",
                 self.current_position,
                 self.map_as_string()
-            );
-        } else {
-            self.current_direction = self.current_direction.rotate_left();
-            println!(
-                "Rotated to face {:?}, currently at {:?}",
-                self.current_direction, self.current_position
             );
         }
 

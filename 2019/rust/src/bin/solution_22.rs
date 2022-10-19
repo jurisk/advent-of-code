@@ -1,98 +1,64 @@
 extern crate core;
 
-use std::ops::{Add, Rem};
 use crate::Command::{Cut, DealIntoNewStack, DealWithIncrement};
 use itertools::Itertools;
-use num_bigint::BigUint;
-use num_integer::{Integer};
-use num_traits::{ToPrimitive, Zero};
+use num_bigint::BigInt;
+use num_bigint::ToBigInt;
+use num_traits::{One, ToPrimitive, Zero};
 
 const DATA: &str = include_str!("../../resources/22.txt");
-
-/**
-    if len = 10 and n = 3:
-        pos 0 => 0, because 0 * n
-        pos 21 => 7, because 7 * n
-        pos 12 => 4, because 4 * n
-        pos 3 => 1, because 1 * n
-        pos 24 => 8, because 8 * n
-        pos 15 => 5, because 5 * n
-        pos 6 => 2, because 2 * n
-        pos 27 => 9, because 9 * n
-        pos 18 => 6, because 6 * n
-        pos 9 => 3, because 3 * n
- */
-fn magic(len: usize, n: usize, pos: usize) -> usize {
-    let mut attempt: BigUint = BigUint::from(pos);
-    let len = BigUint::from(len);
-    let n = BigUint::from(n);
-    let pos = BigUint::from(pos);
-
-    loop {
-        let attempt_rem_len = attempt.clone().rem(&len);
-        let (attempt_div_n, attempt_rem_n) = attempt.clone().div_rem(&n);
-        // if attempt % len == pos && attempt % n == 0 {
-        if attempt_rem_len == pos && attempt_rem_n.is_zero() {
-            // return attempt / n;
-            return attempt_div_n.to_usize().unwrap();
-        }
-
-        //    attempt += len;
-        attempt = attempt.add(&len);
-    }
-}
 
 type Card = usize;
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
-struct Deck<T> {
+struct SimpleDeck<T> {
     cards: Vec<T>,
 }
 
-impl<T: Copy + Clone + Eq> Deck<T> {
-    fn new<F>(size: usize, create: F) -> Deck<T>
+impl<T: Copy + Clone + Eq> SimpleDeck<T> {
+    fn new<F>(size: usize, create: F) -> SimpleDeck<T>
     where
         F: Fn(usize) -> T,
     {
-        Deck {
+        SimpleDeck {
             cards: (0..size).map(create).collect(),
         }
     }
 
-    fn apply_many(&self, commands: &[Command]) -> Deck<T> {
+    fn apply_many(&self, commands: &[Command]) -> SimpleDeck<T> {
         commands
             .iter()
-            .fold(self.clone(), |d, c| d.apply_command(&c))
+            .fold(self.clone(), |d, c| d.apply_command(c))
     }
 
-    fn apply_command(&self, command: &Command) -> Deck<T> {
+    fn apply_command(&self, command: &Command) -> SimpleDeck<T> {
         match command {
             DealIntoNewStack => {
                 let mut cards = self.cards.clone();
                 cards.reverse();
-                Deck { cards }
+                SimpleDeck { cards }
             }
             Cut(n) if *n > 0 => {
                 let m = *n as usize;
-                Deck {
+                SimpleDeck {
                     cards: vec![&self.cards[m..], &self.cards[..m]].concat(),
                 }
             }
             Cut(n) => {
                 let m = (self.cards.len() as isize + *n) as usize;
-                Deck {
+                SimpleDeck {
                     cards: vec![&self.cards[m..], &self.cards[..m]].concat(),
                 }
             }
             DealWithIncrement(n) => {
                 // This can be improved but it works
                 let len = self.cards.len();
-                let factory = Deck::new(len, |idx| idx).cards;
+                let factory = SimpleDeck::new(len, |idx| idx).cards;
                 let index: Vec<_> = (0..len).map(|idx| factory[(idx * n) % len]).collect();
                 let mapping: Vec<_> = (0..len)
                     .map(|n| index.iter().position(|x| *x == n).unwrap())
                     .collect();
-                Deck {
+                SimpleDeck {
                     cards: mapping.iter().map(|x| self.cards[*x as usize]).collect(),
                 }
             }
@@ -121,10 +87,10 @@ impl Command {
 
         if s == DEAL_INTO_NEW_STACK_COMMAND {
             DealIntoNewStack
-        } else if s.starts_with(DEAL_WITH_INCREMENT_PREFIX) {
-            DealWithIncrement(s[DEAL_WITH_INCREMENT_PREFIX.len()..].parse().unwrap())
-        } else if s.starts_with(CUT_PREFIX) {
-            Cut(s[CUT_PREFIX.len()..].parse().unwrap())
+        } else if let Some(s) = s.strip_prefix(DEAL_WITH_INCREMENT_PREFIX) {
+            DealWithIncrement(s.parse().unwrap())
+        } else if let Some(s) = s.strip_prefix(CUT_PREFIX) {
+            Cut(s.parse().unwrap())
         } else {
             panic!("Unexpected {}", s);
         }
@@ -138,62 +104,142 @@ impl Command {
     }
 }
 
+// Approach from https://www.reddit.com/r/adventofcode/comments/ee0rqi/comment/fbnkaju/
+// Note - this only works for Part 2 numbers as they are all prime
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
-struct FocusedDeck {
-    size: usize,
+struct PowerDeck {
+    size: BigInt,
+    offset: BigInt,
+    increment: BigInt,
 }
 
-impl FocusedDeck {
-    fn new(size: usize) -> FocusedDeck {
-        FocusedDeck { size }
+impl PowerDeck {
+    fn new(size: usize) -> PowerDeck {
+        PowerDeck {
+            size: size.to_bigint().unwrap(),
+            offset: BigInt::zero(),
+            increment: BigInt::one(),
+        }
     }
 
-    fn apply_many(&self, commands: &[Command], focus_on_position: usize) -> Card {
-        if commands.is_empty() {
-            return focus_on_position;
-        }
+    fn at(&self, idx: usize) -> Card {
+        let offset = self.offset.clone();
+        let increment = self.increment.clone();
+        let size = self.size.clone();
+        let result = (offset + idx * increment) % size.clone();
+        let result = (result + size.clone()) % size;
+        result.to_usize().unwrap_or_else(|| panic!("{:?}", result))
+    }
 
-        let command = &commands.last().unwrap();
-        let tail = &commands[..commands.len() - 1];
+    fn apply_many(&self, commands: &[Command]) -> PowerDeck {
+        commands
+            .iter()
+            .fold(self.clone(), |d, c| d.apply_command(c))
+    }
 
+    fn inv(&self, n: &BigInt) -> BigInt {
+        // gets the modular inverse of n
+        // as length is prime, use Euler's theorem
+        let exponent = self.size.clone() - BigInt::from(2);
+        n.modpow(&exponent, &self.size.clone())
+    }
+
+    fn apply_command(&self, command: &Command) -> PowerDeck {
         match command {
             DealWithIncrement(n) => {
-                self.apply_many(
-                    tail,
-                    magic(self.size, *n, focus_on_position),
-                )
-            },
-            Cut(n) => {
-                let len = self.size as isize;
+                // difference between two adjacent numbers is multiplied by the inverse of the increment.
+                // increment_mul *= inv(q)
+                let q = n.to_bigint().unwrap();
+                let mul_with = self.inv(&q);
+                let increment = self.increment.clone() * mul_with;
 
-                self.apply_many(
-                    tail,
-                    ((focus_on_position as isize + len + *n) % len) as usize,
-                )
-            },
+                // increment_mul %= cards
+                let increment = increment % self.size.clone();
+
+                PowerDeck {
+                    size: self.size.clone(),
+                    offset: self.offset.clone(),
+                    increment,
+                }
+            }
+            Cut(n) => {
+                let q = n.to_bigint().unwrap();
+                // shift q left
+                // offset_diff += q * increment_mul
+                let add_to_offset = q * self.increment.clone();
+                let offset = self.offset.clone() + add_to_offset;
+
+                // offset_diff %= cards
+                let offset = offset % self.size.clone();
+
+                PowerDeck {
+                    size: self.size.clone(),
+                    offset,
+                    increment: self.increment.clone(),
+                }
+            }
             DealIntoNewStack => {
-                self.apply_many(tail, self.size - focus_on_position - 1)
-            },
+                // reverse sequence - instead of going up, go down.
+                // increment_mul *= -1
+                let increment = self.increment.clone() * BigInt::from(-1);
+                // increment_mul %= cards
+                let increment = increment % self.size.clone();
+
+                // then shift 1 left
+                // offset_diff += increment_mul
+                let offset = self.offset.clone() + increment.clone();
+                // offset_diff %= cards
+                let offset = offset % self.size.clone();
+
+                PowerDeck {
+                    size: self.size.clone(),
+                    offset,
+                    increment,
+                }
+            }
+        }
+    }
+
+    fn many_times(&self, n: usize) -> PowerDeck {
+        // calculate (increment, offset) for the number of iterations of the process
+        // increment = increment_mul^iterations
+        let iterations = BigInt::from(n);
+        // increment = pow(increment_mul, iterations, cards)
+        let increment = self.increment.modpow(&iterations, &self.size);
+
+        // offset = 0 + offset_diff * (1 + increment_mul + increment_mul^2 + ... + increment_mul^iterations)
+        // use geometric series.
+        // offset = offset_diff * (1 - increment) * inv((1 - increment_mul) % cards)
+        let offset =
+            self.offset.clone() * (1 - increment.clone()) * self.inv(&(1 - self.increment.clone()));
+
+        // offset %= cards
+        let offset = offset % self.size.clone();
+
+        PowerDeck {
+            size: self.size.clone(),
+            offset,
+            increment,
         }
     }
 }
 
 fn solve_1(data: &str) -> Option<usize> {
     let commands = Command::parse_many(data);
-    let deck: Deck<Card> = Deck::new(10007, |idx| idx);
+    let deck: SimpleDeck<Card> = SimpleDeck::new(10007, |idx| idx);
     let result = deck.apply_many(&commands);
     result.find(2019)
 }
 
 fn solve_2(data: &str) -> Card {
     let commands = Command::parse_many(data);
-    let deck = FocusedDeck::new(119_315_717_514_047);
+    let deck = PowerDeck::new(119_315_717_514_047);
     let times: usize = 101_741_582_076_661;
 
-    // TODO: apply more times
-    let resulting = deck.apply_many(&commands, 2020);
+    let single = deck.apply_many(&commands);
+    let resulting = single.many_times(times);
 
-    return resulting
+    resulting.at(2020)
 }
 
 fn main() {
@@ -208,21 +254,6 @@ fn main() {
 mod tests {
     use super::*;
 
-    fn test_helper_full(commands: &[Command], expected: &[Card]) {
-        let deck = Deck::new(expected.len(), |idx| idx);
-        let obtained = deck.apply_many(commands);
-        assert_eq!(obtained.cards, expected);
-    }
-
-    fn test_helper_focused(commands: &[Command], expected: &[Card]) {
-        let deck = FocusedDeck::new(expected.len());
-        let obtained: Vec<Card> = (0..expected.len())
-            .map(|idx| deck.apply_many(commands, idx))
-            .collect();
-
-        assert_eq!(obtained, expected);
-    }
-
     fn test_helper(data: &str, expected_str: &str) {
         let commands = Command::parse_many(data);
         let expected: Vec<Card> = expected_str
@@ -230,8 +261,10 @@ mod tests {
             .map(|x| x.parse().unwrap())
             .collect();
 
-        test_helper_full(&commands, &expected);
-        test_helper_focused(&commands, &expected);
+        let deck = SimpleDeck::new(expected.len(), |idx| idx);
+        let obtained = deck.apply_many(&commands);
+
+        assert_eq!(obtained.cards, expected);
     }
 
     #[test]
@@ -266,10 +299,7 @@ mod tests {
 
     #[test]
     fn test_deal_with_increment_alternate() {
-        test_helper(
-            "cut 1\ndeal with increment 3",
-            "1 8 5 2 9 6 3 0 7 4",
-        );
+        test_helper("cut 1\ndeal with increment 3", "1 8 5 2 9 6 3 0 7 4");
     }
 
     #[test]
@@ -322,6 +352,6 @@ cut -1";
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(solve_2(DATA), 123_456);
+        assert_eq!(solve_2(DATA), 91_967_327_971_097);
     }
 }

@@ -56,7 +56,7 @@ impl Coords {
         Coords { x, y }
     }
 
-    fn move_forward(&self, direction: &Direction) -> Coords {
+    fn move_forward(self, direction: &Direction) -> Coords {
         match direction {
             Direction::North => Coords::new(self.x, self.y - 1),
             Direction::East => Coords::new(self.x + 1, self.y),

@@ -6,7 +6,7 @@ use std::fmt::{Debug, Formatter};
 
 type Number = u64;
 
-const MEGA_ORE: Number = 1000000000000;
+const MEGA_ORE: Number = 1_000_000_000_000;
 
 #[derive(PartialEq, Eq, Hash, Clone)]
 struct Ingredient {
@@ -80,9 +80,9 @@ fn ore_for_n_fuel(conversions: &HashMap<Ingredient, Conversion>, fuel_required: 
     let mut ore_needed: Number = 0;
     let mut orders: VecDeque<(Ingredient, Number)> = VecDeque::new();
     let mut leftovers: HashMap<Ingredient, Number> = HashMap::new();
-    conversions.keys().for_each(|k| {
+    for k in conversions.keys() {
         leftovers.insert(k.clone(), 0);
-    });
+    }
     orders.push_back((fuel, fuel_required));
 
     while !orders.is_empty() {
@@ -166,13 +166,13 @@ fn fuel_from_mega_ore_str(data: &str) -> Number {
 fn solve_1() {
     let result = ore_for_1_fuel_str(include_str!("../../resources/14.txt"));
     println!("Part 1: {}", result);
-    assert_eq!(result, 654909);
+    assert_eq!(result, 654_909);
 }
 
 fn solve_2() {
     let result = fuel_from_mega_ore_str(include_str!("../../resources/14.txt"));
     println!("Part 2: {}", result);
-    assert_eq!(result, 2876992);
+    assert_eq!(result, 2_876_992);
 }
 
 fn main() {
@@ -197,7 +197,7 @@ mod tests {
 7 A, 1 E => 1 FUEL"
             ),
             31,
-        )
+        );
     }
 
     #[test]
@@ -214,7 +214,7 @@ mod tests {
 2 AB, 3 BC, 4 CA => 1 FUEL"
             ),
             165,
-        )
+        );
     }
 
     #[test]

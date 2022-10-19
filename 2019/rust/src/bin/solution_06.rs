@@ -125,7 +125,7 @@ fn main() {
     assert_eq!(test_part_1, 42);
 
     let part_1 = solve_1(&data, &center_of_mass);
-    assert_eq!(part_1, 301100);
+    assert_eq!(part_1, 301_100);
     println!("Part 1: {}", part_1);
 
     let you: Object = Object {

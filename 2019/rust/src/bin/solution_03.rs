@@ -45,7 +45,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
     for command in commands {
         match command {
             Command::Left(n) => {
-                ((current.x - n)..=(current.x - 1)).rev().for_each(|x| {
+                ((current.x - n)..current.x).rev().for_each(|x| {
                     steps += 1;
                     let _ = result.try_insert(Coords { x, y: current.y }, steps);
                 });
@@ -72,7 +72,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
             }
 
             Command::Down(n) => {
-                ((current.y - n)..=(current.y - 1)).rev().for_each(|y| {
+                ((current.y - n)..current.y).rev().for_each(|y| {
                     steps += 1;
                     let _ = result.try_insert(Coords { x: current.x, y }, steps);
                 });
@@ -85,7 +85,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
     result
 }
 
-fn manhattan_distance(a: &Coords, b: &Coords) -> Number {
+fn manhattan_distance(a: Coords, b: Coords) -> Number {
     (a.x - b.x).abs() + (a.y - b.y).abs()
 }
 
@@ -113,7 +113,7 @@ fn solve(data: &str, f: CostF) -> Number {
 }
 
 fn solve1(data: &str) -> Number {
-    solve(data, |c, _a, _b| manhattan_distance(c, &ORIGIN))
+    solve(data, |c, _a, _b| manhattan_distance(*c, ORIGIN))
 }
 
 fn solve2(data: &str) -> Number {

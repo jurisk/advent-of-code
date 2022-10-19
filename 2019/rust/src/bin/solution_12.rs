@@ -97,7 +97,7 @@ fn solve_1(data: &[Vector3D], steps: u16) -> Number {
         moons = do_step(&moons);
     });
 
-    moons.iter().map(|moon| moon.energy()).sum()
+    moons.iter().map(Moon::energy).sum()
 }
 
 fn part_1() {
@@ -156,7 +156,7 @@ fn part_2() {
     let data = data();
     let result = solve_2(&data);
     println!("Part 2: {}", result);
-    assert_eq!(result, 484244804958744);
+    assert_eq!(result, 484_244_804_958_744);
 }
 
 fn main() {
@@ -191,7 +191,7 @@ mod tests {
         ];
 
         assert_eq!(solve_1(&test_data_2, 100), 1940);
-        assert_eq!(solve_2(&test_data_2), 4686774924);
+        assert_eq!(solve_2(&test_data_2), 4_686_774_924);
     }
 
     #[test]

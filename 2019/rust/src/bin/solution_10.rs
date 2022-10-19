@@ -50,25 +50,25 @@ fn parse(s: &str) -> Vec<Vec<Cell>> {
         .collect()
 }
 
-fn asteroid_angle(from: &Coords, to: &Coords) -> Angle {
-    let c = *from - *to;
-    let result = (c.y as f64).atan2(c.x as f64) - (PI as f64 / 2f64);
+fn asteroid_angle(from: Coords, to: Coords) -> Angle {
     const PI_2: f64 = 2f64 * PI as f64;
+    let c = from - to;
+    let result = (c.y as f64).atan2(c.x as f64) - (PI as f64 / 2f64);
     let res = if result < 0f64 { result + PI_2 } else { result };
 
     (res * 1000000f64) as Angle
 }
 
 // Note - Using a sorted set (e.g. BTreeSet) would make a lot of operations on these angles better
-fn asteroid_angles(from: &Coords, asteroid_coordinates: &HashSet<Coords>) -> Vec<Angle> {
+fn asteroid_angles(from: Coords, asteroid_coordinates: &HashSet<Coords>) -> Vec<Angle> {
     asteroid_coordinates
         .iter()
-        .filter(|&&x| x != *from) // skip own
-        .map(|to| asteroid_angle(from, to))
+        .filter(|&&x| x != from) // skip own
+        .map(|to| asteroid_angle(from, *to))
         .collect()
 }
 
-fn count_visible(from: &Coords, asteroid_coordinates: &HashSet<Coords>) -> Number {
+fn count_visible(from: Coords, asteroid_coordinates: &HashSet<Coords>) -> Number {
     let set: HashSet<_> = asteroid_angles(from, asteroid_coordinates)
         .iter()
         .map(|x| format!("{:.10}", x)) // A minor hack - but no hash function for f64 and also this solves rounding issues
@@ -82,7 +82,7 @@ fn asteroid_coordinates(input: &str) -> HashSet<Coords> {
     (0..data.len())
         .flat_map(|y| {
             let row = &data[y];
-            (0..row.len()).flat_map(move |x| {
+            (0..row.len()).filter_map(move |x| {
                 if row[x] == Cell::Asteroid {
                     Some(Coords {
                         x: x as Number,
@@ -99,7 +99,7 @@ fn asteroid_coordinates(input: &str) -> HashSet<Coords> {
 fn best_placement(coords: &HashSet<Coords>) -> (Coords, Number) {
     let options: Vec<_> = coords
         .iter()
-        .map(|c| (*c, count_visible(c, coords)))
+        .map(|c| (*c, count_visible(*c, coords)))
         .collect();
 
     *options.iter().max_by_key(|(_, num)| num).unwrap()
@@ -123,23 +123,23 @@ fn solve_2() {
     println!("{}", result.x * 100 + result.y);
 }
 
-fn distance(from: &Coords, to: &Coords) -> i32 {
+fn distance(from: Coords, to: Coords) -> i32 {
     (from.x - to.x).pow(2) + (from.y - to.y).pow(2)
 }
 
-fn closest_at_angle(from: &Coords, coords: &HashSet<Coords>, angle: Angle) -> Coords {
+fn closest_at_angle(from: Coords, coords: &HashSet<Coords>, angle: Angle) -> Coords {
     let at_this_angle: Vec<&Coords> = coords
         .iter()
-        .filter(|&&x| (x != *from) && asteroid_angle(from, &x) == angle)
+        .filter(|&&x| (x != from) && asteroid_angle(from, x) == angle)
         .collect();
     **at_this_angle
         .iter()
-        .min_by_key(|&x| distance(from, x))
+        .min_by_key(|&x| distance(from, **x))
         .unwrap()
 }
 
 fn next_destroyable(
-    from: &Coords,
+    from: Coords,
     coords: &HashSet<Coords>,
     previous_angle: Angle,
 ) -> (Coords, Angle) {
@@ -159,7 +159,7 @@ fn next_destroyable(
 }
 
 fn destroyed_asteroid(
-    from: &Coords,
+    from: Coords,
     coords: &mut HashSet<Coords>,
     n_th: Number,
     previous_angle: Angle,
@@ -176,11 +176,11 @@ fn destroyed_asteroid(
 }
 
 fn part_2(data: &str, n_th: Number) -> Coords {
+    const EPS: Angle = 1000; // dealing with floating point precision
     let mut coords = asteroid_coordinates(data);
     let (start, _) = best_placement(&coords);
-    const EPS: Angle = 1000; // dealing with floating point precision
-    let start_angle = *asteroid_angles(&start, &coords).iter().max().unwrap() - EPS;
-    destroyed_asteroid(&start, &mut coords, n_th, start_angle)
+    let start_angle = *asteroid_angles(start, &coords).iter().max().unwrap() - EPS;
+    destroyed_asteroid(start, &mut coords, n_th, start_angle)
 }
 
 fn main() {
