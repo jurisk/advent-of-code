@@ -1,35 +1,71 @@
-/*
+use advent_of_code::parsing::parse_comma_separated_vec;
+use advent_of_code::parsing::Error;
 
---- Day 7: The Treachery of Whales ---
-A giant whale has decided your submarine is its next meal, and it's much faster than you are. There's nowhere to run!
+const DATA: &str = include_str!("../../resources/07.txt");
 
-Suddenly, a swarm of crabs (each in its own tiny submarine - it's too deep for them otherwise) zooms in to rescue you! They seem to be preparing to blast a hole in the ocean floor; sensors indicate a massive underground cave system just beyond where they're aiming!
+fn cost_1(a: u64, b: u64) -> u64 {
+    a.max(b) - a.min(b)
+}
 
-The crab submarines all need to be aligned before they'll have enough power to blast a large enough hole for your submarine to get through. However, it doesn't look like they'll be aligned before the whale catches you! Maybe you can help?
+fn cost_2(a: u64, b: u64) -> u64 {
+    let n = cost_1(a, b);
+    (n * (n + 1)) / 2
+}
 
-There's one major catch - crab submarines can only move horizontally.
+fn solve<F>(input: &str, cost: F) -> Result<u64, Error>
+where
+    F: Fn(u64, u64) -> u64,
+{
+    let positions: Vec<u64> = parse_comma_separated_vec(input)?;
 
-You quickly make a list of the horizontal position of each crab (your puzzle input). Crab submarines have limited fuel, so you need to find a way to make all of their horizontal positions match while requiring them to spend as little fuel as possible.
+    let min = *positions.iter().min().ok_or("Failed to get min")?;
+    let max = *positions.iter().max().ok_or("Failed to get max")?;
 
-For example, consider the following horizontal positions:
+    (min..=max)
+        .map(|q| positions.iter().map(|&x| cost(x, q)).sum())
+        .min()
+        .ok_or_else(|| "Failed to get min".to_string())
+}
 
-16,1,2,0,4,2,7,1,2,14
-This means there's a crab with horizontal position 16, a crab with horizontal position 1, and so on.
+fn solve_1(input: &str) -> Result<u64, Error> {
+    solve(input, cost_1)
+}
 
-Each change of 1 step in horizontal position of a single crab costs 1 fuel. You could choose any horizontal position to align them all on, but the one that costs the least fuel is horizontal position 2:
+fn solve_2(input: &str) -> Result<u64, Error> {
+    solve(input, cost_2)
+}
 
-Move from 16 to 2: 14 fuel
-Move from 1 to 2: 1 fuel
-Move from 2 to 2: 0 fuel
-Move from 0 to 2: 2 fuel
-Move from 4 to 2: 2 fuel
-Move from 2 to 2: 0 fuel
-Move from 7 to 2: 5 fuel
-Move from 1 to 2: 1 fuel
-Move from 2 to 2: 0 fuel
-Move from 14 to 2: 12 fuel
-This costs a total of 37 fuel. This is the cheapest possible outcome; more expensive outcomes include aligning at position 1 (41 fuel), position 3 (39 fuel), or position 10 (71 fuel).
+fn main() {
+    let result_1 = solve_1(DATA);
+    println!("Part 1: {:?}", result_1);
 
-Determine the horizontal position that the crabs can align to using the least fuel possible. How much fuel must they spend to align to that position?
+    let result_2 = solve_2(DATA);
+    println!("Part 2: {:?}", result_2);
+}
 
- */
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_DATA: &str = "16,1,2,0,4,2,7,1,2,14";
+
+    #[test]
+    fn test_solve_1_test() {
+        assert_eq!(solve_1(TEST_DATA), Ok(37));
+    }
+
+    #[test]
+    fn test_solve_1_real() {
+        assert_eq!(solve_1(DATA), Ok(356_992));
+    }
+
+    #[test]
+    fn test_solve_2_test() {
+        assert_eq!(solve_2(TEST_DATA), Ok(168));
+    }
+
+    #[test]
+    fn test_solve_2_real() {
+        assert_eq!(solve_2(DATA), Ok(101_268_110));
+    }
+}
