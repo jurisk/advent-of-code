@@ -10,8 +10,8 @@
 | 4   |                                                  | [Code](2021/rust/src/bin/solution_04.rs) |                                            |
 | 5   |                                                  |                                          | [Code](2021/haskell/src/Day05/Solution.hs) |
 | 6   |                                                  | [Code](2021/rust/src/bin/solution_06.rs) |                                            |
-| 7   |                                                  |                                          |                                            |
-| 8   |                                                  |                                          |                                            |
+| 7   |                                                  | [Code](2021/rust/src/bin/solution_07.rs) |                                            |
+| 8   |                                                  | [Code](2021/rust/src/bin/solution_08.rs) |                                            |
 | 9   |                                                  | [Code](2021/rust/src/bin/solution_09.rs) |                                            |
 | 10  |                                                  | [Code](2021/rust/src/bin/solution_10.rs) |                                            |
 | 11  |                                                  |                                          |                                            |

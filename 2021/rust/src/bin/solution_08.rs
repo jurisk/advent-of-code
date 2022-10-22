@@ -1,71 +1,199 @@
-/*
+use advent_of_code::parsing::{
+    parse_into_two_segments, parse_lines_to_vec, parse_space_separated_vec, Error,
+};
+use itertools::Itertools;
+use std::collections::HashMap;
+use std::hash::Hash;
+use std::str::FromStr;
 
---- Day 8: Seven Segment Search ---
-You barely reach the safety of the cave when the whale smashes into the cave mouth, collapsing it. Sensors indicate another exit to this cave at a much greater depth, so you have no choice but to press on.
+const DATA: &str = include_str!("../../resources/08.txt");
 
-As your submarine slowly makes its way through the cave system, you notice that the four-digit seven-segment displays in your submarine are malfunctioning; they must have been damaged during the escape. You'll be in a lot of trouble without them, so you'd better figure out what's wrong.
+type Segment = char;
 
-Each digit of a seven-segment display is rendered by turning on or off any of seven segments named a through g:
+#[derive(Debug, Eq, PartialEq, Hash, Clone)]
+struct SegmentSet {
+    segments: Vec<Segment>,
+}
 
-  0:      1:      2:      3:      4:
- aaaa    ....    aaaa    aaaa    ....
-b    c  .    c  .    c  .    c  b    c
-b    c  .    c  .    c  .    c  b    c
- ....    ....    dddd    dddd    dddd
-e    f  .    f  e    .  .    f  .    f
-e    f  .    f  e    .  .    f  .    f
- gggg    ....    gggg    gggg    ....
+impl SegmentSet {
+    fn len(&self) -> u8 {
+        self.segments.len() as u8
+    }
 
-  5:      6:      7:      8:      9:
- aaaa    aaaa    aaaa    aaaa    aaaa
-b    .  b    .  .    c  b    c  b    c
-b    .  b    .  .    c  b    c  b    c
- dddd    dddd    ....    dddd    dddd
-.    f  e    f  .    f  e    f  .    f
-.    f  e    f  .    f  e    f  .    f
- gggg    gggg    ....    gggg    gggg
-So, to render a 1, only segments c and f would be turned on; the rest would be off. To render a 7, only segments a, c, and f would be turned on.
+    fn overlap(&self, other: &SegmentSet) -> u8 {
+        self.segments
+            .iter()
+            .filter(|ch| other.segments.contains(ch))
+            .count() as u8
+    }
+}
 
-The problem is that the signals which control the segments have been mixed up on each display. The submarine is still trying to display numbers by producing output on signal wires a through g, but those wires are connected to segments randomly. Worse, the wire/segment connections are mixed up separately for each four-digit display! (All of the digits within a display use the same connections, though.)
+impl FromStr for SegmentSet {
+    type Err = String;
 
-So, you might know that only signal wires b and g are turned on, but that doesn't mean segments b and g are turned on: the only digit that uses two segments is 1, so it must mean segments c and f are meant to be on. With just that information, you still can't tell which wire (b/g) goes to which segment (c/f). For that, you'll need to collect more information.
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(SegmentSet {
+            segments: s.chars().sorted().collect(),
+        })
+    }
+}
 
-For each display, you watch the changing signals for a while, make a note of all ten unique signal patterns you see, and then write down a single four digit output value (your puzzle input). Using the signal patterns, you should be able to work out which pattern corresponds to which digit.
+#[derive(Debug)]
+struct Entry {
+    ten_patterns: [SegmentSet; 10],
+    output_value_segments: [SegmentSet; 4],
+}
 
-For example, here is what you might see in a single entry in your notes:
+impl Entry {
+    fn count_1_4_7_8(&self) -> usize {
+        println!("{:?}", self);
+        self.output_value_digits()
+            .iter()
+            .filter(|&n| matches!(n, 1 | 4 | 7 | 8))
+            .count()
+    }
 
-acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab |
-cdfeb fcadb cdfeb cdbaf
-(The entry is wrapped here to two lines so it fits; in your notes, it will all be on a single line.)
+    fn find_pattern<F>(&self, segment_count: u8, extra_condition: F) -> SegmentSet
+    where
+        F: Fn(&SegmentSet) -> bool,
+    {
+        let results: Vec<_> = self
+            .ten_patterns
+            .iter()
+            .filter(|p| p.len() == segment_count)
+            .filter(|p| extra_condition(p))
+            .collect();
+        assert_eq!(results.len(), 1);
+        let result = results[0];
+        result.clone()
+    }
 
-Each entry consists of ten unique signal patterns, a | delimiter, and finally the four digit output value. Within an entry, the same wire/segment connections are used (but you don't know what the connections actually are). The unique signal patterns correspond to the ten different ways the submarine tries to render a digit using the current wire/segment connections. Because 7 is the only digit that uses three segments, dab in the above example means that to render a 7, signal lines d, a, and b are on. Because 4 is the only digit that uses four segments, eafb means that to render a 4, signal lines e, a, f, and b are on.
+    fn mapping(&self) -> HashMap<SegmentSet, u8> {
+        let digit_1 = self.find_pattern(2, |_| true);
+        let digit_4 = self.find_pattern(4, |_| true);
+        let digit_7 = self.find_pattern(3, |_| true);
+        let digit_8 = self.find_pattern(7, |_| true);
+        let digit_3 = self.find_pattern(5, |s| s.overlap(&digit_1) == digit_1.len());
+        let digit_5 = self.find_pattern(5, |s| s.overlap(&digit_4) == 3 && *s != digit_3);
+        let digit_2 = self.find_pattern(5, |s| s.overlap(&digit_5) == 3);
+        let digit_6 = self.find_pattern(6, |s| s.overlap(&digit_1) == 1);
+        let digit_9 = self.find_pattern(6, |s| s.overlap(&digit_4) == digit_4.len());
+        let digit_0 =
+            self.find_pattern(6, |s| s.overlap(&digit_1) == digit_1.len() && *s != digit_9);
 
-Using this information, you should be able to work out which combination of signal wires corresponds to each of the ten digits. Then, you can decode the four digit output value. Unfortunately, in the above example, all of the digits in the output value (cdfeb fcadb cdfeb cdbaf) use five segments and are more difficult to deduce.
+        HashMap::from([
+            (digit_0, 0),
+            (digit_1, 1),
+            (digit_2, 2),
+            (digit_3, 3),
+            (digit_4, 4),
+            (digit_5, 5),
+            (digit_6, 6),
+            (digit_7, 7),
+            (digit_8, 8),
+            (digit_9, 9),
+        ])
+    }
 
-For now, focus on the easy digits. Consider this larger example:
+    fn output_digit(&self, segment: &SegmentSet) -> u8 {
+        *self.mapping().get(segment).unwrap_or_else(|| {
+            panic!(
+                "Failed to find {:?} in mapping {:?}",
+                segment,
+                self.mapping()
+            )
+        })
+    }
 
-be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb |
-fdgacbe cefdb cefbgd gcbe
-edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec |
-fcgedb cgb dgebacf gc
-fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef |
-cg cg fdcagb cbg
-fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega |
-efabcd cedba gadfec cb
-aecbfdg fbg gf bafeg dbefa fcge gcbea fcaegb dgceab fcbdga |
-gecf egdcabf bgf bfgea
-fgeab ca afcebg bdacfeg cfaedg gcfdb baec bfadeg bafgc acf |
-gebdcfa ecba ca fadegcb
-dbcfg fgd bdegcaf fgec aegbdf ecdfab fbedc dacgb gdcebf gf |
-cefg dcbef fcge gbcadfe
-bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd |
-ed bcgafe cdgba cbgef
-egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg |
-gbdfcae bgc cg cgb
-gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc |
-fgae cfgab fg bagce
-Because the digits 1, 4, 7, and 8 each use a unique number of segments, you should be able to tell which combinations of signals correspond to those digits. Counting only digits in the output values (the part after | on each line), in the above example, there are 26 instances of digits that use a unique number of segments (highlighted above).
+    fn output_value_digits(&self) -> [u8; 4] {
+        let result: Vec<_> = self
+            .output_value_segments
+            .iter()
+            .map(|x| self.output_digit(x))
+            .collect();
+        result.try_into().unwrap()
+    }
 
-In the output values, how many times do digits 1, 4, 7, or 8 appear?
+    fn output_value(&self) -> usize {
+        let digits: [u8; 4] = self.output_value_digits();
+        (digits[0] as usize) * 1000
+            + (digits[1] as usize) * 100
+            + (digits[2] as usize) * 10
+            + (digits[3] as usize)
+    }
+}
 
- */
+impl FromStr for Entry {
+    type Err = String;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let tuple: (String, String) = parse_into_two_segments(input, " | ")?;
+        let ten_patterns_vec: Vec<SegmentSet> = parse_space_separated_vec(&tuple.0)?;
+        let output_value_vec: Vec<SegmentSet> = parse_space_separated_vec(&tuple.1)?;
+
+        let ten_patterns = ten_patterns_vec
+            .try_into()
+            .map_err(|err| format!("{:?}", err))?;
+        let output_value_segments = output_value_vec
+            .try_into()
+            .map_err(|err| format!("{:?}", err))?;
+
+        Ok(Entry {
+            ten_patterns,
+            output_value_segments,
+        })
+    }
+}
+
+type Data = Vec<Entry>;
+
+fn parse(input: &str) -> Result<Data, Error> {
+    parse_lines_to_vec(input)
+}
+
+fn solve_1(input: &str) -> Result<usize, Error> {
+    let parsed = parse(input)?;
+    let result = parsed.iter().map(Entry::count_1_4_7_8).sum();
+    Ok(result)
+}
+
+fn solve_2(input: &str) -> Result<usize, Error> {
+    let parsed = parse(input)?;
+    let result = parsed.iter().map(Entry::output_value).sum();
+    Ok(result)
+}
+
+fn main() {
+    let result_1 = solve_1(DATA);
+    println!("Part 1: {:?}", result_1);
+
+    let result_2 = solve_2(DATA);
+    println!("Part 2: {:?}", result_2);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_DATA: &str = include_str!("../../resources/08-test.txt");
+
+    #[test]
+    fn test_solve_1_test() {
+        assert_eq!(solve_1(TEST_DATA), Ok(26));
+    }
+
+    #[test]
+    fn test_solve_1_real() {
+        assert_eq!(solve_1(DATA), Ok(452));
+    }
+
+    #[test]
+    fn test_solve_2_test() {
+        assert_eq!(solve_2(TEST_DATA), Ok(61229));
+    }
+
+    #[test]
+    fn test_solve_2_real() {
+        assert_eq!(solve_2(DATA), Ok(1_096_964));
+    }
+}
