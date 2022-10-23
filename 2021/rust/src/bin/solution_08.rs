@@ -1,5 +1,5 @@
 use advent_of_code::parsing::{
-    parse_into_two_segments, parse_lines_to_vec, parse_space_separated_vec, Error,
+    parse_lines_to_vec, parse_space_separated_vec, split_into_two_strings, Error,
 };
 use itertools::Itertools;
 use std::collections::HashMap;
@@ -127,7 +127,7 @@ impl FromStr for Entry {
     type Err = String;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let tuple: (String, String) = parse_into_two_segments(input, " | ")?;
+        let tuple: (String, String) = split_into_two_strings(input, " | ")?;
         let ten_patterns_vec: Vec<SegmentSet> = parse_space_separated_vec(&tuple.0)?;
         let output_value_vec: Vec<SegmentSet> = parse_space_separated_vec(&tuple.1)?;
 

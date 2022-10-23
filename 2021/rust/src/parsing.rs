@@ -1,3 +1,4 @@
+use nonempty::NonEmpty;
 use std::fmt::Debug;
 use std::str::FromStr;
 
@@ -20,6 +21,17 @@ where
         .map(|x| str::parse::<T>(x.trim()))
         .collect();
     convert_error(input, result)
+}
+
+/// # Errors
+///
+/// Will return `Err` if parsing fails.
+pub fn parse_lines_to_nonempty<T: FromStr>(input: &str) -> Result<NonEmpty<T>, Error>
+where
+    T::Err: Debug,
+{
+    let vec: Vec<T> = parse_lines_to_vec(input)?;
+    NonEmpty::from_vec(vec).ok_or_else(|| "Empty".to_string())
 }
 
 /// # Errors
@@ -61,7 +73,7 @@ where
 /// # Errors
 ///
 /// Will return `Err` if parsing fails.
-pub fn parse_into_two_segments(input: &str, separator: &str) -> Result<(String, String), Error> {
+pub fn split_into_two_strings(input: &str, separator: &str) -> Result<(String, String), Error> {
     let results: Vec<_> = input.split(separator).collect();
     if results.len() == 2 {
         Ok((results[0].to_string(), results[1].to_string()))
