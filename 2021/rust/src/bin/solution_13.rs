@@ -1,106 +1,195 @@
-/*
+use crate::FoldInstruction::{AlongX, AlongY};
+use advent_of_code::parsing::{
+    parse_lines_to_hashset, parse_lines_to_vec, split_into_two_strings, Error,
+};
+use advent_of_code::utils::head_tail;
+use itertools::Itertools;
+use std::collections::HashSet;
+use std::fmt::{Display, Formatter};
+use std::str::FromStr;
 
---- Day 13: Transparent Origami ---
-You reach another volcanically active part of the cave. It would be nice if you could do some kind of thermal imaging so you could tell ahead of time which caves are too hot to safely enter.
+const DATA: &str = include_str!("../../resources/13.txt");
 
-Fortunately, the submarine seems to be equipped with a thermal camera! When you activate it, you are greeted with:
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+struct CoordsXY {
+    x: usize,
+    y: usize,
+}
 
-Congratulations on your purchase! To activate this infrared thermal imaging
-camera system, please enter the code found on page 1 of the manual.
-Apparently, the Elves have never used this feature. To your surprise, you manage to find the manual; as you go to open it, page 1 falls out. It's a large sheet of transparent paper! The transparent paper is marked with random dots and includes instructions on how to fold it up (your puzzle input). For example:
+impl CoordsXY {
+    fn apply(&self, instruction: &FoldInstruction) -> CoordsXY {
+        match instruction {
+            AlongX(x_fold) if self.x < *x_fold => self.clone(),
+            AlongX(x_fold) if self.x > *x_fold => CoordsXY {
+                x: x_fold - (self.x - x_fold),
+                y: self.y,
+            },
+            AlongY(y_fold) if self.y < *y_fold => self.clone(),
+            AlongY(y_fold) if self.y > *y_fold => CoordsXY {
+                x: self.x,
+                y: y_fold - (self.y - y_fold),
+            },
+            _ => panic!("Unexpected {:?} {:?}", self, instruction),
+        }
+    }
+}
 
-6,10
-0,14
-9,10
-0,3
-10,4
-4,11
-6,0
-6,12
-4,1
-0,13
-10,12
-3,4
-3,0
-8,4
-1,10
-2,14
-8,10
-9,0
+impl FromStr for CoordsXY {
+    type Err = Error;
 
-fold along y=7
-fold along x=5
-The first section is a list of dots on the transparent paper. 0,0 represents the top-left coordinate. The first value, x, increases to the right. The second value, y, increases downward. So, the coordinate 3,0 is to the right of 0,0, and the coordinate 0,7 is below 0,0. The coordinates in this example form the following pattern, where # is a dot on the paper and . is an empty, unmarked position:
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (x_str, y_str) = split_into_two_strings(s, ",")?;
+        let x = x_str.parse().map_err(|err| format!("{}", err))?;
+        let y = y_str.parse().map_err(|err| format!("{}", err))?;
 
-...#..#..#.
-....#......
-...........
-#..........
-...#....#.#
-...........
-...........
-...........
-...........
-...........
-.#....#.##.
-....#......
-......#...#
-#..........
-#.#........
-Then, there is a list of fold instructions. Each instruction indicates a line on the transparent paper and wants you to fold the paper up (for horizontal y=... lines) or left (for vertical x=... lines). In this example, the first fold instruction is fold along y=7, which designates the line formed by all of the positions where y is 7 (marked here with -):
+        Ok(CoordsXY { x, y })
+    }
+}
 
-...#..#..#.
-....#......
-...........
-#..........
-...#....#.#
-...........
-...........
------------
-...........
-...........
-.#....#.##.
-....#......
-......#...#
-#..........
-#.#........
-Because this is a horizontal line, fold the bottom half up. Some of the dots might end up overlapping after the fold is complete, but dots will never appear exactly on a fold line. The result of doing this fold looks like this:
+#[derive(Clone, Debug)]
+enum FoldInstruction {
+    AlongX(usize),
+    AlongY(usize),
+}
 
-#.##..#..#.
-#...#......
-......#...#
-#...#......
-.#.#..#.###
-...........
-...........
-Now, only 17 dots are visible.
+impl FromStr for FoldInstruction {
+    type Err = Error;
 
-Notice, for example, the two dots in the bottom left corner before the transparent paper is folded; after the fold is complete, those dots appear in the top left corner (at 0,0 and 0,1). Because the paper is transparent, the dot just below them in the result (at 0,3) remains visible, as it can be seen through the transparent paper.
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Some(along_x) = s.strip_prefix("fold along x=") {
+            let x = along_x.parse().map_err(|err| format!("{}", err))?;
+            Ok(AlongX(x))
+        } else if let Some(along_y) = s.strip_prefix("fold along y=") {
+            let y = along_y.parse().map_err(|err| format!("{}", err))?;
+            Ok(AlongY(y))
+        } else {
+            Err(format!("Unrecognized {}", s))
+        }
+    }
+}
 
-Also notice that some dots can end up overlapping; in this case, the dots merge together and become a single dot.
+#[derive(Clone)]
+struct Manual {
+    dots: HashSet<CoordsXY>,
+    instructions: Vec<FoldInstruction>,
+}
 
-The second fold instruction is fold along x=5, which indicates this line:
+impl Manual {
+    fn fold_dots(dots: &HashSet<CoordsXY>, instruction: &FoldInstruction) -> HashSet<CoordsXY> {
+        dots.iter().map(|dot| dot.apply(instruction)).collect()
+    }
 
-#.##.|#..#.
-#...#|.....
-.....|#...#
-#...#|.....
-.#.#.|#.###
-.....|.....
-.....|.....
-Because this is a vertical line, fold left:
+    fn apply_next_instruction(&self) -> Manual {
+        let (head, tail) = head_tail(&self.instructions);
+        match head {
+            None => self.clone(),
+            Some(head) => Manual {
+                dots: Manual::fold_dots(&self.dots, head),
+                instructions: tail.to_vec(),
+            },
+        }
+    }
+}
 
-#####
-#...#
-#...#
-#...#
-#####
-.....
-.....
-The instructions made a square!
+impl Display for Manual {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let max_x = self.dots.iter().map(|c| c.x).max().unwrap();
+        let max_y = self.dots.iter().map(|c| c.y).max().unwrap();
+        let result = (0..=max_y)
+            .map(|y| {
+                (0..=max_x)
+                    .map(|x| {
+                        if self.dots.contains(&CoordsXY { x, y }) {
+                            '#'
+                        } else {
+                            '·'
+                        }
+                    })
+                    .join("")
+            })
+            .join("\n");
 
-The transparent paper is pretty big, so for now, focus on just completing the first fold. After the first fold in the example above, 17 dots are visible - dots that end up overlapping after the fold is completed count as a single dot.
+        f.write_str(&result)
+    }
+}
 
-How many dots are visible after completing just the first fold instruction on your transparent paper?
+impl FromStr for Manual {
+    type Err = Error;
 
- */
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let (a, b) = split_into_two_strings(input, "\n\n")?;
+        let dots = parse_lines_to_hashset(&a)?;
+        let instructions = parse_lines_to_vec(&b)?;
+        Ok(Manual { dots, instructions })
+    }
+}
+
+fn solve_1(input: &str) -> Result<usize, Error> {
+    let mut manual: Manual = input.parse()?;
+    manual = manual.apply_next_instruction();
+    Ok(manual.dots.len())
+}
+
+fn solve_2(input: &str) -> Result<String, Error> {
+    let mut manual: Manual = input.parse()?;
+    while !manual.instructions.is_empty() {
+        manual = manual.apply_next_instruction();
+    }
+    Ok(manual.to_string())
+}
+
+fn main() {
+    let result_1 = solve_1(DATA);
+    println!("Part 1: {:?}", result_1);
+
+    let result_2 = solve_2(DATA);
+    println!("Part 2:\n{}", result_2.unwrap()); // RGZLBHFP
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_DATA: &str = include_str!("../../resources/13-test.txt");
+
+    #[test]
+    fn test_fold_y() {
+        let fold = AlongY(7);
+        assert_eq!(
+            CoordsXY { x: 4, y: 14 }.apply(&fold),
+            CoordsXY { x: 4, y: 0 }
+        );
+        assert_eq!(
+            CoordsXY { x: 3, y: 13 }.apply(&fold),
+            CoordsXY { x: 3, y: 1 }
+        );
+    }
+
+    #[test]
+    fn test_fold_x() {
+        let fold = AlongX(5);
+        assert_eq!(
+            CoordsXY { x: 6, y: 0 }.apply(&fold),
+            CoordsXY { x: 4, y: 0 }
+        );
+        assert_eq!(
+            CoordsXY { x: 9, y: 0 }.apply(&fold),
+            CoordsXY { x: 1, y: 0 }
+        );
+    }
+
+    #[test]
+    fn test_solve_1_test() {
+        assert_eq!(solve_1(TEST_DATA), Ok(17));
+    }
+
+    #[test]
+    fn test_solve_1_real() {
+        assert_eq!(solve_1(DATA), Ok(729));
+    }
+
+    #[test]
+    fn test_solve_2_real() {
+        assert_eq!(solve_2(DATA).map(|x| x.len()), Ok(373));
+    }
+}

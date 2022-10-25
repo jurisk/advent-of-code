@@ -1,5 +1,7 @@
 use nonempty::NonEmpty;
+use std::collections::HashSet;
 use std::fmt::Debug;
+use std::hash::Hash;
 use std::str::FromStr;
 
 pub type Error = String;
@@ -20,6 +22,22 @@ where
         .filter(|x| !x.is_empty())
         .map(|x| str::parse::<T>(x.trim()))
         .collect();
+    convert_error(input, result)
+}
+
+/// # Errors
+///
+/// Will return `Err` if parsing fails.
+pub fn parse_lines_to_hashset<T: FromStr + Eq + Hash>(input: &str) -> Result<HashSet<T>, Error>
+where
+    T::Err: Debug,
+{
+    let result: Result<HashSet<T>, T::Err> = input
+        .split('\n')
+        .filter(|x| !x.is_empty())
+        .map(|x| str::parse::<T>(x.trim()))
+        .collect();
+
     convert_error(input, result)
 }
 
