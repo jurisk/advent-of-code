@@ -14,10 +14,10 @@
 | 8   |                                                  | [Code](2021/rust/src/bin/solution_08.rs) |                                            |
 | 9   |                                                  | [Code](2021/rust/src/bin/solution_09.rs) |                                            |
 | 10  |                                                  | [Code](2021/rust/src/bin/solution_10.rs) |                                            |
-| 11  |                                                  |                                          |                                            |
-| 12  |                                                  |                                          |                                            |
-| 13  |                                                  |                                          |                                            |
-| 14  |                                                  |                                          |                                            |
+| 11  |                                                  | [Code](2021/rust/src/bin/solution_11.rs) |                                            |
+| 12  |                                                  | [Code](2021/rust/src/bin/solution_12.rs) |                                            |
+| 13  |                                                  | [Code](2021/rust/src/bin/solution_13.rs) |                                            |
+| 14  |                                                  | [Code](2021/rust/src/bin/solution_14.rs) |                                            |
 | 15  |                                                  |                                          |                                            |
 | 16  |                                                  |                                          |                                            |
 | 17  |                                                  |                                          |                                            |

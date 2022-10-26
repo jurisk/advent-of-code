@@ -1,52 +1,181 @@
-/*
+use advent_of_code::parsing::{
+    parse_lines_to_hashmap, parse_string_to_nonempty, split_into_two_strings, Error,
+};
+use advent_of_code::utils::additive_hashmap_from_vec;
+use nonempty::NonEmpty;
+use std::collections::HashMap;
+use std::str::FromStr;
 
---- Day 14: Extended Polymerization ---
-The incredible pressures at this depth are starting to put a strain on your submarine. The submarine has polymerization equipment that would produce suitable materials to reinforce the submarine, and the nearby volcanically-active caves should even have the necessary input elements in sufficient quantities.
+const DATA: &str = include_str!("../../resources/14.txt");
 
-The submarine manual contains instructions for finding the optimal polymer formula; specifically, it offers a polymer template and a list of pair insertion rules (your puzzle input). You just need to work out what polymer would result after repeating the pair insertion process a few times.
+#[derive(Clone, Eq, PartialEq, Hash, Debug, Copy)]
+struct Element(char);
 
-For example:
+impl FromStr for Element {
+    type Err = Error;
 
-NNCB
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let ch = s.chars().next().ok_or("Fail")?;
+        Ok(Element(ch))
+    }
+}
 
-CH -> B
-HH -> N
-CB -> H
-NH -> C
-HB -> C
-HC -> B
-HN -> C
-NN -> C
-BH -> H
-NC -> B
-NB -> B
-BN -> B
-BB -> N
-BC -> B
-CC -> N
-CN -> C
-The first line is the polymer template - this is the starting point of the process.
+type Polymer = NonEmpty<Element>;
 
-The following section defines the pair insertion rules. A rule like AB -> C means that when elements A and B are immediately adjacent, element C should be inserted between them. These insertions all happen simultaneously.
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+struct SearchPattern {
+    a: Element,
+    b: Element,
+}
 
-So, starting with the polymer template NNCB, the first step simultaneously considers all three pairs:
+impl FromStr for SearchPattern {
+    type Err = Error;
 
-The first pair (NN) matches the rule NN -> C, so element C is inserted between the first N and the second N.
-The second pair (NC) matches the rule NC -> B, so element B is inserted between the N and the C.
-The third pair (CB) matches the rule CB -> H, so element H is inserted between the C and the B.
-Note that these pairs overlap: the second element of one pair is the first element of the next pair. Also, because all pairs are considered simultaneously, inserted elements are not considered to be part of a pair until the next step.
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let mut chars = input.chars();
+        let a_ch = chars.next().ok_or("Fail")?;
+        let b_ch = chars.next().ok_or("Fail")?;
+        let a = Element(a_ch);
+        let b = Element(b_ch);
+        Ok(SearchPattern { a, b })
+    }
+}
 
-After the first step of this process, the polymer becomes NCNBCHB.
+struct Data {
+    starting_polymer: Polymer,
+    templates: HashMap<SearchPattern, Element>,
+}
 
-Here are the results of a few steps using the above rules:
+impl Data {
+    fn starting_polymer_as_frequency_map(&self) -> HashMap<SearchPattern, usize> {
+        let mut result = HashMap::new();
+        for idx in 0..self.starting_polymer.len() - 1 {
+            let a = self.starting_polymer[idx];
+            let b = self.starting_polymer[idx + 1];
+            let k = SearchPattern { a, b };
+            let existing = result.get(&k).unwrap_or(&0);
+            result.insert(k, existing + 1);
+        }
+        result
+    }
 
-Template:     NNCB
-After step 1: NCNBCHB
-After step 2: NBCCNBBBCBHCB
-After step 3: NBBBCNCCNBBNBNBBCHBHHBCHB
-After step 4: NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB
-This polymer grows quickly. After step 5, it has length 97; After step 10, it has length 3073. After step 10, B occurs 1749 times, C occurs 298 times, H occurs 161 times, and N occurs 865 times; taking the quantity of the most common element (B, 1749) and subtracting the quantity of the least common element (H, 161) produces 1749 - 161 = 1588.
+    fn next_iteration(
+        &self,
+        frequencies: &HashMap<SearchPattern, usize>,
+    ) -> HashMap<SearchPattern, usize> {
+        let vec: Vec<_> = frequencies
+            .iter()
+            .flat_map(|(pattern, &count)| {
+                let found = self.templates.get(pattern).unwrap();
+                let left = SearchPattern {
+                    a: pattern.a,
+                    b: *found,
+                };
+                let right = SearchPattern {
+                    a: *found,
+                    b: pattern.b,
+                };
+                vec![(left, count), (right, count)]
+            })
+            .collect();
 
-Apply 10 steps of pair insertion to the polymer template and find the most and least common elements in the result. What do you get if you take the quantity of the most common element and subtract the quantity of the least common element?
+        additive_hashmap_from_vec(vec)
+    }
 
- */
+    fn element_occurrences_after_n_steps(&self, steps: usize) -> HashMap<Element, usize> {
+        let mut frequencies = self.starting_polymer_as_frequency_map();
+        for _ in 0..steps {
+            frequencies = self.next_iteration(&frequencies);
+        }
+
+        let first: Vec<_> = vec![(self.starting_polymer.head, 1)];
+        let other: Vec<_> = frequencies.iter().map(|(k, &v)| (k.b, v)).collect();
+        let joined = vec![first, other].concat();
+        additive_hashmap_from_vec(joined)
+    }
+}
+
+impl FromStr for Data {
+    type Err = Error;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let (a, b) = split_into_two_strings(input, "\n\n")?;
+        let starting_polymer: NonEmpty<Element> = parse_string_to_nonempty(&a)?;
+        let templates: HashMap<SearchPattern, Element> = parse_lines_to_hashmap(&b, " -> ")?;
+
+        Ok(Data {
+            starting_polymer,
+            templates,
+        })
+    }
+}
+
+fn solve(input: &str, iterations: usize) -> Result<usize, Error> {
+    let data: Data = input.parse()?;
+    let elements: HashMap<Element, usize> = data.element_occurrences_after_n_steps(iterations);
+    let frequencies: Vec<usize> = elements.values().copied().collect();
+    let min = frequencies.iter().min().unwrap();
+    let max = frequencies.iter().max().unwrap();
+    Ok(max - min)
+}
+
+fn main() {
+    let result_1 = solve(DATA, 10);
+    println!("Part 1: {:?}", result_1);
+
+    let result_2 = solve(DATA, 40);
+    println!("Part 2: {:?}", result_2);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_DATA: &str = include_str!("../../resources/14-test.txt");
+
+    #[test]
+    fn test_solve_on_test_data() {
+        let test_data: Data = TEST_DATA.parse().unwrap();
+        let c: Element = "C".parse().unwrap();
+        let b: Element = "B".parse().unwrap();
+        let n: Element = "N".parse().unwrap();
+        let h: Element = "H".parse().unwrap();
+
+        assert_eq!(
+            test_data.element_occurrences_after_n_steps(0),
+            HashMap::from([(c, 1), (b, 1), (n, 2)])
+        );
+        assert_eq!(
+            test_data.element_occurrences_after_n_steps(1),
+            HashMap::from([(h, 1), (b, 2), (c, 2), (n, 2)])
+        );
+        assert_eq!(
+            test_data.element_occurrences_after_n_steps(2),
+            HashMap::from([(c, 4), (h, 1), (n, 2), (b, 6)])
+        );
+        assert_eq!(
+            test_data.element_occurrences_after_n_steps(10),
+            HashMap::from([(h, 161), (n, 865), (b, 1749), (c, 298)])
+        );
+    }
+
+    #[test]
+    fn test_solve_1_test() {
+        assert_eq!(solve(TEST_DATA, 10), Ok(1588));
+    }
+
+    #[test]
+    fn test_solve_1_real() {
+        assert_eq!(solve(DATA, 10), Ok(2112));
+    }
+
+    #[test]
+    fn test_solve_2_test() {
+        assert_eq!(solve(TEST_DATA, 40), Ok(2_188_189_693_529));
+    }
+
+    #[test]
+    fn test_solve_2_real() {
+        assert_eq!(solve(DATA, 40), Ok(3_243_771_149_914));
+    }
+}

@@ -1,5 +1,5 @@
 use nonempty::NonEmpty;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::str::FromStr;
@@ -50,6 +50,57 @@ where
 {
     let vec: Vec<T> = parse_lines_to_vec(input)?;
     NonEmpty::from_vec(vec).ok_or_else(|| "Empty".to_string())
+}
+
+fn parse_kv_pair<K: FromStr + Eq + Hash, V: FromStr>(
+    input: &str,
+    delimiter: &str,
+) -> Result<(K, V), Error>
+where
+    K::Err: Debug,
+    V::Err: Debug,
+{
+    let (k_str, v_str) = split_into_two_strings(input, delimiter)?;
+    let k_e: Result<K, K::Err> = k_str.parse::<K>();
+    let v_e: Result<V, V::Err> = v_str.parse::<V>();
+    let k = convert_error(&k_str, k_e)?;
+    let v = convert_error(&v_str, v_e)?;
+    Ok((k, v))
+}
+
+/// # Errors
+///
+/// Will return `Err` if parsing fails.
+pub fn parse_lines_to_hashmap<K: FromStr + Eq + Hash, V: FromStr>(
+    input: &str,
+    delimiter: &str,
+) -> Result<HashMap<K, V>, Error>
+where
+    K::Err: Debug,
+    V::Err: Debug,
+{
+    let k_v: Result<Vec<(K, V)>, Error> = input
+        .split('\n')
+        .filter(|x| !x.is_empty())
+        .map(|s| parse_kv_pair(s, delimiter))
+        .collect();
+
+    k_v.map(|x| x.into_iter().collect())
+}
+
+/// # Errors
+///
+/// Will return `Err` if parsing fails.
+pub fn parse_string_to_nonempty<T: FromStr>(input: &str) -> Result<NonEmpty<T>, Error>
+where
+    T::Err: Debug,
+{
+    let vec: Result<Vec<T>, T::Err> = input
+        .chars()
+        .map(|ch| ch.to_string().parse::<T>())
+        .collect();
+    let result_vec = convert_error(input, vec)?;
+    NonEmpty::from_vec(result_vec).ok_or_else(|| "Empty".to_string())
 }
 
 /// # Errors
