@@ -17,8 +17,8 @@ fn successors(cavern: &Cavern, from: &Coords) -> Vec<(Coords, usize)> {
 fn cost(cavern: &Cavern) -> Result<usize, Error> {
     let start: Coords = (0, 0);
     let end: Coords = (cavern.rows - 1, cavern.columns - 1);
-    let (_, cost) = dijkstra(&start, |n| successors(cavern, n), |(x, y)| (*x, *y) == end)
-        .ok_or("Not found")?;
+    let (_, cost) =
+        dijkstra(&start, |n| successors(cavern, n), |(x, y)| (*x, *y) == end).ok_or("Not found")?;
 
     Ok(cost)
 }

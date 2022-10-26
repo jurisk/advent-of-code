@@ -156,16 +156,39 @@ pub fn split_into_two_strings(input: &str, separator: &str) -> Result<(String, S
 ///
 /// Will return `Err` if parsing fails.
 pub fn parse_u8_matrix(input: &str) -> Result<Matrix<u8>, Error> {
-    let vec_vec: Vec<Vec<u8>> = input
+    parse_matrix(input, |ch| {
+        let chr = ch as u8;
+        if (b'0'..=b'9').contains(&chr) {
+            Ok(chr - b'0')
+        } else {
+            Err(format!("{:?}", ch))
+        }
+    })
+}
+
+/// # Errors
+///
+/// Will return `Err` if parsing fails.
+pub fn parse_matrix<T: Clone, PF>(input: &str, parse_element: PF) -> Result<Matrix<T>, Error>
+where
+    PF: Fn(char) -> Result<T, Error>,
+{
+    let result_vec_vec: Result<Vec<_>, Error> = input
         .split('\n')
         .filter(|r| !r.is_empty())
-        .map(|r| r.chars().map(|ch| ch as u8 - b'0').collect())
+        .map(|r| {
+            r.chars()
+                .map(|ch| parse_element(ch))
+                .collect::<Result<Vec<T>, Error>>()
+        })
         .collect();
+
+    let vec_vec = result_vec_vec?;
 
     Matrix::from_vec(
         vec_vec.len(),
         vec_vec[0].len(),
-        vec_vec.iter().flatten().copied().collect(),
+        vec_vec.into_iter().flatten().collect(),
     )
     .map_err(|err| format!("{:?}", err))
 }
