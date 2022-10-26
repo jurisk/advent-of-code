@@ -1,36 +1,90 @@
-/*
+use advent_of_code::parsing::{parse_u8_matrix, Error};
+use pathfinding::matrix::Matrix;
+use pathfinding::prelude::dijkstra;
 
---- Day 15: Chiton ---
-You've almost reached the exit of the cave, but the walls are getting closer together. Your submarine can barely still fit, though; the main problem is that the walls of the cave are covered in chitons, and it would be best not to bump any of them.
+const DATA: &str = include_str!("../../resources/15.txt");
 
-The cavern is large, but has a very low ceiling, restricting your motion to two dimensions. The shape of the cavern resembles a square; a quick scan of chiton density produces a map of risk level throughout the cave (your puzzle input). For example:
+type Cavern = Matrix<u8>;
+type Coords = (usize, usize); // (row, column)
 
-1163751742
-1381373672
-2136511328
-3694931569
-7463417111
-1319128137
-1359912421
-3125421639
-1293138521
-2311944581
-You start in the top left position, your destination is the bottom right position, and you cannot move diagonally. The number at each position is its risk level; to determine the total risk of an entire path, add up the risk levels of each position you enter (that is, don't count the risk level of your starting position unless you enter it; leaving it adds no risk to your total).
+fn successors(cavern: &Cavern, from: &Coords) -> Vec<(Coords, usize)> {
+    cavern
+        .neighbours(*from, false)
+        .map(|c| (c, cavern[c] as usize))
+        .collect()
+}
 
-Your goal is to find a path with the lowest total risk. In this example, a path with the lowest total risk is highlighted here:
+fn cost(cavern: &Cavern) -> Result<usize, Error> {
+    let start: Coords = (0, 0);
+    let end: Coords = (cavern.rows - 1, cavern.columns - 1);
+    let (_, cost) = dijkstra(&start, |n| successors(cavern, n), |(x, y)| (*x, *y) == end)
+        .ok_or("Not found")?;
 
-1163751742
-1381373672
-2136511328
-3694931569
-7463417111
-1319128137
-1359912421
-3125421639
-1293138521
-2311944581
-The total risk of this path is 40 (the starting position is never entered, so its risk is not counted).
+    Ok(cost)
+}
 
-What is the lowest total risk of any path from the top left to the bottom right?
+fn wrap_risk(risk: usize) -> u8 {
+    (if risk > 9 { risk - 9 } else { risk }) as u8
+}
 
- */
+fn extend_cavern(cavern: &Cavern) -> Cavern {
+    const COEF: usize = 5;
+    let mut result: Cavern = Matrix::new(cavern.rows * COEF, cavern.columns * COEF, 0);
+    for mr in 0..COEF {
+        for mc in 0..COEF {
+            for r in 0..cavern.rows {
+                for c in 0..cavern.columns {
+                    result[(r + mr * cavern.rows, c + mc * cavern.columns)] =
+                        wrap_risk(cavern[(r, c)] as usize + mr + mc);
+                }
+            }
+        }
+    }
+    result
+}
+
+fn solve_1(input: &str) -> Result<usize, Error> {
+    let cavern: Cavern = parse_u8_matrix(input)?;
+    cost(&cavern)
+}
+
+fn solve_2(input: &str) -> Result<usize, Error> {
+    let small_cavern: Cavern = parse_u8_matrix(input)?;
+    let larger_cavern = extend_cavern(&small_cavern);
+    cost(&larger_cavern)
+}
+
+fn main() {
+    let result_1 = solve_1(DATA);
+    println!("Part 1: {:?}", result_1);
+
+    let result_2 = solve_2(DATA);
+    println!("Part 2: {:?}", result_2);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_DATA: &str = include_str!("../../resources/15-test.txt");
+
+    #[test]
+    fn test_solve_1_test() {
+        assert_eq!(solve_1(TEST_DATA), Ok(40));
+    }
+
+    #[test]
+    fn test_solve_1_real() {
+        assert_eq!(solve_1(DATA), Ok(386));
+    }
+
+    #[test]
+    fn test_solve_2_test() {
+        assert_eq!(solve_2(TEST_DATA), Ok(315));
+    }
+
+    #[test]
+    fn test_solve_2_real() {
+        assert_eq!(solve_2(DATA), Ok(2806));
+    }
+}

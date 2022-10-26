@@ -1,20 +1,9 @@
-use advent_of_code::parsing::Error;
+use advent_of_code::parsing::{parse_u8_matrix, Error};
 use pathfinding::matrix::Matrix;
 
 const DATA: &str = include_str!("../../resources/11.txt");
 
 type Octopuses = Matrix<u8>;
-
-fn parse(input: &str) -> Result<Octopuses, Error> {
-    let vec_vec: Vec<Vec<u8>> = input
-        .split('\n')
-        .filter(|r| !r.is_empty())
-        .map(|r| r.chars().map(|ch| ch as u8 - b'0').collect())
-        .collect();
-
-    Matrix::from_vec(10, 10, vec_vec.iter().flatten().copied().collect())
-        .map_err(|err| format!("{:?}", err))
-}
 
 fn step(octopuses: &Octopuses) -> (usize, Octopuses) {
     const FLASH_THRESHOLD: u8 = 9;
@@ -67,7 +56,7 @@ fn step(octopuses: &Octopuses) -> (usize, Octopuses) {
 }
 
 fn solve_1(input: &str, steps: usize) -> Result<usize, Error> {
-    let mut octopuses: Octopuses = parse(input)?;
+    let mut octopuses: Octopuses = parse_u8_matrix(input)?;
     let mut total_flashes: usize = 0;
     for _ in 0..steps {
         let (new_flashes, new_octopuses) = step(&octopuses);
@@ -78,7 +67,7 @@ fn solve_1(input: &str, steps: usize) -> Result<usize, Error> {
 }
 
 fn solve_2(input: &str) -> Result<usize, Error> {
-    let mut octopuses = parse(input)?;
+    let mut octopuses = parse_u8_matrix(input)?;
     for idx in 1..usize::MAX {
         let (new_flashes, new_octopuses) = step(&octopuses);
         if new_flashes == octopuses.columns * octopuses.rows {
@@ -126,6 +115,6 @@ mod tests {
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(solve_2(DATA), Ok(123_456));
+        assert_eq!(solve_2(DATA), Ok(360));
     }
 }

@@ -1,4 +1,5 @@
 use nonempty::NonEmpty;
+use pathfinding::matrix::Matrix;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::hash::Hash;
@@ -149,4 +150,22 @@ pub fn split_into_two_strings(input: &str, separator: &str) -> Result<(String, S
     } else {
         Err(format!("Invalid count of segments: {:?}", results))
     }
+}
+
+/// # Errors
+///
+/// Will return `Err` if parsing fails.
+pub fn parse_u8_matrix(input: &str) -> Result<Matrix<u8>, Error> {
+    let vec_vec: Vec<Vec<u8>> = input
+        .split('\n')
+        .filter(|r| !r.is_empty())
+        .map(|r| r.chars().map(|ch| ch as u8 - b'0').collect())
+        .collect();
+
+    Matrix::from_vec(
+        vec_vec.len(),
+        vec_vec[0].len(),
+        vec_vec.iter().flatten().copied().collect(),
+    )
+    .map_err(|err| format!("{:?}", err))
 }
