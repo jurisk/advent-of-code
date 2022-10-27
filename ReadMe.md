@@ -18,13 +18,13 @@
 | 12  |                                                  | [Code](2021/rust/src/bin/solution_12.rs) |                                            |
 | 13  |                                                  | [Code](2021/rust/src/bin/solution_13.rs) |                                            |
 | 14  |                                                  | [Code](2021/rust/src/bin/solution_14.rs) |                                            |
-| 15  |                                                  |                                          |                                            |
+| 15  |                                                  | [Code](2021/rust/src/bin/solution_15.rs) |                                            |
 | 16  |                                                  |                                          |                                            |
-| 17  |                                                  |                                          |                                            |
+| 17  |                                                  | [Code](2021/rust/src/bin/solution_17.rs) |                                            |
 | 18  |                                                  |                                          |                                            |
 | 19  |                                                  |                                          |                                            |
 | 20  |                                                  |                                          |                                            |
-| 21  |                                                  |                                          |                                            |
+| 21  |                                                  | [Code](2021/rust/src/bin/solution_21.rs) |                                            |
 | 22  |                                                  |                                          |                                            |
 | 23  |                                                  |                                          |                                            |
 | 24  |                                                  |                                          |                                            |
