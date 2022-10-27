@@ -1,106 +1,197 @@
-/*
+use std::cmp::{max, Ordering};
+use std::ops::Add;
 
---- Day 17: Trick Shot ---
-You finally decode the Elves' message. HI, the message says. You continue searching for the sleigh keys.
+#[derive(Debug)]
+struct XY {
+    x: i32,
+    y: i32,
+}
 
-Ahead of you is what appears to be a large ocean trench. Could the keys have fallen into it? You'd better send a probe to investigate.
+impl XY {
+    fn zero() -> XY {
+        XY { x: 0, y: 0 }
+    }
+}
 
-The probe launcher on your submarine can fire the probe with any integer velocity in the x (forward) and y (upward, or downward if negative) directions. For example, an initial x,y velocity like 0,10 would fire the probe straight up, while an initial velocity like 10,-1 would fire the probe forward at a slight downward angle.
+impl Add for &XY {
+    type Output = XY;
 
-The probe's x,y position starts at 0,0. Then, it will follow some trajectory by moving in steps. On each step, these changes occur in the following order:
+    fn add(self, rhs: Self) -> Self::Output {
+        XY {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
 
-The probe's x position increases by its x velocity.
-The probe's y position increases by its y velocity.
-Due to drag, the probe's x velocity changes by 1 toward the value 0; that is, it decreases by 1 if it is greater than 0, increases by 1 if it is less than 0, or does not change if it is already 0.
-Due to gravity, the probe's y velocity decreases by 1.
-For the probe to successfully make it into the trench, the probe must be on some trajectory that causes it to be within a target area after any step. The submarine computer has already calculated this target area (your puzzle input). For example:
+struct Area {
+    from: XY,
+    to: XY,
+}
 
-target area: x=20..30, y=-10..-5
-This target area means that you need to find initial x,y velocity values such that after any step, the probe's x position is at least 20 and at most 30, and the probe's y position is at least -10 and at most -5.
+impl Area {
+    fn hopeless_for_y(&self, probe: &Probe) -> bool {
+        probe.velocity.y <= 0 && probe.position.y < self.from.y
+    }
 
-Given this target area, one initial velocity that causes the probe to be within the target area after any step is 7,2:
+    fn hopeless_for_x(&self, probe: &Probe) -> bool {
+        probe.velocity.x == 0 && (probe.position.x > self.to.x || probe.position.x < self.from.x)
+    }
 
-.............#....#............
-.......#..............#........
-...............................
-S........................#.....
-...............................
-...............................
-...........................#...
-...............................
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................TTTTTTTT#TT
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-In this diagram, S is the probe's initial position, 0,0. The x coordinate increases to the right, and the y coordinate increases upward. In the bottom right, positions that are within the target area are shown as T. After each step (until the target area is reached), the position of the probe is marked with #. (The bottom-right # is both a position the probe reaches and a position in the target area.)
+    fn hitting(&self, position: &XY) -> bool {
+        self.hitting_x(position) && self.hitting_y(position)
+    }
 
-Another initial velocity that causes the probe to be within the target area after any step is 6,3:
+    fn hitting_x(&self, position: &XY) -> bool {
+        position.x >= self.from.x && position.x <= self.to.x
+    }
 
-...............#..#............
-...........#........#..........
-...............................
-......#..............#.........
-...............................
-...............................
-S....................#.........
-...............................
-...............................
-...............................
-.....................#.........
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................T#TTTTTTTTT
-....................TTTTTTTTTTT
-Another one is 9,0:
+    fn hitting_y(&self, position: &XY) -> bool {
+        position.y >= self.from.y && position.y <= self.to.y
+    }
+}
 
-S........#.....................
-.................#.............
-...............................
-........................#......
-...............................
-....................TTTTTTTTTTT
-....................TTTTTTTTTT#
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-....................TTTTTTTTTTT
-One initial velocity that doesn't cause the probe to be within the target area after any step is 17,-4:
+const DATA: Area = Area {
+    from: XY { x: 137, y: -98 },
+    to: XY { x: 171, y: -73 },
+};
 
-S..............................................................
-...............................................................
-...............................................................
-...............................................................
-.................#.............................................
-....................TTTTTTTTTTT................................
-....................TTTTTTTTTTT................................
-....................TTTTTTTTTTT................................
-....................TTTTTTTTTTT................................
-....................TTTTTTTTTTT..#.............................
-....................TTTTTTTTTTT................................
-...............................................................
-...............................................................
-...............................................................
-...............................................................
-................................................#..............
-...............................................................
-...............................................................
-...............................................................
-...............................................................
-...............................................................
-...............................................................
-..............................................................#
-The probe appears to pass through the target area, but is never within it after any step. Instead, it continues down and to the right - only the first few steps are shown.
+#[derive(Debug)]
+struct Probe {
+    position: XY,
+    velocity: XY,
+}
 
-If you're going to fire a highly scientific probe out of a super cool probe launcher, you might as well do it with style. How high can you make the probe go while still reaching the target area?
+impl Probe {
+    fn new(start_velocity: XY) -> Probe {
+        Probe {
+            position: XY::zero(),
+            velocity: start_velocity,
+        }
+    }
 
-In the above example, using an initial velocity of 6,9 is the best you can do, causing the probe to reach a maximum y position of 45. (Any higher initial y velocity causes the probe to overshoot the target area entirely.)
+    fn next_step(&self) -> Probe {
+        Probe {
+            position: &self.position + &self.velocity,
+            velocity: XY {
+                x: match self.velocity.x.cmp(&0) {
+                    Ordering::Less => self.velocity.x + 1,
+                    Ordering::Equal => 0,
+                    Ordering::Greater => self.velocity.x - 1,
+                },
+                y: self.velocity.y - 1,
+            },
+        }
+    }
 
-Find the initial velocity that causes the probe to reach the highest y position and still eventually be within the target area after any step. What is the highest y position it reaches on this trajectory?
+    fn will_hit_area(start_velocity: XY, area: &Area) -> bool {
+        let mut current = Probe::new(start_velocity);
+        while !area.hopeless_for_y(&current) {
+            if area.hitting(&current.position) {
+                return true;
+            }
 
+            current = current.next_step();
+        }
+        false
+    }
 
+    fn will_hit_area_x(start_velocity_x: i32, area: &Area) -> bool {
+        let mut current = Probe::new(XY {
+            x: start_velocity_x,
+            y: 0,
+        });
 
- */
+        while !area.hopeless_for_x(&current) {
+            if area.hitting_x(&current.position) {
+                return true;
+            }
+
+            current = current.next_step();
+        }
+
+        false
+    }
+
+    fn will_hit_area_y_with_max_reached(start_velocity_y: i32, area: &Area) -> Option<i32> {
+        let mut current = Probe::new(XY {
+            x: 0,
+            y: start_velocity_y,
+        });
+        let mut max_y_seen = 0;
+        while !area.hopeless_for_y(&current) {
+            max_y_seen = max(max_y_seen, current.position.y);
+            if area.hitting_y(&current.position) {
+                return Some(max_y_seen);
+            }
+
+            current = current.next_step();
+        }
+
+        None
+    }
+}
+
+fn solve_1(area: &Area) -> i32 {
+    (-100..100)
+        .filter_map(|start_y| Probe::will_hit_area_y_with_max_reached(start_y, area))
+        .max()
+        .unwrap()
+}
+
+fn solve_2(area: &Area) -> usize {
+    let valid_x: Vec<_> = (-1000..1000)
+        .filter(|start_x| Probe::will_hit_area_x(*start_x, area))
+        .collect();
+    let valid_y: Vec<_> = (-1000..1000)
+        .filter(|start_y| Probe::will_hit_area_y_with_max_reached(*start_y, area).is_some())
+        .collect();
+
+    let mut result = 0;
+    for x in &valid_x {
+        for y in &valid_y {
+            if Probe::will_hit_area(XY { x: *x, y: *y }, area) {
+                result += 1;
+            }
+        }
+    }
+    result
+}
+
+fn main() {
+    let result_1 = solve_1(&DATA);
+    println!("Part 1: {:?}", result_1);
+
+    let result_2 = solve_2(&DATA);
+    println!("Part 2: {:?}", result_2);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_DATA: Area = Area {
+        from: XY { x: 20, y: -10 },
+        to: XY { x: 30, y: -5 },
+    };
+
+    #[test]
+    fn test_solve_1_test() {
+        assert_eq!(solve_1(&TEST_DATA), 45);
+    }
+
+    #[test]
+    fn test_solve_1_real() {
+        assert_eq!(solve_1(&DATA), 4753);
+    }
+
+    #[test]
+    fn test_solve_2_test() {
+        assert_eq!(solve_2(&TEST_DATA), 112);
+    }
+
+    #[test]
+    fn test_solve_2_real() {
+        assert_eq!(solve_2(&DATA), 1546);
+    }
+}
