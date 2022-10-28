@@ -1,102 +1,190 @@
-/*
+use advent_of_code::parsing::{parse_matrix, split_into_two_strings, Error};
+use num_enum::{IntoPrimitive, TryFromPrimitive};
+use pathfinding::matrix::Matrix;
+use std::str::FromStr;
 
---- Day 20: Trench Map ---
-With the scanners fully deployed, you turn their attention to mapping the floor of the ocean trench.
+#[repr(u8)]
+#[derive(Debug, Eq, PartialEq, Clone, TryFromPrimitive, IntoPrimitive, Copy)]
+enum Pixel {
+    Light = b'#',
+    Dark = b'.',
+}
 
-When you get back the image from the scanners, it seems to just be random noise. Perhaps you can combine an image enhancement algorithm and the input image (your puzzle input) to clean it up a little.
+impl Pixel {
+    fn as_char(self) -> char {
+        let as_u8: u8 = self.into();
+        as_u8 as char
+    }
+}
 
-For example:
+fn parse_pixel(ch: char) -> Result<Pixel, Error> {
+    Pixel::try_from(ch as u8).map_err(|err| format!("{:?}", err))
+}
 
-..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....#..#..##..##
-#..######.###...####..#..#####..##..#.#####...##.#.#..#.##..#.#......#.###
-.######.###.####...#.##.##..#..#..#####.....#.#....###..#.##......#.....#.
-.#..#..##..#...##.######.####.####.#.#...#.......#..#.#.#...####.##.#.....
-.#..#...##.#.##..#...##.#.##..###.#......#.#.......#.#.#.####.###.##...#..
-...####.#..#..#.##.#....##..#.####....##...##..#...#......#.#.......#.....
-..##..####..#...#.#.#...##..#.#..###..#####........#..####......#..#
+#[derive(Clone)]
+struct ImageEnhancementAlgorithm {
+    mapping: [Pixel; 512],
+}
 
-#..#.
-#....
-##..#
-..#..
-..###
-The first section is the image enhancement algorithm. It is normally given on a single line, but it has been wrapped to multiple lines in this example for legibility. The second section is the input image, a two-dimensional grid of light pixels (#) and dark pixels (.).
+struct Image {
+    pixels: Matrix<Pixel>,
+    surrounding_pixels: Pixel,
+}
 
-The image enhancement algorithm describes how to enhance an image by simultaneously converting all pixels in the input image into an output image. Each pixel of the output image is determined by looking at a 3x3 square of pixels centered on the corresponding input image pixel. So, to determine the value of the pixel at (5,10) in the output image, nine pixels from the input image need to be considered: (4,9), (4,10), (4,11), (5,9), (5,10), (5,11), (6,9), (6,10), and (6,11). These nine input pixels are combined into a single binary number that is used as an index in the image enhancement algorithm string.
+impl Image {
+    fn light_pixels(&self) -> Option<usize> {
+        match self.surrounding_pixels {
+            Pixel::Light => None,
+            Pixel::Dark => Some(self.pixels.values().filter(|&&p| p == Pixel::Light).count()),
+        }
+    }
 
-For example, to determine the output pixel that corresponds to the very middle pixel of the input image, the nine pixels marked by [...] would need to be considered:
+    fn bit_at(&self, r: isize, c: isize) -> usize {
+        let pixel = if r < 0 || c < 0 {
+            &self.surrounding_pixels
+        } else {
+            self.pixels
+                .get((r as usize, c as usize))
+                .unwrap_or(&self.surrounding_pixels)
+        };
 
-# . . # .
-#[. . .].
-#[# . .]#
-.[. # .].
-. . # # #
-Starting from the top-left and reading across each row, these pixels are ..., then #.., then .#.; combining these forms ...#...#.. By turning dark pixels (.) into 0 and light pixels (#) into 1, the binary number 000100010 can be formed, which is 34 in decimal.
+        match pixel {
+            Pixel::Light => 1,
+            Pixel::Dark => 0,
+        }
+    }
 
-The image enhancement algorithm string is exactly 512 characters long, enough to match every possible 9-bit binary number. The first few characters of the string (numbered starting from zero) are as follows:
+    fn enhance_pixel(&self, r: isize, c: isize, algorithm: &ImageEnhancementAlgorithm) -> Pixel {
+        let idx = self.bit_at(r - 1, c - 1) << 8
+            | self.bit_at(r - 1, c) << 7
+            | self.bit_at(r - 1, c + 1) << 6
+            | self.bit_at(r, c - 1) << 5
+            | self.bit_at(r, c) << 4
+            | self.bit_at(r, c + 1) << 3
+            | self.bit_at(r + 1, c - 1) << 2
+            | self.bit_at(r + 1, c) << 1
+            | self.bit_at(r + 1, c + 1);
 
-0         10        20        30  34    40        50        60        70
-|         |         |         |   |     |         |         |         |
-..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....#..#..##..##
-In the middle of this first group of characters, the character at index 34 can be found: #. So, the output pixel in the center of the output image should be #, a light pixel.
+        algorithm.mapping[idx]
+    }
 
-This process can then be repeated to calculate every pixel of the output image.
+    fn enhance(&self, algorithm: &ImageEnhancementAlgorithm) -> Image {
+        let mut pixels: Matrix<Pixel> =
+            Matrix::new(self.pixels.rows + 2, self.pixels.columns + 2, Pixel::Dark);
+        for r in 0..(pixels.rows as isize) {
+            for c in 0..(pixels.columns as isize) {
+                pixels[(r as usize, c as usize)] = self.enhance_pixel(r - 1, c - 1, algorithm);
+            }
+        }
 
-Through advances in imaging technology, the images being operated on here are infinite in size. Every pixel of the infinite output image needs to be calculated exactly based on the relevant pixels of the input image. The small input image you have is only a small region of the actual infinite input image; the rest of the input image consists of dark pixels (.). For the purposes of the example, to save on space, only a portion of the infinite-sized input and output images will be shown.
+        let surrounding_pixels = match self.surrounding_pixels {
+            Pixel::Light => algorithm.mapping[0b1_1111_1111],
+            Pixel::Dark => algorithm.mapping[0b0_0000_0000],
+        };
 
-The starting input image, therefore, looks something like this, with more dark pixels (.) extending forever in every direction not shown here:
+        Image {
+            pixels,
+            surrounding_pixels,
+        }
+    }
+}
 
-...............
-...............
-...............
-...............
-...............
-.....#..#......
-.....#.........
-.....##..#.....
-.......#.......
-.......###.....
-...............
-...............
-...............
-...............
-...............
-By applying the image enhancement algorithm to every pixel simultaneously, the following output image can be obtained:
+struct Data {
+    image_enhancement_algorithm: ImageEnhancementAlgorithm,
+    image: Image,
+}
 
-...............
-...............
-...............
-...............
-.....##.##.....
-....#..#.#.....
-....##.#..#....
-....####..#....
-.....#..##.....
-......##..#....
-.......#.#.....
-...............
-...............
-...............
-...............
-Through further advances in imaging technology, the above output image can also be used as an input image! This allows it to be enhanced a second time:
+impl Data {
+    fn enhance(&self) -> Data {
+        Data {
+            image_enhancement_algorithm: self.image_enhancement_algorithm.clone(),
+            image: self.image.enhance(&self.image_enhancement_algorithm),
+        }
+    }
 
-...............
-...............
-...............
-..........#....
-....#..#.#.....
-...#.#...###...
-...#...##.#....
-...#.....#.#...
-....#.#####....
-.....#.#####...
-......##.##....
-.......###.....
-...............
-...............
-...............
-Truly incredible - now the small details are really starting to come through. After enhancing the original input image twice, 35 pixels are lit.
+    fn debug_print(&self) {
+        println!(
+            "With surrounding at: {}",
+            self.image.surrounding_pixels.as_char()
+        );
+        for r in 0..self.image.pixels.rows {
+            let s: String = (0..self.image.pixels.columns)
+                .map(|c| self.image.pixels[(r, c)].as_char())
+                .collect();
+            println!("{}", s);
+        }
+        println!();
+    }
+}
 
-Start with the original input image and apply the image enhancement algorithm twice, being careful to account for the infinite size of the images. How many pixels are lit in the resulting image?
+impl FromStr for Data {
+    type Err = Error;
 
- */
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let (a, b) = split_into_two_strings(input, "\n\n")?;
+        let mapping_vec_result: Result<Vec<_>, _> =
+            a.chars().map(|ch| Pixel::try_from(ch as u8)).collect();
+        let mapping_vec = mapping_vec_result.map_err(|err| format!("{:?}", err))?;
+        let mapping: [Pixel; 512] = mapping_vec.try_into().map_err(|err| format!("{:?}", err))?;
+        let image_enhancement_algorithm = ImageEnhancementAlgorithm { mapping };
+        let pixels = parse_matrix(&b, parse_pixel)?;
+        let surrounding_pixels = Pixel::Dark;
+        let image = Image {
+            pixels,
+            surrounding_pixels,
+        };
+
+        Ok(Data {
+            image_enhancement_algorithm,
+            image,
+        })
+    }
+}
+
+fn solve(input: &str, times: usize) -> Result<usize, Error> {
+    let mut data: Data = input.parse()?;
+    for _ in 0..times {
+        data = data.enhance();
+    }
+    data.debug_print();
+    data.image
+        .light_pixels()
+        .ok_or_else(|| "Infinite".to_string())
+}
+
+const DATA: &str = include_str!("../../resources/20.txt");
+
+fn main() {
+    let result_1 = solve(DATA, 2);
+    println!("Part 1: {:?}", result_1);
+
+    let result_2 = solve(DATA, 50);
+    println!("Part 2: {:?}", result_2);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_DATA: &str = include_str!("../../resources/20-test.txt");
+
+    #[test]
+    fn test_solve_1_test() {
+        assert_eq!(solve(TEST_DATA, 2), Ok(35));
+    }
+
+    #[test]
+    fn test_solve_1_real() {
+        assert_eq!(solve(DATA, 2), Ok(5503));
+    }
+
+    #[test]
+    fn test_solve_2_test() {
+        assert_eq!(solve(TEST_DATA, 50), Ok(3351));
+    }
+
+    #[test]
+    fn test_solve_2_real() {
+        assert_eq!(solve(DATA, 50), Ok(19156));
+    }
+}
