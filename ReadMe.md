@@ -2,33 +2,33 @@
 
 ## 2021
 
-| Day | Scala                                            | Rust                                     | Haskell                                    |
-|-----|--------------------------------------------------|------------------------------------------|--------------------------------------------|
-| 1   |                                                  | [Code](2021/rust/src/bin/solution_01.rs) |                                            |
-| 2   |                                                  | [Code](2021/rust/src/bin/solution_02.rs) |                                            |
-| 3   |                                                  | [Code](2021/rust/src/bin/solution_03.rs) |                                            |
-| 4   |                                                  | [Code](2021/rust/src/bin/solution_04.rs) |                                            |
-| 5   |                                                  |                                          | [Code](2021/haskell/src/Day05/Solution.hs) |
-| 6   |                                                  | [Code](2021/rust/src/bin/solution_06.rs) |                                            |
-| 7   |                                                  | [Code](2021/rust/src/bin/solution_07.rs) |                                            |
-| 8   |                                                  | [Code](2021/rust/src/bin/solution_08.rs) |                                            |
-| 9   |                                                  | [Code](2021/rust/src/bin/solution_09.rs) |                                            |
-| 10  |                                                  | [Code](2021/rust/src/bin/solution_10.rs) |                                            |
-| 11  |                                                  | [Code](2021/rust/src/bin/solution_11.rs) |                                            |
-| 12  |                                                  | [Code](2021/rust/src/bin/solution_12.rs) |                                            |
-| 13  |                                                  | [Code](2021/rust/src/bin/solution_13.rs) |                                            |
-| 14  |                                                  | [Code](2021/rust/src/bin/solution_14.rs) |                                            |
-| 15  |                                                  | [Code](2021/rust/src/bin/solution_15.rs) |                                            |
-| 16  |                                                  |                                          |                                            |
-| 17  |                                                  | [Code](2021/rust/src/bin/solution_17.rs) |                                            |
-| 18  |                                                  |                                          |                                            |
-| 19  |                                                  |                                          |                                            |
-| 20  |                                                  | [Code](2021/rust/src/bin/solution_20.rs) |                                            |
-| 21  |                                                  | [Code](2021/rust/src/bin/solution_21.rs) |                                            |
-| 22  |                                                  |                                          |                                            |
-| 23  |                                                  |                                          |                                            |
-| 24  |                                                  |                                          |                                            |
-| 25  |                                                  | [Code](2021/rust/src/bin/solution_25.rs) |                                            |
+| Day | Scala                                              | Rust                                     | Haskell                                    |
+|-----|----------------------------------------------------|------------------------------------------|--------------------------------------------|
+| 1   |                                                    | [Code](2021/rust/src/bin/solution_01.rs) |                                            |
+| 2   |                                                    | [Code](2021/rust/src/bin/solution_02.rs) |                                            |
+| 3   |                                                    | [Code](2021/rust/src/bin/solution_03.rs) |                                            |
+| 4   |                                                    | [Code](2021/rust/src/bin/solution_04.rs) |                                            |
+| 5   |                                                    |                                          | [Code](2021/haskell/src/Day05/Solution.hs) |
+| 6   |                                                    | [Code](2021/rust/src/bin/solution_06.rs) |                                            |
+| 7   |                                                    | [Code](2021/rust/src/bin/solution_07.rs) |                                            |
+| 8   |                                                    | [Code](2021/rust/src/bin/solution_08.rs) |                                            |
+| 9   |                                                    | [Code](2021/rust/src/bin/solution_09.rs) |                                            |
+| 10  |                                                    | [Code](2021/rust/src/bin/solution_10.rs) |                                            |
+| 11  |                                                    | [Code](2021/rust/src/bin/solution_11.rs) |                                            |
+| 12  |                                                    | [Code](2021/rust/src/bin/solution_12.rs) |                                            |
+| 13  |                                                    | [Code](2021/rust/src/bin/solution_13.rs) |                                            |
+| 14  |                                                    | [Code](2021/rust/src/bin/solution_14.rs) |                                            |
+| 15  |                                                    | [Code](2021/rust/src/bin/solution_15.rs) |                                            |
+| 16  | [Code](2021/scala/src/main/scala/Solution16.scala) |                                          |                                            |
+| 17  |                                                    | [Code](2021/rust/src/bin/solution_17.rs) |                                            |
+| 18  |                                                    |                                          |                                            |
+| 19  |                                                    |                                          |                                            |
+| 20  |                                                    | [Code](2021/rust/src/bin/solution_20.rs) |                                            |
+| 21  |                                                    | [Code](2021/rust/src/bin/solution_21.rs) |                                            |
+| 22  |                                                    |                                          |                                            |
+| 23  |                                                    |                                          |                                            |
+| 24  |                                                    |                                          |                                            |
+| 25  |                                                    | [Code](2021/rust/src/bin/solution_25.rs) |                                            |
 
 ## 2020
 
