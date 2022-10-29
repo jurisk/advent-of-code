@@ -1,108 +1,319 @@
-/*
+use advent_of_code::parsing::{parse_lines_to_vec, Error};
+use memoize::lazy_static::lazy_static;
+use regex::Regex;
+use std::cmp::{max, min};
+use std::str::FromStr;
 
---- Day 22: Reactor Reboot ---
-Operating at these extreme ocean depths has overloaded the submarine's reactor; it needs to be rebooted.
+const DATA: &str = include_str!("../../resources/22.txt");
 
-The reactor core is made up of a large 3-dimensional grid made up entirely of cubes, one cube per integer 3-dimensional coordinate (x,y,z). Each cube can be either on or off; at the start of the reboot process, they are all off. (Could it be an old model of a reactor you've seen before?)
+#[repr(u8)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+enum Instruction {
+    Off = 0,
+    On = 1,
+}
 
-To reboot the reactor, you just need to set all of the cubes to either on or off by following a list of reboot steps (your puzzle input). Each step specifies a cuboid (the set of all cubes that have coordinates which fall within ranges for x, y, and z) and whether to turn all of the cubes in that cuboid on or off.
+impl Instruction {
+    fn reverse(self) -> Instruction {
+        match self {
+            Instruction::Off => Instruction::On,
+            Instruction::On => Instruction::Off,
+        }
+    }
+}
 
-For example, given these reboot steps:
+impl FromStr for Instruction {
+    type Err = Error;
 
-on x=10..12,y=10..12,z=10..12
-on x=11..13,y=11..13,z=11..13
-off x=9..11,y=9..11,z=9..11
-on x=10..10,y=10..10,z=10..10
-The first step (on x=10..12,y=10..12,z=10..12) turns on a 3x3x3 cuboid consisting of 27 cubes:
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s == "on" {
+            Ok(Instruction::On)
+        } else if s == "off" {
+            Ok(Instruction::Off)
+        } else {
+            Err(format!("Unrecognized {}", s))
+        }
+    }
+}
 
-10,10,10
-10,10,11
-10,10,12
-10,11,10
-10,11,11
-10,11,12
-10,12,10
-10,12,11
-10,12,12
-11,10,10
-11,10,11
-11,10,12
-11,11,10
-11,11,11
-11,11,12
-11,12,10
-11,12,11
-11,12,12
-12,10,10
-12,10,11
-12,10,12
-12,11,10
-12,11,11
-12,11,12
-12,12,10
-12,12,11
-12,12,12
-The second step (on x=11..13,y=11..13,z=11..13) turns on a 3x3x3 cuboid that overlaps with the first. As a result, only 19 additional cubes turn on; the rest are already on from the previous step:
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
+struct Coords3D {
+    x: isize,
+    y: isize,
+    z: isize,
+}
 
-11,11,13
-11,12,13
-11,13,11
-11,13,12
-11,13,13
-12,11,13
-12,12,13
-12,13,11
-12,13,12
-12,13,13
-13,11,11
-13,11,12
-13,11,13
-13,12,11
-13,12,12
-13,12,13
-13,13,11
-13,13,12
-13,13,13
-The third step (off x=9..11,y=9..11,z=9..11) turns off a 3x3x3 cuboid that overlaps partially with some cubes that are on, ultimately turning off 8 cubes:
+impl Coords3D {
+    fn new(x: isize, y: isize, z: isize) -> Coords3D {
+        Coords3D { x, y, z }
+    }
+}
 
-10,10,10
-10,10,11
-10,11,10
-10,11,11
-11,10,10
-11,10,11
-11,11,10
-11,11,11
-The final step (on x=10..10,y=10..10,z=10..10) turns on a single cube, 10,10,10. After this last step, 39 cubes are on.
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
+struct Cuboid {
+    min: Coords3D,
+    max: Coords3D,
+}
 
-The initialization procedure only uses cubes that have x, y, and z positions of at least -50 and at most 50. For now, ignore cubes outside this region.
+fn task_1_bounds() -> Cuboid {
+    Cuboid {
+        min: Coords3D::new(-50, -50, -50),
+        max: Coords3D::new(50, 50, 50),
+    }
+}
 
-Here is a larger example:
+impl Cuboid {
+    fn valid_for_task_1(&self) -> bool {
+        self.overlap(&task_1_bounds()).is_some()
+    }
 
-on x=-20..26,y=-36..17,z=-47..7
-on x=-20..33,y=-21..23,z=-26..28
-on x=-22..28,y=-29..23,z=-38..16
-on x=-46..7,y=-6..46,z=-50..-1
-on x=-49..1,y=-3..46,z=-24..28
-on x=2..47,y=-22..22,z=-23..27
-on x=-27..23,y=-28..26,z=-21..29
-on x=-39..5,y=-6..47,z=-3..44
-on x=-30..21,y=-8..43,z=-13..34
-on x=-22..26,y=-27..20,z=-29..19
-off x=-48..-32,y=26..41,z=-47..-37
-on x=-12..35,y=6..50,z=-50..-2
-off x=-48..-32,y=-32..-16,z=-15..-5
-on x=-18..26,y=-33..15,z=-7..46
-off x=-40..-22,y=-38..-28,z=23..41
-on x=-16..35,y=-41..10,z=-47..6
-off x=-32..-23,y=11..30,z=-14..3
-on x=-49..-5,y=-3..45,z=-29..18
-off x=18..30,y=-20..-8,z=-3..13
-on x=-41..9,y=-7..43,z=-33..15
-on x=-54112..-39298,y=-85059..-49293,z=-27449..7877
-on x=967..23432,y=45373..81175,z=27513..53682
-The last two steps are fully outside the initialization procedure area; all other steps are fully within it. After executing these steps in the initialization procedure region, 590784 cubes are on.
+    fn size(&self) -> isize {
+        (self.max.x - self.min.x + 1)
+            * (self.max.y - self.min.y + 1)
+            * (self.max.z - self.min.z + 1)
+    }
 
-Execute the reboot steps. Afterward, considering only cubes in the region x=-50..50,y=-50..50,z=-50..50, how many cubes are on?
+    fn overlap(&self, other: &Cuboid) -> Option<Cuboid> {
+        let x1 = max(self.min.x, other.min.x);
+        let x2 = min(self.max.x, other.max.x);
+        let y1 = max(self.min.y, other.min.y);
+        let y2 = min(self.max.y, other.max.y);
+        let z1 = max(self.min.z, other.min.z);
+        let z2 = min(self.max.z, other.max.z);
 
- */
+        if x1 <= x2 && y1 <= y2 && z1 <= z2 {
+            let min = Coords3D::new(x1, y1, z1);
+            let max = Coords3D::new(x2, y2, z2);
+
+            Some(Cuboid { min, max })
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+struct Step {
+    instruction: Instruction,
+    cuboid: Cuboid,
+}
+
+impl Step {
+    fn size(&self) -> isize {
+        self.cuboid.size()
+            * (match self.instruction {
+                Instruction::Off => -1,
+                Instruction::On => 1,
+            })
+    }
+}
+
+impl FromStr for Step {
+    type Err = Error;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(
+                r"(\w+)\sx=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)"
+            )
+            .unwrap();
+        }
+
+        let qq = RE.captures(input).unwrap();
+        let groups = (
+            qq.get(1),
+            qq.get(2),
+            qq.get(3),
+            qq.get(4),
+            qq.get(5),
+            qq.get(6),
+            qq.get(7),
+        );
+
+        match groups {
+            (Some(m1), Some(m2), Some(m3), Some(m4), Some(m5), Some(m6), Some(m7)) => {
+                let instruction: Instruction = m1.as_str().parse()?;
+                let x1: isize = m2.as_str().parse().map_err(|err| format!("{}", err))?;
+                let x2: isize = m3.as_str().parse().map_err(|err| format!("{}", err))?;
+                let y1: isize = m4.as_str().parse().map_err(|err| format!("{}", err))?;
+                let y2: isize = m5.as_str().parse().map_err(|err| format!("{}", err))?;
+                let z1: isize = m6.as_str().parse().map_err(|err| format!("{}", err))?;
+                let z2: isize = m7.as_str().parse().map_err(|err| format!("{}", err))?;
+
+                let min = Coords3D::new(x1, y1, z1);
+                let max = Coords3D::new(x2, y2, z2);
+
+                let cuboid = Cuboid { min, max };
+
+                Ok(Step {
+                    instruction,
+                    cuboid,
+                })
+            },
+            _ => Err(format!("Did not match: {:?}", groups)),
+        }
+    }
+}
+
+struct Steps {
+    steps: Vec<Step>,
+}
+
+impl FromStr for Steps {
+    type Err = Error;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let steps: Vec<Step> = parse_lines_to_vec(input)?;
+        Ok(Steps { steps })
+    }
+}
+
+#[derive(Debug)]
+struct Cuboids {
+    steps: Vec<Step>,
+}
+
+impl Cuboids {
+    fn empty() -> Cuboids {
+        Cuboids { steps: vec![] }
+    }
+
+    fn apply_step(&mut self, step: &Step) {
+        let mut more: Vec<Step> = vec![];
+        for existing in &self.steps {
+            if let Some(overlap) = existing.cuboid.overlap(&step.cuboid) {
+                more.push(Step {
+                    instruction: existing.instruction.reverse(),
+                    cuboid: overlap,
+                });
+            }
+        }
+
+        if step.instruction == Instruction::On {
+            self.steps.push(*step);
+        }
+        for step in more {
+            self.steps.push(step);
+        }
+    }
+
+    fn cubes_on(&self) -> isize {
+        self.steps.iter().map(Step::size).sum()
+    }
+}
+
+impl Steps {
+    fn filter_for_task_1(&self) -> Steps {
+        Steps {
+            steps: self
+                .steps
+                .iter()
+                .filter(|s| s.cuboid.valid_for_task_1())
+                .copied()
+                .collect(),
+        }
+    }
+
+    fn cubes_on(&self) -> isize {
+        let mut cuboids: Cuboids = Cuboids::empty();
+        for step in &self.steps {
+            // println!("Applying: {:?}", step);
+            cuboids.apply_step(step);
+            // println!("Cuboids now: {:?}", cuboids);
+        }
+        cuboids.cubes_on()
+    }
+}
+
+fn solve_1(input: &str) -> Result<isize, Error> {
+    let steps: Steps = input.parse()?;
+    let filtered_steps = steps.filter_for_task_1();
+    Ok(filtered_steps.cubes_on())
+}
+
+fn solve_2(input: &str) -> Result<isize, Error> {
+    let steps: Steps = input.parse()?;
+    Ok(steps.cubes_on())
+}
+
+fn main() {
+    let result_1 = solve_1(DATA);
+    println!("Part 1: {:?}", result_1);
+
+    let result_2 = solve_2(DATA);
+    println!("Part 2: {:?}", result_2);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_DATA_1: &str = include_str!("../../resources/22-test-1.txt");
+    const TEST_DATA_2: &str = include_str!("../../resources/22-test-2.txt");
+    const TEST_DATA_3: &str = include_str!("../../resources/22-test-3.txt");
+
+    #[test]
+    fn test_overlap_1() {
+        let a = Cuboid {
+            min: Coords3D::new(0, -1, 4),
+            max: Coords3D::new(3, 17, 4),
+        };
+
+        let b = Cuboid {
+            min: Coords3D::new(2, 2, 4),
+            max: Coords3D::new(6, 5, 4),
+        };
+
+        let result = a.overlap(&b);
+
+        let expected = Cuboid {
+            min: Coords3D::new(2, 2, 4),
+            max: Coords3D::new(3, 5, 4),
+        };
+
+        assert_eq!(result, Some(expected));
+    }
+
+    #[test]
+    fn test_solve_1_test_0() {
+        assert_eq!(solve_1("on x=10..12,y=10..12,z=10..12"), Ok(27));
+    }
+
+    #[test]
+    fn test_solve_1_test_1() {
+        assert_eq!(
+            solve_1("on x=10..12,y=10..12,z=10..12\non x=11..13,y=11..13,z=11..13"),
+            Ok(46)
+        );
+    }
+
+    #[test]
+    fn test_solve_1_test_2() {
+        assert_eq!(solve_1("on x=10..12,y=10..12,z=10..12\non x=11..13,y=11..13,z=11..13\noff x=9..11,y=9..11,z=9..11"), Ok(38));
+    }
+
+    #[test]
+    fn test_solve_1_test_3() {
+        assert_eq!(solve_1(TEST_DATA_1), Ok(39));
+    }
+
+    #[test]
+    fn test_solve_1_test_4() {
+        assert_eq!(solve_1(TEST_DATA_2), Ok(590_784));
+    }
+
+    #[test]
+    fn test_solve_1_real() {
+        assert_eq!(solve_1(DATA), Ok(588_120));
+    }
+
+    #[test]
+    fn test_solve_2_test_1() {
+        assert_eq!(solve_2(TEST_DATA_3), Ok(2_758_514_936_282_235));
+    }
+
+    #[test]
+    fn test_solve_2_real() {
+        assert_eq!(solve_2(DATA), Ok(1_134_088_247_046_731));
+    }
+}

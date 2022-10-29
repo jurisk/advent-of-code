@@ -7,7 +7,10 @@ use std::str::FromStr;
 
 pub type Error = String;
 
-fn convert_error<T, E: Debug>(input: &str, result: Result<T, E>) -> Result<T, Error> {
+/// # Errors
+///
+/// Will return `Err` if input is `Err`.
+pub fn convert_error<T, E: Debug>(input: &str, result: Result<T, E>) -> Result<T, Error> {
     result.map_err(|err| format!("Error parsing {} {:?}", input, err))
 }
 
