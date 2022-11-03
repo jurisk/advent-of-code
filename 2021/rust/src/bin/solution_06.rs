@@ -99,6 +99,6 @@ mod tests {
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(solve(DATA, 256), Ok(123_456));
+        assert_eq!(solve(DATA, 256), Ok(1_644_874_076_764));
     }
 }

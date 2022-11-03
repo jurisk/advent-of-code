@@ -22,7 +22,7 @@
 | 16  | [Code](2021/scala/src/main/scala/Solution16.scala) |                                          |                                            |
 | 17  |                                                    | [Code](2021/rust/src/bin/solution_17.rs) |                                            |
 | 18  |                                                    | [Code](2021/rust/src/bin/solution_18.rs) |                                            |
-| 19  |                                                    |                                          |                                            |
+| 18  |                                                    | [Code](2021/rust/src/bin/solution_19.rs) |                                            |
 | 20  |                                                    | [Code](2021/rust/src/bin/solution_20.rs) |                                            |
 | 21  |                                                    | [Code](2021/rust/src/bin/solution_21.rs) |                                            |
 | 22  |                                                    | [Code](2021/rust/src/bin/solution_22.rs) |                                            |

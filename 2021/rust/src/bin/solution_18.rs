@@ -133,7 +133,6 @@ impl SnailfishNumber {
     //
     // Returns Some if "explode" succeeded, None if failed
     #[allow(clippy::collapsible_else_if)]
-    #[allow(clippy::comparison_chain)]
     fn attempt_explode_internal(
         &self,
         depth_at: usize,

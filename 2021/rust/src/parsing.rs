@@ -110,7 +110,7 @@ where
 /// # Errors
 ///
 /// Will return `Err` if parsing fails.
-fn parse_separated_vec<T: FromStr>(input: &str, separator: &str) -> Result<Vec<T>, Error>
+pub fn parse_separated_vec<T: FromStr>(input: &str, separator: &str) -> Result<Vec<T>, Error>
 where
     T::Err: Debug,
 {
@@ -121,6 +121,20 @@ where
         .collect();
 
     convert_error(input, result)
+}
+
+/// # Errors
+///
+/// Will return `Err` if parsing fails.
+pub fn parse_separated_nonempty<T: FromStr>(
+    input: &str,
+    separator: &str,
+) -> Result<NonEmpty<T>, Error>
+where
+    T::Err: Debug,
+{
+    let result_vec = parse_separated_vec(input, separator)?;
+    NonEmpty::from_vec(result_vec).ok_or_else(|| "Empty".to_string())
 }
 
 /// # Errors
