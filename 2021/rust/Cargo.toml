@@ -2,8 +2,9 @@
 name = "advent-of-code"
 version = "0.1.0"
 authors = ["jurisk <jurisk@users.noreply.github.com>"]
+license = "UNLICENSED"
 edition = "2021"
-rust-version = "1.64.0"
+rust-version = "1.65.0"
 
 [dependencies]
 regex = "1"
