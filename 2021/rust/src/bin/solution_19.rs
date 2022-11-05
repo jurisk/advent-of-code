@@ -92,7 +92,7 @@ fn parse_coords_3d(input: &str) -> Result<Vector3<N>, Error> {
     if vec.len() == 3 {
         Ok(Vector3::new(vec[0], vec[1], vec[2]))
     } else {
-        Err(format!("Unexpected {:?}", vec))
+        Err(format!("Unexpected {vec:?}"))
     }
 }
 
@@ -103,7 +103,7 @@ impl FromStr for Sensor {
         let lines: NonEmpty<String> = parse_lines_to_nonempty(input)?;
         let id = if let Some(tmp) = lines.head.strip_prefix("--- scanner ") {
             if let Some(id_str) = tmp.strip_suffix(" ---") {
-                id_str.parse().map_err(|err| format!("{}", err))
+                id_str.parse().map_err(|err| format!("{err}"))
             } else {
                 Err(format!("Failed to recognize {}", lines.head))
             }
@@ -183,11 +183,11 @@ impl Debug for Solution {
         writeln!(f)?;
         writeln!(f, "Aligned sensors:")?;
         for s in &self.aligned_sensors {
-            writeln!(f, "{:?}", s)?;
+            writeln!(f, "{s:?}")?;
         }
         writeln!(f, "Pending sensors:")?;
         for s in &self.pending_sensors {
-            writeln!(f, "{:?}", s)?;
+            writeln!(f, "{s:?}")?;
         }
         writeln!(f)
     }
@@ -327,7 +327,7 @@ fn solve(input: &str) -> Result<(usize, N), Error> {
 
 fn main() {
     let result: Result<(usize, N), Error> = solve(DATA);
-    println!("{:?}", result);
+    println!("{result:?}");
 }
 
 #[cfg(test)]
@@ -339,7 +339,7 @@ mod tests {
     #[test]
     fn test_all_rotations() {
         let rotations = ALL_ROTATIONS;
-        println!("{:?}", rotations);
+        println!("{rotations:?}");
         assert_eq!(rotations.len(), 24);
     }
 

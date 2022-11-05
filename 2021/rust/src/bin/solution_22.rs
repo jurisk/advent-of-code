@@ -31,7 +31,7 @@ impl FromStr for Instruction {
         } else if s == "off" {
             Ok(Instruction::Off)
         } else {
-            Err(format!("Unrecognized {}", s))
+            Err(format!("Unrecognized {s}"))
         }
     }
 }
@@ -133,12 +133,12 @@ impl FromStr for Step {
         match groups {
             (Some(m1), Some(m2), Some(m3), Some(m4), Some(m5), Some(m6), Some(m7)) => {
                 let instruction: Instruction = m1.as_str().parse()?;
-                let x1: isize = m2.as_str().parse().map_err(|err| format!("{}", err))?;
-                let x2: isize = m3.as_str().parse().map_err(|err| format!("{}", err))?;
-                let y1: isize = m4.as_str().parse().map_err(|err| format!("{}", err))?;
-                let y2: isize = m5.as_str().parse().map_err(|err| format!("{}", err))?;
-                let z1: isize = m6.as_str().parse().map_err(|err| format!("{}", err))?;
-                let z2: isize = m7.as_str().parse().map_err(|err| format!("{}", err))?;
+                let x1: isize = m2.as_str().parse().map_err(|err| format!("{err}"))?;
+                let x2: isize = m3.as_str().parse().map_err(|err| format!("{err}"))?;
+                let y1: isize = m4.as_str().parse().map_err(|err| format!("{err}"))?;
+                let y2: isize = m5.as_str().parse().map_err(|err| format!("{err}"))?;
+                let z1: isize = m6.as_str().parse().map_err(|err| format!("{err}"))?;
+                let z2: isize = m7.as_str().parse().map_err(|err| format!("{err}"))?;
 
                 let min = Coords3D::new(x1, y1, z1);
                 let max = Coords3D::new(x2, y2, z2);
@@ -150,7 +150,7 @@ impl FromStr for Step {
                     cuboid,
                 })
             },
-            _ => Err(format!("Did not match: {:?}", groups)),
+            _ => Err(format!("Did not match: {groups:?}")),
         }
     }
 }
@@ -238,10 +238,10 @@ fn solve_2(input: &str) -> Result<isize, Error> {
 
 fn main() {
     let result_1 = solve_1(DATA);
-    println!("Part 1: {:?}", result_1);
+    println!("Part 1: {result_1:?}");
 
     let result_2 = solve_2(DATA);
-    println!("Part 2: {:?}", result_2);
+    println!("Part 2: {result_2:?}");
 }
 
 #[cfg(test)]

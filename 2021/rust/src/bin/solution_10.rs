@@ -90,7 +90,7 @@ impl ParsingResult {
 fn parse_line(x: &str) -> ParsingResult {
     let characters: Vec<Character> = x
         .chars()
-        .map(|x| Character::parse(x).unwrap_or_else(|| panic!("Unrecognized character {}", x)))
+        .map(|x| Character::parse(x).unwrap_or_else(|| panic!("Unrecognized character {x}")))
         .collect();
 
     let mut stack: Vec<OpeningBracketType> = Vec::new();
@@ -167,13 +167,13 @@ fn main() {
 
     let data = parse_data(include_str!("../../resources/10.txt"));
     let result_1 = part_1(&data);
-    println!("Part 1: {}", result_1);
+    println!("Part 1: {result_1}");
     assert_eq!(result_1, 388713);
 
     let test_result_2 = part_2(&test_data);
     assert_eq!(test_result_2, 288957);
 
     let result_2 = part_2(&data);
-    println!("Part 2: {}", result_2);
+    println!("Part 2: {result_2}");
     assert_eq!(result_2, 3539961434);
 }

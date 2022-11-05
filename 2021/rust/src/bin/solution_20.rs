@@ -18,7 +18,7 @@ impl Pixel {
 }
 
 fn parse_pixel(ch: char) -> Result<Pixel, Error> {
-    Pixel::try_from(ch as u8).map_err(|err| format!("{:?}", err))
+    Pixel::try_from(ch as u8).map_err(|err| format!("{err:?}"))
 }
 
 #[derive(Clone)]
@@ -111,7 +111,7 @@ impl Data {
             let s: String = (0..self.image.pixels.columns)
                 .map(|c| self.image.pixels[(r, c)].as_char())
                 .collect();
-            println!("{}", s);
+            println!("{s}");
         }
         println!();
     }
@@ -124,8 +124,8 @@ impl FromStr for Data {
         let (a, b) = split_into_two_strings(input, "\n\n")?;
         let mapping_vec_result: Result<Vec<_>, _> =
             a.chars().map(|ch| Pixel::try_from(ch as u8)).collect();
-        let mapping_vec = mapping_vec_result.map_err(|err| format!("{:?}", err))?;
-        let mapping: [Pixel; 512] = mapping_vec.try_into().map_err(|err| format!("{:?}", err))?;
+        let mapping_vec = mapping_vec_result.map_err(|err| format!("{err:?}"))?;
+        let mapping: [Pixel; 512] = mapping_vec.try_into().map_err(|err| format!("{err:?}"))?;
         let image_enhancement_algorithm = ImageEnhancementAlgorithm { mapping };
         let pixels = parse_matrix(&b, parse_pixel)?;
         let surrounding_pixels = Pixel::Dark;
@@ -156,10 +156,10 @@ const DATA: &str = include_str!("../../resources/20.txt");
 
 fn main() {
     let result_1 = solve(DATA, 2);
-    println!("Part 1: {:?}", result_1);
+    println!("Part 1: {result_1:?}");
 
     let result_2 = solve(DATA, 50);
-    println!("Part 2: {:?}", result_2);
+    println!("Part 2: {result_2:?}");
 }
 
 #[cfg(test)]

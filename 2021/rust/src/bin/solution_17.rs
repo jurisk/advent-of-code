@@ -160,10 +160,10 @@ fn solve_2(area: &Area) -> usize {
 
 fn main() {
     let result_1 = solve_1(&DATA);
-    println!("Part 1: {:?}", result_1);
+    println!("Part 1: {result_1:?}");
 
     let result_2 = solve_2(&DATA);
-    println!("Part 2: {:?}", result_2);
+    println!("Part 2: {result_2:?}");
 }
 
 #[cfg(test)]

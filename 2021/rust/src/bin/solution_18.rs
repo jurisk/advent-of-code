@@ -39,7 +39,7 @@ impl SnailfishNumber {
 impl Debug for SnailfishNumber {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            SnailfishNumber::Literal { value } => write!(f, "{}", value),
+            SnailfishNumber::Literal { value } => write!(f, "{value}"),
             SnailfishNumber::Pair { left, right } => write!(f, "[{:?},{:?}]", **left, **right),
         }
     }
@@ -132,7 +132,7 @@ impl SnailfishNumber {
     // regular numbers. Then, the entire exploding pair is replaced with the regular number 0.
     //
     // Returns Some if "explode" succeeded, None if failed
-    #[allow(clippy::collapsible_else_if)]
+    #[allow(clippy::collapsible_else_if, clippy::comparison_chain)]
     fn attempt_explode_internal(
         &self,
         depth_at: usize,
@@ -297,10 +297,10 @@ fn solve_2(input: &str) -> Result<Number, Error> {
 
 fn main() {
     let result_1 = solve_1(DATA);
-    println!("Part 1: {:?}", result_1);
+    println!("Part 1: {result_1:?}");
 
     let result_2 = solve_2(DATA);
-    println!("Part 2: {:?}", result_2);
+    println!("Part 2: {result_2:?}");
 }
 
 #[cfg(test)]

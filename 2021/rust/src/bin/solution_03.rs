@@ -95,7 +95,7 @@ fn main() {
     let result_1 = part_1(data);
 
     assert_eq!(result_1, 2261546);
-    println!("Part 1: {}", result_1);
+    println!("Part 1: {result_1}");
 
     let test_result_2 = part_2(test_data);
     assert_eq!(test_result_2, 230);
@@ -103,5 +103,5 @@ fn main() {
     let result_2 = part_2(data);
     assert_eq!(result_2, 6775520);
 
-    println!("Part 2: {}", result_2);
+    println!("Part 2: {result_2}");
 }

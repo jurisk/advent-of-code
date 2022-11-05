@@ -17,7 +17,7 @@ impl Board {
             .map(|row| {
                 let v: Result<Vec<Number>, Error> = row
                     .split_whitespace()
-                    .map(|x| x.parse().map_err(|e| format!("{} parsing {}", e, x)))
+                    .map(|x| x.parse().map_err(|e| format!("{e} parsing {x}")))
                     .collect();
 
                 v.map(Matrix1x5::from_vec)
@@ -105,7 +105,7 @@ impl Game {
 
         let drawn_numbers: Result<Vec<Number>, Error> = drawn_numbers_str
             .split(',')
-            .map(|x| x.parse().map_err(|e| format!("{} parsing {}", e, x)))
+            .map(|x| x.parse().map_err(|e| format!("{e} parsing {x}")))
             .collect();
 
         let boards: Result<Vec<Board>, Error> =
@@ -169,9 +169,9 @@ fn solve_2(data: &str) -> Result<usize, Error> {
 
 fn main() {
     let result_1 = solve_1(DATA);
-    println!("Part 1: {:?}", result_1);
+    println!("Part 1: {result_1:?}");
     let result_2 = solve_2(DATA);
-    println!("Part 2: {:?}", result_2);
+    println!("Part 2: {result_2:?}");
 }
 
 #[cfg(test)]

@@ -46,7 +46,7 @@ struct Entry {
 
 impl Entry {
     fn count_1_4_7_8(&self) -> usize {
-        println!("{:?}", self);
+        println!("{self:?}");
         self.output_value_digits()
             .iter()
             .filter(|&n| matches!(n, 1 | 4 | 7 | 8))
@@ -133,10 +133,10 @@ impl FromStr for Entry {
 
         let ten_patterns = ten_patterns_vec
             .try_into()
-            .map_err(|err| format!("{:?}", err))?;
+            .map_err(|err| format!("{err:?}"))?;
         let output_value_segments = output_value_vec
             .try_into()
-            .map_err(|err| format!("{:?}", err))?;
+            .map_err(|err| format!("{err:?}"))?;
 
         Ok(Entry {
             ten_patterns,
@@ -165,10 +165,10 @@ fn solve_2(input: &str) -> Result<usize, Error> {
 
 fn main() {
     let result_1 = solve_1(DATA);
-    println!("Part 1: {:?}", result_1);
+    println!("Part 1: {result_1:?}");
 
     let result_2 = solve_2(DATA);
-    println!("Part 2: {:?}", result_2);
+    println!("Part 2: {result_2:?}");
 }
 
 #[cfg(test)]

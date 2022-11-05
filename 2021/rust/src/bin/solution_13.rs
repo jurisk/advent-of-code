@@ -29,7 +29,7 @@ impl CoordsXY {
                 x: self.x,
                 y: y_fold - (self.y - y_fold),
             },
-            _ => panic!("Unexpected {:?} {:?}", self, instruction),
+            _ => panic!("Unexpected {self:?} {instruction:?}"),
         }
     }
 }
@@ -39,8 +39,8 @@ impl FromStr for CoordsXY {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (x_str, y_str) = split_into_two_strings(s, ",")?;
-        let x = x_str.parse().map_err(|err| format!("{}", err))?;
-        let y = y_str.parse().map_err(|err| format!("{}", err))?;
+        let x = x_str.parse().map_err(|err| format!("{err}"))?;
+        let y = y_str.parse().map_err(|err| format!("{err}"))?;
 
         Ok(CoordsXY { x, y })
     }
@@ -57,13 +57,13 @@ impl FromStr for FoldInstruction {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Some(along_x) = s.strip_prefix("fold along x=") {
-            let x = along_x.parse().map_err(|err| format!("{}", err))?;
+            let x = along_x.parse().map_err(|err| format!("{err}"))?;
             Ok(AlongX(x))
         } else if let Some(along_y) = s.strip_prefix("fold along y=") {
-            let y = along_y.parse().map_err(|err| format!("{}", err))?;
+            let y = along_y.parse().map_err(|err| format!("{err}"))?;
             Ok(AlongY(y))
         } else {
-            Err(format!("Unrecognized {}", s))
+            Err(format!("Unrecognized {s}"))
         }
     }
 }
@@ -140,7 +140,7 @@ fn solve_2(input: &str) -> Result<String, Error> {
 
 fn main() {
     let result_1 = solve_1(DATA);
-    println!("Part 1: {:?}", result_1);
+    println!("Part 1: {result_1:?}");
 
     let result_2 = solve_2(DATA);
     println!("Part 2:\n{}", result_2.unwrap()); // RGZLBHFP

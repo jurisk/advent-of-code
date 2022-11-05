@@ -16,7 +16,7 @@ enum Square {
 type SeaFloor = Matrix<Square>;
 
 fn parse_square(ch: char) -> Result<Square, Error> {
-    Square::try_from(ch as u8).map_err(|err| format!("{:?}", err))
+    Square::try_from(ch as u8).map_err(|err| format!("{err:?}"))
 }
 
 fn step<F>(sea_floor: &SeaFloor, move_cucumber: Square, adjust_coord: F) -> SeaFloor
@@ -66,7 +66,7 @@ fn do_step(sea_floor: &SeaFloor) -> SeaFloor {
 }
 
 fn print_sea_floor(step: usize, sea_floor: &SeaFloor) {
-    println!("After {}", step);
+    println!("After {step}");
     for r in 0..sea_floor.rows {
         let row: String = (0..sea_floor.columns)
             .map(|c| {
@@ -74,7 +74,7 @@ fn print_sea_floor(step: usize, sea_floor: &SeaFloor) {
                 as_u8 as char
             })
             .collect();
-        println!("{}", row);
+        println!("{row}");
     }
     println!("\n\n");
 }
@@ -98,7 +98,7 @@ fn solve(input: &str) -> Result<usize, Error> {
 
 fn main() {
     let result_1 = solve(DATA);
-    println!("Part 1: {:?}", result_1);
+    println!("Part 1: {result_1:?}");
 }
 
 #[cfg(test)]

@@ -79,7 +79,7 @@ impl Command {
             Some(&"forward") => Command::Forward(number),
             Some(&"up") => Command::Up(number),
             Some(&"down") => Command::Down(number),
-            x => panic!("Unrecognized: {:?}", x),
+            x => panic!("Unrecognized: {x:?}"),
         }
     }
 }
@@ -130,7 +130,7 @@ forward 2";
     let result_1 = part_1(data);
 
     assert_eq!(result_1, 2036120);
-    println!("Part 1: {}", result_1);
+    println!("Part 1: {result_1}");
 
     let test_result_2 = part_2(test_data);
     assert_eq!(test_result_2, 900);
@@ -138,5 +138,5 @@ forward 2";
     let result_2 = part_2(data);
 
     assert_eq!(result_2, 2015547716);
-    println!("Part 2: {}", result_2);
+    println!("Part 2: {result_2}");
 }

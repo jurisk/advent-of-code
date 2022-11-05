@@ -17,7 +17,7 @@ fn parse(data: &str) -> Result<FishCount, Error> {
             let result: HashMap<FishState, Vec<&FishState>> = vec.iter().into_group_map_by(|x| **x);
             Ok(result.iter().map(|(k, v)| (*k, v.len())).collect())
         },
-        Err(e) => Err(format!("{}", e)),
+        Err(e) => Err(format!("{e}")),
     }
 }
 
@@ -55,20 +55,20 @@ fn fish_count(fishes: &FishCount) -> usize {
 fn solve(data: &str, days: u32) -> Result<usize, Error> {
     let mut fishes = parse(data)?;
     for idx in 0..days {
-        println!("{} {} {:?}", idx, fish_count(&fishes), fishes);
+        println!("{idx} {} {fishes:?}", fish_count(&fishes));
         fishes = next_day(&fishes);
     }
-    println!("{} {} {:?}", days, fish_count(&fishes), fishes);
+    println!("{days} {} {fishes:?}", fish_count(&fishes));
 
     Ok(fish_count(&fishes))
 }
 
 fn main() {
     let result_1 = solve(DATA, 80);
-    println!("Part 1: {:?}", result_1);
+    println!("Part 1: {result_1:?}");
 
     let result_2 = solve(DATA, 256);
-    println!("Part 2: {:?}", result_2);
+    println!("Part 2: {result_2:?}");
 }
 
 #[cfg(test)]

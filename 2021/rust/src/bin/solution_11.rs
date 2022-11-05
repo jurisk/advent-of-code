@@ -28,9 +28,7 @@ fn step(octopuses: &Octopuses) -> (usize, Octopuses) {
                 result[(r, c)] = FLASHED;
 
                 for neighbour in result.neighbours((r, c), true) {
-                    if result[neighbour] != FLASHED {
-                        result[neighbour] += 1;
-                    }
+                    result[neighbour] = result[neighbour].saturating_add(1);
                 }
             }
         }
@@ -81,10 +79,10 @@ fn solve_2(input: &str) -> Result<usize, Error> {
 
 fn main() {
     let result_1 = solve_1(DATA, 100);
-    println!("Part 1: {:?}", result_1);
+    println!("Part 1: {result_1:?}");
 
     let result_2 = solve_2(DATA);
-    println!("Part 2: {:?}", result_2);
+    println!("Part 2: {result_2:?}");
 }
 
 #[cfg(test)]

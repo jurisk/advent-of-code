@@ -149,13 +149,13 @@ fn main() {
 
     let data = HeightMap::parse(include_str!("../../resources/09.txt"));
     let result_1 = part_1(&data);
-    println!("Part 1: {}", result_1);
+    println!("Part 1: {result_1}");
     assert_eq!(result_1, 545);
 
     let test_result_2 = part_2(&test_data);
     assert_eq!(test_result_2, 1134);
 
     let result_2 = part_2(&data);
-    println!("Part 2: {}", result_2);
+    println!("Part 2: {result_2}");
     assert_eq!(result_2, 950600);
 }
