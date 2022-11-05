@@ -1,5 +1,3 @@
-#![feature(iterator_fold_self)]
-
 use std::collections::HashSet;
 
 fn parse_multi_line(input: &str) -> Vec<Vec<&str>> {
@@ -17,7 +15,7 @@ type MergeFunction<T> = fn(HashSet<T>, other: HashSet<T>) -> HashSet<T>;
 
 #[allow(clippy::ptr_arg)]
 fn merge_group(group: &Vec<HashSet<Answer>>, f: MergeFunction<Answer>) -> HashSet<Answer> {
-    group.clone().into_iter().fold_first(f).unwrap_or_default()
+    group.clone().into_iter().reduce(f).unwrap_or_default()
 }
 
 fn solve(groups: &[Group], f: MergeFunction<Answer>) -> usize {

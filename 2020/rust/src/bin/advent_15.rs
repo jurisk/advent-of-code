@@ -19,7 +19,7 @@ fn solve(numbers: &[u64], target: usize) -> u64 {
         }
 
         let previous: Option<u64> = number_positions.insert(current, current_idx);
-        current = previous.map(|x| current_idx - x).unwrap_or(0);
+        current = previous.map_or(0, |x| current_idx - x);
     }
 
     current
@@ -43,10 +43,10 @@ fn main() {
     assert_eq!(solve(&[3, 1, 2], 2020), 1836);
 
     let solved_2020 = solve(&[0, 5, 4, 1, 10, 14, 7], 2020);
-    println!("{}", solved_2020);
+    println!("{solved_2020}");
     assert_eq!(solved_2020, 203);
 
     let solved_30m = solve(&[0, 5, 4, 1, 10, 14, 7], 30_000_000);
-    println!("{}", solved_30m);
+    println!("{solved_30m}");
     assert_eq!(solved_30m, 9_007_186);
 }

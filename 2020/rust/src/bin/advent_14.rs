@@ -1,4 +1,4 @@
-use crate::Command::*;
+use crate::Command::{SetMask, SetMemory};
 use regex::Regex;
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
@@ -44,7 +44,7 @@ fn parse_mask(line: &str) -> Result<Command, ErrorMessage> {
     lazy_static! {
         static ref RE: Regex = regex::Regex::new(r"mask = (\w+)").expect("Failed to parse RegEx");
     }
-    let elems = &RE.captures(&line).ok_or("Failed to match mask")?;
+    let elems = &RE.captures(line).ok_or("Failed to match mask")?;
 
     let bits: &str = &elems[1];
 
@@ -78,7 +78,7 @@ fn parse_set_memory(line: &str) -> Result<Command, ErrorMessage> {
             regex::Regex::new(r"mem\[(\d+)] = (\d+)").expect("Failed to parse RegEx");
     }
 
-    let caps = RE.captures(&line).ok_or("Invalid command")?;
+    let caps = RE.captures(line).ok_or("Invalid command")?;
     let address: u64 = caps[1].parse().map_err(|_| "Invalid address")?;
     let value: u64 = caps[2].parse().map_err(|_| "Invalid value")?;
 
@@ -86,11 +86,11 @@ fn parse_set_memory(line: &str) -> Result<Command, ErrorMessage> {
 }
 
 fn parse_line(input: &str) -> Result<Command, ErrorMessage> {
-    parse_mask(&input).or_else(|_| parse_set_memory(input))
+    parse_mask(input).or_else(|_| parse_set_memory(input))
 }
 
 fn parse_lines(input: &str) -> Result<Vec<Command>, ErrorMessage> {
-    input.lines().map(|s| parse_line(s)).collect()
+    input.lines().map(parse_line).collect()
 }
 
 fn apply_mask(value: u64, mask_0: u64, mask_1: u64) -> u64 {
@@ -202,9 +202,9 @@ fn main() {
 
     assert_eq!(solve1(&test_data_1), 165);
     println!("{}", solve1(&real_data));
-    assert_eq!(solve1(&real_data), 15403588588538);
+    assert_eq!(solve1(&real_data), 15_403_588_588_538);
 
     assert_eq!(solve2(&test_data_2), 208);
-    assert_eq!(solve2(&real_data), 3260587250457);
+    assert_eq!(solve2(&real_data), 3_260_587_250_457);
     println!("{}", solve2(&real_data));
 }

@@ -90,8 +90,7 @@ fn answer1(cups: &mut Cups) -> String {
     return result
         .iter()
         .map(|x| (x + 1).to_string())
-        .collect::<Vec<String>>()
-        .join("");
+        .collect::<String>();
 }
 
 fn answer2(cups: &mut Cups) -> usize {
@@ -118,17 +117,17 @@ fn main() {
     let mut real_cups_short = Cups::short("942387615");
     simulate(&mut real_cups_short, 100);
     let real_answer_1 = answer1(&mut real_cups_short);
-    println!("{}", real_answer_1);
+    println!("{real_answer_1}");
     assert_eq!(real_answer_1, "36542897");
 
     let mut test_cups_long = Cups::long("389125467", 1_000_000);
     simulate(&mut test_cups_long, 10_000_000);
     let answer_test_cups_long = answer2(&mut test_cups_long);
-    assert_eq!(answer_test_cups_long, 149245887792);
+    assert_eq!(answer_test_cups_long, 149_245_887_792);
 
     let mut real_cups_long = Cups::long("942387615", 1_000_000);
     simulate(&mut real_cups_long, 10_000_000);
     let answer_real_cups_long = answer2(&mut real_cups_long);
-    println!("{}", answer_real_cups_long);
-    assert_eq!(answer_real_cups_long, 562136730660);
+    println!("{answer_real_cups_long}");
+    assert_eq!(answer_real_cups_long, 562_136_730_660);
 }

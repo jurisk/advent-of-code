@@ -84,11 +84,11 @@ fn solve2(schedule: &[Option<Number>]) -> Number {
     let a: Vec<Number> = schedule
         .iter()
         .enumerate()
-        .flat_map(|(idx, a)| a.map(|n| n - idx as Number))
+        .filter_map(|(idx, a)| a.map(|n| n - idx as Number))
         .collect();
 
-    println!("a {:?}", a);
-    println!("n {:?}", n);
+    println!("a {a:?}");
+    println!("n {n:?}");
     println!();
 
     chinese_remainder(&a, &n).unwrap()
@@ -103,16 +103,16 @@ fn main() {
     let real_str = include_str!("../../resources/13.txt");
     let real_data = parse_lines(real_str);
     let real_solution_1 = solve1(&real_data);
-    println!("{}", real_solution_1);
+    println!("{real_solution_1}");
 
     assert_eq!(solve2(&parse_schedule("17,x,13,19")), 3417);
-    assert_eq!(solve2(&test_data.schedule), 1068781);
-    assert_eq!(solve2(&parse_schedule("67,7,59,61")), 754018);
-    assert_eq!(solve2(&parse_schedule("67,x,7,59,61")), 779210);
-    assert_eq!(solve2(&parse_schedule("67,7,x,59,61")), 1261476);
-    assert_eq!(solve2(&parse_schedule("1789,37,47,1889")), 1202161486);
+    assert_eq!(solve2(&test_data.schedule), 1_068_781);
+    assert_eq!(solve2(&parse_schedule("67,7,59,61")), 754_018);
+    assert_eq!(solve2(&parse_schedule("67,x,7,59,61")), 779_210);
+    assert_eq!(solve2(&parse_schedule("67,7,x,59,61")), 1_261_476);
+    assert_eq!(solve2(&parse_schedule("1789,37,47,1889")), 1_202_161_486);
 
     let real_solution_2 = solve2(&real_data.schedule);
-    assert!(real_solution_2 > 100000000000000);
-    println!("{}", real_solution_2);
+    assert!(real_solution_2 > 100_000_000_000_000);
+    println!("{real_solution_2}");
 }

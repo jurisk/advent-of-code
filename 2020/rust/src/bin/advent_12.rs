@@ -1,4 +1,4 @@
-use crate::Command::*;
+use crate::Command::{East, Forward, Left, North, Right, South, West};
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 enum Command {
@@ -45,7 +45,7 @@ impl Location {
                 90 => n,
                 180 => 0,
                 270 => -n,
-                _ => panic!(format!("Didn't expect {}", bearing)),
+                _ => panic!("{}", "Didn't expect {bearing}"),
             }
         }
 
@@ -55,7 +55,7 @@ impl Location {
                 90 => 0,
                 180 => -n,
                 270 => 0,
-                _ => panic!(format!("Didn't expect {}", bearing)),
+                _ => panic!("{}", "Didn't expect {bearing}"),
             }
         }
 
@@ -147,7 +147,7 @@ fn parse_line(line: &str) -> Command {
         'L' => Left(number),
         'R' => Right(number),
         'F' => Forward(number),
-        _ => panic!(format!("Unrecognized char {}", first_char)),
+        _ => panic!("{}", "Unrecognized char {first_char}"),
     }
 }
 
