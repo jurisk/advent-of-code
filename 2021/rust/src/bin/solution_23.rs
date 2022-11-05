@@ -664,14 +664,16 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_solve_2() {
         let result = solve_2(TEST);
         assert_eq!(result, Ok(44169));
     }
 
     #[test]
+    #[ignore]
     fn real_solve_2() {
         let result = solve_2(DATA);
-        assert_eq!(result, Ok(123_456));
+        assert_eq!(result, Ok(47665));
     }
 }
