@@ -1,6 +1,7 @@
 use crate::Amphipod::{A, B, C, D};
 use crate::HallwaySquare::{LL, LR, ML, MM, MR, RL, RR};
 use advent_of_code::parsing::Error;
+use itertools::Itertools;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use pathfinding::prelude::dijkstra;
 use std::fmt::{Display, Formatter};
@@ -65,81 +66,79 @@ impl Amphipod {
     }
 }
 
-type AllInRoomsStateEncoding = [Amphipod; 8];
-
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-struct RoomForTwo {
+struct Room<const N: usize> {
     expected_amphipod: Amphipod,
-    upper: Option<Amphipod>,
-    lower: Option<Amphipod>,
+    amphipods: [Option<Amphipod>; N],
 }
 
-impl RoomForTwo {
-    fn create_full(expected_amphipod: Amphipod, upper: Amphipod, lower: Amphipod) -> Self {
-        RoomForTwo {
+impl<const N: usize> Room<N> {
+    fn from_vec(expected_amphipod: Amphipod, vec: Vec<Option<Amphipod>>) -> Result<Self, Error> {
+        let amphipods: [Option<Amphipod>; N] = vec.try_into().map_err(|err| format!("{err:?}"))?;
+
+        Ok(Room {
             expected_amphipod,
-            upper: Some(upper),
-            lower: Some(lower),
+            amphipods,
+        })
+    }
+
+    fn full_of(expected_amphipod: Amphipod) -> Self {
+        let amphipods = [Some(expected_amphipod); N];
+
+        Room {
+            expected_amphipod,
+            amphipods,
         }
     }
 
     fn free_of_strangers(&self) -> bool {
-        vec![self.upper, self.lower].iter().all(|x| match x {
+        self.amphipods.iter().all(|x| match x {
             None => true,
             Some(q) => *q == self.expected_amphipod,
         })
     }
 
-    fn push(&self) -> RoomForTwo {
-        match (self.upper, self.lower) {
-            (None, None) => RoomForTwo {
-                expected_amphipod: self.expected_amphipod,
-                upper: None,
-                lower: Some(self.expected_amphipod),
-            },
-            (None, Some(lower)) => {
-                assert_eq!(lower, self.expected_amphipod);
-                RoomForTwo {
-                    expected_amphipod: self.expected_amphipod,
-                    upper: Some(self.expected_amphipod),
-                    lower: Some(self.expected_amphipod),
-                }
-            },
-            (_, _) => panic!("Cannot push for {self:?}"),
+    fn first_occupied(&self) -> usize {
+        self.amphipods.iter().position(Option::is_some).unwrap_or(N)
+    }
+
+    fn first_free(&self) -> usize {
+        self.first_occupied() - 1
+    }
+
+    fn push(&self) -> Room<N> {
+        let idx = self.first_free();
+        let mut amphipods = self.amphipods;
+        amphipods[idx] = Some(self.expected_amphipod);
+        Room {
+            expected_amphipod: self.expected_amphipod,
+            amphipods,
         }
     }
 
     fn has_space(&self) -> Option<Steps> {
-        match (self.upper, self.lower) {
-            (None, None) => Some(1),    // extra 1 step to go down to lower
-            (None, Some(_)) => Some(0), // upper is free, no extra cost to go down
-            (Some(_), Some(_)) => None, // full
-            (Some(_), None) => panic!("Unexpected state {self:?}"),
+        // Makes some assumptions about data consistency, but it should be OK
+        if self.amphipods.iter().all(Option::is_some) {
+            None
+        } else {
+            Some(self.first_occupied() as Steps - 1)
         }
     }
 
     fn has_amphiphod_who_can_leave(&self) -> Option<(Amphipod, Steps)> {
-        match (self.upper, self.lower) {
-            (None, None) => None,
-            (None, Some(lower)) => Some((lower, 1)),
-            (Some(_), None) => panic!("Unexpected state {self:?}"),
-            (Some(upper), Some(_)) => Some((upper, 0)),
-        }
+        let idx = self.first_occupied();
+        let found = self.amphipods.get(idx)?;
+        let amphipod: Amphipod = (*found)?;
+        Some((amphipod, idx as Steps))
     }
 
-    fn pop(&self) -> RoomForTwo {
-        match (self.upper, self.lower) {
-            (None, Some(_)) => RoomForTwo {
-                expected_amphipod: self.expected_amphipod,
-                upper: None,
-                lower: None,
-            },
-            (Some(_), Some(_)) => RoomForTwo {
-                expected_amphipod: self.expected_amphipod,
-                upper: None,
-                lower: self.lower,
-            },
-            _ => panic!("Unexpected state {self:?}"),
+    fn pop(&self) -> Room<N> {
+        let idx = self.first_occupied();
+        let mut amphipods = self.amphipods;
+        amphipods[idx] = None;
+        Room {
+            expected_amphipod: self.expected_amphipod,
+            amphipods,
         }
     }
 }
@@ -162,7 +161,7 @@ impl HallwaySquare {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
-struct State {
+struct State<const N: usize> {
     ll: Option<Amphipod>,
     lr: Option<Amphipod>,
     ml: Option<Amphipod>,
@@ -170,14 +169,14 @@ struct State {
     mr: Option<Amphipod>,
     rl: Option<Amphipod>,
     rr: Option<Amphipod>,
-    room_for_a: RoomForTwo,
-    room_for_b: RoomForTwo,
-    room_for_c: RoomForTwo,
-    room_for_d: RoomForTwo,
+    room_for_a: Room<N>,
+    room_for_b: Room<N>,
+    room_for_c: Room<N>,
+    room_for_d: Room<N>,
 }
 
-impl State {
-    fn create(positions: AllInRoomsStateEncoding) -> State {
+impl<const N: usize> State<N> {
+    fn finish() -> State<N> {
         State {
             ll: None,
             lr: None,
@@ -186,19 +185,14 @@ impl State {
             mr: None,
             rl: None,
             rr: None,
-            room_for_a: RoomForTwo::create_full(A, positions[0], positions[1]),
-            room_for_b: RoomForTwo::create_full(B, positions[2], positions[3]),
-            room_for_c: RoomForTwo::create_full(C, positions[4], positions[5]),
-            room_for_d: RoomForTwo::create_full(D, positions[6], positions[7]),
+            room_for_a: Room::full_of(A),
+            room_for_b: Room::full_of(B),
+            room_for_c: Room::full_of(C),
+            room_for_d: Room::full_of(D),
         }
     }
 
-    fn finish() -> State {
-        const FINISH: AllInRoomsStateEncoding = [A, A, B, B, C, C, D, D];
-        State::create(FINISH)
-    }
-
-    fn room_for_amphipod(&self, amphipod: Amphipod) -> &RoomForTwo {
+    fn room_for_amphipod(&self, amphipod: Amphipod) -> &Room<N> {
         match amphipod {
             A => &self.room_for_a,
             B => &self.room_for_b,
@@ -219,7 +213,7 @@ impl State {
         }
     }
 
-    fn update_hallway_square(&self, square: HallwaySquare, value: Option<Amphipod>) -> State {
+    fn update_hallway_square(&self, square: HallwaySquare, value: Option<Amphipod>) -> State<N> {
         match square {
             LL => State { ll: value, ..*self },
             LR => State { lr: value, ..*self },
@@ -231,7 +225,7 @@ impl State {
         }
     }
 
-    fn update_room(&self, new_room: &RoomForTwo) -> State {
+    fn update_room(&self, new_room: &Room<N>) -> State<N> {
         match new_room.expected_amphipod {
             A => State {
                 room_for_a: *new_room,
@@ -252,7 +246,7 @@ impl State {
         }
     }
 
-    fn clear_hallway_square(&self, square: HallwaySquare) -> State {
+    fn clear_hallway_square(&self, square: HallwaySquare) -> State<N> {
         self.update_hallway_square(square, None)
     }
 
@@ -260,7 +254,7 @@ impl State {
         &self,
         hallway_square: HallwaySquare,
         amphipod: Amphipod,
-    ) -> State {
+    ) -> State<N> {
         let room = self.room_for_amphipod(amphipod);
         let new_room = room.push();
         self.clear_hallway_square(hallway_square)
@@ -322,12 +316,11 @@ impl State {
         path.iter().all(|x| self.hallway_square(*x).is_none())
     }
 
-    // TODO: could return Option instead of Vec
     fn valid_paths_from_hallway_square(
         &self,
         hallway_square: HallwaySquare,
         amphipod: Amphipod,
-    ) -> Vec<(State, Cost)> {
+    ) -> Option<(State<N>, Cost)> {
         let (path_to_my_room, steps) =
             Self::path_from_hallway_square_to_room(hallway_square, amphipod);
 
@@ -338,27 +331,23 @@ impl State {
         let extra_cost_to_go_in_room = room.has_space();
 
         if is_path_free && is_room_free_of_strangers {
-            if let Some(extra_cost) = extra_cost_to_go_in_room {
-                vec![(
+            extra_cost_to_go_in_room.map(|extra_cost| {
+                (
                     self.move_from_hallway_to_room(hallway_square, amphipod),
                     amphipod.many_moves_cost(extra_cost + steps),
-                )]
-            } else {
-                vec![]
-            }
+                )
+            })
         } else {
-            vec![]
+            None
         }
     }
 
-    fn hallway_helper(&self, hallway_square: HallwaySquare) -> Vec<(State, Cost)> {
-        match self.hallway_square(hallway_square) {
-            None => vec![],
-            Some(x) => self.valid_paths_from_hallway_square(hallway_square, x),
-        }
+    fn hallway_helper(&self, hallway_square: HallwaySquare) -> Option<(State<N>, Cost)> {
+        self.hallway_square(hallway_square)
+            .and_then(|x| self.valid_paths_from_hallway_square(hallway_square, x))
     }
 
-    fn room_helper(&self, target_room: Amphipod) -> Vec<(State, Cost)> {
+    fn room_helper(&self, target_room: Amphipod) -> Vec<(State<N>, Cost)> {
         let room = self.room_for_amphipod(target_room);
         if let Some((amphopod, extra_steps)) = room.has_amphiphod_who_can_leave() {
             HallwaySquare::all()
@@ -383,17 +372,17 @@ impl State {
         }
     }
 
-    fn successors(&self) -> Vec<(State, Cost)> {
+    fn successors(&self) -> Vec<(State<N>, Cost)> {
         // println!("{self}");
 
-        let paths_from_hallway_squares: Vec<(State, Cost)> = HallwaySquare::all()
+        let paths_from_hallway_squares: Vec<(State<N>, Cost)> = HallwaySquare::all()
             .iter()
             .map(|hallway_square| self.hallway_helper(*hallway_square))
             .into_iter()
             .flatten()
             .collect();
 
-        let paths_from_rooms: Vec<(State, Cost)> = Amphipod::all()
+        let paths_from_rooms: Vec<(State<N>, Cost)> = Amphipod::all()
             .iter()
             .map(|room| self.room_helper(*room))
             .into_iter()
@@ -404,7 +393,7 @@ impl State {
     }
 }
 
-impl Display for State {
+impl<const N: usize> Display for State<N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "░░░░░░░░░░░░░")?;
         writeln!(
@@ -418,34 +407,44 @@ impl Display for State {
             Amphipod::option_as_char(self.rl),
             Amphipod::option_as_char(self.rr)
         )?;
-        writeln!(
-            f,
-            "░░░{}░{}░{}░{}░░░",
-            Amphipod::option_as_char(self.room_for_a.upper),
-            Amphipod::option_as_char(self.room_for_b.upper),
-            Amphipod::option_as_char(self.room_for_c.upper),
-            Amphipod::option_as_char(self.room_for_d.upper)
-        )?;
-        writeln!(
-            f,
-            "  ░{}░{}░{}░{}░  ",
-            Amphipod::option_as_char(self.room_for_a.lower),
-            Amphipod::option_as_char(self.room_for_b.lower),
-            Amphipod::option_as_char(self.room_for_c.lower),
-            Amphipod::option_as_char(self.room_for_d.lower)
-        )?;
+
+        for idx in 0..N {
+            writeln!(
+                f,
+                "░░░{}░{}░{}░{}░░░",
+                Amphipod::option_as_char(self.room_for_a.amphipods[idx]),
+                Amphipod::option_as_char(self.room_for_b.amphipods[idx]),
+                Amphipod::option_as_char(self.room_for_c.amphipods[idx]),
+                Amphipod::option_as_char(self.room_for_d.amphipods[idx])
+            )?;
+        }
         writeln!(f, "  ░░░░░░░░░  \n\n")
     }
 }
 
-impl FromStr for State {
+fn create_room_helper<const N: usize>(
+    lines: &[Vec<char>],
+    expected_amphipod: Amphipod,
+    idx: usize,
+) -> Result<Room<N>, Error> {
+    let vec: Result<Vec<Option<Amphipod>>, Error> = lines
+        .iter()
+        .map(|q| Amphipod::parse_as_option(q[idx]))
+        .collect();
+    Room::from_vec(expected_amphipod, vec?)
+}
+
+impl<const N: usize> FromStr for State<N> {
     type Err = Error;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let lines: Vec<&str> = input.split('\n').collect();
         let hallway: Vec<char> = lines[1].chars().collect();
-        let rooms0: Vec<char> = lines[2].chars().collect();
-        let rooms1: Vec<char> = lines[3].chars().collect();
+        let room_lines: Vec<Vec<char>> = lines[2..(2 + N)]
+            .iter()
+            .map(|q| q.chars().collect())
+            .collect();
+        assert_eq!(room_lines.len(), N);
 
         Ok(State {
             ll: Amphipod::parse_as_option(hallway[1])?,
@@ -455,36 +454,17 @@ impl FromStr for State {
             mr: Amphipod::parse_as_option(hallway[8])?,
             rl: Amphipod::parse_as_option(hallway[10])?,
             rr: Amphipod::parse_as_option(hallway[11])?,
-            room_for_a: RoomForTwo {
-                expected_amphipod: A,
-                upper: Amphipod::parse_as_option(rooms0[3])?,
-                lower: Amphipod::parse_as_option(rooms1[3])?,
-            },
-            room_for_b: RoomForTwo {
-                expected_amphipod: B,
-                upper: Amphipod::parse_as_option(rooms0[5])?,
-                lower: Amphipod::parse_as_option(rooms1[5])?,
-            },
-            room_for_c: RoomForTwo {
-                expected_amphipod: C,
-                upper: Amphipod::parse_as_option(rooms0[7])?,
-                lower: Amphipod::parse_as_option(rooms1[7])?,
-            },
-            room_for_d: RoomForTwo {
-                expected_amphipod: D,
-                upper: Amphipod::parse_as_option(rooms0[9])?,
-                lower: Amphipod::parse_as_option(rooms1[9])?,
-            },
+            room_for_a: create_room_helper(&room_lines, A, 3)?,
+            room_for_b: create_room_helper(&room_lines, B, 5)?,
+            room_for_c: create_room_helper(&room_lines, C, 7)?,
+            room_for_d: create_room_helper(&room_lines, D, 9)?,
         })
     }
 }
 
-fn solve_1(input: &str) -> Result<Cost, Error> {
-    let start: State = input.parse()?;
-    let finish: State = State::finish();
-
-    let result: Option<(Vec<State>, Cost)> =
-        dijkstra(&start, State::successors, |state| state == &finish);
+fn solve<const N: usize>(start: &State<N>, finish: &State<N>) -> Result<Cost, Error> {
+    let result: Option<(Vec<State<N>>, Cost)> =
+        dijkstra(start, State::successors, |state| state == finish);
 
     let (path, cost) = result.ok_or_else(|| "Failed to find".to_string())?;
 
@@ -495,11 +475,37 @@ fn solve_1(input: &str) -> Result<Cost, Error> {
     Ok(cost)
 }
 
+fn solve_1(input: &str) -> Result<Cost, Error> {
+    let start: State<2> = input.parse()?;
+    let finish: State<2> = State::<2>::finish();
+
+    solve(&start, &finish)
+}
+
+fn solve_2(input: &str) -> Result<Cost, Error> {
+    let lines: Vec<&str> = input.split('\n').collect();
+    let temp = [
+        &lines[0..3],
+        ["  #D#C#B#A#", "  #D#B#A#C#"].as_slice(),
+        &lines[3..],
+    ]
+    .to_vec();
+    let adjusted = temp.into_iter().flatten().join("\n");
+
+    let start: State<4> = adjusted.parse()?;
+    let finish: State<4> = State::<4>::finish();
+
+    solve(&start, &finish)
+}
+
 const DATA: &str = include_str!("../../resources/23.txt");
 
 fn main() {
     let result_1 = solve_1(DATA);
     println!("Part 1: {result_1:?}");
+
+    let result_2 = solve_2(DATA);
+    println!("Part 2: {result_2:?}");
 }
 
 #[cfg(test)]
@@ -507,7 +513,11 @@ mod tests {
     use super::*;
     const TEST: &str = include_str!("../../resources/23-test.txt");
 
-    fn assert_cost_from_to(from: &State, to: &State, expected_cost: Cost) -> Result<(), Error> {
+    fn assert_cost_from_to<const N: usize>(
+        from: &State<N>,
+        to: &State<N>,
+        expected_cost: Cost,
+    ) -> Result<(), Error> {
         let successors = from.successors();
         let results = successors.iter().find(|(s, _)| s == to);
         if results.is_none() {
@@ -529,21 +539,25 @@ mod tests {
 ###B#.#C#D###
   #A#D#C#A#
   #########";
+
     const S3: &str = "#############
 #.....D.....#
 ###B#.#C#D###
   #A#B#C#A#
   #########";
+
     const S4: &str = "#############
 #.....D.....#
 ###.#B#C#D###
   #A#B#C#A#
   #########";
+
     const S5: &str = "#############
 #.....D.D.A.#
 ###.#B#C#.###
   #A#B#C#.#
   #########";
+
     const S6: &str = "#############
 #.........A.#
 ###.#B#C#D###
@@ -552,22 +566,22 @@ mod tests {
 
     #[test]
     fn test_costs_1() -> Result<(), Error> {
-        let s0: State = TEST.parse()?;
-        let s1: State = S1.parse()?;
+        let s0: State<2> = TEST.parse()?;
+        let s1: State<2> = S1.parse()?;
         assert_cost_from_to(&s0, &s1, 40)
     }
 
     #[test]
     fn test_costs_2() -> Result<(), Error> {
-        let s1: State = S1.parse()?;
-        let intermed: State = "#############
+        let s1: State<2> = S1.parse()?;
+        let intermed: State<2> = "#############
 #...B.C.....#
 ###B#.#.#D###
   #A#D#C#A#
   #########"
             .parse()?;
 
-        let s2: State = S2.parse()?;
+        let s2: State<2> = S2.parse()?;
 
         assert_cost_from_to(&s1, &intermed, 200)?;
         assert_cost_from_to(&intermed, &s2, 200)
@@ -575,65 +589,65 @@ mod tests {
 
     #[test]
     fn test_costs_3() -> Result<(), Error> {
-        let s2: State = S2.parse()?;
-        let intermed: State = "#############
+        let s2: State<2> = S2.parse()?;
+        let intermed: State<2> = "#############
 #...B.D.....#
 ###B#.#C#D###
   #A#.#C#A#
   #########"
             .parse()?;
 
-        let s3: State = S3.parse()?;
+        let s3: State<2> = S3.parse()?;
         assert_cost_from_to(&s2, &intermed, 3000)?;
         assert_cost_from_to(&intermed, &s3, 30)
     }
 
     #[test]
     fn test_costs_4() -> Result<(), Error> {
-        let s3: State = S3.parse()?;
-        let intermed: State = "#############
+        let s3: State<2> = S3.parse()?;
+        let intermed: State<2> = "#############
 #...B.D.....#
 ###.#.#C#D###
   #A#B#C#A#
   #########"
             .parse()?;
 
-        let s4: State = S4.parse()?;
+        let s4: State<2> = S4.parse()?;
         assert_cost_from_to(&s3, &intermed, 20)?;
         assert_cost_from_to(&intermed, &s4, 20)
     }
 
     #[test]
     fn test_costs_5() -> Result<(), Error> {
-        let s4: State = S4.parse()?;
-        let intermed: State = "#############
+        let s4: State<2> = S4.parse()?;
+        let intermed: State<2> = "#############
 #.....D.D...#
 ###.#B#C#.###
   #A#B#C#A#
   #########"
             .parse()?;
-        let s5: State = S5.parse()?;
+        let s5: State<2> = S5.parse()?;
         assert_cost_from_to(&s4, &intermed, 2000)?;
         assert_cost_from_to(&intermed, &s5, 3)
     }
 
     #[test]
     fn test_costs_6() -> Result<(), Error> {
-        let s5: State = S5.parse()?;
-        let intermed: State = "#############
+        let s5: State<2> = S5.parse()?;
+        let intermed: State<2> = "#############
 #.....D...A.#
 ###.#B#C#.###
   #A#B#C#D#
   #########"
             .parse()?;
-        let s6: State = S6.parse()?;
+        let s6: State<2> = S6.parse()?;
         assert_cost_from_to(&s5, &intermed, 3000)?;
         assert_cost_from_to(&intermed, &s6, 4000)
     }
 
     #[test]
     fn test_costs_7() -> Result<(), Error> {
-        let s6: State = S6.parse()?;
+        let s6: State<2> = S6.parse()?;
         assert_cost_from_to(&s6, &State::finish(), 8)
     }
 
@@ -647,5 +661,17 @@ mod tests {
     fn real_solve_1() {
         let result = solve_1(DATA);
         assert_eq!(result, Ok(19167));
+    }
+
+    #[test]
+    fn test_solve_2() {
+        let result = solve_2(TEST);
+        assert_eq!(result, Ok(44169));
+    }
+
+    #[test]
+    fn real_solve_2() {
+        let result = solve_2(DATA);
+        assert_eq!(result, Ok(123_456));
     }
 }
