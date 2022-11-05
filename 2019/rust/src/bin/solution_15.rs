@@ -91,7 +91,7 @@ impl Tile {
             0 => Tile::Wall,
             1 => Tile::Empty,
             2 => Tile::Goal,
-            _ => panic!("Unrecognized tile {}", value),
+            _ => panic!("Unrecognized tile {value}"),
         }
     }
 }
@@ -163,7 +163,7 @@ impl Robot {
 
     fn move_result(&mut self, tile: Tile) {
         let target_position = self.current_position.movement(&self.current_direction);
-        println!("Found {:?} at {:?}", tile, target_position);
+        println!("Found {tile:?} at {target_position:?}");
         if tile == Tile::Wall {
             self.current_direction = self.current_direction.rotate_left();
             println!(
@@ -219,7 +219,7 @@ fn bfs(tiles: &HashMap<Coords, Tile>, start: Coords, end: Coords) -> Vec<Coords>
         }
     }
 
-    panic!("Path not found in {:?}", tiles);
+    panic!("Path not found in {tiles:?}");
 }
 
 fn goal_tile(tiles: &HashMap<Coords, Tile>) -> Coords {
@@ -256,10 +256,10 @@ fn find_tiles() -> HashMap<Coords, Tile> {
 
 fn solve_1(tiles: &HashMap<Coords, Tile>) {
     let route = find_best_route(tiles);
-    println!("Route: {:?}", route);
+    println!("Route: {route:?}");
     let result = route.len() - 1;
     assert_eq!(result, 298);
-    println!("Part 1: {}", result);
+    println!("Part 1: {result}");
 }
 
 fn bfs_depth(tiles: &HashMap<Coords, Tile>, from: Coords) -> usize {
@@ -303,7 +303,7 @@ fn bfs_depth(tiles: &HashMap<Coords, Tile>, from: Coords) -> usize {
 fn solve_2(tiles: &HashMap<Coords, Tile>) {
     let result = bfs_depth(tiles, goal_tile(tiles)) - 2;
     assert_eq!(result, 346);
-    println!("Part 2: {}", result);
+    println!("Part 2: {result}");
 }
 
 fn main() {

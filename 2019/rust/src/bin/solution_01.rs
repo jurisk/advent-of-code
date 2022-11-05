@@ -35,7 +35,7 @@ fn main() {
     let raw_data = include_str!("../../resources/01.txt");
     let data = parse_lines(raw_data);
     let solution_1 = solve(&data, fuel1);
-    println!("{}", solution_1);
+    println!("{solution_1}");
     assert_eq!(solution_1, 3_456_641);
 
     assert_eq!(fuel2(100_756), 50_346);
@@ -45,5 +45,5 @@ fn main() {
 
     let solution_2 = solve(&data, fuel2);
     assert_eq!(solution_2, 5_182_078);
-    println!("{}", solution_2);
+    println!("{solution_2}");
 }

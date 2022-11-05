@@ -43,7 +43,7 @@ fn parse(s: &str) -> Vec<Vec<Cell>> {
                 .map(|ch| match ch {
                     '.' => Cell::Empty,
                     '#' => Cell::Asteroid,
-                    _ => panic!("Unexpected cell: {}", ch),
+                    _ => panic!("Unexpected cell: {ch}"),
                 })
                 .collect()
         })
@@ -53,10 +53,10 @@ fn parse(s: &str) -> Vec<Vec<Cell>> {
 fn asteroid_angle(from: Coords, to: Coords) -> Angle {
     const PI_2: f64 = 2f64 * PI as f64;
     let c = from - to;
-    let result = (c.y as f64).atan2(c.x as f64) - (PI as f64 / 2f64);
+    let result = f64::from(c.y).atan2(f64::from(c.x)) - (f64::from(PI) / 2f64);
     let res = if result < 0f64 { result + PI_2 } else { result };
 
-    (res * 1000000f64) as Angle
+    (res * 1_000_000_f64) as Angle
 }
 
 // Note - Using a sorted set (e.g. BTreeSet) would make a lot of operations on these angles better
@@ -71,7 +71,7 @@ fn asteroid_angles(from: Coords, asteroid_coordinates: &HashSet<Coords>) -> Vec<
 fn count_visible(from: Coords, asteroid_coordinates: &HashSet<Coords>) -> Number {
     let set: HashSet<_> = asteroid_angles(from, asteroid_coordinates)
         .iter()
-        .map(|x| format!("{:.10}", x)) // A minor hack - but no hash function for f64 and also this solves rounding issues
+        .map(|x| format!("{x:.10}")) // A minor hack - but no hash function for f64 and also this solves rounding issues
         .collect();
 
     set.len() as Number
@@ -114,7 +114,7 @@ fn solve_1() {
     let (best_coords, detected) = part_1(include_str!("../../resources/10.txt"));
     assert_eq!(detected, 274);
     assert_eq!(best_coords, Coords { x: 19, y: 14 });
-    println!("{:?} {}", best_coords, detected);
+    println!("{best_coords:?} {detected}");
 }
 
 fn solve_2() {
@@ -166,7 +166,7 @@ fn destroyed_asteroid(
 ) -> Coords {
     let (next, angle) = next_destroyable(from, coords, previous_angle);
     if n_th <= 0 {
-        panic!("Unexpected situation - n_th = {}", n_th);
+        panic!("Unexpected situation - n_th = {n_th}");
     } else if n_th == 1 {
         next
     } else {

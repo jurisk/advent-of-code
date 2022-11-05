@@ -152,7 +152,7 @@ impl Maze {
 
         let height = chars.len() - 4; // we assume there are always portals on the top & the bottom
 
-        println!("width = {}, height = {}", width, height);
+        println!("width = {width}, height = {height}");
 
         let open_passages: Vec<Vec<bool>> = (0..height)
             .map(|y| (0..width).map(|x| chars[y + 2][x + 2] == PASSAGE).collect())
@@ -170,7 +170,7 @@ impl Maze {
         for (name, coords) in temp_portals {
             match temporary_map.remove(&name) {
                 None => {
-                    println!("Found {:?} at {:?}", name, coords);
+                    println!("Found {name:?} at {coords:?}");
                     temporary_map.insert(name, coords);
                 }
                 Some(existing) => {
@@ -267,7 +267,7 @@ fn solve_1(data: &str, expected: Option<i32>) {
         |n| *n == maze.end,
     );
     assert_eq!(result.map(|r| (r.len() - 1) as i32), expected);
-    println!("{:?}", expected);
+    println!("{expected:?}");
 }
 
 fn solve_2(data: &str, expected: Option<i32>) {
@@ -278,7 +278,7 @@ fn solve_2(data: &str, expected: Option<i32>) {
         |n| *n == maze.end.outermost(),
     );
     assert_eq!(result.map(|r| (r.len() - 1) as i32), expected);
-    println!("{:?}", expected);
+    println!("{expected:?}");
 }
 
 const DATA_3: &str = include_str!("../../resources/20.txt");

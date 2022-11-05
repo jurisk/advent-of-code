@@ -136,7 +136,7 @@ fn ore_for_1_fuel_str(data: &str) -> Number {
 
 fn fuel_from_mega_ore(conversions: &HashMap<Ingredient, Conversion>) -> Number {
     let one_fuel_cost = ore_for_n_fuel(conversions, 1);
-    println!("One fuel cost {}", one_fuel_cost);
+    println!("One fuel cost {one_fuel_cost}");
     let mut start: Number = MEGA_ORE.div_floor(one_fuel_cost);
     assert!(ore_for_n_fuel(conversions, start) < MEGA_ORE);
     let mut end: Number = (MEGA_ORE * 2).div_floor(one_fuel_cost);
@@ -165,13 +165,13 @@ fn fuel_from_mega_ore_str(data: &str) -> Number {
 
 fn solve_1() {
     let result = ore_for_1_fuel_str(include_str!("../../resources/14.txt"));
-    println!("Part 1: {}", result);
+    println!("Part 1: {result}");
     assert_eq!(result, 654_909);
 }
 
 fn solve_2() {
     let result = fuel_from_mega_ore_str(include_str!("../../resources/14.txt"));
-    println!("Part 2: {}", result);
+    println!("Part 2: {result}");
     assert_eq!(result, 2_876_992);
 }
 
@@ -230,7 +230,7 @@ mod tests {
 3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT";
 
         assert_eq!(ore_for_1_fuel_str(data), 13312);
-        assert_eq!(fuel_from_mega_ore_str(data), 82892753);
+        assert_eq!(fuel_from_mega_ore_str(data), 82_892_753);
     }
 
     #[test]
@@ -248,8 +248,8 @@ mod tests {
 1 VJHF, 6 MNCFX => 4 RFSQX
 176 ORE => 6 VJHF";
 
-        assert_eq!(ore_for_1_fuel_str(data), 180697);
-        assert_eq!(fuel_from_mega_ore_str(data), 5586022);
+        assert_eq!(ore_for_1_fuel_str(data), 180_697);
+        assert_eq!(fuel_from_mega_ore_str(data), 5_586_022);
     }
 
     #[test]
@@ -272,8 +272,8 @@ mod tests {
 7 XCVML => 6 RJRHP
 5 BHXH, 4 VRPVC => 5 LTCX";
 
-        assert_eq!(ore_for_1_fuel_str(data), 2210736);
-        assert_eq!(fuel_from_mega_ore_str(data), 460664);
+        assert_eq!(ore_for_1_fuel_str(data), 2_210_736);
+        assert_eq!(fuel_from_mega_ore_str(data), 460_664);
     }
 
     #[test]

@@ -11,12 +11,12 @@ fn apply_phase_1(numbers: &[u8]) -> Vec<u8> {
         .iter()
         .enumerate()
         .map(|(phase, _)| {
-            println!("Phase {}", phase);
+            println!("Phase {phase}");
 
             let summed: i32 = numbers
                 .iter()
                 .enumerate()
-                .map(|(index, n)| (*n as i32) * coef(index, phase))
+                .map(|(index, n)| i32::from(*n) * coef(index, phase))
                 .sum();
             (summed.abs() % 10) as u8
         })
@@ -39,25 +39,25 @@ fn solve_1(data: &str, phases: u8) -> String {
 
 fn apply_phases_1(numbers: Vec<u8>, phases: u8) -> Vec<u8> {
     (0..phases).fold(numbers, |a, phase| {
-        println!("Applying phase {}", phase);
+        println!("Applying phase {phase}");
         apply_phase_1(&a)
     })
 }
 
 fn apply_phase_2(numbers: &[u8]) -> Vec<u8> {
-    let mut sum: i32 = numbers.iter().map(|x| *x as i32).sum();
+    let mut sum: i32 = numbers.iter().map(|x| i32::from(*x)).sum();
     let mut out: Vec<u8> = Vec::new();
     for x in numbers.iter() {
         let res = sum % 10;
         out.push(res as u8);
-        sum -= *x as i32;
+        sum -= i32::from(*x);
     }
     out
 }
 
 fn apply_phases_2(numbers: Vec<u8>, phases: u8) -> Vec<u8> {
     (0..phases).fold(numbers, |a, phase| {
-        println!("Applying phase {}", phase);
+        println!("Applying phase {phase}");
         apply_phase_2(&a)
     })
 }
@@ -78,17 +78,17 @@ fn solve_2(data: &str, repeat: usize, phases: u8) -> String {
 fn part_1() {
     let data = include_str!("../../resources/16.txt");
     let result = &solve_1(data, 100)[..8];
-    println!("Part 1: {}", result);
+    println!("Part 1: {result}");
     assert_eq!(result, "68764632");
 }
 
 fn part_2() {
     let data = include_str!("../../resources/16.txt");
     let message_offset: usize = (data[..7]).parse::<usize>().unwrap();
-    println!("Message offset: {}", message_offset);
+    println!("Message offset: {message_offset}");
     let result = solve_2(data, 10000, 100);
     let message = &result[message_offset..message_offset + 8];
-    println!("Part 2: {}", message);
+    println!("Part 2: {message}");
     assert_eq!(message, "52825021");
 }
 

@@ -59,7 +59,7 @@ impl<T: Copy + Clone + Eq> SimpleDeck<T> {
                     .map(|n| index.iter().position(|x| *x == n).unwrap())
                     .collect();
                 SimpleDeck {
-                    cards: mapping.iter().map(|x| self.cards[*x as usize]).collect(),
+                    cards: mapping.iter().map(|x| self.cards[*x]).collect(),
                 }
             }
         }
@@ -92,7 +92,7 @@ impl Command {
         } else if let Some(s) = s.strip_prefix(CUT_PREFIX) {
             Cut(s.parse().unwrap())
         } else {
-            panic!("Unexpected {}", s);
+            panic!("Unexpected {s}");
         }
     }
 
@@ -128,7 +128,7 @@ impl PowerDeck {
         let size = self.size.clone();
         let result = (offset + idx * increment) % size.clone();
         let result = (result + size.clone()) % size;
-        result.to_usize().unwrap_or_else(|| panic!("{:?}", result))
+        result.to_usize().unwrap_or_else(|| panic!("{result:?}"))
     }
 
     fn apply_many(&self, commands: &[Command]) -> PowerDeck {
@@ -244,10 +244,10 @@ fn solve_2(data: &str) -> Card {
 
 fn main() {
     let result = solve_1(DATA);
-    println!("Part 1: {:?}", result);
+    println!("Part 1: {result:?}");
 
     let result = solve_2(DATA);
-    println!("Part 2: {:?}", result);
+    println!("Part 2: {result:?}");
 }
 
 #[cfg(test)]

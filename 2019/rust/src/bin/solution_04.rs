@@ -20,8 +20,8 @@ fn group(digits: &[u8]) -> Vec<u8> {
     digits
         .iter()
         .into_group_map_by(|x| *x)
-        .iter()
-        .map(|(_k, v)| v.len() as u8)
+        .values()
+        .map(|v| v.len() as u8)
         .collect()
 }
 
@@ -46,7 +46,7 @@ fn main() {
     let range: RangeInclusive<Number> = 387_638..=919_123;
     let part_1 = range.clone().filter(|x| is_valid_1(*x)).count();
     assert_eq!(part_1, 466);
-    println!("Part 1: {}", part_1);
+    println!("Part 1: {part_1}");
 
     assert!(is_valid_2(112_233));
     assert!(!is_valid_2(123_444));
@@ -54,5 +54,5 @@ fn main() {
 
     let part_2 = range.filter(|x| is_valid_2(*x)).count();
     assert_eq!(part_2, 292);
-    println!("Part 2: {}", part_2);
+    println!("Part 2: {part_2}");
 }

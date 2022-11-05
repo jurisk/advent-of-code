@@ -4,7 +4,7 @@ use std::ops::RangeInclusive;
 
 fn amplifier(program: &MachineCodeRef, phase_setting: u8, input: Entry) -> Entry {
     let mut process = Process::new(program);
-    process.provide_input(phase_setting as Entry);
+    process.provide_input(i128::from(phase_setting));
     process.provide_input(input);
     process.run_to_halt();
     assert_eq!(process.output_len(), 1);
@@ -22,7 +22,7 @@ fn signal_2(program: &MachineCodeRef, phases: Vec<u8>) -> Entry {
         .iter()
         .map(|phase| {
             let mut process = Process::new(program);
-            process.provide_input(*phase as Entry);
+            process.provide_input(i128::from(*phase));
             process
         })
         .collect();
@@ -62,12 +62,12 @@ fn main() {
     let program = parse_machine_code(data);
 
     let part_1_result = part_1(&program);
-    assert_eq!(part_1_result, 272368);
-    println!("Part 1: {}", part_1_result);
+    assert_eq!(part_1_result, 272_368);
+    println!("Part 1: {part_1_result}");
 
     let part_2_result = part_2(&program);
-    assert_eq!(part_2_result, 19741286);
-    println!("Part 2: {}", part_2_result);
+    assert_eq!(part_2_result, 19_741_286);
+    println!("Part 2: {part_2_result}");
 }
 
 #[cfg(test)]

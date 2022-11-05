@@ -171,7 +171,7 @@ fn count_bugs_complex(field: Field) -> u128 {
     for x in 0..SIZE {
         for y in 0..SIZE {
             if !(x == 2 && y == 2) {
-                result += field[y][x] as u128;
+                result += u128::from(field[y][x]);
             }
         }
     }
@@ -188,10 +188,10 @@ fn solve_2(data: &str, minutes: u8) -> u128 {
 
 fn main() {
     let result = solve_1(DATA);
-    println!("Part 1: {}", result);
+    println!("Part 1: {result}");
 
     let result = solve_2(DATA, 200);
-    println!("Part 2: {}", result);
+    println!("Part 2: {result}");
 }
 
 #[cfg(test)]

@@ -126,7 +126,7 @@ fn main() {
 
     let part_1 = solve_1(&data, &center_of_mass);
     assert_eq!(part_1, 301_100);
-    println!("Part 1: {}", part_1);
+    println!("Part 1: {part_1}");
 
     let you: Object = Object {
         name: "YOU".to_string(),
@@ -141,5 +141,5 @@ fn main() {
 
     let part_2 = solve_2(&data, &center_of_mass, &you, &san);
     assert_eq!(part_2, 547);
-    println!("Part 2: {}", part_2);
+    println!("Part 2: {part_2}");
 }

@@ -2,18 +2,18 @@
 name = "advent-of-code"
 version = "0.1.0"
 authors = ["jurisk <jurisk@users.noreply.github.com>"]
-edition = "2021"
 license = "UNLICENSED"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 regex = "1"
-itertools = "0.10"
-num-traits = "0.2"
-num-derive = "0.3"
-num_enum = "0.5"
-rand = "0.8"
-bimap = "0.6"
+itertools = "0"
+num-traits = "0"
+num-derive = "0"
+num_enum = "0"
+rand = "0"
+bimap = "0"
 pathfinding = "3"
-num-integer = "0.1"
-num-bigint = "0.4"
+num-integer = "0"
+num-bigint = "0"

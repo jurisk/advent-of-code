@@ -123,7 +123,7 @@ fn attempt() -> Option<String> {
         }
 
         if parsed.ejected_back {
-            println!("{:?}", taken_items);
+            println!("{taken_items:?}");
             return None;
         }
 
@@ -135,7 +135,7 @@ fn attempt() -> Option<String> {
                 let take: bool = rand::random();
                 if take {
                     taken_items.insert(item.clone());
-                    process.provide_input_as_string(&format!("take {}\n", item));
+                    process.provide_input_as_string(&format!("take {item}\n"));
                 } else {
                     ignored_items.insert(item);
                 }
@@ -151,7 +151,7 @@ fn main() {
     loop {
         let result = attempt();
         if let Some(password) = result {
-            println!("Password: {}", password);
+            println!("Password: {password}");
             assert_eq!(password, "134227456");
             return;
         }

@@ -26,7 +26,7 @@ enum OperationCode {
 
 impl OperationCode {
     fn of(x: u8) -> OperationCode {
-        FromPrimitive::from_u8(x).unwrap_or_else(|| panic!("Unexpected operation code: {}", x))
+        FromPrimitive::from_u8(x).unwrap_or_else(|| panic!("Unexpected operation code: {x}"))
     }
 }
 
@@ -40,7 +40,7 @@ enum ParameterMode {
 
 impl ParameterMode {
     fn of(x: Entry) -> ParameterMode {
-        FromPrimitive::from_i128(x).unwrap_or_else(|| panic!("Unexpected parameter mode: {}", x))
+        FromPrimitive::from_i128(x).unwrap_or_else(|| panic!("Unexpected parameter mode: {x}"))
     }
 }
 
@@ -76,7 +76,7 @@ pub fn parse_machine_code(input: &str) -> MachineCode {
         .filter(|x| !x.is_empty())
         .map(|str| {
             str.parse::<Entry>()
-                .unwrap_or_else(|_| panic!("Unrecognized: {}", str))
+                .unwrap_or_else(|_| panic!("Unrecognized: {str}"))
         })
         .collect()
 }

@@ -33,7 +33,7 @@ fn solve_1() {
     let result = solve(vec![PART_1.to_vec(), vec!["WALK"]].concat());
 
     assert_eq!(result, 19_357_544);
-    println!("Part 1: {}", result);
+    println!("Part 1: {result}");
 }
 
 // Avoid situation where we will be immediately forced to jump (!E) however landing will be a hole (!H)
@@ -51,7 +51,7 @@ fn solve_2() {
     let commands = [PART_1.to_vec(), PART_2.to_vec(), vec!["RUN"]].concat();
     let result = solve(commands);
     assert_eq!(result, 1_144_498_646);
-    println!("Part 2: {}", result);
+    println!("Part 2: {result}");
 }
 
 fn main() {

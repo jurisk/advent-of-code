@@ -18,7 +18,7 @@ fn main() {
     let part1 = run_with_modifications(&program, 12, 2);
 
     assert_eq!(part1, 3_654_868);
-    println!("Part 1: {}", part1);
+    println!("Part 1: {part1}");
 
     let expected_output = 19_690_720;
 
@@ -28,7 +28,7 @@ fn main() {
             if output == expected_output {
                 let answer = 100 * noun + verb;
                 assert_eq!(answer, 7_014);
-                println!("Part 2: {}", answer);
+                println!("Part 2: {answer}");
             }
         }
     }

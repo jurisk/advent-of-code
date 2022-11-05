@@ -56,7 +56,7 @@ impl Square {
             '.' | '@' => Square::Empty,
             d if d.is_ascii_uppercase() => Square::Door(d),
             k if k.is_ascii_lowercase() => Square::Key(k.to_ascii_uppercase()),
-            _ => panic!("Did not expect char {}", ch),
+            _ => panic!("Did not expect char {ch}"),
         }
     }
 }
@@ -332,10 +332,10 @@ fn hack_to_convert_part_1_to_part_2(data: &str) -> String {
 
 fn main() {
     let result = solve(DATA);
-    println!("Part 1: {:?}", result);
+    println!("Part 1: {result:?}");
 
     let result = solve(&hack_to_convert_part_1_to_part_2(DATA));
-    println!("Part 2: {:?}", result);
+    println!("Part 2: {result:?}");
 }
 
 #[cfg(test)]

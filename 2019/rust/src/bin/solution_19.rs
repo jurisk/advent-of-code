@@ -1,4 +1,4 @@
-use advent_of_code::intcode::{parse_machine_code, Entry, MachineCode, Process};
+use advent_of_code::intcode::{parse_machine_code, MachineCode, Process};
 use std::cmp::max;
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
@@ -13,8 +13,8 @@ fn machine_code() -> MachineCode {
 
 fn beam_at_position(coords: Coords) -> bool {
     let mut process = Process::new(&machine_code());
-    process.provide_input(coords.x as Entry);
-    process.provide_input(coords.y as Entry);
+    process.provide_input(i128::from(coords.x));
+    process.provide_input(i128::from(coords.y));
     let halt = process.run_to_halt_or_output();
     assert!(!halt);
     process.next_output_unsafe() == 1
@@ -27,7 +27,7 @@ fn solve_1() {
 
     let result: u32 = coords.iter().map(|c| u32::from(beam_at_position(*c))).sum();
 
-    println!("Part 1: {}", result);
+    println!("Part 1: {result}");
     assert_eq!(result, 150);
 }
 
@@ -72,7 +72,7 @@ fn solve_2() {
             && beam_at_position(bottom_right)
         {
             let result = 10000 * top_left.x + top_left.y;
-            println!("Part 2: {}", result);
+            println!("Part 2: {result}");
             assert_eq!(result, 12_201_460);
             return;
         }

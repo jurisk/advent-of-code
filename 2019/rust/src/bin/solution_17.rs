@@ -22,7 +22,7 @@ enum MapSquare {
 
 impl MapSquare {
     fn from_char(ch: char) -> MapSquare {
-        MapSquare::try_from(ch as u8).unwrap_or_else(|_| panic!("Invalid char {}", ch))
+        MapSquare::try_from(ch as u8).unwrap_or_else(|_| panic!("Invalid char {ch}"))
     }
 
     fn is_scaffold(self) -> bool {
@@ -77,7 +77,7 @@ impl Board {
             MapSquare::RobotPointingRight => Direction::Right,
             MapSquare::RobotPointingLeft => Direction::Left,
             MapSquare::RobotPointingDown => Direction::Down,
-            sq => panic!("Unexpected map square {:?}", sq),
+            sq => panic!("Unexpected map square {sq:?}"),
         };
 
         let scaffolds = map_squares
@@ -250,7 +250,7 @@ impl fmt::Display for Route {
             &self
                 .steps
                 .iter()
-                .map(|x| format!("{}", x))
+                .map(|x| format!("{x}"))
                 .collect::<Vec<_>>()
                 .join(","),
         )
@@ -260,7 +260,7 @@ impl fmt::Display for Route {
 impl fmt::Display for Step {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match *self {
-            Step::F(n) => f.write_str(&format!("{}", n)),
+            Step::F(n) => f.write_str(&format!("{n}")),
             Step::L => write!(f, "L"),
             Step::R => write!(f, "R"),
         }
@@ -292,7 +292,7 @@ fn solve_1() {
     let board = board();
     let result = sum_of_scaffold_intersection_alignment_parameters(&board);
     assert_eq!(result, 3336);
-    println!("{}", result);
+    println!("{result}");
 }
 
 fn compressed_path(board: &Board) -> Route {
@@ -418,14 +418,14 @@ impl WithSubroutines {
             .iter()
             .map(|sr| format!("{}", self.subroutines[sr]))
             .join("\n");
-        format!("{}\n{}\nn\n", main_program, subroutines)
+        format!("{main_program}\n{subroutines}\nn\n")
     }
 }
 
 fn solve_2() {
     let board = board();
     let steps = compressed_path(&board);
-    println!("{}", steps);
+    println!("{steps}");
 
     let subroutine_names = vec!['A', 'B', 'C'];
     let with_subroutines = WithSubroutines::extract_subroutines(
@@ -448,7 +448,7 @@ fn solve_2() {
 
     let output = process.read_output();
     let result = *output.last().unwrap();
-    println!("Part2: {}", result);
+    println!("Part2: {result}");
     assert_eq!(result, 597_517);
 }
 
@@ -483,7 +483,7 @@ mod tests {
 
         assert_eq!(
             expected_compressed_path,
-            format!("{}", obtained_compressed_path)
+            format!("{obtained_compressed_path}")
         );
 
         let subroutine_names = vec!['A', 'B', 'C'];
@@ -564,7 +564,7 @@ n
 ........................#.........#....
 ........................###########....";
 
-        println!("{}", data);
+        println!("{data}");
 
         let expected_compressed_path = "L,4,L,4,L,10,R,4,R,4,L,4,L,4,R,8,R,10,L,4,L,4,L,10,R,4,R,4,L,10,R,10,L,4,L,4,L,10,R,4,R,4,L,10,R,10,R,4,L,4,L,4,R,8,R,10,R,4,L,10,R,10,R,4,L,10,R,10,R,4,L,4,L,4,R,8,R,10";
 

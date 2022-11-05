@@ -6,7 +6,7 @@ fn solve(program: &MachineCodeRef, input: Entry, expected_output: Entry) {
     process.run_to_halt();
     if process.output_len() == 1 {
         let result_1 = process.next_output_unsafe();
-        println!("Output for input {}: {}", input, result_1);
+        println!("Output for input {input}: {result_1}");
         assert_eq!(result_1, expected_output);
     } else {
         panic!("Invalid output: {:?}", process.output_as_string());

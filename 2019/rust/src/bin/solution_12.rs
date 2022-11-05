@@ -102,7 +102,7 @@ fn solve_1(data: &[Vector3D], steps: u16) -> Number {
 
 fn part_1() {
     let result = solve_1(&data(), 1000);
-    println!("Part 1: {}", result);
+    println!("Part 1: {result}");
     assert_eq!(result, 10944);
 }
 
@@ -155,7 +155,7 @@ fn solve_2(data: &[Vector3D]) -> Number {
 fn part_2() {
     let data = data();
     let result = solve_2(&data);
-    println!("Part 2: {}", result);
+    println!("Part 2: {result}");
     assert_eq!(result, 484_244_804_958_744);
 }
 

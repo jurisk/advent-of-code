@@ -83,7 +83,7 @@ fn solve_1() {
             let computer = &mut computers[idx];
             let halted = computer.run_to_unsatisfied_input();
             if halted {
-                println!("Computer {} has halted", idx);
+                println!("Computer {idx} has halted");
             }
         }
 
@@ -98,11 +98,11 @@ fn solve_1() {
                 let addr = computer.next_output_unsafe();
                 let x = computer.next_output_unsafe();
                 let y = computer.next_output_unsafe();
-                println!("{} {} {}", addr, x, y);
+                println!("{addr} {x} {y}");
                 let xy_pair = XYPair { x, y };
 
                 if addr == NAT_ADDRESS {
-                    println!("Part 1: {}", y);
+                    println!("Part 1: {y}");
                     assert_eq!(y, 20_372);
                     return;
                 }
@@ -128,7 +128,7 @@ fn solve_2() {
             let computer = &mut computers[idx];
             let halted = computer.run_to_unsatisfied_input();
             if halted {
-                println!("Computer {} has halted", idx);
+                println!("Computer {idx} has halted");
             }
         }
 
@@ -160,7 +160,7 @@ fn solve_2() {
                 let addr = computer.next_output_unsafe();
                 let x = computer.next_output_unsafe();
                 let y = computer.next_output_unsafe();
-                println!("{} {} {}", addr, x, y);
+                println!("{addr} {x} {y}");
                 buffers.push(addr as ComputerIndex, XYPair { x, y });
 
                 let xy_pair = XYPair { x, y };

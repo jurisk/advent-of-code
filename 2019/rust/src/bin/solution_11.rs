@@ -121,7 +121,7 @@ fn board_as_string(board: &Board) -> String {
 fn solve_1() {
     let board = solve(Square::Black);
     let result = board.len();
-    println!("Part 1: Panels painted: {}", result);
+    println!("Part 1: Panels painted: {result}");
     assert_eq!(result, 2141);
     println!("{}", board_as_string(&board));
 }
@@ -129,7 +129,7 @@ fn solve_1() {
 fn solve_2() {
     let board = solve(Square::White);
     let obtained = board_as_string(&board);
-    println!("Part 2:\n{}", obtained);
+    println!("Part 2:\n{obtained}");
 
     let expected = "\
 ░███░░███░░░░██░░██░░████░████░█░░█░████░░░

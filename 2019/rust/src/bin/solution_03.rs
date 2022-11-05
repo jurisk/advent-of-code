@@ -31,7 +31,7 @@ fn parse_commands(line: &str) -> Vec<Command> {
                 'D' => Down(n),
                 'L' => Left(n),
                 'R' => Right(n),
-                x => panic!("Unknown command {} in {}", x, line),
+                x => panic!("Unknown command {x} in {line}"),
             }
         })
         .collect()
@@ -138,7 +138,7 @@ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7";
     let part1 = solve1(data);
 
     assert_eq!(part1, 258);
-    println!("Part 1: {}", part1);
+    println!("Part 1: {part1}");
 
     assert_eq!(solve2(test1), 30);
     assert_eq!(solve2(test2), 610);
@@ -146,5 +146,5 @@ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7";
 
     let part2 = solve2(data);
     assert_eq!(part2, 12304);
-    println!("Part 2: {}", part2);
+    println!("Part 2: {part2}");
 }
