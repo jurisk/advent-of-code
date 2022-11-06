@@ -27,7 +27,7 @@
 | 21  |                                                    | [Code](2021/rust/src/bin/solution_21.rs) |                                            |
 | 22  |                                                    | [Code](2021/rust/src/bin/solution_22.rs) |                                            |
 | 23  |                                                    | [Code](2021/rust/src/bin/solution_23.rs) |                                            |
-| 24  |                                                    |                                          |                                            |
+| 24  |                                                    | [Code](2021/rust/src/bin/solution_24.rs) |                                            |
 | 25  |                                                    | [Code](2021/rust/src/bin/solution_25.rs) |                                            |
 
 ## 2020

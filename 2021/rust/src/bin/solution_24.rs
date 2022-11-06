@@ -1,59 +1,232 @@
-/*
+use advent_of_code::parsing::Error;
+use itertools::Itertools;
+use std::collections::HashMap;
 
---- Day 24: Arithmetic Logic Unit ---
-Magic smoke starts leaking from the submarine's arithmetic logic unit (ALU). Without the ability to perform basic arithmetic and logic functions, the submarine can't produce cool patterns with its Christmas lights!
+const DATA: &str = include_str!("../../resources/24.txt");
 
-It also can't navigate. Or run the oxygen system.
+type N = i64;
 
-Don't worry, though - you probably have enough oxygen left to give you enough time to build a new ALU.
+#[derive(Debug)]
+struct Subroutine {
+    line_4: N,
+    line_5: N,
+    line_15: N,
+}
 
-The ALU is a four-dimensional processing unit: it has integer variables w, x, y, and z. These variables all start with the value 0. The ALU also supports six instructions:
+impl Subroutine {
+    fn solve(&self, old_z: N, input: N) -> N {
+        let mut z: N = old_z;
+        // 0: inp w
+        let w: N = input;
+        // 1: mul x 0
+        // 2: add x z
+        // 3: mod x 26
+        // 5: add x line_5
+        let mut x = z % 26 + self.line_5;
+        // 4: div z line_4;
+        z /= self.line_4;
+        // 6: eql x w
+        // 7: eql x 0
+        x = i64::from(x != w);
 
-inp a - Read an input value and write it to variable a.
-add a b - Add the value of a to the value of b, then store the result in variable a.
-mul a b - Multiply the value of a by the value of b, then store the result in variable a.
-div a b - Divide the value of a by the value of b, truncate the result to an integer, then store the result in variable a. (Here, "truncate" means to round the value toward zero.)
-mod a b - Divide the value of a by the value of b, then store the remainder in variable a. (This is also called the modulo operation.)
-eql a b - If the value of a and b are equal, then store the value 1 in variable a. Otherwise, store the value 0 in variable a.
-In all of these instructions, a and b are placeholders; a will always be the variable where the result of the operation is stored (one of w, x, y, or z), while b can be either a variable or a number. Numbers can be positive or negative, but will always be integers.
+        // 8: mul y 0
+        // 9: add y 25
+        // 10: mul y x
+        // 11: add y 1
+        let mut y = 25 * x + 1;
+        // 12: mul z y
+        z *= y;
+        // 13: mul y 0
+        // 14: add y w
+        // 15: add y line_15
+        // 16: mul y x
+        y = (w + self.line_15) * x;
 
-The ALU has no jump instructions; in an ALU program, every instruction is run exactly once in order from top to bottom. The program halts after the last instruction has finished executing.
+        // 17: add z y
+        z += y;
 
-(Program authors should be especially cautious; attempting to execute div with b=0 or attempting to execute mod with a<0 or b<=0 will cause the program to crash and might even damage the ALU. These operations are never intended in any serious ALU program.)
+        // println!("Subroutine #{self:?}: z = {old_z}, input = {input} => {z}");
 
-For example, here is an ALU program which takes an input number, negates it, and stores it in x:
+        z
+    }
+}
 
-inp x
-mul x -1
-Here is an ALU program which takes two input numbers, then sets z to 1 if the second input number is three times larger than the first input number, or sets z to 0 otherwise:
+const C: usize = 14;
+const L: usize = 18;
 
-inp z
-inp x
-mul z 3
-eql z x
-Here is an ALU program which takes a non-negative integer as input, converts it into binary, and stores the lowest (1's) bit in z, the second-lowest (2's) bit in y, the third-lowest (4's) bit in x, and the fourth-lowest (8's) bit in w:
+// Note - This is not "general purpose", but if we needed to, we could have stored all registers in
+// the state.
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+struct State {
+    instruction_pointer: usize,
+    z: N,
+}
 
-inp w
-add z w
-mod z 2
-div w 2
-add y w
-mod y 2
-div w 2
-add x w
-mod x 2
-div w 2
-mod w 2
-Once you have built a replacement ALU, you can install it in the submarine, which will immediately resume what it was doing when the ALU failed: validating the submarine's model number. To do this, the ALU will run the MOdel Number Automatic Detector program (MONAD, your puzzle input).
+impl State {
+    fn start() -> State {
+        State {
+            instruction_pointer: 0,
+            z: 0,
+        }
+    }
 
-Submarine model numbers are always fourteen-digit numbers consisting only of digits 1 through 9. The digit 0 cannot appear in a model number.
+    fn is_success(&self) -> bool {
+        self.instruction_pointer >= C && self.z == 0
+    }
 
-When MONAD checks a hypothetical fourteen-digit model number, it uses fourteen separate inp instructions, each expecting a single digit of the model number in order of most to least significant. (So, to check the model number 13579246899999, you would give 1 to the first inp instruction, 3 to the second inp instruction, 5 to the third inp instruction, and so on.) This means that when operating MONAD, each input instruction should only ever be given an integer value of at least 1 and at most 9.
+    fn successors(&self, program: &[Subroutine], search_order: &[N]) -> Vec<(N, State)> {
+        if let Some(subroutine) = program.get(self.instruction_pointer) {
+            let instruction_pointer = self.instruction_pointer + 1;
+            search_order
+                .iter()
+                .map(|input| {
+                    let z = subroutine.solve(self.z, *input);
+                    (
+                        *input,
+                        State {
+                            instruction_pointer,
+                            z,
+                        },
+                    )
+                })
+                .collect()
+        } else {
+            vec![]
+        }
+    }
+}
 
-Then, after MONAD has finished running all of its instructions, it will indicate that the model number was valid by leaving a 0 in variable z. However, if the model number was invalid, it will leave some other non-zero value in z.
+// Not a general purpose solution, though a general purpose solution could be done in a somewhat
+// similar way, by memoizing all (register_state, instruction_pointer, input_value) combinations.
+#[allow(clippy::similar_names, clippy::redundant_closure_for_method_calls)]
+fn parse(input: &str) -> Result<Vec<Subroutine>, Error> {
+    let lines: Vec<String> = input
+        .split('\n')
+        .filter(|x| !x.is_empty())
+        .map(ToString::to_string)
+        .collect();
 
-MONAD imposes additional, mysterious restrictions on model numbers, and legend says the last copy of the MONAD documentation was eaten by a tanuki. You'll need to figure out what MONAD does some other way.
+    assert_eq!(lines.len() % C, 0);
 
-To enable as many submarine features as possible, find the largest valid fourteen-digit model number that contains no 0 digits. What is the largest model number accepted by MONAD?
+    let chunks: Vec<Vec<String>> = lines.chunks(L).map(|slice| slice.to_vec()).collect();
 
- */
+    for idx in 0..L {
+        let options: Vec<String> = chunks
+            .iter()
+            .map(|chunk| chunk[idx].to_string())
+            .unique()
+            .collect();
+        println!("Line {idx}: {options:?}");
+    }
+
+    let mut subroutines: Vec<Subroutine> = Vec::new();
+    for chunk in chunks {
+        let line_4 = chunk[4].split(' ').last().ok_or("Failed to split Line 4")?;
+        let line_5 = chunk[5].split(' ').last().ok_or("Failed to split Line 5")?;
+        let line_15 = chunk[15]
+            .split(' ')
+            .last()
+            .ok_or("Failed to split Line 4")?;
+        let subroutine = Subroutine {
+            line_4: line_4.parse().unwrap(),
+            line_5: line_5.parse().unwrap(),
+            line_15: line_15.parse().unwrap(),
+        };
+        subroutines.push(subroutine);
+    }
+    Ok(subroutines)
+}
+
+#[derive(Copy, Clone)]
+enum SearchOrder {
+    Smallest,
+    Largest,
+}
+
+impl SearchOrder {
+    fn range(self) -> [N; 9] {
+        match self {
+            SearchOrder::Smallest => [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            SearchOrder::Largest => [9, 8, 7, 6, 5, 4, 3, 2, 1],
+        }
+    }
+}
+
+fn best(
+    program: &[Subroutine],
+    cached: &mut HashMap<State, Option<N>>,
+    state: &State,
+    range: &[N],
+) -> Option<N> {
+    if let Some(found) = cached.get(state) {
+        return *found;
+    }
+
+    let successors = state.successors(program, range);
+    if successors.is_empty() {
+        if state.is_success() {
+            Some(0)
+        } else {
+            None
+        }
+    } else {
+        for (input, new_state) in successors {
+            let search = best(program, cached, &new_state, range);
+            if let Some(found) = search {
+                let value = found * 10 + input;
+                println!("Inserting {new_state:?}, {value}");
+                cached.insert(new_state, Some(value));
+                return Some(value);
+            }
+        }
+
+        cached.insert(*state, None);
+        None
+    }
+}
+
+fn rev(mut u: N) -> N {
+    let mut r = 0;
+    while u != 0 {
+        r = r * 10 + u % 10;
+        u /= 10;
+    }
+    r
+}
+
+fn solve(program: &[Subroutine], search_order: SearchOrder) -> Result<N, Error> {
+    let search_order_range = search_order.range();
+    let mut cached: HashMap<State, Option<N>> = HashMap::new();
+
+    let result = best(program, &mut cached, &State::start(), &search_order_range).map(rev);
+
+    println!("{result:?}");
+    result.ok_or_else(|| "Failed".to_string())
+}
+
+fn solve_both(input: &str) -> Result<(i64, i64), Error> {
+    let program = parse(input)?;
+    println!("{program:?}");
+    let largest = solve(&program, SearchOrder::Largest)?;
+    let smallest = solve(&program, SearchOrder::Smallest)?;
+    Ok((largest, smallest))
+}
+
+fn main() {
+    let result = solve_both(DATA);
+    println!("{result:?}");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[ignore]
+    fn test_solve() {
+        assert_eq!(
+            solve_both(DATA),
+            Ok((99_298_993_199_873, 73_181_221_197_111))
+        );
+    }
+}
