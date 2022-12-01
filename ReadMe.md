@@ -1,5 +1,11 @@
 # Advent of Code
 
+## 2022
+
+| Day | Scala                                                   | Rust | Haskell |
+|-----|---------------------------------------------------------|------|---------|
+| 1   | [Code](2022/scala/src/main/scala/jurisk/Advent01.scala) |      |         |
+
 ## 2021
 
 | Day | Scala                                              | Rust                                     | Haskell                                    |
