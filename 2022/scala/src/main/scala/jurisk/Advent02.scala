@@ -2,7 +2,7 @@ package jurisk
 
 import jurisk.Advent02.Outcome._
 import jurisk.Advent02.Selection._
-import jurisk.Utils.readFileLines
+import jurisk.FileInput.readFileLines
 import org.scalatest.matchers.should.Matchers._
 
 object Advent02 {
@@ -135,15 +135,15 @@ object Advent02 {
 
   def main(args: Array[String]): Unit = {
     val test1 = parse1("02-test.txt")
-    part1(test1) shouldEqual 15
-
     val real1 = parse1("02.txt")
+
+    part1(test1) shouldEqual 15
     part1(real1) shouldEqual 14531
 
     val test2 = parse2("02-test.txt")
-    part2(test2) shouldEqual 12
-
     val real2 = parse2("02.txt")
+
+    part2(test2) shouldEqual 12
     part2(real2) shouldEqual 11258
   }
 }

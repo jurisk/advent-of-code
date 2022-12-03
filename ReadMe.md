@@ -5,6 +5,8 @@
 | Day | Scala                                                   | Rust | Haskell |
 |-----|---------------------------------------------------------|------|---------|
 | 1   | [Code](2022/scala/src/main/scala/jurisk/Advent01.scala) |      |         |
+| 2   | [Code](2022/scala/src/main/scala/jurisk/Advent02.scala) |      |         |
+| 3   | [Code](2022/scala/src/main/scala/jurisk/Advent03.scala) |      |         |
 
 ## 2021
 

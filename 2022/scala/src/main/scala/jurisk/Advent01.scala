@@ -1,6 +1,6 @@
 package jurisk
 
-import jurisk.Utils.readLineGroups
+import jurisk.FileInput.readLineGroups
 import org.scalatest.matchers.should.Matchers._
 
 object Advent01 {
@@ -24,11 +24,12 @@ object Advent01 {
 
   def main(args: Array[String]): Unit = {
     val test = parse("01-test.txt")
-    part1(test) shouldEqual 24000
-    part2(test) shouldEqual 45000
-
     val real = parse("01.txt")
+
+    part1(test) shouldEqual 24000
     part1(real) shouldEqual 74394
+
+    part2(test) shouldEqual 45000
     part2(real) shouldEqual 212836
   }
 }
