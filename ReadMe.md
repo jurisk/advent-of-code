@@ -2,12 +2,12 @@
 
 ## 2022
 
-| Day | Scala                                                                      | Rust | Haskell |
-|-----|----------------------------------------------------------------------------|------|---------|
-| 1   | [Code](2022/scala/src/main/scala/jurisk/adventofcode/y2022/Advent01.scala) |      |         |
-| 2   | [Code](2022/scala/src/main/scala/jurisk/adventofcode/y2022/Advent02.scala) |      |         |
-| 3   | [Code](2022/scala/src/main/scala/jurisk/adventofcode/y2022/Advent03.scala) |      |         |
-| 4   | [Code](2022/scala/src/main/scala/jurisk/adventofcode/y2022/Advent04.scala) |      |         |
+| Day | Scala                                                                  | Rust | Haskell |
+|-----|------------------------------------------------------------------------|------|---------|
+| 1   | [Code](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent01.scala) |      |         |
+| 2   | [Code](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent02.scala) |      |         |
+| 3   | [Code](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent03.scala) |      |         |
+| 4   | [Code](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent04.scala) |      |         |
 
 ## 2021
 
