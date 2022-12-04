@@ -216,7 +216,7 @@ impl Route {
             match step {
                 Step::F(n) => {
                     current += n;
-                }
+                },
                 Step::L => {
                     if current > 0 {
                         steps.push(Step::F(current));
@@ -224,7 +224,7 @@ impl Route {
                     }
 
                     steps.push(Step::L);
-                }
+                },
                 Step::R => {
                     if current > 0 {
                         steps.push(Step::F(current));
@@ -232,7 +232,7 @@ impl Route {
                     }
 
                     steps.push(Step::R);
-                }
+                },
             }
         }
 

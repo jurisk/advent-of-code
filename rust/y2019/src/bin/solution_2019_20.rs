@@ -75,6 +75,7 @@ impl Maze {
     fn build_temp_portals(chars: &Vec<Vec<char>>) -> Vec<(Name, CoordsXY)> {
         let mut temp_portals: Vec<(Name, CoordsXY)> = Vec::new();
 
+        #[allow(clippy::needless_range_loop)]
         for y in 0..chars.len() {
             let r = &chars[y];
             for x in 0..r.len() - 2 {
@@ -172,7 +173,7 @@ impl Maze {
                 None => {
                     println!("Found {name:?} at {coords:?}");
                     temporary_map.insert(name, coords);
-                }
+                },
                 Some(existing) => {
                     if (coords.x == 0 || coords.x == (width - 1) as i32)
                         || (coords.y == 0 || coords.y == (height - 1) as i32)
@@ -189,7 +190,7 @@ impl Maze {
                         );
                         portals.insert(existing, coords);
                     }
-                }
+                },
             }
         }
 

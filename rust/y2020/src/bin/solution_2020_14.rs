@@ -130,7 +130,7 @@ where
 
     while !queue.is_empty() {
         match queue.pop_back() {
-            None => {}
+            None => {},
             Some(entry) => {
                 let trailing_zeros = entry.remaining_mask.trailing_zeros();
                 if trailing_zeros < 64 {
@@ -151,7 +151,7 @@ where
                     let applied = apply_mask(value, entry.mask_0, entry.mask_1);
                     callback(applied)
                 }
-            }
+            },
         }
     }
 }
@@ -178,10 +178,10 @@ where
     commands.iter().for_each(|command| match command {
         SetMemory { address, value } => {
             f(&mut memory, mask, *address, *value);
-        }
+        },
         SetMask { mask: new_mask } => {
             mask = *new_mask;
-        }
+        },
     });
 
     memory.values().sum()

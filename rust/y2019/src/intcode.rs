@@ -189,10 +189,10 @@ impl Process {
             OperationCode::Output => Operation::Output(self.param(1, &mode_1)),
             OperationCode::JumpIfTrue => {
                 Operation::JumpIfTrue(self.param(1, &mode_1), self.param(2, &mode_2))
-            }
+            },
             OperationCode::JumpIfFalse => {
                 Operation::JumpIfFalse(self.param(1, &mode_1), self.param(2, &mode_2))
-            }
+            },
             OperationCode::LessThan => Operation::LessThan(
                 self.param(1, &mode_1),
                 self.param(2, &mode_2),
@@ -205,7 +205,7 @@ impl Process {
             ),
             OperationCode::AdjustRelativeBase => {
                 Operation::AdjustRelativeBase(self.param(1, &mode_1))
-            }
+            },
             OperationCode::Halt => Operation::Halt,
         }
     }
@@ -246,7 +246,7 @@ impl Process {
             // can be done cleaner with stronger types, but it is OK for now
             Parameter::Immediate(_) => {
                 panic!("Did not expect immediate parameter for resolving index")
-            }
+            },
             Parameter::Relative(x) => x + self.relative_base,
         }
     }
@@ -259,25 +259,25 @@ impl Process {
                 let index = self.resolve_index(&destination);
                 self.write_to_memory(index, self.resolve(&a) + self.resolve(&b));
                 self.adjust_ip(4);
-            }
+            },
             // Opcode 2 works exactly like opcode 1, except it multiplies the two inputs instead of adding them. Again, the three integers after the opcode indicate where the inputs and outputs are, not their values.
             Operation::Multiply(a, b, destination) => {
                 let index = self.resolve_index(&destination);
                 self.write_to_memory(index, self.resolve(&a) * self.resolve(&b));
                 self.adjust_ip(4);
-            }
+            },
             // Opcode 3 takes a single integer as input and saves it to the position given by its only parameter. For example, the instruction 3,50 would take an input value and store it at address 50.
             Operation::Input(parameter) => {
                 let value = self.input.pop_front().unwrap();
                 let index = self.resolve_index(&parameter);
                 self.write_to_memory(index, value);
                 self.adjust_ip(2);
-            }
+            },
             // Opcode 4 outputs the value of its only parameter. For example, the instruction 4,50 would output the value at address 50.
             Operation::Output(parameter) => {
                 self.output.push_back(self.resolve(&parameter));
                 self.adjust_ip(2);
-            }
+            },
             // Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
             Operation::JumpIfTrue(a, b) => {
                 if self.resolve(&a) == 0 {
@@ -285,7 +285,7 @@ impl Process {
                 } else {
                     self.set_ip(self.resolve(&b) as Index);
                 }
-            }
+            },
             // Opcode 6 is jump-if-false: if the first parameter is zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
             Operation::JumpIfFalse(a, b) => {
                 if self.resolve(&a) == 0 {
@@ -293,26 +293,26 @@ impl Process {
                 } else {
                     self.adjust_ip(3);
                 }
-            }
+            },
             // Opcode 7 is less than: if the first parameter is less than the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
             Operation::LessThan(a, b, c) => {
                 let value = Entry::from(self.resolve(&a) < self.resolve(&b));
                 self.write_to_memory(self.resolve_index(&c), value);
                 self.adjust_ip(4);
-            }
+            },
             // Opcode 8 is equals: if the first parameter is equal to the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
             Operation::Equals(a, b, c) => {
                 let value = Entry::from(self.resolve(&a) == self.resolve(&b));
                 self.write_to_memory(self.resolve_index(&c), value);
                 self.adjust_ip(4);
-            }
+            },
             Operation::AdjustRelativeBase(x) => {
                 self.relative_base += self.resolve(&x);
                 self.adjust_ip(2);
-            }
+            },
             Operation::Halt => {
                 panic!("Halt was supposed to handled above")
-            }
+            },
         }
     }
 

@@ -37,19 +37,19 @@ impl<T: Copy + Clone + Eq> SimpleDeck<T> {
                 let mut cards = self.cards.clone();
                 cards.reverse();
                 SimpleDeck { cards }
-            }
+            },
             Cut(n) if *n > 0 => {
                 let m = *n as usize;
                 SimpleDeck {
                     cards: vec![&self.cards[m..], &self.cards[..m]].concat(),
                 }
-            }
+            },
             Cut(n) => {
                 let m = (self.cards.len() as isize + *n) as usize;
                 SimpleDeck {
                     cards: vec![&self.cards[m..], &self.cards[..m]].concat(),
                 }
-            }
+            },
             DealWithIncrement(n) => {
                 // This can be improved but it works
                 let len = self.cards.len();
@@ -61,7 +61,7 @@ impl<T: Copy + Clone + Eq> SimpleDeck<T> {
                 SimpleDeck {
                     cards: mapping.iter().map(|x| self.cards[*x]).collect(),
                 }
-            }
+            },
         }
     }
 
@@ -161,7 +161,7 @@ impl PowerDeck {
                     offset: self.offset.clone(),
                     increment,
                 }
-            }
+            },
             Cut(n) => {
                 let q = n.to_bigint().unwrap();
                 // shift q left
@@ -177,7 +177,7 @@ impl PowerDeck {
                     offset,
                     increment: self.increment.clone(),
                 }
-            }
+            },
             DealIntoNewStack => {
                 // reverse sequence - instead of going up, go down.
                 // increment_mul *= -1
@@ -196,7 +196,7 @@ impl PowerDeck {
                     offset,
                     increment,
                 }
-            }
+            },
         }
     }
 

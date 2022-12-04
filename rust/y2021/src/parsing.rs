@@ -11,7 +11,7 @@ pub type Error = String;
 ///
 /// Will return `Err` if input is `Err`.
 pub fn convert_error<T, E: Debug>(input: &str, result: Result<T, E>) -> Result<T, Error> {
-    result.map_err(|err| format!("Error parsing {} {:?}", input, err))
+    result.map_err(|err| format!("Error parsing {input} {err:?}"))
 }
 
 /// # Errors
@@ -178,7 +178,7 @@ pub fn parse_u8_matrix(input: &str) -> Result<Matrix<u8>, Error> {
         if (b'0'..=b'9').contains(&chr) {
             Ok(chr - b'0')
         } else {
-            Err(format!("{:?}", ch))
+            Err(format!("{ch:?}"))
         }
     })
 }
@@ -186,6 +186,7 @@ pub fn parse_u8_matrix(input: &str) -> Result<Matrix<u8>, Error> {
 /// # Errors
 ///
 /// Will return `Err` if parsing fails.
+#[allow(clippy::redundant_closure)]
 pub fn parse_matrix<T: Clone, PF>(input: &str, parse_element: PF) -> Result<Matrix<T>, Error>
 where
     PF: Fn(char) -> Result<T, Error>,
@@ -207,5 +208,5 @@ where
         vec_vec[0].len(),
         vec_vec.into_iter().flatten().collect(),
     )
-    .map_err(|err| format!("{:?}", err))
+    .map_err(|err| format!("{err:?}"))
 }

@@ -80,6 +80,7 @@ fn find_loop_simple(field: Field) -> Field {
     }
 }
 
+#[allow(clippy::needless_range_loop)]
 fn biodiversity(field: Field) -> u128 {
     let mut result: u128 = 0;
     for x in 0..SIZE {
@@ -166,6 +167,7 @@ fn next_complex(data: &HashMap<i32, Field>) -> HashMap<i32, Field> {
         .collect()
 }
 
+#[allow(clippy::needless_range_loop)]
 fn count_bugs_complex(field: Field) -> u128 {
     let mut result = 0;
     for x in 0..SIZE {

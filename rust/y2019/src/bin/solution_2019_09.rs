@@ -1,4 +1,6 @@
-use advent_of_code_2019::intcode::{parse_machine_code, Entry, MachineCode, MachineCodeRef, Process};
+use advent_of_code_2019::intcode::{
+    parse_machine_code, Entry, MachineCode, MachineCodeRef, Process,
+};
 
 fn solve(program: &MachineCodeRef, input: Entry, expected_output: Entry) {
     let mut process = Process::new(program);
