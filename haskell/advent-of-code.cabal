@@ -16,7 +16,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Day05.Solution
+  exposed-modules:     Year2021.Day05.Solution
                      , Lib.Common
   build-depends:       base >= 4.7 && < 5
                      , containers
@@ -56,7 +56,7 @@ test-suite advent-of-code-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  other-modules:       Day05.SolutionSpec
+  other-modules:       Year2021.Day05.SolutionSpec
   build-depends:       base
                      , advent-of-code
                      , hspec

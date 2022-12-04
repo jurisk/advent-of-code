@@ -1,4 +1,4 @@
-module Day05.Solution (task_1, task_2) where
+module Year2021.Day05.Solution (task_1, task_2) where
 
 import Lib.Common
 import Text.Parsec
