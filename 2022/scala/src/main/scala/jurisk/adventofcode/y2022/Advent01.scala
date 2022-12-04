@@ -1,6 +1,6 @@
-package jurisk
+package jurisk.adventofcode.y2022
 
-import jurisk.FileInput.readLineGroups
+import jurisk.utils.FileInput.readLineGroups
 import org.scalatest.matchers.should.Matchers._
 
 object Advent01 {

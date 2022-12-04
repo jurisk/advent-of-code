@@ -1,8 +1,7 @@
-package jurisk
+package jurisk.adventofcode.y2022
 
-import jurisk.Advent02.Outcome._
-import jurisk.Advent02.Selection._
-import jurisk.FileInput.readFileLines
+import jurisk.adventofcode.y2022.Advent02.Outcome._
+import jurisk.utils.FileInput.readFileLines
 import org.scalatest.matchers.should.Matchers._
 
 object Advent02 {

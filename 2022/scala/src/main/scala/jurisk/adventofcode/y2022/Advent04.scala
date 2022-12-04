@@ -1,8 +1,8 @@
-package jurisk
+package jurisk.adventofcode.y2022
 
-import jurisk.FileInput.readFileLines
+import jurisk.utils.FileInput.readFileLines
+import jurisk.utils.Utils.StringOps
 import org.scalatest.matchers.should.Matchers._
-import jurisk.Utils.StringOps
 
 object Advent04 {
   case class Elf(from: Int, to: Int) {

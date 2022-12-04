@@ -1,8 +1,8 @@
-package jurisk
+package jurisk.adventofcode.y2022
 
-import jurisk.FileInput.readFileLines
+import jurisk.utils.FileInput.readFileLines
+import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
-import jurisk.Utils.IterableOps
 
 object Advent03 {
   type Parsed = List[Rucksack]

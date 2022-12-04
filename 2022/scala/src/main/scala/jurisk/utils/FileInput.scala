@@ -1,4 +1,4 @@
-package jurisk
+package jurisk.utils
 
 import scala.io.Source
 

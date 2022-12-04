@@ -1,4 +1,4 @@
-package jurisk
+package jurisk.utils
 
 object Utils {
   implicit class IterableOps[T](seq: Iterable[T]) {
