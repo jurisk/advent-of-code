@@ -1,12 +1,12 @@
 package jurisk.adventofcode.y2021
 
-import jurisk.adventofcode.y2021.Solution16.Packet._
-import jurisk.adventofcode.y2021.Solution16._
+import jurisk.adventofcode.y2021.Advent16.Packet._
+import jurisk.adventofcode.y2021.Advent16._
 import org.scalatest._
 import org.scalatest.flatspec._
 import org.scalatest.matchers.should.Matchers._
 
-class Solution16Spec extends AnyFlatSpec {
+class Advent16Spec extends AnyFlatSpec {
   "Solution 16" should "parse D2FE28" in {
     parseSingle("D2FE28") shouldEqual Right(Literal(6, 2021))
   }

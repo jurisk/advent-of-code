@@ -1,10 +1,9 @@
 package jurisk.adventofcode.y2021
 
 import cats.implicits._
-
 import scala.util.Try
 
-object Solution16 {
+object Advent16 {
   type VersionNumber = Byte
   type Error = String
   type Bits = List[Byte]
