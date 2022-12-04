@@ -1,7 +1,7 @@
 lazy val root = project
   .in(file(""))
   .settings(
-    name := "advent-of-code-2020",
+    name := "advent-of-code-scala3",
     version := "0.1.0",
     scalacOptions ++= Seq(
       "-language:postfixOps",
