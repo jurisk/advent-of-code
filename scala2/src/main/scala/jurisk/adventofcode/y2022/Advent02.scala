@@ -131,14 +131,14 @@ object Advent02 {
     data.map(_.toRound1.result).sum
 
   def main(args: Array[String]): Unit = {
-    val test1 = parse1("02-test.txt")
-    val real1 = parse1("02.txt")
+    val test1 = parse1("2022/02-test.txt")
+    val real1 = parse1("2022/02.txt")
 
     part1(test1) shouldEqual 15
     part1(real1) shouldEqual 14531
 
-    val test2 = parse2("02-test.txt")
-    val real2 = parse2("02.txt")
+    val test2 = parse2("2022/02-test.txt")
+    val real2 = parse2("2022/02.txt")
 
     part2(test2) shouldEqual 12
     part2(real2) shouldEqual 11258

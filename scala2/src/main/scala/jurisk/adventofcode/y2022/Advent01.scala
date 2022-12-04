@@ -4,8 +4,8 @@ import jurisk.utils.FileInput.readLineGroups
 import org.scalatest.matchers.should.Matchers._
 
 object Advent01 {
-  type Parsed    = List[List[Int]]
-  type Result    = Int
+  type Parsed = List[List[Int]]
+  type Result = Int
 
   def parse(fileName: String): Parsed =
     readLineGroups(fileName) map { section =>
@@ -22,8 +22,8 @@ object Advent01 {
     process(data).take(3).sum
 
   def main(args: Array[String]): Unit = {
-    val test = parse("01-test.txt")
-    val real = parse("01.txt")
+    val test = parse("2022/01-test.txt")
+    val real = parse("2022/01.txt")
 
     part1(test) shouldEqual 24000
     part1(real) shouldEqual 74394

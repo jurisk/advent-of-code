@@ -49,8 +49,8 @@ object Advent04 {
     data.count(_.overlap)
 
   def main(args: Array[String]): Unit = {
-    val test = parse("04-test.txt")
-    val real = parse("04.txt")
+    val test = parse("2022/04-test.txt")
+    val real = parse("2022/04.txt")
 
     part1(test) shouldEqual 2
     part1(real) shouldEqual 547

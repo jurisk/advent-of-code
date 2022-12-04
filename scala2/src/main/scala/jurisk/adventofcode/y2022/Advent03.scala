@@ -59,8 +59,8 @@ object Advent03 {
   }
 
   def main(args: Array[String]): Unit = {
-    val test = parse("03-test.txt")
-    val real = parse("03.txt")
+    val test = parse("2022/03-test.txt")
+    val real = parse("2022/03.txt")
 
     part1(test) shouldEqual 157
     part1(real) shouldEqual 7763
