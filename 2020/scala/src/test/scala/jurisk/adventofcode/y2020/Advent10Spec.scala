@@ -1,4 +1,7 @@
-import cats.implicits._
+package jurisk.adventofcode.y2020
+
+import cats.implicits.*
+import jurisk.adventofcode.y2020.Advent10
 
 object Advent10Spec extends App:
   val inputA = """

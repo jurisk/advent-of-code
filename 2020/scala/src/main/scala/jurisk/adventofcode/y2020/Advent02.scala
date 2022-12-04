@@ -1,3 +1,5 @@
+package jurisk.adventofcode.y2020
+
 import scala.io.Source
 
 object Advent02 extends App:

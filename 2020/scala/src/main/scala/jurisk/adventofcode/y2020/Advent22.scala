@@ -1,3 +1,7 @@
+package jurisk.adventofcode.y2020
+
+import jurisk.adventofcode.y2020.Advent22.Player
+
 import scala.annotation.tailrec
 import scala.io.Source
 

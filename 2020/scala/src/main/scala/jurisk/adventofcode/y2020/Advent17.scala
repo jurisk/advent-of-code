@@ -1,6 +1,9 @@
-import Advent17.Coordinates.{Coordinates3D, Coordinates4D}
-import AdventApp.ErrorMessage
-import cats.implicits._
+package jurisk.adventofcode.y2020
+
+import cats.implicits.*
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.SingleLineAdventApp
+import jurisk.adventofcode.y2020.Advent17.Coordinates.{Coordinates3D, Coordinates4D}
 
 object Advent17 extends SingleLineAdventApp[List[Boolean], Int]:
   sealed trait Coordinates[C <: Coordinates[C]]:

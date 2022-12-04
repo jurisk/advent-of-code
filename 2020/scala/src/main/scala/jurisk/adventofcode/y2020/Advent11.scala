@@ -1,6 +1,10 @@
-import Advent11.Line
-import AdventApp.ErrorMessage
-import cats.implicits._
+package jurisk.adventofcode.y2020
+
+import cats.implicits.*
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.SingleLineAdventApp
+import jurisk.adventofcode.y2020.Advent11.{Line, Seat}
+
 import scala.annotation.tailrec
 
 object Advent11 extends SingleLineAdventApp[Line, Int]:

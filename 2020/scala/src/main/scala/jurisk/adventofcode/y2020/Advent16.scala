@@ -1,3 +1,5 @@
+package jurisk.adventofcode.y2020
+
 import cats.effect.{ExitCode, IO, IOApp}
 
 import scala.annotation.tailrec

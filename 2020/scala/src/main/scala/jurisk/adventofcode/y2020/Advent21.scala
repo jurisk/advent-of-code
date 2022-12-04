@@ -1,3 +1,5 @@
+package jurisk.adventofcode.y2020
+
 import scala.annotation.tailrec
 import scala.io.Source
 

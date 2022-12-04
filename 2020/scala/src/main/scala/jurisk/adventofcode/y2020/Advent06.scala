@@ -1,7 +1,10 @@
-import scala.io.Source
+package jurisk.adventofcode.y2020
 
-import AdventApp.ErrorMessage
-import cats.implicits._
+import cats.implicits.*
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.MultiLineAdventApp
+
+import scala.io.Source
 
 type Answer = Char
 type Form = Set[Answer]

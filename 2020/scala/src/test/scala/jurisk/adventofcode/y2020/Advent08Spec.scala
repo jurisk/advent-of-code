@@ -1,5 +1,8 @@
-import cats.implicits._
-import Advent08.{Execution, ExecutionResult}
+package jurisk.adventofcode.y2020
+
+import cats.implicits.*
+import jurisk.adventofcode.y2020.Advent08
+import jurisk.adventofcode.y2020.Advent08.{Execution, ExecutionResult}
 
 object Advent08Spec extends App:
   val tests1 = """

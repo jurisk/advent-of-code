@@ -1,8 +1,11 @@
-import cats.effect.{ExitCode, IO, IOApp}
+package jurisk.adventofcode
+
 import cats.Show
+import cats.effect.{ExitCode, IO, IOApp}
+import cats.implicits.*
+import jurisk.adventofcode.AdventApp.ErrorMessage
+
 import scala.io.Source
-import cats.implicits._
-import AdventApp.ErrorMessage
 
 object AdventApp:
   opaque type ErrorMessage = String

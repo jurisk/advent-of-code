@@ -1,6 +1,9 @@
-import scala.io.Source
-import cats.implicits._
+package jurisk.adventofcode.y2020
 
+import cats.implicits.*
+import jurisk.adventofcode.y2020.Advent04.Ecl
+
+import scala.io.Source
 import scala.util.Try
 
 object Advent04 extends App:

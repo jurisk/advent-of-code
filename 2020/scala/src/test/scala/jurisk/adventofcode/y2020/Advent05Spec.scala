@@ -1,6 +1,7 @@
-import Advent05._
+package jurisk.adventofcode.y2020
 
-import cats.implicits._
+import cats.implicits.*
+import jurisk.adventofcode.y2020.Advent05.*
 
 object Advent05Spec extends App:
   def check(input: String, expected: Int) = {
