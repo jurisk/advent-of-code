@@ -38,6 +38,14 @@ object Advent02 {
       override def losesAgainst: Selection = Rock
       override def winsOver: Selection     = Paper
     }
+
+    def parse(s: String): Selection =
+      s match {
+        case "A" | "X" => Rock
+        case "B" | "Y" => Paper
+        case "C" | "Z" => Scissors
+        case _         => sys.error(s"Unrecognized selection $s")
+      }
   }
 
   sealed trait Outcome {
@@ -56,6 +64,15 @@ object Advent02 {
     case object Loss extends Outcome {
       override def score: Result = 0
     }
+
+    // X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win
+    def parse(s: String): Outcome =
+      s match {
+        case "X" => Loss
+        case "Y" => Draw
+        case "Z" => Win
+        case _   => sys.error(s"Unrecognized outcome $s")
+      }
   }
 
   final case class Round1(
@@ -69,17 +86,8 @@ object Advent02 {
     def parse(s: String): Round1 = {
       val Array(o, y) = s.split(" ")
 
-      val you = y match {
-        case "X" => Rock
-        case "Y" => Paper
-        case "Z" => Scissors
-      }
-
-      val opponent = o match {
-        case "A" => Rock
-        case "B" => Paper
-        case "C" => Scissors
-      }
+      val you      = Selection.parse(y)
+      val opponent = Selection.parse(o)
 
       Round1(you, opponent)
     }
@@ -89,7 +97,7 @@ object Advent02 {
     opponent: Selection,
     outcomeForYou: Outcome,
   ) {
-    def toRound: Round1 = {
+    def toRound1: Round1 = {
       val you = outcomeForYou match {
         case Outcome.Win  => opponent.losesAgainst
         case Outcome.Draw => opponent
@@ -102,20 +110,10 @@ object Advent02 {
 
   object Round2 {
     def parse(s: String): Round2 = {
-      // X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win
       val Array(o, w) = s.split(" ")
 
-      val opponent = o match {
-        case "A" => Rock
-        case "B" => Paper
-        case "C" => Scissors
-      }
-
-      val outcomeForYou = w match {
-        case "X" => Loss
-        case "Y" => Draw
-        case "Z" => Win
-      }
+      val opponent      = Selection.parse(o)
+      val outcomeForYou = Outcome.parse(w)
 
       Round2(opponent, outcomeForYou)
     }
@@ -131,7 +129,7 @@ object Advent02 {
     data.map(_.result).sum
 
   def part2(data: Parsed2): Result =
-    data.map(_.toRound.result).sum
+    data.map(_.toRound1.result).sum
 
   def main(args: Array[String]): Unit = {
     val test1 = parse1("02-test.txt")
