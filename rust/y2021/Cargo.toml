@@ -1,5 +1,5 @@
 [package]
-name = "advent-of-code"
+name = "advent-of-code-2021"
 version = "0.1.0"
 authors = ["jurisk <jurisk@users.noreply.github.com>"]
 license = "UNLICENSED"
@@ -12,7 +12,7 @@ itertools = "0"
 num-traits = "0"
 num-derive = "0"
 nalgebra = "0"
-pathfinding = "3"
+pathfinding = "4"
 nonempty = "0"
 num_enum = "0"
 memoize = "0"

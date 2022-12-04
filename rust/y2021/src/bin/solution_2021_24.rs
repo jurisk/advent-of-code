@@ -1,4 +1,4 @@
-use advent_of_code::parsing::Error;
+use advent_of_code_2021::parsing::Error;
 use itertools::Itertools;
 use std::collections::HashMap;
 

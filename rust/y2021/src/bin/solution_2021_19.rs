@@ -1,6 +1,6 @@
 extern crate core;
 
-use advent_of_code::parsing::{
+use advent_of_code_2021::parsing::{
     parse_comma_separated_vec, parse_lines_to_nonempty, parse_separated_nonempty, Error,
 };
 use nalgebra::{Matrix3, Vector3};

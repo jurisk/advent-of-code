@@ -1,4 +1,4 @@
-use advent_of_code::parsing::{parse_lines_to_vec, Error};
+use advent_of_code_2021::parsing::{parse_lines_to_vec, Error};
 use memoize::lazy_static::lazy_static;
 use regex::Regex;
 use std::cmp::{max, min};

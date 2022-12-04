@@ -1,4 +1,4 @@
-use advent_of_code::parsing::{parse_matrix, split_into_two_strings, Error};
+use advent_of_code_2021::parsing::{parse_matrix, split_into_two_strings, Error};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use pathfinding::matrix::Matrix;
 use std::str::FromStr;

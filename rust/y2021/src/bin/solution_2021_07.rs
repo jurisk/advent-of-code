@@ -1,5 +1,5 @@
-use advent_of_code::parsing::parse_comma_separated_vec;
-use advent_of_code::parsing::Error;
+use advent_of_code_2021::parsing::parse_comma_separated_vec;
+use advent_of_code_2021::parsing::Error;
 
 const DATA: &str = include_str!("../../resources/07.txt");
 

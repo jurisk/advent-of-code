@@ -1,4 +1,4 @@
-use advent_of_code::parsing::{parse_lines_to_nonempty, Error};
+use advent_of_code_2021::parsing::{parse_lines_to_nonempty, Error};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::digit1;

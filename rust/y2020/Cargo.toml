@@ -1,11 +1,9 @@
 [package]
-name = "advent-of-code"
+name = "advent-of-code-2020"
 version = "0.1.0"
 authors = ["jurisk <jurisk@users.noreply.github.com>"]
 license = "UNLICENSED"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 lazy_static = "1"
