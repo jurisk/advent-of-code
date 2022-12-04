@@ -5,7 +5,6 @@ import org.scalatest.matchers.should.Matchers._
 
 object Advent01 {
   type Parsed    = List[List[Int]]
-  type Processed = List[Int]
   type Result    = Int
 
   def parse(fileName: String): Parsed =
@@ -13,7 +12,7 @@ object Advent01 {
       section.map(_.toInt)
     }
 
-  def process(data: Parsed): Processed =
+  private def process(data: Parsed): List[Int] =
     data.map(_.sum).sorted(Ordering[Int].reverse)
 
   def part1(data: Parsed): Result =

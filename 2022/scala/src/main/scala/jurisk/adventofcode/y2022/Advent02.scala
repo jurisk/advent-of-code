@@ -118,10 +118,10 @@ object Advent02 {
     }
   }
 
-  def parse1(fileName: String): Parsed1 =
+  private def parse1(fileName: String): Parsed1 =
     readFileLines(fileName) map Round1.parse
 
-  def parse2(fileName: String): Parsed2 =
+  private def parse2(fileName: String): Parsed2 =
     readFileLines(fileName) map Round2.parse
 
   def part1(data: Parsed1): Result =
