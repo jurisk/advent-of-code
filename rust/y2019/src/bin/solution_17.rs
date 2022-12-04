@@ -1,6 +1,6 @@
 #![feature(slice_group_by)]
 
-use advent_of_code::intcode::{parse_machine_code, Process};
+use advent_of_code_2019::intcode::{parse_machine_code, Process};
 use itertools::Itertools;
 use num_enum::TryFromPrimitive;
 use std::cmp::min;

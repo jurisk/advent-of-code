@@ -1,4 +1,4 @@
-use advent_of_code::intcode::{Entry, Process};
+use advent_of_code_2019::intcode::{Entry, Process};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet, VecDeque};
 

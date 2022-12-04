@@ -1,4 +1,4 @@
-use advent_of_code::intcode::{parse_machine_code, Entry, MachineCode, Process};
+use advent_of_code_2019::intcode::{parse_machine_code, Entry, MachineCode, Process};
 
 fn machine_code() -> MachineCode {
     parse_machine_code(include_str!("../../resources/21.txt"))

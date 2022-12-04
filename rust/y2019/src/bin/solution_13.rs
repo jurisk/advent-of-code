@@ -1,4 +1,4 @@
-use advent_of_code::intcode::{parse_machine_code, Process};
+use advent_of_code_2019::intcode::{parse_machine_code, Process};
 
 use num_derive::FromPrimitive;
 use num_traits::{signum, FromPrimitive};

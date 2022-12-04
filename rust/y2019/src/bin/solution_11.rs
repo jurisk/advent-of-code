@@ -1,4 +1,4 @@
-use advent_of_code::intcode::Process;
+use advent_of_code_2019::intcode::Process;
 use itertools::Itertools;
 use num_derive::FromPrimitive;
 use num_derive::ToPrimitive;

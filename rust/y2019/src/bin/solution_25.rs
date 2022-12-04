@@ -1,4 +1,4 @@
-use advent_of_code::intcode::{parse_machine_code, MachineCode, Process};
+use advent_of_code_2019::intcode::{parse_machine_code, MachineCode, Process};
 use rand::prelude::SliceRandom;
 use std::collections::HashSet;
 use std::ops::Add;

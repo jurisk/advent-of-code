@@ -1,4 +1,4 @@
-use advent_of_code::intcode::{parse_machine_code, Entry, MachineCode, Process};
+use advent_of_code_2019::intcode::{parse_machine_code, Entry, MachineCode, Process};
 use std::collections::HashMap;
 use std::hash::Hash;
 

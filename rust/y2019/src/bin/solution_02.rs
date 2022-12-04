@@ -1,4 +1,4 @@
-use advent_of_code::intcode::{parse_machine_code, Entry, MachineCodeRef, Process};
+use advent_of_code_2019::intcode::{parse_machine_code, Entry, MachineCodeRef, Process};
 
 fn run_with_modifications(incoming: &MachineCodeRef, noun: Entry, verb: Entry) -> Entry {
     let mut program = incoming.to_owned();
@@ -36,7 +36,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use advent_of_code::intcode::test_program_as_string;
+    use advent_of_code_2019::intcode::test_program_as_string;
 
     #[test]
     fn test_day_02() {

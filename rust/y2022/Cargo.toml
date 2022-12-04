@@ -1,0 +1,18 @@
+[package]
+name = "advent-of-code-2022"
+version = "0.1.0"
+edition = "2021"
+authors = ["jurisk <jurisk@users.noreply.github.com>"]
+license = "UNLICENSED"
+rust-version = "1.65.0"
+
+[dependencies]
+regex = "1"
+itertools = "0"
+num-traits = "0"
+num-derive = "0"
+pathfinding = "3"
+nonempty = "0"
+num_enum = "0"
+memoize = "0"
+nom = "7"

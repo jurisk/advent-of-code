@@ -1,4 +1,4 @@
-use advent_of_code::intcode::{parse_machine_code, Entry, MachineCodeRef, Process};
+use advent_of_code_2019::intcode::{parse_machine_code, Entry, MachineCodeRef, Process};
 use itertools::Itertools;
 use std::ops::RangeInclusive;
 
