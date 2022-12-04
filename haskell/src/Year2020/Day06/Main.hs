@@ -16,6 +16,7 @@ calculate f d = sum $ calculateGroup f <$> d
 solve :: TestCases -> MergeFunction -> IO ()
 solve d f = print $ calculate f d
 
+main :: IO [()]
 main = do
-  input <- readFileMultiLines "day06/input.txt"
+  input <- readFileMultiLines "src/Year2020/Day06/input.txt"
   mapM (solve input) [union, intersect]

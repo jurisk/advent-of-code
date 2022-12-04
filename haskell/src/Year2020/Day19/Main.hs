@@ -57,13 +57,14 @@ process rules input = count matchesRule0 input
     mergeMaybeLists :: [Maybe [a]] -> Maybe [a]
     mergeMaybeLists list = foldl (<>) Nothing list
 
+main :: IO ()
 main = do
-  inputLines <- readFileLines "day19/input.txt"
+  inputLines <- readFileLines "src/Year2020/Day19/input.txt"
   let (ruleLines, tests) = splitAtElem [] inputLines
   let originalRules = parseRules ruleLines
   print $ process originalRules tests -- Part 1
 
-  patchLines <- readFileLines "day19/patch.txt"
+  patchLines <- readFileLines "src/Year2020/Day19/patch.txt"
   let patchedRules = parseRules patchLines
   let merged = Map.union patchedRules originalRules -- Left-biased so patched rules have precedence
   print $ process merged tests -- Part 2

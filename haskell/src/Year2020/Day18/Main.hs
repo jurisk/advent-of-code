@@ -65,6 +65,7 @@ solve input parser = print $ sum $ evaluate . run parser <$> input
     run :: Parser Expression -> String -> Expression
     run parser text = either (error . show) id $ parse parser text text
 
+main :: IO [()]
 main = do
-  input <- readFileLines "day18/input.txt"
+  input <- readFileLines "src/Year2020/Day18/input.txt"
   mapM (solve input) [parser1, parser2]

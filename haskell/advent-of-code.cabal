@@ -18,6 +18,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Year2021.Day05.Solution
                      , Lib.Common
+                     , Lib
   build-depends:       base >= 4.7 && < 5
                      , containers
                      , parsec
@@ -33,30 +34,64 @@ library
                        -Wpartial-fields
                        -Wredundant-constraints
 
-executable advent-of-code
-  hs-source-dirs:      app
-  main-is:             Main.hs
-  build-depends:       base
-                     , advent-of-code
-  default-language:    Haskell2010
-  ghc-options:         -Wall
-                       -Wcompat
-                       -Widentities
-                       -Wincomplete-record-updates
-                       -Wincomplete-uni-patterns
-                       -Wmissing-export-lists
-                       -Wmissing-home-modules
-                       -Wpartial-fields
-                       -Wredundant-constraints
-                       -threaded
-                       -rtsopts
-                       -with-rtsopts=-N
+executable advent-01-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_advent_of_code
+  hs-source-dirs:
+      src/Year2020/Day01
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      advent-of-code
+    , base >=4.7 && <5
+  default-language: Haskell2010
+
+executable advent-06-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_advent_of_code
+  hs-source-dirs:
+      src/Year2020/Day06
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      advent-of-code
+    , base >=4.7 && <5
+  default-language: Haskell2010
+
+executable advent-18-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_advent_of_code
+  hs-source-dirs:
+      src/Year2020/Day18
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      advent-of-code
+    , base >=4.7 && <5
+    , lens
+    , parsec
+  default-language: Haskell2010
+
+executable advent-19-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_advent_of_code
+  hs-source-dirs:
+      src/Year2020/Day19
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      advent-of-code
+    , base >=4.7 && <5
+    , containers
+    , parsec
+  default-language: Haskell2010
 
 test-suite advent-of-code-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
   other-modules:       Year2021.Day05.SolutionSpec
+                     , LibSpec
   build-depends:       base
                      , advent-of-code
                      , hspec
@@ -77,4 +112,4 @@ test-suite advent-of-code-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/advent-of-code
+  location: https://github.com/jurisk/advent-of-code
