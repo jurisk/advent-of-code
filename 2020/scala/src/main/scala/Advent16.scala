@@ -28,7 +28,7 @@ object Advent16 extends IOApp:
     yourTicket: Ticket,
     nearbyTickets: Vector[Ticket],
   ):
-    def validNearbyTickets: Vector[Ticket] = nearbyTickets.filter(_.isValid(fields))
+    private def validNearbyTickets: Vector[Ticket] = nearbyTickets.filter(_.isValid(fields))
 
     def fieldIndices: Range = yourTicket.numbers.indices
     

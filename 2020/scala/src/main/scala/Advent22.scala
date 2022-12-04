@@ -4,22 +4,22 @@ import scala.io.Source
 object Advent22 extends App:
   opaque type Card = Int
   opaque type Deck = List[Card]
-  
+
   enum Player:
     case A
     case B
 
-  def score(deck: Deck): Long = deck.zipWithIndex.foldLeft(0L) { case (acc, (card, idx)) => 
-    acc + card * (deck.length - idx) 
+  private def score(deck: Deck): Long = deck.zipWithIndex.foldLeft(0L) { case (acc, (card, idx)) =>
+    acc + card * (deck.length - idx)
   }
-  
+
   final case class Game(deckA: Deck, deckB: Deck, history: Set[(Deck, Deck)]):
-    def compare(cardA: Card, cardB: Card): Player =
+    private def compare(cardA: Card, cardB: Card): Player =
       if cardA > cardB then Player.A
       else if cardB > cardA then Player.B
       else sys.error("Didn't expect to have to compare equal cards")
 
-    def cycle(winner: Player): Game = winner match
+    private def cycle(winner: Player): Game = winner match
       case Player.A => Game(
         deckA.tail ++ List(deckA.head, deckB.head),
         deckB.tail,
@@ -31,7 +31,7 @@ object Advent22 extends App:
         deckB.tail ++ List(deckB.head, deckA.head),
         history + ((deckA, deckB)),
       )
-    
+
     def recursiveGame: (Player, Deck) =
       if history.contains((deckA, deckB))
       then (Player.A, deckA)
@@ -53,7 +53,7 @@ object Advent22 extends App:
       case (headA :: _, headB :: _) => cycle(compare(headA, headB)).simpleGame
       case (Nil, Nil) => sys.error(s"Unexpected empty decks")
 
-  def readGame(fileName: String): Game =
+  private def readGame(fileName: String): Game =
     val decks: List[Deck] = Source
       .fromResource(fileName)
       .getLines()
@@ -62,24 +62,24 @@ object Advent22 extends App:
       .map(_.split("\n").toList)
       .map(_.tail.map(_.toInt))
       .toList
-    
+
     decks match
       case a :: b :: Nil => Game(a, b, Set.empty)
       case _ => sys.error(s"Failed to read: $decks")
 
-  def run(fileName: String, expected1: Long, expected2: Long) =
+  def run(fileName: String, expected1: Long, expected2: Long): Unit =
     val game = readGame(fileName)
     val winner1 = game.simpleGame
     val solution1 = score(winner1)
     println(solution1)
     assert(solution1 == expected1)
-  
+
     val (_, winner2) = game.recursiveGame
     val solution2 = score(winner2)
     println(solution2)
     assert(solution2 == expected2)
-    
+
   run("22-test.txt", 306, 291)
-  run("22.txt", 34566, 31854)  
-  
+  run("22.txt", 34566, 31854)
+
   println("Passed")

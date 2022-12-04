@@ -1,5 +1,3 @@
-val dottyVersion = "3.0.0-M2"
-
 lazy val root = project
   .in(file(""))
   .settings(
@@ -10,9 +8,9 @@ lazy val root = project
       "-Ykind-projector",
       "-source", "3.1"
     ),
-    scalaVersion := dottyVersion,
+    scalaVersion := "3.2.1",
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-effect" % "3.0.0-M4",
-      "org.scalatest" %% "scalatest" % "3.2.3" % Test, // didn't work
+      "org.typelevel" %% "cats-effect" % "3.4.1",
+      "org.scalatest" %% "scalatest" % "3.2.14" % Test,
     ),
   )

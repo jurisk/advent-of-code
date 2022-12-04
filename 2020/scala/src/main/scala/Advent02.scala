@@ -24,7 +24,7 @@ object Advent02 extends App:
 
   val list = Source.fromResource("02.txt").getLines().map(parse).toList
   
-  def solve(f: Item => Boolean) =
+  def solve(f: Item => Boolean): Unit =
     println(list.count(f))
   
   List[Item => Boolean](_.isValid1, _.isValid2) foreach solve

@@ -4,7 +4,7 @@ import cats.implicits._
 import scala.util.Try
 
 object Advent04 extends App:
-  extension (self: String):
+  extension (self: String)
     def between(start: Int, end: Int): Option[Int] = 
       self.toIntOption flatMap { x =>
         if ((x >= start) && (x <= end)) x.some else none

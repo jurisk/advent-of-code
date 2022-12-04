@@ -8,7 +8,7 @@ object Advent07 extends SingleLineAdventApp[Bag, Int]:
   
   def fileName: String = "07.txt"
 
-  val Target = Colour("shiny gold")
+  private val Target: Colour = new Colour("shiny gold")
 
   // a tree would be more suitable, but a `Map` will do
   private def toMap(testCases: List[Bag]): Map[Colour, Bag] =

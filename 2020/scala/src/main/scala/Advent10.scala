@@ -22,15 +22,15 @@ object Advent10 extends SingleLineAdventApp[Int, Long]:
     
     solution.d1 * solution.d3
   
-  def memoize[I, O](f: I => O): I => O = 
+  private def memoize[I, O](f: I => O): I => O = 
     new scala.collection.mutable.HashMap[I, O]() { self =>
-      override def apply(key: I) = self.synchronized(getOrElseUpdate(key, f(key)))
+      override def apply(key: I): O = self.synchronized(getOrElseUpdate(key, f(key)))
     }
 
   def solution2(testCases: List[Int]): Long =
     val sorted = testCases.sorted.toVector
 
-    lazy val m = memoize[(Int, Int), Long](f)
+    lazy val m: ((Int, Int)) => Long = memoize[(Int, Int), Long](f)
     
     def f: ((Int, Int)) => Long = { case (voltage, pointer) =>
       val x = sorted(pointer)

@@ -2,7 +2,7 @@ import scala.io.Source
 
 object Advent03 extends App:
   val data = Source.fromResource("03.txt").getLines().toArray
-  val Tree = '#'
+  private val Tree = '#'
 
   def f(jumpRight: Int, jumpDown: Int): Long =
     (data.indices by jumpDown)
