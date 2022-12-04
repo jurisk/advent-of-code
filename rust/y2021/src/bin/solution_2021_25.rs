@@ -1,5 +1,5 @@
 use crate::Square::{CucumberMovingEast, CucumberMovingSouth, Empty};
-use advent_of_code_2021::parsing::{parse_matrix, Error};
+use advent_of_code_common::parsing::{parse_matrix, Error};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use pathfinding::matrix::Matrix;
 

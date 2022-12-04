@@ -1,8 +1,8 @@
 use crate::FoldInstruction::{AlongX, AlongY};
-use advent_of_code_2021::parsing::{
+use advent_of_code_common::parsing::{
     parse_lines_to_hashset, parse_lines_to_vec, split_into_two_strings, Error,
 };
-use advent_of_code_2021::utils::head_tail;
+use advent_of_code_common::utils::head_tail;
 use itertools::Itertools;
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter};

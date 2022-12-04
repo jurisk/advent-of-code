@@ -1,4 +1,4 @@
-use advent_of_code_2022::parsing::ErrorMessage;
+use advent_of_code_common::parsing::Error;
 
 const DATA: &str = include_str!("../../resources/01.txt");
 
@@ -7,7 +7,7 @@ struct Data {
     _placeholder: String,
 }
 
-fn parse(input: &str) -> Result<Data, ErrorMessage> {
+fn parse(input: &str) -> Result<Data, Error> {
     todo!("Parsing not implemented for '{}'", input)
 }
 
@@ -21,17 +21,17 @@ fn solve_2(data: &Data) -> Output {
     todo!("Solving is not implemented for {:?}", data)
 }
 
-fn part_1(input: &str) -> Result<Output, ErrorMessage> {
+fn part_1(input: &str) -> Result<Output, Error> {
     let data = parse(input)?;
     Ok(solve_1(&data))
 }
 
-fn part_2(input: &str) -> Result<Output, ErrorMessage> {
+fn part_2(input: &str) -> Result<Output, Error> {
     let data = parse(input)?;
     Ok(solve_2(&data))
 }
 
-fn main() -> Result<(), ErrorMessage> {
+fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA)?;
     println!("Part 1: {result_1}");
 

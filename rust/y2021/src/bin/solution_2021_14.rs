@@ -1,7 +1,7 @@
-use advent_of_code_2021::parsing::{
+use advent_of_code_common::parsing::{
     parse_lines_to_hashmap, parse_string_to_nonempty, split_into_two_strings, Error,
 };
-use advent_of_code_2021::utils::additive_hashmap_from_vec;
+use advent_of_code_common::utils::additive_hashmap_from_vec;
 use nonempty::NonEmpty;
 use std::collections::HashMap;
 use std::str::FromStr;

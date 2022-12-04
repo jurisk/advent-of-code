@@ -1,2 +1,2 @@
 [workspace]
-members = ["y2019", "y2020", "y2021", "y2022"]
+members = ["common", "y2019", "y2020", "y2021", "y2022"]

@@ -7,6 +7,7 @@ license = "UNLICENSED"
 rust-version = "1.65.0"
 
 [dependencies]
+advent-of-code-common = { path = "../common" }
 regex = "1"
 itertools = "0"
 num-traits = "0"

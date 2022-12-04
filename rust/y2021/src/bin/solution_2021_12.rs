@@ -1,4 +1,4 @@
-use advent_of_code_2021::parsing::{parse_lines_to_nonempty, split_into_two_strings, Error};
+use advent_of_code_common::parsing::{parse_lines_to_nonempty, split_into_two_strings, Error};
 use itertools::Itertools;
 use nonempty::{nonempty, NonEmpty};
 use pathfinding::prelude::bfs_reach;

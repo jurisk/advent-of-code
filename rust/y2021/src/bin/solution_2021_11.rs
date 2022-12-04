@@ -1,4 +1,4 @@
-use advent_of_code_2021::parsing::{parse_u8_matrix, Error};
+use advent_of_code_common::parsing::{parse_u8_matrix, Error};
 use pathfinding::matrix::Matrix;
 
 const DATA: &str = include_str!("../../resources/11.txt");

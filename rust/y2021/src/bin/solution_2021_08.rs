@@ -1,4 +1,4 @@
-use advent_of_code_2021::parsing::{
+use advent_of_code_common::parsing::{
     parse_lines_to_vec, parse_space_separated_vec, split_into_two_strings, Error,
 };
 use itertools::Itertools;

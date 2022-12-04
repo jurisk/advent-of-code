@@ -1,0 +1,11 @@
+[package]
+name = "advent-of-code-common"
+version = "0.1.0"
+authors = ["jurisk <jurisk@users.noreply.github.com>"]
+license = "UNLICENSED"
+edition = "2021"
+
+[dependencies]
+pathfinding = "4"
+nonempty = "0"
+num-traits = "0"

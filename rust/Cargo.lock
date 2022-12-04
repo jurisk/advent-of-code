@@ -30,6 +30,7 @@ dependencies = [
 name = "advent-of-code-2021"
 version = "0.1.0"
 dependencies = [
+ "advent-of-code-common",
  "itertools",
  "memoize",
  "nalgebra",
@@ -46,6 +47,7 @@ dependencies = [
 name = "advent-of-code-2022"
 version = "0.1.0"
 dependencies = [
+ "advent-of-code-common",
  "itertools",
  "memoize",
  "nom",
@@ -55,6 +57,15 @@ dependencies = [
  "num_enum",
  "pathfinding",
  "regex",
+]
+
+[[package]]
+name = "advent-of-code-common"
+version = "0.1.0"
+dependencies = [
+ "nonempty",
+ "num-traits",
+ "pathfinding",
 ]
 
 [[package]]
