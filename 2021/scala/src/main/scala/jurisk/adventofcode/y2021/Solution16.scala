@@ -1,4 +1,7 @@
+package jurisk.adventofcode.y2021
+
 import cats.implicits._
+
 import scala.util.Try
 
 object Solution16 {

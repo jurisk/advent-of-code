@@ -1,7 +1,9 @@
+package jurisk.adventofcode.y2021
+
+import jurisk.adventofcode.y2021.Solution16.Packet._
+import jurisk.adventofcode.y2021.Solution16._
 import org.scalatest._
-import flatspec._
-import Solution16._
-import Solution16.Packet._
+import org.scalatest.flatspec._
 import org.scalatest.matchers.should.Matchers._
 
 class Solution16Spec extends AnyFlatSpec {
