@@ -3,6 +3,7 @@ package jurisk.utils
 import jurisk.utils.Utils.IterableOps
 
 import scala.io.Source
+import scala.util.Using
 
 object FileInput {
   def parseSingleFileLine[T](fileName: String, parser: Char => T): List[T] =
@@ -24,9 +25,6 @@ object FileInput {
   def parseFileLines[T](fileName: String, parser: String => T): List[T] =
     readFileLines(fileName) map parser
 
-  def readFileLines(fileName: String): List[String] = {
-    val source = Source.fromResource(fileName)
-    try source.getLines.toList
-    finally source.close()
-  }
+  def readFileLines(fileName: String): List[String] =
+    Using.resource(Source.fromResource(fileName))(_.getLines().toList)
 }
