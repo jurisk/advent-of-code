@@ -43,23 +43,29 @@ object Advent05 {
       }
   }
 
-  private def parseStacks(stacks: List[String]): Stacks = {
-    val stackIdLine = stacks.last
-    val stackIds    = stackIdLine
-      .split("\\s+")
-      .map(_.trim)
-      .filter(_.nonEmpty)
-      .map(_.toList.singleElementUnsafe)
+  private def parseStacks(input: List[String]): Stacks = {
+    input.reverse match {
+      case stackIdLine :: stackContents =>
+        val stackIdChars = stackIdLine
+          .split("\\s+")
+          .map(_.trim)
+          .filter(_.nonEmpty)
+          .map(_.toList.singleElementUnsafe)
 
-    SortedMap.from {
-      stackIds.toList.map { stackId =>
-        val index    = stackIdLine.indexOf(stackId)
-        val contents = stacks.reverse.tail.map(_.lift(index))
-        (
-          stackId.toInt - '0',
-          contents.filterNot(_.contains(' ')).flatten.reverse,
-        )
-      }
+        SortedMap.from {
+          stackIdChars map { stackIdChar =>
+            val index = stackIdLine.indexOf(stackIdChar)
+            require(index != -1)
+            val contents = stackContents.map(_.lift(index))
+            (
+              stackIdChar - '0',
+              contents.filterNot(_.contains(' ')).flatten.reverse,
+            )
+          }
+        }
+
+      case _ =>
+        sys.error(s"Invalid input $input")
     }
   }
 
