@@ -1,6 +1,6 @@
 package jurisk.adventofcode.y2022
 
-import jurisk.utils.FileInput.readFileLines
+import jurisk.utils.FileInput.parseFileLines
 import jurisk.utils.Utils.StringOps
 import org.scalatest.matchers.should.Matchers._
 
@@ -40,7 +40,7 @@ object Advent04 {
   type Result = Int
 
   def parse(fileName: String): Parsed =
-    readFileLines(fileName) map Pair.parse
+    parseFileLines(fileName, Pair.parse)
 
   def part1(data: Parsed): Result =
     data.count(_.fullyContained)

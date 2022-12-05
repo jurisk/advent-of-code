@@ -1,6 +1,6 @@
 package jurisk.adventofcode.y2022
 
-import jurisk.utils.FileInput.readFileLines
+import jurisk.utils.FileInput.parseFileLines
 import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
@@ -47,7 +47,7 @@ object Advent03 {
   }
 
   def parse(fileName: String): Parsed =
-    readFileLines(fileName) map Rucksack.parse
+    parseFileLines(fileName, Rucksack.parse)
 
   def part1(data: Parsed): Result =
     data.map(_.itemInBothCompartments).map(_.priority).sum

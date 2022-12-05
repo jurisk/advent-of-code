@@ -1,6 +1,6 @@
 package jurisk.adventofcode.y2022
 
-import jurisk.utils.FileInput.readLineGroups
+import jurisk.utils.FileInput.parseLineGroups
 import org.scalatest.matchers.should.Matchers._
 
 object Advent01 {
@@ -8,9 +8,7 @@ object Advent01 {
   type Result = Int
 
   def parse(fileName: String): Parsed =
-    readLineGroups(fileName) map { section =>
-      section.map(_.toInt)
-    }
+    parseLineGroups(fileName, _.map(_.toInt))
 
   private def process(data: Parsed): List[Int] =
     data.map(_.sum).sorted(Ordering[Int].reverse)

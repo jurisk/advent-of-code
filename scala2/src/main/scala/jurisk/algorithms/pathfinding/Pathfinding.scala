@@ -1,12 +1,16 @@
 package jurisk.algorithms.pathfinding
 
-
 import scala.annotation.tailrec
 import scala.collection.mutable
 
 object Pathfinding {
   @tailrec
-  private def reassemblePath[N](start: N, parents: mutable.Map[N, N], current: N, acc: List[N]): List[N] = {
+  private def reassemblePath[N](
+    start: N,
+    parents: mutable.Map[N, N],
+    current: N,
+    acc: List[N],
+  ): List[N] = {
     val newAcc = current :: acc
 
     if (current == start) newAcc
@@ -50,8 +54,8 @@ object Pathfinding {
     successors: N => List[N],
     isGoal: N => Boolean,
   ): Option[List[N]] = {
-    val visited: mutable.Set[N] = mutable.Set()
-    val stack: mutable.Stack[N] = mutable.Stack()
+    val visited: mutable.Set[N]    = mutable.Set()
+    val stack: mutable.Stack[N]    = mutable.Stack()
     val parents: mutable.Map[N, N] = mutable.Map()
 
     stack.push(start)
