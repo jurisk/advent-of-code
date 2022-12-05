@@ -4,20 +4,19 @@ object Utils {
   implicit class IterableOps[T](seq: Iterable[T]) {
     def singleElementUnsafe: T =
       if (seq.size == 1) seq.head
-      else sys.error(s"Expected a single element, but got $seq")
+      else
+        sys.error(
+          s"Expected a single element, but got ${seq.toList.mkString("(", ", ", ")")}"
+        )
+
+    def twoElementsUnsafe: (T, T) =
+      if (seq.size == 2) (seq.head, seq.tail.head)
+      else sys.error(s"Expected two elements, but got $seq")
   }
 
   implicit class StringOps(s: String) {
-    def separatedPairUnsafe(separator: String): (String, String) = {
-      val arr = s.split(separator)
-      if (arr.size != 2) {
-        sys.error(
-          s"Expected two elements but got ${arr.mkString("Array(", ", ", ")")}"
-        )
-      } else {
-        (arr.head, arr(1))
-      }
-    }
+    def separatedPairUnsafe(separator: String): (String, String) =
+      s.split(separator).toList.twoElementsUnsafe
 
     def parseSeparatedPairUnsafe[A, B](
       separator: String,
