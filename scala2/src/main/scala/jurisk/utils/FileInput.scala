@@ -1,8 +1,14 @@
 package jurisk.utils
 
+import jurisk.utils.Utils.IterableOps
+
 import scala.io.Source
 
 object FileInput {
+  def readFirstFileLine(fileName: String): String = {
+    readFileLines(fileName).map(_.trim).singleElementUnsafe
+  }
+
   def readLineGroups(fileName: String): List[List[String]] =
     readFileLines(fileName)
       .mkString("\n")
