@@ -5,10 +5,10 @@ import jurisk.utils.Utils.IterableOps
 import scala.io.Source
 
 object FileInput {
-  def parseFirstFileLine[T](fileName: String, parser: Char => T): List[T] =
-    readFirstFileLine(fileName).map(parser).toList
+  def parseSingleFileLine[T](fileName: String, parser: Char => T): List[T] =
+    readSingleFileLine(fileName).map(parser).toList
 
-  def readFirstFileLine(fileName: String): String =
+  def readSingleFileLine(fileName: String): String =
     readFileLines(fileName).map(_.trim).singleElementUnsafe
 
   def parseLineGroups[T](fileName: String, parser: List[String] => T): List[T] =

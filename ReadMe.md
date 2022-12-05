@@ -83,3 +83,4 @@
 | 2019-24 |                                                                        | [Code](rust/y2019/src/bin/solution_2019_24.rs) |                                                |
 | 2019-25 |                                                                        | [Code](rust/y2019/src/bin/solution_2019_25.rs) |                                                |
 | 2018-01 | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent01.scala) |                                                |                                                |
+| 2018-02 | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent02.scala) |                                                |                                                |

@@ -16,7 +16,7 @@ object Advent04 {
 
   object Elf {
     def parse(s: String): Elf = {
-      val (a, b) = s.parseSeparatedPairUnsafe("-", _.toInt)
+      val (a, b) = s.parsePairUnsafe("-", _.toInt)
       Elf(a, b)
     }
   }
@@ -31,7 +31,7 @@ object Advent04 {
 
   object Pair {
     def parse(s: String): Pair = {
-      val (a, b) = s.parseSeparatedPairUnsafe(",", Elf.parse)
+      val (a, b) = s.parsePairUnsafe(",", Elf.parse)
       Pair(a, b)
     }
   }

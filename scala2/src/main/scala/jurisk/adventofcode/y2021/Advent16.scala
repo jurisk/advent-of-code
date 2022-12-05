@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2021
 
 import cats.implicits._
-import jurisk.utils.FileInput.readFirstFileLine
+import jurisk.utils.FileInput.readSingleFileLine
 
 import scala.util.Try
 
@@ -226,7 +226,7 @@ object Advent16 {
     parsed.map(_.evaluate)
   }
 
-  val RealInput: String = readFirstFileLine("2021/16.txt")
+  val RealInput: String = readSingleFileLine("2021/16.txt")
 
   def main(args: Array[String]): Unit = {
     val result1 = solve1(RealInput)

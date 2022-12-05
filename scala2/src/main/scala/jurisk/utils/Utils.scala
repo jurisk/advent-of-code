@@ -15,22 +15,22 @@ object Utils {
   }
 
   implicit class StringOps(s: String) {
-    def separatedPairUnsafe(separator: String): (String, String) =
+    def splitPairUnsafe(separator: String): (String, String) =
       s.split(separator).toList.twoElementsUnsafe
 
-    def parseSeparatedPairUnsafe[A, B](
+    def parsePairUnsafe[A, B](
       separator: String,
       parserLeft: String => A,
       parserRight: String => B,
     ): (A, B) = {
-      val (a, b) = s.separatedPairUnsafe(separator)
+      val (a, b) = s.splitPairUnsafe(separator)
       (parserLeft(a), parserRight(b))
     }
 
-    def parseSeparatedPairUnsafe[T](
+    def parsePairUnsafe[T](
       separator: String,
       parser: String => T,
     ): (T, T) =
-      s.parseSeparatedPairUnsafe(separator, parser, parser)
+      s.parsePairUnsafe(separator, parser, parser)
   }
 }
