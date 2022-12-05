@@ -43,7 +43,7 @@ object Advent05 {
       }
   }
 
-  private def parseStacks(input: List[String]): Stacks = {
+  private def parseStacks(input: List[String]): Stacks =
     input.reverse match {
       case stackIdLine :: stackContents =>
         val stackIdChars = stackIdLine
@@ -54,7 +54,7 @@ object Advent05 {
 
         SortedMap.from {
           stackIdChars map { stackIdChar =>
-            val index = stackIdLine.indexOf(stackIdChar)
+            val index    = stackIdLine.indexOf(stackIdChar)
             require(index != -1)
             val contents = stackContents.map(_.lift(index))
             (
@@ -67,7 +67,6 @@ object Advent05 {
       case _ =>
         sys.error(s"Invalid input $input")
     }
-  }
 
   def parse(fileName: String): Input = {
     val (stacks, commands) = readLineGroups(fileName).twoElementsUnsafe

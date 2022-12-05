@@ -1,15 +1,15 @@
 package jurisk.adventofcode.y2018
 
 import jurisk.utils.FileInput.readFileLines
+import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent02 {
   def parse(fileName: String): List[String] =
     readFileLines(fileName)
 
-  private def hasNOfSomeLetter(s: String, n: Int): Boolean = {
-    s.toList.groupBy(identity).values.map(_.length).toSet.contains(n)
-  }
+  private def hasNOfSomeLetter(s: String, n: Int): Boolean =
+    s.toList.counts.values.toSet.contains(n)
 
   def part1(data: List[String]): Int = {
     val a = data.count(s => hasNOfSomeLetter(s, 2))
@@ -20,10 +20,11 @@ object Advent02 {
   private def differByOneChar(a: String, b: String): Option[String] = {
     require(a.length == b.length)
 
-    if (a == b) None else {
+    if (a == b) None
+    else {
       val common = (a zip b) flatMap {
         case (ac, bc) if ac == bc => Some(ac)
-        case _ => None
+        case _                    => None
       }
 
       if (common.length == a.length - 1) Some(common.mkString) else None
