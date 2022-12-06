@@ -4,6 +4,8 @@ object Utils {
   implicit class IterableOps[T](seq: Iterable[T]) {
     def counts: Map[T, Int] = seq.groupMapReduce(identity)(_ => 1)(_ + _)
 
+    def allDistinct: Boolean = seq.toSet.size == seq.size
+
     def singleElementUnsafe: T =
       if (seq.size == 1) seq.head
       else
