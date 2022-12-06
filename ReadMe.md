@@ -89,3 +89,4 @@
 | 2018-04  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent04.scala) |                                                |                                                |
 | 2018-05  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent05.scala) |                                                |                                                |
 | 2018-06  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent06.scala) |                                                |                                                |
+| 2018-07  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent07.scala) |                                                |                                                |
