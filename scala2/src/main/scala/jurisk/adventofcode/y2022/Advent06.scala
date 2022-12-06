@@ -27,7 +27,7 @@ object Advent06 {
     part1(test) shouldEqual 7
     part1(real) shouldEqual 1707
 
-    part1(test) shouldEqual 19
-    part1(real) shouldEqual 1234567
+    part2(test) shouldEqual 19
+    part2(real) shouldEqual 3697
   }
 }
