@@ -3,6 +3,8 @@ package jurisk.utils
 import jurisk.utils.Geometry.Coords2D
 import jurisk.utils.Utils.IterableOps
 
+import javax.swing.JToolBar.Separator
+
 object Parsing {
   implicit class StringOps(s: String) {
     def parseCoords2D: Coords2D = {
@@ -27,5 +29,11 @@ object Parsing {
       parser: String => T,
     ): (T, T) =
       s.parsePairUnsafe(separator, parser, parser)
+
+    def parseList[T](
+      separator: String,
+      parser: String => T,
+    ): List[T] =
+      s.split(separator).toList.map(parser)
   }
 }
