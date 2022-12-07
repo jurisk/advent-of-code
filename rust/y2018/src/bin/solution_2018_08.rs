@@ -1,12 +1,12 @@
-use std::str::FromStr;
-use advent_of_code_common::parsing::{Error, parse_separated_vec};
-use nom::{Finish, IResult, Needed, Parser};
+use advent_of_code_common::parsing::{parse_separated_vec, Error};
+use advent_of_code_common::utils::head_tail;
 use nom::bytes::complete::tag;
 use nom::character::complete::digit1;
 use nom::combinator::{complete, map_parser};
-use nom::Err::{Incomplete};
 use nom::multi::{count, many1, separated_list1};
-use advent_of_code_common::utils::head_tail;
+use nom::Err::Incomplete;
+use nom::{Finish, IResult, Needed, Parser};
+use std::str::FromStr;
 
 const DATA: &str = include_str!("../../resources/08.txt");
 
@@ -18,21 +18,33 @@ struct Node {
 
 impl Node {
     fn recursive_sum(&self) -> usize {
-        self.metadata.iter().sum::<usize>() + self.children.iter().map(|x| x.recursive_sum()).sum::<usize>()
+        self.metadata.iter().sum::<usize>()
+            + self
+                .children
+                .iter()
+                .map(|x| x.recursive_sum())
+                .sum::<usize>()
     }
 
     fn root_node(&self) -> usize {
         if self.children.is_empty() {
             self.recursive_sum()
         } else {
-            self.metadata.iter().map(|idx| self.children.get(idx - 1).map(|x| x.root_node()).unwrap_or(0)).sum()
+            self.metadata
+                .iter()
+                .map(|idx| {
+                    self.children
+                        .get(idx - 1)
+                        .map(|x| x.root_node())
+                        .unwrap_or(0)
+                })
+                .sum()
         }
     }
-
 }
 
 /** Takes head of the list, or fails */
-fn take_head<T : Clone>(input: &[T]) -> IResult<&[T], T> {
+fn take_head<T: Clone>(input: &[T]) -> IResult<&[T], T> {
     let (h, t) = head_tail(input);
     match h {
         None => Err(Incomplete(Needed::Unknown)),
