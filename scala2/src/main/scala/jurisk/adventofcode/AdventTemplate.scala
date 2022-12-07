@@ -6,19 +6,18 @@ import jurisk.utils.FileInput._
 import org.scalatest.matchers.should.Matchers._
 
 object AdventTemplate {
-  type Parsed = List[Entry]
+  type Parsed    = List[Entry]
   type Processed = Parsed
-  type Result1 = Int
-  type Result2 = String
+  type Result1   = Int
+  type Result2   = String
 
   final case class Entry(
-    value: String,
+    value: String
   )
 
   object Entry {
-    def parse(s: String): Entry = {
+    def parse(s: String): Entry =
       Entry(s.splitPairUnsafe(" ").toString)
-    }
   }
 
   def process(parsed: Parsed): Processed = parsed
@@ -32,17 +31,18 @@ object AdventTemplate {
   }
 
   def part2(data: Parsed): Result2 = {
-    data.counts.toString
+    val processed = process(data)
+    processed.counts.toString
   }
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2022/00.txt")
+    val test = parse("2022/00-test.txt")
     val real = parse("2022/00.txt")
 
     part1(test) shouldEqual 12345678
     part1(real) shouldEqual 12345678
 
-    part2(test) shouldEqual 12345678
-    part2(real) shouldEqual 12345678
+    part2(test) shouldEqual "asdf"
+    part2(real) shouldEqual "asdf"
   }
 }

@@ -8,6 +8,7 @@
 | 2022-04  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent04.scala) |                                                |                                                |
 | 2022-05  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent05.scala) |                                                |                                                |
 | 2022-06  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent06.scala) |                                                |                                                |
+| 2022-07  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent07.scala) |                                                |                                                |
 | 2021-01  |                                                                        | [Code](rust/y2021/src/bin/solution_2021_01.rs) |                                                |
 | 2021-02  |                                                                        | [Code](rust/y2021/src/bin/solution_2021_02.rs) |                                                |
 | 2021-03  |                                                                        | [Code](rust/y2021/src/bin/solution_2021_03.rs) |                                                |
