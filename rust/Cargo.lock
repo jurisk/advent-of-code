@@ -3,6 +3,14 @@
 version = 3
 
 [[package]]
+name = "advent-of-code-2018"
+version = "0.1.0"
+dependencies = [
+ "advent-of-code-common",
+ "nom",
+]
+
+[[package]]
 name = "advent-of-code-2019"
 version = "0.1.0"
 dependencies = [

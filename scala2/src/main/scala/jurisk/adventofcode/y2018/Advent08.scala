@@ -62,6 +62,6 @@ object Advent08 {
     part1(real) shouldEqual 45868
 
     part2(test) shouldEqual 66
-    part2(real) shouldEqual 12345
+    part2(real) shouldEqual 19724
   }
 }

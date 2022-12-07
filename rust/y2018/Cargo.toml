@@ -1,0 +1,12 @@
+[package]
+name = "advent-of-code-2018"
+version = "0.1.0"
+edition = "2021"
+authors = ["jurisk <jurisk@users.noreply.github.com>"]
+license = "UNLICENSED"
+rust-version = "1.65.0"
+
+[dependencies]
+advent-of-code-common = { path = "../common" }
+nom = "7"
+
