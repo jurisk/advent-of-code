@@ -3,8 +3,10 @@ package jurisk.adventofcode.y2018
 import cats.implicits._
 import jurisk.adventofcode.y2018.Advent04.Entry.BeginsShift
 import jurisk.utils.FileInput.parseFileLines
+import jurisk.utils.Parsing.splitIntoSections
 import org.scalatest.matchers.should.Matchers._
 import jurisk.utils.Utils.IterableOps
+
 import java.time.temporal.ChronoUnit
 import java.time.{Duration, LocalDateTime}
 
@@ -94,18 +96,25 @@ object Advent04 {
   def parse(fileName: String): List[Entry] =
     parseFileLines(fileName, Entry.parse)
 
-  private def segment(data: List[Entry]): List[List[Entry]] = {
-    val indexOfNext = data.tail.indexWhere {
-      case BeginsShift(_, _) => true
-      case _                 => false
-    }
+  private def segment(data: List[Entry]): List[(Entry, List[Entry])] =
+    splitIntoSections[Entry](
+      data,
+      {
+        case BeginsShift(_, _) => true
+        case _                 => false
+      },
+    )
 
-    if (indexOfNext == -1) {
-      data :: Nil
-    } else {
-      data.take(indexOfNext + 1) :: segment(data.drop(indexOfNext + 1))
-    }
-  }
+//    val indexOfNext = data.tail.indexWhere {
+//      case BeginsShift(_, _) => true
+//      case _                 => false
+//    }
+//
+//    if (indexOfNext == -1) {
+//      data :: Nil
+//    } else {
+//      data.take(indexOfNext + 1) :: segment(data.drop(indexOfNext + 1))
+//    }
 
   private def aggregate(
     data: List[Entry]
@@ -114,10 +123,8 @@ object Advent04 {
 
     val segmented = segment(sorted)
 
-    require(data.length == segmented.map(_.length).sum)
-
     val info = segmented.map {
-      case BeginsShift(guardId, _) :: tail =>
+      case (BeginsShift(guardId, _), tail) =>
         require(tail.length % 2 == 0)
         guardId            -> tail
           .grouped(2)

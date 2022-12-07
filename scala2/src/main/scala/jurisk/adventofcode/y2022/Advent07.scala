@@ -2,7 +2,7 @@ package jurisk.adventofcode.y2022
 
 import cats.implicits._
 import jurisk.utils.FileInput._
-import jurisk.utils.Parsing.StringOps
+import jurisk.utils.Parsing.{StringOps, splitIntoSections}
 import org.scalatest.matchers.should.Matchers._
 
 import scala.annotation.tailrec
@@ -63,8 +63,11 @@ object Advent07 {
     case object CdUp              extends Command
     case object Ls                extends Command
 
-    val Prefix           = "$ "
+    private val Prefix   = "$ "
     private val CdPrefix = Prefix + "cd "
+
+    def matches(s: String): Boolean =
+      s.startsWith(Command.Prefix)
 
     def parse(s: String): Command =
       s match {
@@ -108,21 +111,14 @@ object Advent07 {
   }
 
   def parse(fileName: String): Parsed = {
-    val lines = readFileLines(fileName)
-
-    @tailrec
-    def f(data: List[String], acc: Vector[Entry]): Vector[Entry] =
-      data match {
-        case Nil    => acc
-        case h :: t =>
-          val command    = Command.parse(h)
-          val output     = t.takeWhile(!_.startsWith(Command.Prefix))
-          val thisOutput = (command, output.map(OutputLine.parse))
-          val remains    = t.drop(output.size)
-          f(remains, acc :+ thisOutput)
-      }
-
-    f(lines, Vector.empty).toList
+    val lines    = readFileLines(fileName)
+    val sections = splitIntoSections[String](lines, Command.matches)
+    sections map { case (start, remaining) =>
+      (
+        Command.parse(start),
+        remaining.map(OutputLine.parse),
+      )
+    }
   }
 
   def part1(data: Parsed, limit: Long): Result1 = {
