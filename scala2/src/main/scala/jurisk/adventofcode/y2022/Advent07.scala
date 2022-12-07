@@ -32,17 +32,9 @@ object Advent07 {
     directories: Map[String, Directory],
     files: Map[String, Long],
   ) {
-    def withSomeDirDeleted: List[Directory] =
-      directories.keys.toList flatMap { key =>
-        copy(directories = directories - key) :: directories(
-          key
-        ).withSomeDirDeleted.map(d =>
-          copy(directories = directories + (key -> d))
-        )
-      }
-
-    def totalSize: Long                              =
+    def totalSize: Long =
       directories.values.map(_.totalSize).sum + files.values.sum
+
     def allDirectoriesIncludingSelf: List[Directory] =
       this :: directories.values.toList.flatMap(_.allDirectoriesIncludingSelf)
 
@@ -71,31 +63,34 @@ object Advent07 {
     case object CdUp              extends Command
     case object Ls                extends Command
 
+    val Prefix           = "$ "
+    private val CdPrefix = Prefix + "cd "
+
     def parse(s: String): Command =
       s match {
-        case "$ ls"                     => Ls
-        case x if x.startsWith("$ cd ") =>
-          val dir = x.drop("$ cd ".length)
+        case "$ ls"                      => Ls
+        case x if x.startsWith(CdPrefix) =>
+          val dir = x.drop(CdPrefix.length)
           dir match {
             case ".." => CdUp
             case "/"  => CdRoot
             case _    => CdDir(dir)
           }
-        case _                          => sys.error(s)
+        case _                           => sys.error(s)
       }
   }
 
   def process(parsed: Parsed): Processed = {
-    var currentDir: List[String] = Nil
-    var output: Directory        = Directory(Map.empty, Map.empty)
+    var currentDir: Vector[String] = Vector.empty
+    var output: Directory          = Directory(Map.empty, Map.empty)
 
     parsed foreach { case (command, outputLines) =>
       command match {
         case Command.CdRoot =>
-          currentDir = Nil
+          currentDir = Vector.empty
 
         case Command.CdDir(dir) =>
-          currentDir = currentDir ::: List(dir)
+          currentDir = currentDir :+ dir
 
         case Command.CdUp =>
           currentDir = currentDir.init
@@ -104,7 +99,7 @@ object Advent07 {
           outputLines foreach {
             case OutputLine.Dir(_)           =>
             case OutputLine.File(name, size) =>
-              output = output.addFile(currentDir, name, size)
+              output = output.addFile(currentDir.toList, name, size)
           }
       }
     }
@@ -116,44 +111,45 @@ object Advent07 {
     val lines = readFileLines(fileName)
 
     @tailrec
-    def f(data: List[String], acc: List[Entry]): List[Entry] =
+    def f(data: List[String], acc: Vector[Entry]): Vector[Entry] =
       data match {
         case Nil    => acc
         case h :: t =>
           val command    = Command.parse(h)
-          val output     = t.takeWhile(!_.startsWith("$ "))
+          val output     = t.takeWhile(!_.startsWith(Command.Prefix))
           val thisOutput = (command, output.map(OutputLine.parse))
           val remains    = t.drop(output.size)
-          f(remains, acc ::: List(thisOutput))
+          f(remains, acc :+ thisOutput)
       }
 
-    f(lines, Nil)
+    f(lines, Vector.empty).toList
   }
 
-  def part1(data: Parsed, atMost: Long): Result1 = {
+  def part1(data: Parsed, limit: Long): Result1 = {
     val processed = process(data)
     processed.allDirectoriesIncludingSelf
       .map(_.totalSize)
-      .filter(_ <= atMost)
+      .filter(_ <= limit)
       .sum
   }
 
   def part2(data: Parsed, limit: Long): Result2 = {
-    val processed = process(data)
-    val options   = processed.withSomeDirDeleted
-    val space     = options.map(_.totalSize).filter(_ <= limit).max
-    processed.totalSize - space
+    val processed  = process(data)
+    val totalSize  = processed.totalSize
+    val options    = processed.allDirectoriesIncludingSelf.map(_.totalSize)
+    val bestOption = options.filter(x => totalSize - x <= limit).min
+    bestOption
   }
 
   def main(args: Array[String]): Unit = {
     val test = parse("2022/07-test.txt")
     val real = parse("2022/07.txt")
 
-    part1(test, 100000) shouldEqual 95437
-    part1(real, 100000) shouldEqual 1428881
+    val Limit = 100000
+    part1(test, Limit) shouldEqual 95437
+    part1(real, Limit) shouldEqual 1428881
 
     val MaxTaken = 70000000 - 30000000
-
     part2(test, MaxTaken) shouldEqual 24933642
     part2(real, MaxTaken) shouldEqual 10475598
   }
