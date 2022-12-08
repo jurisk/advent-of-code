@@ -3,7 +3,6 @@ package jurisk.adventofcode.y2022
 import cats.data.NonEmptyList
 import jurisk.utils.FileInput._
 import jurisk.utils.Geometry.{Coords2D, Field2D}
-import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent08 {
@@ -12,17 +11,6 @@ object Advent08 {
   type Processed  = Parsed
   type Result1    = Int
   type Result2    = Long
-
-  final case class Entry(
-    value: String
-  )
-
-  object Entry {
-    def parse(s: String): Entry =
-      Entry(s.splitPairUnsafe(" ").toString)
-  }
-
-  def process(parsed: Parsed): Processed = parsed
 
   def parse(fileName: String): Parsed = {
     val lines = readFileLines(fileName)
@@ -40,7 +28,7 @@ object Advent08 {
     if (visibleTrees == value.tail.size) visibleTrees else visibleTrees + 1
   }
 
-  def slicesInAllDirections(
+  private def slicesInAllDirections(
     data: Field2D[Int],
     from: Coords2D,
   ): List[NonEmptyList[TreeHeight]] = {
