@@ -28,6 +28,20 @@ object Geometry {
     def manhattanDistance(other: Coords2D): Int =
       (this - other).manhattanDistanceToOrigin
 
+    def neighbours(includeDiagonal: Boolean): List[Coords2D] = List(
+      Coords2D(x - 1, y),
+      Coords2D(x, y - 1),
+      Coords2D(x + 1, y),
+      Coords2D(x, y + 1),
+    ) ::: (if (includeDiagonal) {
+             List(
+               Coords2D(x - 1, y - 1),
+               Coords2D(x - 1, y + 1),
+               Coords2D(x + 1, y - 1),
+               Coords2D(x + 1, y + 1),
+             )
+           } else Nil)
+
     override def toString: String = s"($x, $y)"
   }
 

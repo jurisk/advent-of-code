@@ -17,7 +17,7 @@ object Advent08 {
     Field2D.parseFromLines(lines, _ - '0')
   }
 
-  private def correctSlice(data: NonEmptyList[TreeHeight]): Boolean =
+  private def visibleFromOutside(data: NonEmptyList[TreeHeight]): Boolean =
     data.tail.maxOption match {
       case None    => true
       case Some(m) => data.head > m
@@ -48,7 +48,7 @@ object Advent08 {
 
   def part1(data: Parsed): Result1 = {
     def isVisible(c: Coords2D): Boolean =
-      slicesInAllDirections(data, c).exists(correctSlice)
+      slicesInAllDirections(data, c).exists(visibleFromOutside)
 
     val visible = data.mapByCoords(isVisible)
 
@@ -67,10 +67,10 @@ object Advent08 {
   }
 
   def main(args: Array[String]): Unit = {
-    correctSlice(NonEmptyList.of(1, 5, 5, 2)) shouldEqual false
-    correctSlice(NonEmptyList.of(1, 2)) shouldEqual false
-    correctSlice(NonEmptyList.of(1, 7)) shouldEqual false
-    correctSlice(NonEmptyList.of(1, 3, 4, 9)) shouldEqual false
+    visibleFromOutside(NonEmptyList.of(1, 5, 5, 2)) shouldEqual false
+    visibleFromOutside(NonEmptyList.of(1, 2)) shouldEqual false
+    visibleFromOutside(NonEmptyList.of(1, 7)) shouldEqual false
+    visibleFromOutside(NonEmptyList.of(1, 3, 4, 9)) shouldEqual false
 
     viewingDistance(NonEmptyList.of(5, 3)) shouldEqual 1       // sees 3
     viewingDistance(NonEmptyList.of(5, 5, 2)) shouldEqual 1    // sees 5
