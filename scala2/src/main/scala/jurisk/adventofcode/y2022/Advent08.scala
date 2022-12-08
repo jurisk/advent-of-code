@@ -28,21 +28,22 @@ object Advent08 {
     if (visibleTrees == value.tail.size) visibleTrees else visibleTrees + 1
   }
 
-  private def slicesInAllDirections(
-    data: Field2D[Int],
+  private def slicesInAllDirections[T](
+    data: Field2D[T],
     from: Coords2D,
-  ): List[NonEmptyList[TreeHeight]] = {
-    val a = (0 to from.x.value).map(a => data.at(a, from.y.value)).reverse
-    val b = (from.x.value until data.width) map { a =>
-      data.at(a, from.y.value)
-    }
+  ): List[NonEmptyList[T]] = {
+    def splitBothDirections(
+      value: Vector[T],
+      idx: Int,
+    ): List[NonEmptyList[T]] =
+      NonEmptyList.fromListUnsafe(value.toList.take(idx + 1).reverse) ::
+        NonEmptyList.fromListUnsafe(value.toList.drop(idx)) ::
+        Nil
 
-    val c = (0 to from.y.value).map(a => data.at(from.x.value, a)).reverse
-    val d = (from.y.value until data.height) map { a =>
-      data.at(from.x.value, a)
-    }
-
-    (a :: b :: c :: d :: Nil).map(x => NonEmptyList.fromListUnsafe(x.toList))
+    splitBothDirections(
+      data.column(from.x),
+      from.y.value,
+    ) ::: splitBothDirections(data.row(from.y), from.x.value)
   }
 
   def part1(data: Parsed): Result1 = {
@@ -54,7 +55,7 @@ object Advent08 {
     val visualisation: Field2D[Char] = visible.mapByValues {
       if (_) '█' else '░'
     }
-    println(Field2D.debugPrint(visualisation))
+    println(Field2D.toDebugRepresentation(visualisation))
 
     visible.count(_ == true)
   }

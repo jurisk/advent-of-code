@@ -35,7 +35,7 @@ object Geometry {
     def of(x: Int, y: Int): Coords2D =
       Coords2D(X(x), Y(y))
 
-    def boundingBox(coords: Seq[Coords2D]): Area2D = {
+    def boundingBoxInclusive(coords: Seq[Coords2D]): Area2D = {
       val minX = coords.map(_.x.value).min
       val minY = coords.map(_.y.value).min
       val maxX = coords.map(_.x.value).max
@@ -56,10 +56,14 @@ object Geometry {
     val width: Int  = data.head.length
     val height: Int = data.length
 
+    private def xIndices: Seq[X] = (0 until width).map(X)
+    private def yIndices: Seq[Y] = (0 until height).map(Y)
+
     def map[B](f: (Coords2D, T) => B): Field2D[B] = Field2D {
-      (0 until height).toVector map { y =>
-        (0 until width).toVector map { x =>
-          f(Coords2D.of(x, y), at(x, y))
+      yIndices.toVector map { y =>
+        xIndices.toVector map { x =>
+          val coords = Coords2D(x, y)
+          f(coords, atUnsafe(coords))
         }
       }
     }
@@ -69,30 +73,32 @@ object Geometry {
     }
     def mapByValues[B](f: T => B): Field2D[B]        = map { case (_, v) => f(v) }
 
-    def at(c: Coords2D): T    = at(c.x.value, c.y.value)
-    def at(x: Int, y: Int): T = data(y)(x)
+    def at(c: Coords2D): Option[T]       =
+      data.lift(c.y.value).flatMap(_.lift(c.x.value))
+    private def atUnsafe(c: Coords2D): T =
+      at(c).getOrElse(sys.error(s"Coords2D $c are invalid"))
 
-    def allCoords: List[Coords2D] =
-      ((0 until height) flatMap { y =>
-        (0 until width) map { x =>
-          Coords2D.of(x, y)
+    def allCoords: Seq[Coords2D] =
+      yIndices flatMap { y =>
+        xIndices map { x =>
+          Coords2D(x, y)
         }
-      }).toList
+      }
 
-    def toValuesList: List[T] = data.flatten.toList
+    def values: Iterable[T] = data.flatten
 
     def row(y: Y): Vector[T]    = data(y.value)
     def column(x: X): Vector[T] = data.map(_(x.value))
 
     def count(p: T => Boolean): Int =
-      toValuesList.count(p)
+      values.count(p)
   }
 
   object Field2D {
-    def debugPrint(field: Field2D[Char]): String =
-      ((0 until field.height) map { y =>
-        (0 until field.width).map { x =>
-          field.at(x, y)
+    def toDebugRepresentation(field: Field2D[Char]): String =
+      (field.yIndices map { y =>
+        field.xIndices.map { x =>
+          field.atUnsafe(Coords2D(x, y))
         }.mkString
       }).map(_ + '\n').mkString
 
