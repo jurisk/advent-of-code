@@ -5,8 +5,6 @@ import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.{StringOps, splitIntoSections}
 import org.scalatest.matchers.should.Matchers._
 
-import scala.annotation.tailrec
-
 object Advent07 {
   type Parsed    = List[Entry]
   type Entry     = (Command, List[OutputLine])
@@ -110,7 +108,63 @@ object Advent07 {
     output
   }
 
-  def parse(fileName: String): Parsed = {
+  // Implemented to try out `cats-parse`
+  private def parseUsingCatsParse(fileName: String): Parsed = {
+    import cats.parse.Parser
+    import cats.parse.Rfc5234._
+
+    val nameParser: Parser[String] =
+      (alpha | digit | Parser.charWhere(_ == '.')).rep.string
+
+    val commandParser: Parser[Command] = {
+      val lsParser: Parser[Command] = Parser.string("$ ls").map(_ => Command.Ls)
+
+      val cdParser = {
+        val cdLiteral = Parser.string("$ cd ")
+
+        val cdRootParser: Parser[Command] =
+          (cdLiteral ~ Parser.char('/')).map(_ => Command.CdRoot)
+
+        val cdUpParser: Parser[Command] =
+          (cdLiteral ~ Parser.string("..")).map(_ => Command.CdUp)
+
+        val cdDirParser: Parser[Command] =
+          (cdLiteral *> nameParser).map(Command.CdDir)
+
+        cdRootParser.backtrack | cdUpParser.backtrack | cdDirParser // alternatives without .backtrack exist
+      }
+
+      (lsParser | cdParser) <* lf
+    }
+
+    val outputParser: Parser[OutputLine] = {
+      val dirParser: Parser[OutputLine] =
+        (Parser.string("dir ") *> nameParser).map(OutputLine.Dir)
+
+      val unsignedLongParser: Parser[Long] = digit.rep.string.map(_.toLong)
+      val fileParser: Parser[OutputLine]   =
+        ((unsignedLongParser <* Parser.char(' ')) ~ nameParser).map {
+          case (size, fn) => OutputLine.File(fn, size)
+        }
+
+      (dirParser | fileParser) <* lf
+    }
+
+    val parser = (commandParser ~ outputParser.rep0).rep0
+
+    val data   = readFileLines(fileName).map(_ + '\n').mkString
+    val result = parser.parseAll(data)
+
+    result match {
+      case Left(error)  =>
+        sys.error(
+          s"Error $error at '${error.input.getOrElse("").drop(error.failedAtOffset)}'"
+        )
+      case Right(value) => value
+    }
+  }
+
+  private def parse(fileName: String): Parsed = {
     val lines    = readFileLines(fileName)
     val sections = splitIntoSections[String](lines, Command.matches)
     sections map { case (start, remaining) =>
@@ -138,8 +192,13 @@ object Advent07 {
   }
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2022/07-test.txt")
-    val real = parse("2022/07.txt")
+    val TestFile = "2022/07-test.txt"
+    val test     = parseUsingCatsParse(TestFile)
+    test shouldEqual parse(TestFile)
+
+    val RealFile = "2022/07.txt"
+    val real     = parseUsingCatsParse(RealFile)
+    real shouldEqual parse(RealFile)
 
     val Limit = 100000
     part1(test, Limit) shouldEqual 95437
