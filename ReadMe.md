@@ -94,3 +94,4 @@
 | 2018-06  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent06.scala) |                                                |                                                |
 | 2018-07  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent07.scala) |                                                |                                                |
 | 2018-08  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent08.scala) | [Code](rust/y2018/src/bin/solution_2018_08.rs) |                                                |
+| 2018-09  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent09.scala) |                                                |                                                |

@@ -142,7 +142,7 @@ object Advent07 {
   // "usual" parsing
   private def parse(fileName: String): Parsed = {
     val CommandPrefix = "$ "
-    val CdPrefix = CommandPrefix + "cd "
+    val CdPrefix      = CommandPrefix + "cd "
 
     def commandMatches(s: String): Boolean =
       s.startsWith(CommandPrefix)
