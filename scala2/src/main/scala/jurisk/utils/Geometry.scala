@@ -24,6 +24,9 @@ object Geometry {
   }
 
   final case class Coords2D(x: X, y: Y) {
+    def +(other: Coords2D): Coords2D =
+      Coords2D(x + other.x, y + other.y)
+
     def -(other: Coords2D): Coords2D =
       Coords2D(x - other.x, y - other.y)
 
@@ -56,6 +59,8 @@ object Geometry {
   }
 
   object Coords2D {
+    val Zero: Coords2D = Coords2D.of(0, 0)
+
     def of(x: Int, y: Int): Coords2D =
       Coords2D(X(x), Y(y))
 
