@@ -8,18 +8,34 @@ object Geometry {
 
   // X and Y do not "extends AnyVal" on purpose because of type erasure issues
   final case class X(value: Int) {
-    def +(other: X): X            = this + other.value
-    def -(other: X): X            = this - other.value
-    def +(other: Int): X          = X(value + other)
-    def -(other: Int): X          = X(value - other)
+    def *(n: Int): X = X(value * n)
+    def /(n: Int): X = X(value / n)
+
+    def <(other: X): Boolean = value < other.value
+    def >(other: X): Boolean = value > other.value
+
+    def +(other: X): X   = this + other.value
+    def -(other: X): X   = this - other.value
+    def +(other: Int): X = X(value + other)
+    def -(other: Int): X = X(value - other)
+    def absInt: Int      = Math.abs(value)
+
     override def toString: String = value.toString
   }
 
   final case class Y(value: Int) {
-    def +(other: Y): Y            = this + other.value
-    def -(other: Y): Y            = this - other.value
-    def +(other: Int): Y          = Y(value + other)
-    def -(other: Int): Y          = Y(value - other)
+    def *(n: Int): Y = Y(value * n)
+    def /(n: Int): Y = Y(value / n)
+
+    def <(other: Y): Boolean = value < other.value
+    def >(other: Y): Boolean = value > other.value
+
+    def +(other: Y): Y   = this + other.value
+    def -(other: Y): Y   = this - other.value
+    def +(other: Int): Y = Y(value + other)
+    def -(other: Int): Y = Y(value - other)
+    def absInt: Int      = Math.abs(value)
+
     override def toString: String = value.toString
   }
 
@@ -37,22 +53,13 @@ object Geometry {
       (this - other).manhattanDistanceToOrigin
 
     def neighbours(includeDiagonal: Boolean): List[Coords2D] = {
-      val straight = List(
-        Coords2D(x - 1, y),
-        Coords2D(x, y - 1),
-        Coords2D(x + 1, y),
-        Coords2D(x, y + 1),
-      )
+      val directions = if (includeDiagonal) {
+        Direction2D.AllDirections
+      } else {
+        Direction2D.MainDirections
+      }
 
-      lazy val diagonal =
-        List(
-          Coords2D(x - 1, y - 1),
-          Coords2D(x - 1, y + 1),
-          Coords2D(x + 1, y - 1),
-          Coords2D(x + 1, y + 1),
-        )
-
-      straight ::: (if (includeDiagonal) diagonal else Nil)
+      directions.map(d => this + d.diff)
     }
 
     override def toString: String = s"($x, $y)"
@@ -70,6 +77,56 @@ object Geometry {
       val maxX = coords.map(_.x.value).max
       val maxY = coords.map(_.y.value).max
       Area2D(X(minX), Y(minY), maxX - minX + 1, maxY - minY + 1)
+    }
+  }
+
+  sealed trait Direction2D {
+    def diff: Coords2D
+  }
+
+  object Direction2D {
+    val MainDirections: List[Direction2D]     = N :: S :: W :: E :: Nil
+    val DiagonalDirections: List[Direction2D] = NW :: NE :: SW :: SE :: Nil
+    val AllDirections: List[Direction2D]      = MainDirections ::: DiagonalDirections
+
+    case object N extends Direction2D {
+      val diff: Coords2D = Coords2D.of(0, -1)
+    }
+
+    case object NE extends Direction2D {
+      val diff: Coords2D = N.diff + E.diff
+    }
+
+    case object NW extends Direction2D {
+      val diff: Coords2D = N.diff + W.diff
+    }
+
+    case object S extends Direction2D {
+      val diff: Coords2D = Coords2D.of(0, +1)
+    }
+
+    case object SE extends Direction2D {
+      val diff: Coords2D = S.diff + E.diff
+    }
+
+    case object SW extends Direction2D {
+      val diff: Coords2D = S.diff + W.diff
+    }
+
+    case object W extends Direction2D {
+      val diff: Coords2D = Coords2D.of(-1, 0)
+    }
+
+    case object E extends Direction2D {
+      val diff: Coords2D = Coords2D.of(1, 0)
+    }
+
+    def parseUDLR(s: String): Direction2D = s match {
+      case "U" => N
+      case "D" => S
+      case "L" => W
+      case "R" => E
+      case _   => sys.error(s"Unrecognized main direction: $s")
     }
   }
 

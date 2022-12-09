@@ -1,10 +1,8 @@
 package jurisk.adventofcode.y2022
 
-import cats.data.State
 import jurisk.utils.FileInput._
-import jurisk.utils.Geometry.Coords2D
+import jurisk.utils.Geometry.{Coords2D, Direction2D}
 import jurisk.utils.Parsing.StringOps
-import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.immutable.HashSet
@@ -12,106 +10,60 @@ import scala.collection.immutable.HashSet
 object Advent09 {
   type Parsed    = List[Move]
   type Processed = Parsed
-  type Result1   = Int
-  type Result2   = Int
-
-  sealed trait Direction
-  object Direction {
-    case object Up extends Direction
-    case object Down extends Direction
-    case object Left extends Direction
-    case object Right extends Direction
-
-    def parse(s: String): Direction = s match {
-      case "U" => Up
-      case "D" => Down
-      case "L" => Left
-      case "R" => Right
-    }
-  }
+  type Result    = Int
 
   final case class Move(
-    direction: Direction,
-    amount: Int
-  ) {
-    def diff: Coords2D = direction match {
-      case Direction.Up    => Coords2D.of(0, -amount)
-      case Direction.Down  => Coords2D.of(0, amount)
-      case Direction.Left  => Coords2D.of(-amount, 0)
-      case Direction.Right => Coords2D.of(+amount, 0)
-    }
-  }
+    direction: Direction2D,
+    amount: Int,
+  )
 
   object Move {
     def parse(s: String): Move = {
       val (direction, amount) = s.splitPairUnsafe(" ")
-      Move(Direction.parse(direction), amount.toInt)
+      Move(Direction2D.parseUDLR(direction), amount.toInt)
     }
   }
 
-  def catchUpTail(t: Coords2D, newH: Coords2D): Coords2D = {
-    val md = newH.manhattanDistance(t)
-    if (md < 2) {
+  private def catchUpSegment(t: Coords2D, h: Coords2D): Coords2D = {
+    val md = h.manhattanDistance(t)
+    if (md < 2) { // close enough, no move
       t
     } else if (md == 2) {
-      if (t.x == newH.x) {
-        if (t.y.value < newH.y.value) {
-          Coords2D.of(t.x.value, t.y.value + 1)
-        } else {
-          Coords2D.of(t.x.value, t.y.value - 1)
-        }
-      } else if (t.y == newH.y) {
-        if (t.x.value < newH.x.value) {
-          Coords2D.of(t.x.value + 1, t.y.value)
-        } else if (t.x.value > newH.x.value) {
-          Coords2D.of(t.x.value - 1, t.y.value)
-        } else { // diagonal
-          sys.error(s"asdf $t $newH")
-        }
-      } else { // diagonal
-        t
+      if ((t.x == h.x) || (t.y == h.y)) {
+        Coords2D((t.x + h.x) / 2, (t.y + h.y) / 2)
+      } else {
+        t // diagonal is fine, no move
       }
     } else if (md == 3) {
-      val diffX = t.x.value - newH.x.value
-      val diffY = t.y.value - newH.y.value
-      if (Math.abs(diffX) > Math.abs(diffY)) {
-        Coords2D.of((t.x.value + newH.x.value) / 2, newH.y.value)
-      } else if (Math.abs(diffX) < Math.abs(diffY)) {
-        Coords2D.of(newH.x.value, (t.y.value + newH.y.value) / 2)
+      val diffX = t.x - h.x
+      val diffY = t.y - h.y
+      if (diffX.absInt > diffY.absInt) {
+        Coords2D((t.x + h.x) / 2, h.y)
+      } else if (diffX.absInt < diffY.absInt) {
+        Coords2D(h.x, (t.y + h.y) / 2)
       } else {
-        sys.error(s"asdf $t $newH")
+        sys.error(s"Unexpected: $t $h")
       }
+    } else if (md == 4) {
+      Coords2D((h.x + t.x) / 2, (h.y + t.y) / 2)
     } else {
-      // TODO: is this a hack?
-      Coords2D.of((newH.x.value + t.x.value) / 2, (newH.y.value + t.y.value) / 2)
-      // sys.error(s"Wrong MD: $t, $newH")
+      sys.error(s"Unexpected MD: $t $h")
     }
   }
 
-  private def catchUp(list: List[Coords2D]): List[Coords2D] = {
+  private def catchUpRope(list: List[Coords2D]): List[Coords2D] =
     list match {
-      case Nil => Nil
-      case h :: Nil => h :: Nil
-      case h :: t =>
-        val qq = t.head
-        val zz = t.tail
-        val newT = catchUpTail(qq, h)
-        h :: catchUp(newT :: zz)
+      case a :: b :: rest =>
+        val newB = catchUpSegment(b, a)
+        a :: catchUpRope(newB :: rest)
+      case _              => list
     }
 
-//    val List(h, t) = elems
-//    val newH = h + m.diff
-//    val newT = catchUpTail(t, newH)
-//    val newState = State(newH :: newT :: Nil)
-//    newState
-
-  }
-
-  case class State(elems: List[Coords2D]) {
-    def applyMove(m: Move): State = {
-      val newH = elems.head + m.diff
-      val newElems = catchUp(newH :: elems.tail)
-      State(newElems)
+  case class Rope(elems: List[Coords2D]) {
+    def applyMove(direction: Direction2D): Rope = {
+      val newH     = elems.head + direction.diff
+      val newElems = catchUpRope(newH :: elems.tail)
+      Rope(newElems)
     }
 
     def last: Coords2D = elems.last
@@ -122,81 +74,56 @@ object Advent09 {
   def parse(fileName: String): Parsed =
     parseFileLines(fileName, Move.parse)
 
-  def printState(state: State): Unit = {
-    val N = 5
-    (-N to N) foreach { y =>
-      (-N to N) foreach { x =>
+  private def ropeToString(rope: Rope, n: Int): String = {
+    def charForIndex(idx: Int): Char = if (idx == 0) 'H' else ('0' + idx).toChar
+
+    ((-n to n) map { y =>
+      ((-n to n) map { x =>
         val c = Coords2D.of(x, y)
-        var ch: Option[Char] = None
 
-        state.elems.indices.reverse foreach { idx =>
-          if (state.elems(idx) == c) {
-            if (idx == 0) {
-              ch = Some('H')
-            } else {
-              ch = Some(('0' + idx).toChar)
-            }
-          }
+        val ropeChars = rope.elems.indices.toList map { idx =>
+          if (rope.elems(idx) == c) Some(charForIndex(idx)) else None
         }
 
-        if (c == Coords2D.Zero) {
-          if (ch.isEmpty) {
-            ch = Some('s')
-          }
+        val start = if (c == Coords2D.Zero) Some('s') else None
+
+        (ropeChars ::: List(start)).flatten.headOption.getOrElse('·')
+      }).mkString
+    }).map(x => s"$x\n").mkString
+  }
+
+  def solve(data: Parsed, n: Int): Result = {
+    val initialVisited: HashSet[Coords2D] = HashSet(Coords2D.Zero)
+    val initialRope: Rope                 = Rope(List.fill(n)(Coords2D.Zero))
+
+    val (_, resultVisited) = data.foldLeft((initialRope, initialVisited)) {
+      (acc, move) =>
+        val (rope, visited) = acc
+
+        (0 until move.amount).foldLeft((rope, visited)) { (acc, _) =>
+          val (rope, visited) = acc
+          val newRope         = rope.applyMove(move.direction)
+          val newVisited      = visited + newRope.last
+          (newRope, newVisited)
         }
-
-        print(ch.getOrElse('·'))
-      }
-      println
-    }
-    println
-  }
-
-  def part1(data: Parsed): Result1 = {
-    var visited: HashSet[Coords2D] = HashSet(Coords2D.Zero)
-    var state: State = State(Coords2D.Zero :: Coords2D.Zero :: Nil)
-    data foreach { move =>
-      println(s"Applying $move")
-      (0 until move.amount).foreach { _ =>
-        printState(state)
-        val newState = state.applyMove(move.copy(amount = 1))
-        state = newState
-        visited = visited + newState.last
-      }
     }
 
-    println(state)
-
-    visited.size
+    resultVisited.size
   }
 
-  def part2(data: Parsed): Result2 = {
-    var visited: HashSet[Coords2D] = HashSet(Coords2D.Zero)
-    var state: State = State(List.fill(10)(Coords2D.Zero))
-    data foreach { move =>
-      println(s"Applying $move")
-      (0 until move.amount).foreach { _ =>
-        printState(state)
-        val newState = state.applyMove(move.copy(amount = 1))
-        state = newState
-        visited = visited + newState.last
-      }
-    }
+  def part1(data: Parsed): Result = solve(data, 2)
 
-    println(state)
-
-    visited.size
-  }
+  def part2(data: Parsed): Result = solve(data, 10)
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2022/09-test.txt")
+    val test1 = parse("2022/09-test-1.txt")
     val test2 = parse("2022/09-test-2.txt")
-    val real = parse("2022/09.txt")
+    val real  = parse("2022/09.txt")
 
-    part1(test) shouldEqual 13
+    part1(test1) shouldEqual 13
     part1(real) shouldEqual 6486
 
-    part2(test) shouldEqual 1
+    part2(test1) shouldEqual 1
     part2(test2) shouldEqual 36
     part2(real) shouldEqual 2678
   }
