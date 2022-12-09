@@ -18,8 +18,8 @@ object Advent06 {
     def onEdgeOfBoundingBox(point: Coords2D): Boolean =
       ((point.x == boundingBox.left)
         || (point.y == boundingBox.top)
-        || (point.x == boundingBox.left + X(boundingBox.width - 1))
-        || (point.y == boundingBox.top + Y(boundingBox.height - 1)))
+        || (point.x == boundingBox.left + boundingBox.width - 1)
+        || (point.y == boundingBox.top + boundingBox.height - 1))
 
     def closestPointTo(point: Coords2D): Option[Coords2D] = {
       val distances: Map[Coords2D, Int]      = points.map { c: Coords2D =>

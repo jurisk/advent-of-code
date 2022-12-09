@@ -6,15 +6,20 @@ object Geometry {
     def toY: Y = Y(s.toInt)
   }
 
-  final case class X(value: Int) extends AnyVal {
-    def +(other: X): X            = X(value + other.value)
-    def -(other: X): X            = X(value - other.value)
+  // X and Y do not "extends AnyVal" on purpose because of type erasure issues
+  final case class X(value: Int) {
+    def +(other: X): X            = this + other.value
+    def -(other: X): X            = this - other.value
+    def +(other: Int): X          = X(value + other)
+    def -(other: Int): X          = X(value - other)
     override def toString: String = value.toString
   }
 
-  final case class Y(value: Int) extends AnyVal {
-    def +(other: Y): Y            = Y(value + other.value)
-    def -(other: Y): Y            = Y(value - other.value)
+  final case class Y(value: Int) {
+    def +(other: Y): Y            = this + other.value
+    def -(other: Y): Y            = this - other.value
+    def +(other: Int): Y          = Y(value + other)
+    def -(other: Int): Y          = Y(value - other)
     override def toString: String = value.toString
   }
 
@@ -28,19 +33,24 @@ object Geometry {
     def manhattanDistance(other: Coords2D): Int =
       (this - other).manhattanDistanceToOrigin
 
-    def neighbours(includeDiagonal: Boolean): List[Coords2D] = List(
-      Coords2D(x - 1, y),
-      Coords2D(x, y - 1),
-      Coords2D(x + 1, y),
-      Coords2D(x, y + 1),
-    ) ::: (if (includeDiagonal) {
-             List(
-               Coords2D(x - 1, y - 1),
-               Coords2D(x - 1, y + 1),
-               Coords2D(x + 1, y - 1),
-               Coords2D(x + 1, y + 1),
-             )
-           } else Nil)
+    def neighbours(includeDiagonal: Boolean): List[Coords2D] = {
+      val straight = List(
+        Coords2D(x - 1, y),
+        Coords2D(x, y - 1),
+        Coords2D(x + 1, y),
+        Coords2D(x, y + 1),
+      )
+
+      lazy val diagonal =
+        List(
+          Coords2D(x - 1, y - 1),
+          Coords2D(x - 1, y + 1),
+          Coords2D(x + 1, y - 1),
+          Coords2D(x + 1, y + 1),
+        )
+
+      straight ::: (if (includeDiagonal) diagonal else Nil)
+    }
 
     override def toString: String = s"($x, $y)"
   }
@@ -61,7 +71,7 @@ object Geometry {
   final case class Area2D(left: X, top: Y, width: Int, height: Int) {
     def pointSet: Set[Coords2D] = {
       (0 until width) flatMap { w =>
-        (0 until height) map { h => Coords2D(left + X(w), top + Y(h)) }
+        (0 until height) map { h => Coords2D(left + w, top + h) }
       }
     }.toSet
   }
