@@ -82,17 +82,39 @@ object Advent09 {
         sys.error(s"asdf $t $newH")
       }
     } else {
-      sys.error(s"Wrong MD: $t, $newH")
+      // TODO: is this a hack?
+      Coords2D.of((newH.x.value + t.x.value) / 2, (newH.y.value + t.y.value) / 2)
+      // sys.error(s"Wrong MD: $t, $newH")
     }
   }
 
-  case class State(h: Coords2D, t: Coords2D) {
-    def applyMove(m: Move): (State, List[Coords2D]) = {
-      val newH = h + m.diff
-      val newT = catchUpTail(t, newH)
-      val newState = State(newH, newT)
-      (newState, newT :: Nil)
+  private def catchUp(list: List[Coords2D]): List[Coords2D] = {
+    list match {
+      case Nil => Nil
+      case h :: Nil => h :: Nil
+      case h :: t =>
+        val qq = t.head
+        val zz = t.tail
+        val newT = catchUpTail(qq, h)
+        h :: catchUp(newT :: zz)
     }
+
+//    val List(h, t) = elems
+//    val newH = h + m.diff
+//    val newT = catchUpTail(t, newH)
+//    val newState = State(newH :: newT :: Nil)
+//    newState
+
+  }
+
+  case class State(elems: List[Coords2D]) {
+    def applyMove(m: Move): State = {
+      val newH = elems.head + m.diff
+      val newElems = catchUp(newH :: elems.tail)
+      State(newElems)
+    }
+
+    def last: Coords2D = elems.last
   }
 
   def process(parsed: Parsed): Processed = parsed
@@ -105,20 +127,25 @@ object Advent09 {
     (-N to N) foreach { y =>
       (-N to N) foreach { x =>
         val c = Coords2D.of(x, y)
-        val ch = if ((state.t == c) && (state.h == c)) {
-          '!'
-        } else if ((state.t == c)) {
-          'T'
-        } else if (state.h == c) {
-          'H'
-        } else {
-          if (c == Coords2D.Zero) {
-            's'
-          } else {
-            '·'
+        var ch: Option[Char] = None
+
+        state.elems.indices.reverse foreach { idx =>
+          if (state.elems(idx) == c) {
+            if (idx == 0) {
+              ch = Some('H')
+            } else {
+              ch = Some(('0' + idx).toChar)
+            }
           }
         }
-        print(ch)
+
+        if (c == Coords2D.Zero) {
+          if (ch.isEmpty) {
+            ch = Some('s')
+          }
+        }
+
+        print(ch.getOrElse('·'))
       }
       println
     }
@@ -127,16 +154,14 @@ object Advent09 {
 
   def part1(data: Parsed): Result1 = {
     var visited: HashSet[Coords2D] = HashSet(Coords2D.Zero)
-    var state: State = State(Coords2D.Zero, Coords2D.Zero)
+    var state: State = State(Coords2D.Zero :: Coords2D.Zero :: Nil)
     data foreach { move =>
       println(s"Applying $move")
       (0 until move.amount).foreach { _ =>
         printState(state)
-        val (newState, tailVisits) = state.applyMove(move.copy(amount = 1))
+        val newState = state.applyMove(move.copy(amount = 1))
         state = newState
-        tailVisits.foreach { what =>
-          visited = visited + what
-        }
+        visited = visited + newState.last
       }
     }
 
@@ -146,18 +171,33 @@ object Advent09 {
   }
 
   def part2(data: Parsed): Result2 = {
-    val processed = process(data)
-    processed.size
+    var visited: HashSet[Coords2D] = HashSet(Coords2D.Zero)
+    var state: State = State(List.fill(10)(Coords2D.Zero))
+    data foreach { move =>
+      println(s"Applying $move")
+      (0 until move.amount).foreach { _ =>
+        printState(state)
+        val newState = state.applyMove(move.copy(amount = 1))
+        state = newState
+        visited = visited + newState.last
+      }
+    }
+
+    println(state)
+
+    visited.size
   }
 
   def main(args: Array[String]): Unit = {
     val test = parse("2022/09-test.txt")
+    val test2 = parse("2022/09-test-2.txt")
     val real = parse("2022/09.txt")
 
     part1(test) shouldEqual 13
     part1(real) shouldEqual 6486
 
-    part2(test) shouldEqual 36
-    part2(real) shouldEqual "asdf"
+    part2(test) shouldEqual 1
+    part2(test2) shouldEqual 36
+    part2(real) shouldEqual 2678
   }
 }
