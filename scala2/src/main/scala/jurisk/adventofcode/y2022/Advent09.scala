@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2022
 
 import jurisk.utils.FileInput._
-import jurisk.utils.Geometry.{Coords2D, Direction2D}
+import jurisk.utils.Geometry.{Coords2D, Direction2D, X, Y}
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
@@ -24,45 +24,41 @@ object Advent09 {
     }
   }
 
-  private def catchUpSegment(t: Coords2D, h: Coords2D): Coords2D = {
-    val md = h.manhattanDistance(t)
-    if (md < 2) { // close enough, no move
-      t
-    } else if (md == 2) {
-      if ((t.x == h.x) || (t.y == h.y)) {
-        Coords2D((t.x + h.x) / 2, (t.y + h.y) / 2)
-      } else {
-        t // diagonal is fine, no move
-      }
-    } else if (md == 3) {
-      val diffX = t.x - h.x
-      val diffY = t.y - h.y
-      if (diffX.absInt > diffY.absInt) {
-        Coords2D((t.x + h.x) / 2, h.y)
-      } else if (diffX.absInt < diffY.absInt) {
-        Coords2D(h.x, (t.y + h.y) / 2)
-      } else {
-        sys.error(s"Unexpected: $t $h")
-      }
-    } else if (md == 4) {
-      Coords2D((h.x + t.x) / 2, (h.y + t.y) / 2)
-    } else {
-      sys.error(s"Unexpected MD: $t $h")
-    }
-  }
+  object Rope {
+    private def catchUpSegment(t: Coords2D, h: Coords2D): Coords2D = {
+      def f(a: Int, b: Int): Int =
+        Math.abs(a - b) match {
+          case 0 => a
+          case 1 => b
+          case 2 => (a + b) / 2
+          case _ => sys.error(s"Unexpectedly large distance: $a $b")
+        }
 
-  private def catchUpRope(list: List[Coords2D]): List[Coords2D] =
-    list match {
-      case a :: b :: rest =>
-        val newB = catchUpSegment(b, a)
-        a :: catchUpRope(newB :: rest)
-      case _              => list
+      val md                   = h.manhattanDistance(t)
+      val overlapping          = md == 0
+      val neighbouring         = md == 1
+      val diagonalNeighbouring = (md == 2) && (t.x != h.x) && (t.y != h.y)
+
+      if (overlapping || neighbouring || diagonalNeighbouring) {
+        t // close enough, no move
+      } else {
+        Coords2D(X(f(t.x.value, h.x.value)), Y(f(t.y.value, h.y.value)))
+      }
     }
+
+    private def catchUpRope(list: List[Coords2D]): List[Coords2D] =
+      list match {
+        case a :: b :: rest =>
+          val newB = catchUpSegment(b, a)
+          a :: catchUpRope(newB :: rest)
+        case _              => list
+      }
+  }
 
   case class Rope(elems: List[Coords2D]) {
     def applyMove(direction: Direction2D): Rope = {
       val newH     = elems.head + direction.diff
-      val newElems = catchUpRope(newH :: elems.tail)
+      val newElems = Rope.catchUpRope(newH :: elems.tail)
       Rope(newElems)
     }
 
@@ -81,13 +77,13 @@ object Advent09 {
       ((-n to n) map { x =>
         val c = Coords2D.of(x, y)
 
-        val ropeChars = rope.elems.indices.toList map { idx =>
+        val ropeChars = rope.elems.indices.toVector map { idx =>
           if (rope.elems(idx) == c) Some(charForIndex(idx)) else None
         }
 
         val start = if (c == Coords2D.Zero) Some('s') else None
 
-        (ropeChars ::: List(start)).flatten.headOption.getOrElse('·')
+        (ropeChars :+ start).flatten.headOption.getOrElse('·')
       }).mkString
     }).map(x => s"$x\n").mkString
   }

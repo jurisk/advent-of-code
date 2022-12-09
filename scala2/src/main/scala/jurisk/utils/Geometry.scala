@@ -18,7 +18,7 @@ object Geometry {
     def -(other: X): X   = this - other.value
     def +(other: Int): X = X(value + other)
     def -(other: Int): X = X(value - other)
-    def absInt: Int      = Math.abs(value)
+    def abs: Int         = Math.abs(value)
 
     override def toString: String = value.toString
   }
@@ -34,7 +34,7 @@ object Geometry {
     def -(other: Y): Y   = this - other.value
     def +(other: Int): Y = Y(value + other)
     def -(other: Int): Y = Y(value - other)
-    def absInt: Int      = Math.abs(value)
+    def abs: Int         = Math.abs(value)
 
     override def toString: String = value.toString
   }
