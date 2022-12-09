@@ -1,6 +1,8 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
+import jurisk.adventofcode.y2022.Advent07.Command.{CdDir, CdRoot, CdUp, Ls}
+import jurisk.adventofcode.y2022.Advent07.OutputLine.{Dir, File}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.{StringOps, splitIntoSections}
 import org.scalatest.matchers.should.Matchers._
@@ -16,14 +18,6 @@ object Advent07 {
   object OutputLine {
     case class Dir(name: String)              extends OutputLine
     case class File(name: String, size: Long) extends OutputLine
-
-    def parse(s: String): OutputLine = {
-      val (a, b) = s.splitPairUnsafe(" ")
-      a match {
-        case "dir" => Dir(b)
-        case _     => File(b, a.toLong)
-      }
-    }
   }
 
   final case class Directory(
@@ -60,25 +54,6 @@ object Advent07 {
     case class CdDir(dir: String) extends Command
     case object CdUp              extends Command
     case object Ls                extends Command
-
-    private val Prefix   = "$ "
-    private val CdPrefix = Prefix + "cd "
-
-    def matches(s: String): Boolean =
-      s.startsWith(Command.Prefix)
-
-    def parse(s: String): Command =
-      s match {
-        case "$ ls"                      => Ls
-        case x if x.startsWith(CdPrefix) =>
-          val dir = x.drop(CdPrefix.length)
-          dir match {
-            case ".." => CdUp
-            case "/"  => CdRoot
-            case _    => CdDir(dir)
-          }
-        case _                           => sys.error(s)
-      }
   }
 
   def process(parsed: Parsed): Processed = {
@@ -164,13 +139,41 @@ object Advent07 {
     }
   }
 
+  // "usual" parsing
   private def parse(fileName: String): Parsed = {
+    val CommandPrefix = "$ "
+    val CdPrefix = CommandPrefix + "cd "
+
+    def commandMatches(s: String): Boolean =
+      s.startsWith(CommandPrefix)
+
+    def parseCommand(s: String): Command =
+      s match {
+        case "$ ls"                      => Ls
+        case x if x.startsWith(CdPrefix) =>
+          val dir = x.drop(CdPrefix.length)
+          dir match {
+            case ".." => CdUp
+            case "/"  => CdRoot
+            case _    => CdDir(dir)
+          }
+        case _                           => sys.error(s)
+      }
+
+    def parseOutputLine(s: String): OutputLine = {
+      val (a, b) = s.splitPairUnsafe(" ")
+      a match {
+        case "dir" => Dir(b)
+        case _     => File(b, a.toLong)
+      }
+    }
+
     val lines    = readFileLines(fileName)
-    val sections = splitIntoSections[String](lines, Command.matches)
+    val sections = splitIntoSections[String](lines, commandMatches)
     sections map { case (start, remaining) =>
       (
-        Command.parse(start),
-        remaining.map(OutputLine.parse),
+        parseCommand(start),
+        remaining.map(parseOutputLine),
       )
     }
   }
