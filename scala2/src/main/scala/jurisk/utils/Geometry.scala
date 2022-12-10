@@ -171,8 +171,14 @@ object Geometry {
 
     def at(c: Coords2D): Option[T]       =
       data.lift(c.y.value).flatMap(_.lift(c.x.value))
+
     private def atUnsafe(c: Coords2D): T =
       at(c).getOrElse(sys.error(s"Coords2D $c are invalid"))
+
+    def updatedAtUnsafe(c: Coords2D, newValue: T): Field2D[T] =
+      Field2D(
+        data.updated(c.y.value, data(c.y.value).updated(c.x.value, newValue))
+      )
 
     def allCoords: Seq[Coords2D] =
       yIndices flatMap { y =>
@@ -194,6 +200,11 @@ object Geometry {
     data.map(_.mkString).map(_ + '\n').mkString
 
   object Field2D {
+    def ofSize[T](width: Int, height: Int, initialValue: T): Field2D[T] =
+      Field2D(
+        Vector.fill(height)(Vector.fill(width)(initialValue))
+      )
+
     def toDebugRepresentation(field: Field2D[Char]): String = mergeSeqSeqChar(
       field.yIndices map { y =>
         field.xIndices.map { x =>
