@@ -169,7 +169,7 @@ object Geometry {
     }
     def mapByValues[B](f: T => B): Field2D[B]        = map { case (_, v) => f(v) }
 
-    def at(c: Coords2D): Option[T]       =
+    def at(c: Coords2D): Option[T] =
       data.lift(c.y.value).flatMap(_.lift(c.x.value))
 
     private def atUnsafe(c: Coords2D): T =
