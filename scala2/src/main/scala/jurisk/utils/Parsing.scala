@@ -29,6 +29,13 @@ object Parsing {
   }
 
   implicit class StringOps(s: String) {
+    def remainingIfStartsWithUnsafe(prefix: String): String =
+      if (s.startsWith(prefix)) {
+        s.drop(prefix.length)
+      } else {
+        sys.error(s"Expected '$s' to start with '$prefix' but it did not")
+      }
+
     def parseCoords2D: Coords2D = {
       val (x, y): (Int, Int) = s.parsePairUnsafe(",", _.trim.toInt)
       Coords2D(X(x), Y(y))
