@@ -61,7 +61,7 @@ object Geometry {
       val directions = if (includeDiagonal) {
         Direction2D.AllDirections
       } else {
-        Direction2D.MainDirections
+        Direction2D.CardinalDirections
       }
 
       directions.map(d => this + d.diff)
@@ -87,14 +87,39 @@ object Geometry {
     }
   }
 
+  sealed trait Rotation
+  object Rotation {
+    case object Left90     extends Rotation
+    case object NoRotation extends Rotation
+    case object Right90    extends Rotation
+  }
+
   sealed trait Direction2D {
+    import jurisk.utils.Geometry.Direction2D._
+    import jurisk.utils.Geometry.Rotation._
+
     def diff: Coords2D
+
+    def rotate(rotation: Rotation): Direction2D = (rotation, this) match {
+      case (NoRotation, _) => this
+      case (Left90, N)     => W
+      case (Left90, E)     => N
+      case (Left90, S)     => E
+      case (Left90, W)     => S
+      case (Right90, N)    => E
+      case (Right90, E)    => S
+      case (Right90, S)    => W
+      case (Right90, W)    => N
+      case _               =>
+        sys.error(s"rotate does not support rotating $this by $rotation")
+    }
   }
 
   object Direction2D {
-    val MainDirections: List[Direction2D]     = N :: S :: W :: E :: Nil
+    val CardinalDirections: List[Direction2D] = N :: S :: W :: E :: Nil
     val DiagonalDirections: List[Direction2D] = NW :: NE :: SW :: SE :: Nil
-    val AllDirections: List[Direction2D]      = MainDirections ::: DiagonalDirections
+    val AllDirections: List[Direction2D]      =
+      CardinalDirections ::: DiagonalDirections
 
     case object N extends Direction2D {
       val diff: Coords2D = Coords2D.of(0, -1)
@@ -135,6 +160,14 @@ object Geometry {
       case "R" => E
       case _   => sys.error(s"Unrecognized main direction: $s")
     }
+
+    def parseCaretToOption(ch: Char): Option[Direction2D] = ch match {
+      case '>' => Direction2D.E.some
+      case '^' => Direction2D.N.some
+      case '<' => Direction2D.W.some
+      case 'v' => Direction2D.S.some
+      case _   => none
+    }
   }
 
   final case class Area2D(left: X, top: Y, width: Int, height: Int) {
@@ -172,7 +205,7 @@ object Geometry {
     def at(c: Coords2D): Option[T] =
       data.lift(c.y.value).flatMap(_.lift(c.x.value))
 
-    private def atUnsafe(c: Coords2D): T =
+    def atUnsafe(c: Coords2D): T =
       at(c).getOrElse(sys.error(s"Coords2D $c are invalid"))
 
     def updatedAtUnsafe(c: Coords2D, newValue: T): Field2D[T] =
@@ -188,6 +221,14 @@ object Geometry {
       }
 
     def values: Iterable[T] = data.flatten
+
+    def entries: Seq[(Coords2D, T)] =
+      yIndices flatMap { y =>
+        xIndices map { x =>
+          val c = Coords2D(x, y)
+          c -> atUnsafe(c)
+        }
+      }
 
     def row(y: Y): Vector[T]    = data(y.value)
     def column(x: X): Vector[T] = data.map(_(x.value))
@@ -213,8 +254,25 @@ object Geometry {
       }
     )
 
-    def parseFromLines[T](lines: List[String], parser: Char => T): Field2D[T] =
-      Field2D(lines.toVector.map(_.map(parser).toVector))
+    def parseFromString[T](data: String, parser: Char => T): Field2D[T] =
+      parseFromLines(
+        data.split("\n").filter(_.nonEmpty).toList,
+        parser,
+      )
+
+    def parseFromLines[T](
+      lines: List[String],
+      parser: Char => T,
+      padIfNotEnoughWidthWith: Char = ' ',
+    ): Field2D[T] = {
+      val width = lines.map(_.length).max
+      Field2D(
+        lines.toVector.map { line =>
+          val paddedLine = line.padTo(width, padIfNotEnoughWidthWith)
+          paddedLine.map(parser).toVector
+        }
+      )
+    }
   }
 
   final case class SparseField[T](points: Map[Coords2D, T]) {
