@@ -12,7 +12,7 @@ object Advent08 {
   type Result1    = Int
   type Result2    = Long
 
-  def parse(fileName: String): Parsed = {
+  def readFileAndParse(fileName: String): Parsed = {
     val lines = readFileLines(fileName)
     Field2D.parseFromLines(lines, _ - '0')
   }
@@ -77,8 +77,8 @@ object Advent08 {
     viewingDistance(NonEmptyList.of(5, 1, 2)) shouldEqual 2    // sees 1, 2
     viewingDistance(NonEmptyList.of(5, 3, 5, 3)) shouldEqual 2 // sees 3, 5
 
-    val test = parse("2022/08-test.txt")
-    val real = parse("2022/08.txt")
+    val test = readFileAndParse("2022/08-test.txt")
+    val real = readFileAndParse("2022/08.txt")
 
     part1(test) shouldEqual 21
     part1(real) shouldEqual 1690

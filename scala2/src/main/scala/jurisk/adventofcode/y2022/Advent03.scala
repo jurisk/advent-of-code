@@ -46,7 +46,7 @@ object Advent03 {
       Item.singleSharedItem(rucksacks.map(_.allItems))
   }
 
-  def parse(fileName: String): Parsed =
+  def readFileAndParse(fileName: String): Parsed =
     parseFileLines(fileName, Rucksack.parse)
 
   def part1(data: Parsed): Result =
@@ -59,8 +59,8 @@ object Advent03 {
   }
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2022/03-test.txt")
-    val real = parse("2022/03.txt")
+    val test = readFileAndParse("2022/03-test.txt")
+    val real = readFileAndParse("2022/03.txt")
 
     part1(test) shouldEqual 157
     part1(real) shouldEqual 7763

@@ -9,7 +9,7 @@ object Advent01 {
   type Parsed = List[Int]
   type Result = Int
 
-  def parse(fileName: String): Parsed =
+  private def readFileAndParse(fileName: String): Parsed =
     parseFileLines(fileName, _.toInt)
 
   def part1(data: Parsed): Result =
@@ -30,7 +30,7 @@ object Advent01 {
   }
 
   def main(args: Array[String]): Unit = {
-    val real = parse("2018/01.txt")
+    val real = readFileAndParse("2018/01.txt")
 
     part1(real) shouldEqual 474
     part2(real) shouldEqual 137041

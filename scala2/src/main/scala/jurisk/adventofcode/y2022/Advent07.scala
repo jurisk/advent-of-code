@@ -84,7 +84,7 @@ object Advent07 {
   }
 
   // Implemented to try out `cats-parse`
-  private def parseUsingCatsParse(fileName: String): Parsed = {
+  private def readFileAndParseUsingCatsParse(fileName: String): Parsed = {
     import cats.parse.Parser
     import cats.parse.Rfc5234._
 
@@ -140,7 +140,7 @@ object Advent07 {
   }
 
   // "usual" parsing
-  private def parse(fileName: String): Parsed = {
+  private def readFileAndParseOrdinarily(fileName: String): Parsed = {
     val CommandPrefix = "$ "
     val CdPrefix      = CommandPrefix + "cd "
 
@@ -196,12 +196,12 @@ object Advent07 {
 
   def main(args: Array[String]): Unit = {
     val TestFile = "2022/07-test.txt"
-    val test     = parseUsingCatsParse(TestFile)
-    test shouldEqual parse(TestFile)
+    val test     = readFileAndParseUsingCatsParse(TestFile)
+    test shouldEqual readFileAndParseOrdinarily(TestFile)
 
     val RealFile = "2022/07.txt"
-    val real     = parseUsingCatsParse(RealFile)
-    real shouldEqual parse(RealFile)
+    val real     = readFileAndParseUsingCatsParse(RealFile)
+    real shouldEqual readFileAndParseOrdinarily(RealFile)
 
     val Limit = 100000
     part1(test, Limit) shouldEqual 95437

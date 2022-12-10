@@ -39,7 +39,7 @@ object Advent04 {
   type Parsed = List[Pair]
   type Result = Int
 
-  def parse(fileName: String): Parsed =
+  def readFileAndParse(fileName: String): Parsed =
     parseFileLines(fileName, Pair.parse)
 
   def part1(data: Parsed): Result =
@@ -49,8 +49,8 @@ object Advent04 {
     data.count(_.overlap)
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2022/04-test.txt")
-    val real = parse("2022/04.txt")
+    val test = readFileAndParse("2022/04-test.txt")
+    val real = readFileAndParse("2022/04.txt")
 
     part1(test) shouldEqual 2
     part1(real) shouldEqual 547

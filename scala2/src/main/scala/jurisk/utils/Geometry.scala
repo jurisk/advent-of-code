@@ -1,5 +1,7 @@
 package jurisk.utils
 
+import cats.implicits._
+
 object Geometry {
   implicit class StringOps(s: String) {
     def toX: X = X(s.toInt)
@@ -46,6 +48,9 @@ object Geometry {
     def -(other: Coords2D): Coords2D =
       Coords2D(x - other.x, y - other.y)
 
+    def *(n: Int): Coords2D =
+      Coords2D(x * n, y * n)
+
     def manhattanDistanceToOrigin: Int =
       Math.abs(x.value) + Math.abs(y.value)
 
@@ -71,11 +76,13 @@ object Geometry {
     def of(x: Int, y: Int): Coords2D =
       Coords2D(X(x), Y(y))
 
-    def boundingBoxInclusive(coords: Seq[Coords2D]): Area2D = {
-      val minX = coords.map(_.x.value).min
-      val minY = coords.map(_.y.value).min
-      val maxX = coords.map(_.x.value).max
-      val maxY = coords.map(_.y.value).max
+    def boundingBoxInclusive(coords: Iterable[Coords2D]): Area2D = {
+      val xList = coords.map(_.x.value)
+      val minX  = xList.min
+      val maxX  = xList.max
+      val yList = coords.map(_.y.value)
+      val minY  = yList.min
+      val maxY  = yList.max
       Area2D(X(minX), Y(minY), maxX - minX + 1, maxY - minY + 1)
     }
   }
@@ -136,6 +143,9 @@ object Geometry {
         (0 until height) map { h => Coords2D(left + w, top + h) }
       }
     }.toSet
+
+    def topLeft: Coords2D     = Coords2D(left, top)
+    def bottomRight: Coords2D = Coords2D(left + width, top + height)
   }
 
   final case class Field2D[T](data: Vector[Vector[T]]) {
@@ -180,15 +190,58 @@ object Geometry {
       values.count(p)
   }
 
+  private def mergeSeqSeqChar(data: Seq[Seq[Char]]): String =
+    data.map(_.mkString).map(_ + '\n').mkString
+
   object Field2D {
-    def toDebugRepresentation(field: Field2D[Char]): String =
-      (field.yIndices map { y =>
+    def toDebugRepresentation(field: Field2D[Char]): String = mergeSeqSeqChar(
+      field.yIndices map { y =>
         field.xIndices.map { x =>
           field.atUnsafe(Coords2D(x, y))
-        }.mkString
-      }).map(_ + '\n').mkString
+        }
+      }
+    )
 
     def parseFromLines[T](lines: List[String], parser: Char => T): Field2D[T] =
       Field2D(lines.toVector.map(_.map(parser).toVector))
+  }
+
+  final case class SparseField[T](points: Map[Coords2D, T]) {
+    def toDebugRepresentation(
+      display: Option[T] => Char,
+      limit: Int,
+    ): String = {
+      val boundingBox = Coords2D.boundingBoxInclusive(points.keys)
+      val xMin        = boundingBox.topLeft.x.value
+      val yMin        = boundingBox.topLeft.y.value
+      val xMax        = boundingBox.bottomRight.x.value
+      val yMax        = boundingBox.bottomRight.y.value
+      val xSize       = xMax - xMin + 1
+      val ySize       = yMax - yMin + 1
+
+      if ((xSize > limit) || (ySize > limit)) {
+        s"Too large: ${xSize}x$ySize or ${xSize.toLong * ySize} with bounding box $boundingBox"
+      } else {
+        val buffers = Array.fill(ySize)(Array.fill(xSize)(display(none)))
+
+        points foreach { case (point, value) =>
+          buffers(point.y.value - yMin)(point.x.value - xMin) =
+            display(value.some)
+        }
+
+        mergeSeqSeqChar(buffers.map(_.toList))
+      }
+    }
+  }
+
+  final case class SparseBooleanField(points: Set[Coords2D], limit: Int) {
+    def toDebugRepresentation: String =
+      SparseField(points.map(_ -> ()).toMap).toDebugRepresentation(
+        {
+          case Some(()) => '▓'
+          case None     => '░'
+        },
+        limit,
+      )
   }
 }

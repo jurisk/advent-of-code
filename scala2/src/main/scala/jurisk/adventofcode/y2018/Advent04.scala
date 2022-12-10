@@ -93,7 +93,7 @@ object Advent04 {
     }
   }
 
-  def parse(fileName: String): List[Entry] =
+  def readFileAndParse(fileName: String): List[Entry] =
     parseFileLines(fileName, Entry.parse)
 
   private def segment(data: List[Entry]): List[(Entry, List[Entry])] =
@@ -104,17 +104,6 @@ object Advent04 {
         case _                 => false
       },
     )
-
-//    val indexOfNext = data.tail.indexWhere {
-//      case BeginsShift(_, _) => true
-//      case _                 => false
-//    }
-//
-//    if (indexOfNext == -1) {
-//      data :: Nil
-//    } else {
-//      data.take(indexOfNext + 1) :: segment(data.drop(indexOfNext + 1))
-//    }
 
   private def aggregate(
     data: List[Entry]
@@ -180,8 +169,8 @@ object Advent04 {
   }
 
   def main(args: Array[String]): Unit = {
-    val real = parse("2018/04.txt")
-    val test = parse("2018/04-test.txt")
+    val real = readFileAndParse("2018/04.txt")
+    val test = readFileAndParse("2018/04-test.txt")
 
     part1(test) shouldEqual 240
     part1(real) shouldEqual 3212

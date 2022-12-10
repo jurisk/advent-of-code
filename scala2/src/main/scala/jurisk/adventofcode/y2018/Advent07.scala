@@ -33,7 +33,7 @@ object Advent07 {
 
   type Parsed = List[Requirement]
 
-  def parse(fileName: String): Parsed =
+  def readFileAndParse(fileName: String): Parsed =
     parseFileLines(fileName, Requirement.parse)
 
   private def buildDependencyMap(data: Parsed): Map[Step, Set[Step]] =
@@ -128,8 +128,8 @@ object Advent07 {
   }
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2018/07-test.txt")
-    val real = parse("2018/07.txt")
+    val test = readFileAndParse("2018/07-test.txt")
+    val real = readFileAndParse("2018/07.txt")
 
     part1(test) shouldEqual "CABDFE"
     part1(real) shouldEqual "BCADPVTJFZNRWXHEKSQLUYGMIO"

@@ -21,10 +21,10 @@ object Advent08 {
         }.sum
   }
 
-  def parse(fileName: String): List[Int] =
+  def readFileAndParse(fileName: String): List[Int] =
     readSingleFileLine(fileName).parseList(" ", _.toInt)
 
-  def parseNodes(n: Int, data: List[Int]): (List[Node], List[Int]) =
+  private def parseNodes(n: Int, data: List[Int]): (List[Node], List[Int]) =
     if (n == 0) {
       (Nil, data)
     } else {
@@ -55,8 +55,8 @@ object Advent08 {
     process(data).rootNode
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2018/08-test.txt")
-    val real = parse("2018/08.txt")
+    val test = readFileAndParse("2018/08-test.txt")
+    val real = readFileAndParse("2018/08.txt")
 
     part1(test) shouldEqual 138
     part1(real) shouldEqual 45868

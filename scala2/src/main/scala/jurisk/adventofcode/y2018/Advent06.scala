@@ -8,7 +8,7 @@ import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent06 {
-  def parse(fileName: String): List[Coords2D] =
+  def readFileAndParse(fileName: String): List[Coords2D] =
     parseFileLines(fileName, _.parseCoords2D)
 
   def part1(points: List[Coords2D]): Int = {
@@ -53,8 +53,8 @@ object Advent06 {
     }
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2018/06-test.txt")
-    val real = parse("2018/06.txt")
+    val test = readFileAndParse("2018/06-test.txt")
+    val real = readFileAndParse("2018/06.txt")
 
     part1(test) shouldEqual 17
     part1(real) shouldEqual 2342

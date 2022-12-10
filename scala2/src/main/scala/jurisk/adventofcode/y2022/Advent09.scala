@@ -67,7 +67,7 @@ object Advent09 {
 
   def process(parsed: Parsed): Processed = parsed
 
-  def parse(fileName: String): Parsed =
+  def readFileAndParse(fileName: String): Parsed =
     parseFileLines(fileName, Move.parse)
 
   private def ropeToString(rope: Rope, n: Int): String = {
@@ -112,9 +112,9 @@ object Advent09 {
   def part2(data: Parsed): Result = solve(data, 10)
 
   def main(args: Array[String]): Unit = {
-    val test1 = parse("2022/09-test-1.txt")
-    val test2 = parse("2022/09-test-2.txt")
-    val real  = parse("2022/09.txt")
+    val test1 = readFileAndParse("2022/09-test-1.txt")
+    val test2 = readFileAndParse("2022/09-test-2.txt")
+    val real  = readFileAndParse("2022/09.txt")
 
     part1(test1) shouldEqual 13
     part1(real) shouldEqual 6486

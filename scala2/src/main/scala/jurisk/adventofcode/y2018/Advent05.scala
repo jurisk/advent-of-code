@@ -26,7 +26,7 @@ object Advent05 {
       else sys.error(s"Failed to recognize: $x")
   }
 
-  def parse(fileName: String): Polymer =
+  def readFileAndParse(fileName: String): Polymer =
     parseSingleFileLine(fileName, Elem.parse).toVector
 
   private def reducePolymer(polymer: Polymer): Polymer =
@@ -53,8 +53,8 @@ object Advent05 {
   }
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2018/05-test.txt")
-    val real = parse("2018/05.txt")
+    val test = readFileAndParse("2018/05-test.txt")
+    val real = readFileAndParse("2018/05.txt")
 
     part1(test) shouldEqual 10
     part1(real) shouldEqual 11118

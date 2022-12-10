@@ -118,10 +118,10 @@ object Advent02 {
     }
   }
 
-  private def parse1(fileName: String): Parsed1 =
+  private def readFileAndParse1(fileName: String): Parsed1 =
     parseFileLines(fileName, Round1.parse)
 
-  private def parse2(fileName: String): Parsed2 =
+  private def readFileAndParse2(fileName: String): Parsed2 =
     parseFileLines(fileName, Round2.parse)
 
   def part1(data: Parsed1): Result =
@@ -131,14 +131,14 @@ object Advent02 {
     data.map(_.toRound1.result).sum
 
   def main(args: Array[String]): Unit = {
-    val test1 = parse1("2022/02-test.txt")
-    val real1 = parse1("2022/02.txt")
+    val test1 = readFileAndParse1("2022/02-test.txt")
+    val real1 = readFileAndParse1("2022/02.txt")
 
     part1(test1) shouldEqual 15
     part1(real1) shouldEqual 14531
 
-    val test2 = parse2("2022/02-test.txt")
-    val real2 = parse2("2022/02.txt")
+    val test2 = readFileAndParse2("2022/02-test.txt")
+    val real2 = readFileAndParse2("2022/02.txt")
 
     part2(test2) shouldEqual 12
     part2(real2) shouldEqual 11258

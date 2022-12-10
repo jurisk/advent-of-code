@@ -5,7 +5,7 @@ import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent02 {
-  def parse(fileName: String): List[String] =
+  private def readFileAndParse(fileName: String): List[String] =
     readFileLines(fileName)
 
   private def hasNOfSomeLetter(s: String, n: Int): Boolean =
@@ -43,7 +43,7 @@ object Advent02 {
   }
 
   def main(args: Array[String]): Unit = {
-    val real = parse("2018/02.txt")
+    val real = readFileAndParse("2018/02.txt")
 
     part1(real) shouldEqual 5952
     part2(real) shouldEqual "krdmtuqjgwfoevnaboxglzjph"

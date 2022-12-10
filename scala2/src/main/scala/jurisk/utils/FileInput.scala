@@ -10,14 +10,13 @@ object FileInput {
     readSingleFileLine(fileName).map(parser).toList
 
   def readSingleFileLine(fileName: String): String =
-    readFileLines(fileName).map(_.trim).singleElementUnsafe
+    readFileLines(fileName).singleElementUnsafe
 
   def parseLineGroups[T](fileName: String, parser: List[String] => T): List[T] =
     readLineGroups(fileName) map parser
 
   def readLineGroups(fileName: String): List[List[String]] =
-    readFileLines(fileName)
-      .mkString("\n")
+    readFileText(fileName)
       .split("\n\n")
       .map(_.split("\n").toList)
       .toList
@@ -27,4 +26,7 @@ object FileInput {
 
   def readFileLines(fileName: String): List[String] =
     Using.resource(Source.fromResource(fileName))(_.getLines().toList)
+
+  def readFileText(fileName: String): String =
+    readFileLines(fileName).mkString("\n")
 }

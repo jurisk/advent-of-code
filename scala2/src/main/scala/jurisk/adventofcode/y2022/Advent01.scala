@@ -7,7 +7,7 @@ object Advent01 {
   type Parsed = List[List[Int]]
   type Result = Int
 
-  def parse(fileName: String): Parsed =
+  def readFileAndParse(fileName: String): Parsed =
     parseLineGroups(fileName, _.map(_.toInt))
 
   private def process(data: Parsed): List[Int] =
@@ -20,8 +20,8 @@ object Advent01 {
     process(data).take(3).sum
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2022/01-test.txt")
-    val real = parse("2022/01.txt")
+    val test = readFileAndParse("2022/01-test.txt")
+    val real = readFileAndParse("2022/01.txt")
 
     part1(test) shouldEqual 24000
     part1(real) shouldEqual 74394

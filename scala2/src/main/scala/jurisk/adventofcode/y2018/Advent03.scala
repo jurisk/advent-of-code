@@ -20,7 +20,7 @@ object Advent03 {
       }
   }
 
-  def parse(fileName: String): List[Claim] =
+  def readFileAndParse(fileName: String): List[Claim] =
     parseFileLines(fileName, Claim.parse)
 
   private def aggregate(data: List[Claim]): Map[Coords2D, Int] =
@@ -50,8 +50,8 @@ object Advent03 {
   }
 
   def main(args: Array[String]): Unit = {
-    val real = parse("2018/03.txt")
-    val test = parse("2018/03-test.txt")
+    val real = readFileAndParse("2018/03.txt")
+    val test = readFileAndParse("2018/03-test.txt")
 
     part1(test) shouldEqual 4
     part1(real) shouldEqual 105231

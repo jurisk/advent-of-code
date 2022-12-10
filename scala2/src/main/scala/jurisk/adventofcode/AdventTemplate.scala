@@ -22,8 +22,8 @@ object AdventTemplate {
 
   def process(parsed: Parsed): Processed = parsed
 
-  def parse(fileName: String): Parsed =
-    parseFileLines(fileName, Entry.parse)
+  def parse(data: String): Parsed =
+    data.parseList("\n", Entry.parse)
 
   def part1(data: Parsed): Result1 = {
     val processed = process(data)
@@ -36,8 +36,11 @@ object AdventTemplate {
   }
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2022/00-test.txt")
-    val real = parse("2022/00.txt")
+    val testData = readFileText("2022/00-test.txt")
+    val realData = readFileText("2022/00.txt")
+
+    val test = parse(testData)
+    val real = parse(realData)
 
     part1(test) shouldEqual 12345678
     part1(real) shouldEqual 12345678

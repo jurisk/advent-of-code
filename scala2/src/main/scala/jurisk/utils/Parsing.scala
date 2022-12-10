@@ -57,5 +57,10 @@ object Parsing {
       parser: String => T,
     ): List[T] =
       s.split(separator).toList.map(parser)
+
+    def extractInts: List[Int] = {
+      val RegEx = """([-+]?\d+)""".r
+      RegEx.findAllIn(s).map(_.toInt).toList
+    }
   }
 }

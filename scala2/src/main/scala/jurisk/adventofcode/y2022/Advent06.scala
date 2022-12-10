@@ -7,7 +7,7 @@ import org.scalatest.matchers.should.Matchers._
 object Advent06 {
   type Parsed = String
 
-  def parse(fileName: String): Parsed =
+  def readFileAndParse(fileName: String): Parsed =
     readSingleFileLine(fileName)
 
   def solve(data: Parsed, n: Int): Int = {
@@ -21,8 +21,8 @@ object Advent06 {
   def part2(data: Parsed): Int = solve(data, 14)
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2022/06-test.txt")
-    val real = parse("2022/06.txt")
+    val test = readFileAndParse("2022/06-test.txt")
+    val real = readFileAndParse("2022/06.txt")
 
     part1(test) shouldEqual 7
     part1(real) shouldEqual 1707

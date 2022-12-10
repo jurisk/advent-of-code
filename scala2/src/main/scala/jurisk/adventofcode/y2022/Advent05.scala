@@ -68,7 +68,7 @@ object Advent05 {
         sys.error(s"Invalid input $input")
     }
 
-  def parse(fileName: String): Input = {
+  def readFileAndParse(fileName: String): Input = {
     val (stacks, commands) = readLineGroups(fileName).twoElementsUnsafe
     (parseStacks(stacks), commands map Command.parse)
   }
@@ -103,8 +103,8 @@ object Advent05 {
   def part2(data: Input): Output = solve(data, CraneType.CrateMover9001)
 
   def main(args: Array[String]): Unit = {
-    val test = parse("2022/05-test.txt")
-    val real = parse("2022/05.txt")
+    val test = readFileAndParse("2022/05-test.txt")
+    val real = readFileAndParse("2022/05.txt")
 
     part1(test) shouldEqual "CMZ"
     part1(real) shouldEqual "MQTPGLLDN"
