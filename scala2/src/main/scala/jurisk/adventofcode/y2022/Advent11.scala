@@ -121,6 +121,21 @@ object Advent11 {
     .take(2)
     .product
 
+  private def addCounters(a: Counters, b: Counters): Counters = {
+    (a zip b).map { case (x, y) => x + y }
+  }
+
+  private def combineCounters(counters: List[Counters]): Counters = {
+    counters.reduce[Counters] { case (a, b) =>
+      addCounters(a, b)
+    }
+  }
+
+  private def printCounters(counters: Counters): Unit = {
+    counters.zipWithIndex foreach { case (value, index) =>
+      println(s"Monkey $index inspected items $value times")
+    }
+  }
 
   private def simulate(
     initial: Parsed,
@@ -142,34 +157,27 @@ object Advent11 {
       }
     }
 
-    Simulation.runWithIterationCount((itemStates, List.fill(monkeyLogic.length)(0L))) {
-      case (acc, iteration) =>
-        val (itemStates, monkeyCounters) = acc
-        if (iteration % 20 == 0) {
-          println(s"Iteration $iteration:")
-          monkeyCounters.zipWithIndex foreach { case (value, index) =>
-            println(s"Monkey $index inspected items $value times")
+    val results = itemStates map { initialItemState =>
+      Simulation.runWithIterationCount((initialItemState, List.fill(monkeyLogic.length)(0L))) {
+        case (acc, iteration) =>
+          val (itemState, monkeyCounters) = acc
+
+          if (iteration >= rounds) {
+            monkeyCounters.asLeft
+          } else {
+            val (newState, theseCounters) = process(itemState, simplify)
+            val newCounters = addCounters(monkeyCounters, theseCounters)
+            (newState, newCounters).asRight
           }
-        }
-
-        if (iteration >= rounds) {
-          val result = monkeyBusiness(monkeyCounters)
-          println(s"Got $result")
-          result.asLeft
-        } else {
-          val results = itemStates map { itemState =>
-            process(itemState, simplify)
-          }
-
-          val (newItemStates, counterDeltas) = results.unzip
-
-          val newCounterDeltas: Counters = counterDeltas.foldLeft[Counters](monkeyCounters) { case (a, b) =>
-            (a zip b).map { case (x, y) => x + y }
-          }
-
-          (newItemStates, newCounterDeltas).asRight
-        }
+      }
     }
+
+    val summed = combineCounters(results)
+
+    println(s"Got $summed")
+    val res = monkeyBusiness(summed)
+    println(res)
+    res
   }
 
   object RandomExploration {
