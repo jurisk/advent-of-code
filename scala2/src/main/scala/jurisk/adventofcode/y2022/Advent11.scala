@@ -1,9 +1,7 @@
 package jurisk.adventofcode.y2022
 
-import cats.implicits.catsSyntaxEitherId
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import jurisk.utils.Simulation
 import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
@@ -79,9 +77,8 @@ object Advent11 {
   }
 
   private def simplify2(n: BigInt): BigInt =
-    // val failedAttempt = dividedLevel % (11 * 2 * 5 * 17 * 19 * 7 * 3 * 13)
-    // TODO
     n
+//    n % (11 * 2 * 5 * 17 * 19 * 7 * 3 * 13 * 23)
 
   private val debugPrint = false
   private def convert(
@@ -143,9 +140,18 @@ object Advent11 {
     simplify: BigInt => BigInt,
   ): Long = {
     val (monkeyLogic, itemStates) = initial
+    val emptyCounters: Counters = List.fill(monkeyLogic.length)(0)
+
+//    (0 to 1000) foreach { n =>
+//      val monkey = 1
+//      val itemState = ItemState(0, n)
+//      val (newState, _) = process(itemState, simplify)
+//      println(s"$n at monkey $monkey converted into ${newState.value} at monkey ${newState.atMonkey}")
+//    }
+
 
     @tailrec
-    def process(itemState: ItemState, simplify: Item => Item, counters: Counters = List.fill(monkeyLogic.length)(0)): (ItemState, Counters) = {
+    def process(itemState: ItemState, simplify: Item => Item, counters: Counters = emptyCounters): (ItemState, Counters) = {
       val logic = monkeyLogic(itemState.atMonkey)
       val (nextIndex, nextValue) = convert(logic, itemState.value, simplify)
       val newAcc = counters.updated(itemState.atMonkey, counters(itemState.atMonkey) + 1)
@@ -157,19 +163,23 @@ object Advent11 {
       }
     }
 
-    val results = itemStates map { initialItemState =>
-      Simulation.runWithIterationCount((initialItemState, List.fill(monkeyLogic.length)(0L))) {
-        case (acc, iteration) =>
-          val (itemState, monkeyCounters) = acc
-
-          if (iteration >= rounds) {
-            monkeyCounters.asLeft
-          } else {
-            val (newState, theseCounters) = process(itemState, simplify)
-            val newCounters = addCounters(monkeyCounters, theseCounters)
-            (newState, newCounters).asRight
-          }
+    def calculateForNRounds(itemState: ItemState, simplify: Item => Item, rounds: Int): (ItemState, Counters) = {
+//      if (rounds % 10 == 0) {
+//          println(s"${itemState.atMonkey} roundsLeft = ${rounds}")
+//      }
+      if (rounds <= 0) {
+        (itemState, emptyCounters)
+      } else {
+        val (newState, counters) = process(itemState, simplify)
+        val (itemState2, counters2) = calculateForNRounds(newState, simplify, rounds - 1)
+        (itemState2, addCounters(counters, counters2))
       }
+    }
+
+    val results = itemStates map { itemState =>
+      println(s"calculating for $itemState")
+      val (_, counters) = calculateForNRounds(itemState, simplify, rounds)
+      counters
     }
 
     val summed = combineCounters(results)
@@ -180,7 +190,49 @@ object Advent11 {
     res
   }
 
-  object RandomExploration {
+  object RandomExplorationTest {
+    def f0(n: Int): (Index, Int) = {
+      if (n % 23 == 0) {
+        f2(n * 19)
+      } else {
+        f3(n * 19)
+      }
+    }
+
+    def f1(n: Int): (Index, Int) = {
+      val q = n + 6
+      if (q % 19 == 0) {
+        f2(q)
+      } else {
+        (0, q)
+      }
+    }
+
+    def f2(n: Int): (Index, Int) = {
+      if (n % 13 == 0) {
+        (1, n * n)
+      } else {
+        // f3(n * n)
+        val q = n * n + 3
+        if (q % 17 == 0) {
+          (0, q)
+        } else {
+          (1, q)
+        }
+      }
+    }
+
+    def f3(n: Int): (Index, Int) = {
+      val q = n + 3
+      if (q % 17 == 0) {
+        (0, q)
+      } else {
+        (1, q)
+      }
+    }
+  }
+
+  object RandomExplorationReal {
     def f0(n: Int): (Index, Int) =
       if (n % 11 == 0) {
         f3(n * 5)
@@ -227,12 +279,7 @@ object Advent11 {
       if (n % 3 == 0) {
         (0, n + 8)
       } else {
-        // f7(n + 8)
-        if ((n + 8) % 13 == 0) {
-          (4, n + 10)
-        } else {
-          (0, n + 10)
-        }
+        f7(n + 8)
       }
 
     def f7(n: Int): (Index, Int) =
@@ -243,11 +290,11 @@ object Advent11 {
       }
   }
 
-  private def part1(parsed: Advent11.Parsed): Long =
-    simulate(parsed, 20, simplify1)
+  private def part1(parsed: Advent11.Parsed, rounds: Int): Long =
+    simulate(parsed, rounds, simplify1)
 
-  private def part2(parsed: Advent11.Parsed): Long =
-    simulate(parsed, 10000, simplify2)
+  private def part2(parsed: Advent11.Parsed, rounds: Int): Long =
+    simulate(parsed, rounds, simplify2)
 
   def main(args: Array[String]): Unit = {
     val testData = readFileText("2022/11-test.txt")
@@ -256,10 +303,13 @@ object Advent11 {
     val test = parse(testData)
     val real = parse(realData)
 
-    part1(test) shouldEqual 10605
-    part1(real) shouldEqual 120756
+    part1(test, 20) shouldEqual 101 * 105
+    part1(real, 20) shouldEqual 120756
 
-    part2(test) shouldEqual 2713310158L
-    part2(real) shouldEqual Long.MaxValue
+    part2(test, 1) shouldEqual 4 * 6
+    part2(test, 20) shouldEqual 99 * 103
+
+    part2(test, 10000) shouldEqual 2713310158L
+    part2(real, 10000) shouldEqual Long.MaxValue
   }
 }
