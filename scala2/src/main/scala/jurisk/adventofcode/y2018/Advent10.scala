@@ -1,8 +1,10 @@
 package jurisk.adventofcode.y2018
 
+import cats.implicits._
 import jurisk.utils.FileInput._
 import jurisk.geometry.{Coords2D, SparseBooleanField}
 import jurisk.utils.Parsing.StringOps
+import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers._
 
 object Advent10 {
@@ -28,18 +30,19 @@ object Advent10 {
 
   def solve(data: Parsed, limit: Int): Result1 = {
     val field = data.toSet
-    (0 to 100000) foreach { time =>
+
+    Simulation.runWithIterationCount(()) { case ((), time) =>
       val atTime      = field.map(x => x.atTime(time))
       val boundingBox = Coords2D.boundingBoxInclusive(atTime)
       if (boundingBox.height <= limit) {
         val fieldAtTime = SparseBooleanField(atTime, 100).toDebugRepresentation
         println(s"At time $time:")
         println(fieldAtTime)
-        return time
+        time.asLeft
+      } else {
+        ().asRight
       }
     }
-
-    sys.error("Did not find")
   }
 
   def main(args: Array[String]): Unit = {
