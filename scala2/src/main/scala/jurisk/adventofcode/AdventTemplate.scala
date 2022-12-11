@@ -1,42 +1,42 @@
 package jurisk.adventofcode
 
+import cats.implicits._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Utils.IterableOps
 import jurisk.utils.FileInput._
 import org.scalatest.matchers.should.Matchers._
 
 object AdventTemplate {
-  type Parsed    = List[Entry]
-  type Processed = Parsed
-  type Result1   = Int
-  type Result2   = String
+  type Parsed = List[Command]
 
-  final case class Entry(
-    value: String
-  )
+  sealed trait Command
+  object Command {
+    final case object Noop extends Command
+    final case class Something(
+      value: String
+    ) extends Command
 
-  object Entry {
-    def parse(s: String): Entry =
-      Entry(s.splitPairUnsafe(" ").toString)
+    def parse(s: String): Command = s match {
+      case "noop"                          => Noop
+      case s if s.startsWith("something ") =>
+        val rem = s.remainingIfStartsWithUnsafe("something ")
+        Something(rem)
+      case _                               => sys.error(s"Failed to parse $s")
+    }
   }
-
-  def process(parsed: Parsed): Processed = parsed
 
   def parse(data: String): Parsed =
-    data.parseList("\n", Entry.parse)
+    data.parseList("\n", Command.parse)
 
-  def part1(data: Parsed): Result1 = {
-    val processed = process(data)
-    processed.length
-  }
+  def part1(data: Parsed): Int =
+    data.length
 
-  def part2(data: Parsed): Result2 = {
-    val processed = process(data)
-    processed.counts.toString
-  }
+  def part2(data: Parsed): String =
+    data.counts.toString
 
   def main(args: Array[String]): Unit = {
     val testData = readFileText("2022/00-test.txt")
+    // val testData = """""";
     val realData = readFileText("2022/00.txt")
 
     val test = parse(testData)

@@ -16,8 +16,8 @@ object Advent10 {
     def parse(s: String): Op = s match {
       case "noop"                     => Noop
       case s if s.startsWith("addx ") =>
-        val (_, b) = s.splitPairUnsafe(" ")
-        AddX(2, b.toInt)
+        val n = s.remainingIfStartsWithUnsafe("addx ")
+        AddX(2, n.toInt)
       case _                          => sys.error(s"Failed to parse $s")
     }
   }
