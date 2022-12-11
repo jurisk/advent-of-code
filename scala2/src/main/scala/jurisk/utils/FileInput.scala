@@ -18,7 +18,7 @@ object FileInput {
   def readLineGroups(fileName: String): List[List[String]] =
     readFileText(fileName)
       .split("\n\n")
-      .map(_.split("\n").toList)
+      .map(_.split("\n").toList) // Some interesting line separator issues can appear, consider using "\\R"
       .toList
 
   def parseFileLines[T](fileName: String, parser: String => T): List[T] =

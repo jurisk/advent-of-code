@@ -1,6 +1,6 @@
 package jurisk.adventofcode.y2022
 
-import jurisk.utils.Parsing.StringOps
+import jurisk.utils.Parsing.{PrefixRemover, StringOps}
 import jurisk.utils.FileInput._
 import jurisk.geometry.{Coords2D, Field2D}
 import org.scalatest.matchers.should.Matchers._
@@ -13,12 +13,14 @@ object Advent10 {
     case object Noop                             extends Op
     case class AddX(cyclesLeft: Int, value: Int) extends Op
 
-    def parse(s: String): Op = s match {
-      case "noop"                     => Noop
-      case s if s.startsWith("addx ") =>
-        val n = s.remainingIfStartsWithUnsafe("addx ")
-        AddX(2, n.toInt)
-      case _                          => sys.error(s"Failed to parse $s")
+    def parse(s: String): Op = {
+      val AddXPrefix = PrefixRemover("addx ")
+
+      s match {
+        case "noop"                     => Noop
+        case AddXPrefix(n)              => AddX(2, n.toInt)
+        case _                          => sys.error(s"Failed to parse $s")
+      }
     }
   }
 

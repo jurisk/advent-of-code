@@ -1,7 +1,7 @@
 package jurisk.adventofcode
 
 import cats.implicits._
-import jurisk.utils.Parsing.StringOps
+import jurisk.utils.Parsing.{PrefixRemover, StringOps}
 import jurisk.utils.Utils.IterableOps
 import jurisk.utils.FileInput._
 import org.scalatest.matchers.should.Matchers._
@@ -16,12 +16,14 @@ object AdventTemplate {
       value: String
     ) extends Command
 
-    def parse(s: String): Command = s match {
-      case "noop"                          => Noop
-      case s if s.startsWith("something ") =>
-        val rem = s.remainingIfStartsWithUnsafe("something ")
-        Something(rem)
-      case _                               => sys.error(s"Failed to parse $s")
+    def parse(s: String): Command = {
+      val SomethingPrefix = PrefixRemover("something")
+
+      s match {
+        case "noop"                          => Noop
+        case SomethingPrefix(rem)            => Something(rem)
+        case _                               => sys.error(s"Failed to parse $s")
+      }
     }
   }
 

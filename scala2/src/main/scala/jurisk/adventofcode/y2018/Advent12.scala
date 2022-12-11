@@ -67,7 +67,7 @@ object Advent12 {
 
   object State {
     def parse(s: String): State = {
-      val pots = parsePots(s.remainingIfStartsWithUnsafe("initial state: "))
+      val pots = parsePots(s.removePrefixUnsafe("initial state: "))
 
       State(pots, 0)
     }

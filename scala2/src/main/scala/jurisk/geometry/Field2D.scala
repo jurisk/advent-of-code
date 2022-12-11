@@ -72,7 +72,7 @@ object Field2D {
 
   def parseFromString[T](data: String, parser: Char => T): Field2D[T] =
     parseFromLines(
-      data.split("\n").filter(_.nonEmpty).toList,
+      data.split("\\R").filter(_.nonEmpty).toList, // not splitting on '\n' because it failed in Windows
       parser,
     )
 

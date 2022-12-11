@@ -2,10 +2,11 @@ package jurisk.adventofcode.y2022
 
 import cats.implicits._
 import jurisk.utils.FileInput._
-import jurisk.utils.Parsing.StringOps
+import jurisk.utils.Parsing.{PrefixRemover, StringOps}
 import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 import jurisk.utils.Simulation
+
 import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
 
@@ -32,17 +33,21 @@ object Advent11 {
   private def parseMonkey(s: String): (MonkeyLogic, List[ItemState]) = {
     val Array(m, si, o, t, iT, iF) = s.split("\n")
 
+    val OldTimesOld = "  Operation: new = old * old"
+    val OldTimesPrefix = PrefixRemover("  Operation: new = old * ")
+    val OldPlusPrefix = PrefixRemover("  Operation: new = old + ")
+
     val logic = MonkeyLogic(
       index = m.extractInts.singleElementUnsafe,
       operation = o match {
-        case "  Operation: new = old * old" =>
+        case OldTimesOld =>
           old => old * old
 
-        case x if x.startsWith("  Operation: new = old * ") =>
-          old => old * o.extractInts.singleElementUnsafe
+        case OldTimesPrefix(n) =>
+          old => old * n.toInt
 
-        case x if x.startsWith("  Operation: new = old + ") =>
-          old => old + o.extractInts.singleElementUnsafe
+        case OldPlusPrefix(n) =>
+          old => old + n.toInt
 
         case _ => sys.error(s"Did not recognize $o")
       },

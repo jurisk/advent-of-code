@@ -197,7 +197,7 @@ object Advent13 {
       case '+'             => Track.Intersection
       case '\\'            => Track.NW_SE
       case '/'             => Track.SW_NE
-      case ch              => sys.error(s"Unrecognized $ch")
+      case ch              => sys.error(s"Unrecognized '$ch'")
     }
 
     State(processingStrategy, board, carts)

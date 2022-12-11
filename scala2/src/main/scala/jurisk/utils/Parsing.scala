@@ -1,5 +1,6 @@
 package jurisk.utils
 
+import cats.implicits._
 import jurisk.geometry.{Coords2D, X, Y}
 import jurisk.utils.Utils.IterableOps
 
@@ -28,13 +29,25 @@ object Parsing {
     f(data, Vector.empty).toList
   }
 
+  object PrefixRemover {
+    def apply(prefix: String) = new PrefixRemover(prefix)
+  }
+
+  class PrefixRemover private (prefix: String) {
+    def unapply(s: String): Option[String] = s.removePrefix(prefix)
+  }
+
   implicit class StringOps(s: String) {
-    def remainingIfStartsWithUnsafe(prefix: String): String =
+    def removePrefix(prefix: String): Option[String] = {
       if (s.startsWith(prefix)) {
-        s.drop(prefix.length)
+        s.drop(prefix.length).some
       } else {
-        sys.error(s"Expected '$s' to start with '$prefix' but it did not")
+        none
       }
+    }
+
+    def removePrefixUnsafe(prefix: String): String =
+      removePrefix(prefix).getOrElse(sys.error(s"Expected '$s' to start with '$prefix' but it did not"))
 
     def parseCoords2D: Coords2D = {
       val (x, y): (Int, Int) = s.parsePairUnsafe(",", _.trim.toInt)
