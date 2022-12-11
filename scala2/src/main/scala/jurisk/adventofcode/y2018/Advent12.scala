@@ -1,7 +1,9 @@
 package jurisk.adventofcode.y2018
 
+import cats.implicits._
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+import jurisk.utils.Simulation
 import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
@@ -50,7 +52,7 @@ object Advent12 {
       State(newPots, zeroAt = zeroAt + 2).dropEmptyTail.normalForm
     }
 
-    def numberSum: Int =
+    def numberSum: Long =
       pots.zipWithIndex.map { case (pot, idx) =>
         if (pot) idx - zeroAt else 0
       }.sum
@@ -86,30 +88,26 @@ object Advent12 {
 
   def solve(data: Parsed, iterations: Long): Long = {
     val (initialState, patterns) = data
-    var state                    = initialState
 
-    var iteration = 0
-    while (iteration < iterations) {
-      println(s"$iteration ${state.numberSum} $state")
-      val newState = state.apply(patterns)
+    Simulation.runWithIterationCount(initialState) { case (state, iteration) =>
+      if (iteration >= iterations) {
+        state.numberSum.asLeft
+      } else {
+        val newState = state.apply(patterns)
 
-      // In theory, a longer loop could exist (or no loop), but the test data has a simple immediate loop
-      if (state.pots == newState.pots) { // we have a loop in pots (though not in zeroAt)
-        val prevScore           = state.numberSum
-        val thisScore           = newState.numberSum
-        val diff                = thisScore - prevScore
-        val iterationsRemaining = iterations - iteration
-        return prevScore + iterationsRemaining * diff
+        // In theory, a longer loop could exist (or no loop), but the test data has a simple immediate loop
+        if (state.pots == newState.pots) { // we have a loop in pots (though not in zeroAt)
+          val prevScore           = state.numberSum
+          val thisScore           = newState.numberSum
+          val diff                = thisScore - prevScore
+          val iterationsRemaining = iterations - iteration
+          val result              = prevScore + iterationsRemaining * diff
+          result.asLeft
+        } else {
+          newState.asRight
+        }
       }
-
-      state = newState
-
-      iteration += 1
     }
-
-    println(s"$iteration ${state.numberSum} $state")
-
-    state.numberSum
   }
 
   def main(args: Array[String]): Unit = {

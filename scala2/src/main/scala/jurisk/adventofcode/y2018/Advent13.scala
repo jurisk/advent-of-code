@@ -7,8 +7,8 @@ import jurisk.geometry._
 import jurisk.utils.FileInput._
 import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
-
 import scala.annotation.tailrec
+import jurisk.utils.Simulation
 
 object Advent13 {
   type Result2 = String
@@ -203,16 +203,7 @@ object Advent13 {
     State(processingStrategy, board, carts)
   }
 
-  @tailrec
-  def solve(
-    state: State
-  ): Coords2D = {
-    val result = state.next
-    result match {
-      case Left(value)     => value
-      case Right(newState) => solve(newState)
-    }
-  }
+  def solve(state: State): Coords2D = Simulation.run(state)(_.next)
 
   def main(args: Array[String]): Unit = {
     val testData1 = """/->-\
