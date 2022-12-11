@@ -11,58 +11,62 @@ import scala.annotation.tailrec
 import scala.math.BigDecimal.RoundingMode
 
 object Advent11 {
-  type Parsed = List[Monkey]
+  type Parsed = (List[MonkeyLogic], List[ItemState])
   type Item   = BigInt
   type Index  = Int
 
-  final case class Monkey(
+  type Counters = List[Long]
+
+  final case class ItemState(
+    atMonkey: Index,
+    value: Item,
+  )
+
+  final case class MonkeyLogic(
     index: Index,
-    items: List[Item],
     operation: Item => Item,
     testIsDivisibleBy: Int,
     ifTrueThrowTo: Index,
     ifFalseThrowTo: Index,
-    inspectedItems: Long,
-  ) {
-    def increaseCounter: Monkey =
-      copy(inspectedItems = inspectedItems + 1)
+  )
 
-    def addItem(item: Item): Monkey =
-      copy(items = items ::: List(item))
+  private def parseMonkey(s: String): (MonkeyLogic, List[ItemState]) = {
+    val Array(m, si, o, t, iT, iF) = s.split("\n")
 
-    override def toString: String =
-      s"Monkey $index inspected items $inspectedItems times and has ${items.length} items: ${items.map(_.toString).mkString(", ")}"
-  }
+    val logic = MonkeyLogic(
+      index = m.extractInts.singleElementUnsafe,
+      operation = o match {
+        case "  Operation: new = old * old" =>
+          old => old * old
 
-  object Monkey {
-    def parse(s: String): Monkey = {
-      val Array(m, si, o, t, iT, iF) = s.split("\n")
+        case x if x.startsWith("  Operation: new = old * ") =>
+          old => old * o.extractInts.singleElementUnsafe
 
-      Monkey(
-        index = m.extractInts.singleElementUnsafe,
-        items = si.extractInts.map(_.toLong),
-        operation = o match {
-          case "  Operation: new = old * old" =>
-            old => old * old
+        case x if x.startsWith("  Operation: new = old + ") =>
+          old => old + o.extractInts.singleElementUnsafe
 
-          case x if x.startsWith("  Operation: new = old * ") =>
-            old => old * o.extractInts.singleElementUnsafe
+        case _ => sys.error(s"Did not recognize $o")
+      },
+      testIsDivisibleBy = t.extractInts.singleElementUnsafe,
+      ifTrueThrowTo = iT.extractInts.singleElementUnsafe,
+      ifFalseThrowTo = iF.extractInts.singleElementUnsafe,
+    )
 
-          case x if x.startsWith("  Operation: new = old + ") =>
-            old => old + o.extractInts.singleElementUnsafe
-
-          case _ => sys.error(s"Did not recognize $o")
-        },
-        testIsDivisibleBy = t.extractInts.singleElementUnsafe,
-        ifTrueThrowTo = iT.extractInts.singleElementUnsafe,
-        ifFalseThrowTo = iF.extractInts.singleElementUnsafe,
-        inspectedItems = 0L,
+    val itemStates = si.extractInts.map(_.toLong) map { x =>
+      ItemState(
+        logic.index,
+        x,
       )
     }
+
+    (logic, itemStates)
   }
 
-  def parse(data: String): Parsed =
-    data.parseList("\n\n", Monkey.parse)
+  def parse(data: String): Parsed = {
+    val list = data.parseList("\n\n", parseMonkey)
+    val (a, b) = list.unzip
+    (a, b.flatten)
+  }
 
   private def simplify1(n: BigInt): BigInt = {
     val dividedLevel = (BigDecimal(n) / BigDecimal
@@ -81,7 +85,7 @@ object Advent11 {
 
   private val debugPrint = false
   private def convert(
-    monkey: Monkey,
+    monkey: MonkeyLogic,
     item: Item,
     simplify: BigInt => BigInt,
   ): (Index, Item) = {
@@ -112,86 +116,58 @@ object Advent11 {
     (throwTo, dividedLevel)
   }
 
-  private def processItem(
-    fromMonkey: Index,
-    item: Item,
-    monkeys: List[Monkey],
-    simplify: BigInt => BigInt,
-  ): List[Monkey] = {
-    val monkey              = monkeys(fromMonkey)
-    val (throwTo, newValue) = convert(monkey, item, simplify)
-    monkeys
-      .updated(fromMonkey, monkey.increaseCounter)
-      .updated(throwTo, monkeys(throwTo).addItem(newValue))
-  }
+  private def monkeyBusiness(data: List[Long]): Long = data
+    .sorted(Ordering[Long].reverse)
+    .take(2)
+    .product
 
-  @tailrec
-  private def processMonkey(
-    index: Index,
-    monkeys: List[Monkey],
-    simplify: BigInt => BigInt,
-  ): List[Monkey] = {
-    if (debugPrint) println(s"Monkey $index:")
-    val thisMonkey = monkeys(index)
-    thisMonkey.items match {
-      case h :: t =>
-        val resulting = processItem(
-          index,
-          h,
-          monkeys.updated(index, thisMonkey.copy(items = t)),
-          simplify,
-        )
-        processMonkey(index, resulting, simplify)
-
-      case Nil =>
-        if (debugPrint) println("     Out of items\n")
-        monkeys // no more items to process
-    }
-  }
-
-  private def processAllMonkeys(
-    monkeys: List[Monkey],
-    simplify: BigInt => BigInt,
-  ): List[Monkey] = {
-    var current = monkeys
-    monkeys.indices foreach { monkeyIdx =>
-      val result = processMonkey(monkeyIdx, current, simplify)
-      current = result
-    }
-    current
-  }
 
   private def simulate(
-    initialMonkeys: Parsed,
+    initial: Parsed,
     rounds: Int,
     simplify: BigInt => BigInt,
   ): Long = {
-    println(initialMonkeys.map(_.toString).mkString("\n"))
-    println
+    val (monkeyLogic, itemStates) = initial
 
-    Simulation.runWithIterationCount(initialMonkeys) {
-      case (monkeys, iteration) =>
+    @tailrec
+    def process(itemState: ItemState, simplify: Item => Item, counters: Counters = List.fill(monkeyLogic.length)(0)): (ItemState, Counters) = {
+      val logic = monkeyLogic(itemState.atMonkey)
+      val (nextIndex, nextValue) = convert(logic, itemState.value, simplify)
+      val newAcc = counters.updated(itemState.atMonkey, counters(itemState.atMonkey) + 1)
+      val newState = ItemState(nextIndex, nextValue)
+      if (nextIndex <= itemState.atMonkey) {
+        (newState, newAcc)
+      } else {
+        process(newState, simplify, newAcc)
+      }
+    }
+
+    Simulation.runWithIterationCount((itemStates, List.fill(monkeyLogic.length)(0L))) {
+      case (acc, iteration) =>
+        val (itemStates, monkeyCounters) = acc
         if (iteration % 20 == 0) {
           println(s"Iteration $iteration:")
-          monkeys.zipWithIndex foreach { case (monkey, index) =>
-            println(
-              s"Monkey $index inspected items ${monkey.inspectedItems} times"
-            )
+          monkeyCounters.zipWithIndex foreach { case (value, index) =>
+            println(s"Monkey $index inspected items $value times")
           }
-          println
         }
 
         if (iteration >= rounds) {
-          val result = monkeys
-            .map(_.inspectedItems)
-            .sorted(Ordering[Long].reverse)
-            .take(2)
-            .product
+          val result = monkeyBusiness(monkeyCounters)
           println(s"Got $result")
           result.asLeft
         } else {
-          val newMonkeys = processAllMonkeys(monkeys, simplify)
-          newMonkeys.asRight
+          val results = itemStates map { itemState =>
+            process(itemState, simplify)
+          }
+
+          val (newItemStates, counterDeltas) = results.unzip
+
+          val newCounterDeltas: Counters = counterDeltas.foldLeft[Counters](monkeyCounters) { case (a, b) =>
+            (a zip b).map { case (x, y) => x + y }
+          }
+
+          (newItemStates, newCounterDeltas).asRight
         }
     }
   }
