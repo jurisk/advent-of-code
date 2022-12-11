@@ -2,7 +2,7 @@ package jurisk.adventofcode.y2022
 
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.FileInput._
-import jurisk.utils.Geometry.{Coords2D, Field2D}
+import jurisk.geometry.{Coords2D, Field2D}
 import org.scalatest.matchers.should.Matchers._
 
 object Advent10 {

@@ -1,6 +1,6 @@
 package jurisk.adventofcode.y2018
 
-import jurisk.utils.Geometry.Coords2D
+import jurisk.geometry.Coords2D
 import org.scalatest.matchers.should.Matchers._
 
 object Advent11 {

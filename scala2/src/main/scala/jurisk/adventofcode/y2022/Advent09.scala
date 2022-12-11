@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2022
 
 import jurisk.utils.FileInput._
-import jurisk.utils.Geometry.{Coords2D, Direction2D, X, Y}
+import jurisk.geometry.{Coords2D, Direction2D}
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 

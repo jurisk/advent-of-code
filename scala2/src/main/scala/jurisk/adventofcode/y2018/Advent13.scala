@@ -1,10 +1,10 @@
 package jurisk.adventofcode.y2018
 
 import cats.implicits._
+import jurisk.geometry.Rotation._
+import jurisk.geometry.Direction2D._
+import jurisk.geometry._
 import jurisk.utils.FileInput._
-import jurisk.utils.Geometry.Direction2D._
-import jurisk.utils.Geometry.Rotation._
-import jurisk.utils.Geometry.{Coords2D, Direction2D, Field2D}
 import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 

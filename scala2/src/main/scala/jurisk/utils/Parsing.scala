@@ -1,6 +1,6 @@
 package jurisk.utils
 
-import jurisk.utils.Geometry.{Coords2D, X, Y}
+import jurisk.geometry.{Coords2D, X, Y}
 import jurisk.utils.Utils.IterableOps
 
 import scala.annotation.tailrec
