@@ -17,6 +17,13 @@ object Pathfinding {
     else reassemblePath(start, parents, parents(current), newAcc)
   }
 
+  def bfsLength[N](
+    start: N,
+    successors: N => List[N],
+    isGoal: N => Boolean,
+  ): Option[Int] =
+    bfs(start, successors, isGoal).map(_.length - 1)
+
   /** https://en.wikipedia.org/wiki/Breadth-first_search */
   def bfs[N](
     start: N,
@@ -47,6 +54,13 @@ object Pathfinding {
 
     None
   }
+
+  def dfsLength[N](
+                    start: N,
+                    successors: N => List[N],
+                    isGoal: N => Boolean,
+                  ): Option[Int] =
+    dfs(start, successors, isGoal).map(_.length - 1)
 
   /** https://en.wikipedia.org/wiki/Depth-first_search */
   def dfs[N](

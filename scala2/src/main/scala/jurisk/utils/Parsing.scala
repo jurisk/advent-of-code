@@ -38,6 +38,8 @@ object Parsing {
   }
 
   implicit class StringOps(s: String) {
+    def fail: Nothing = sys.error(s)
+
     def removePrefix(prefix: String): Option[String] =
       if (s.startsWith(prefix)) {
         s.drop(prefix.length).some

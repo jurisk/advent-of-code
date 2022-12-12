@@ -1,72 +1,67 @@
 package jurisk.adventofcode.y2022
 
-import cats.implicits._
 import jurisk.algorithms.pathfinding.Pathfinding
 import jurisk.geometry.{Coords2D, Field2D}
-import jurisk.utils.Parsing.{PrefixRemover, StringOps}
-import jurisk.utils.Utils.IterableOps
 import jurisk.utils.FileInput._
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent12 {
-  type Elevation = Char
-  type Parsed = (Field2D[Elevation], Coords2D, Coords2D)
+  case class Task(
+    field: Field2D[Elevation],
+    start: Coords2D,
+    end: Coords2D,
+  )
 
-  def parse(data: String): Parsed = {
+  final case class Elevation private(value: Char) extends AnyVal {
+    private def intHeight: Int = value - 'a'
+    def canGoTo(other: Elevation): Boolean = (other.intHeight - intHeight) <= 1
+  }
+
+  object Elevation {
+    def apply(ch: Char): Elevation = {
+      if ((ch >= 'a') && (ch <= 'z')) new Elevation(ch)
+      else s"Bad character $ch".fail
+    }
+
+    val Lowest: Elevation = Elevation('a')
+    val Highest: Elevation = Elevation('z')
+  }
+
+  def parse(data: String): Task = {
     val charField = Field2D.parseFromString(data, identity)
-//    val start = charField.findFirst('S')
-//    val end = charField.findFirst('E')
-    var start: Coords2D = null
-    var end: Coords2D = null
-    val field = charField.map { case (coords, ch) =>
-      ch match {
-        case 'S' =>
-          start = coords
-          'a'
+    val List(start) = charField.filterCoordsByValue(_ == 'S')
+    val List(end) = charField.filterCoordsByValue(_ == 'E')
 
-        case 'E' =>
-          end = coords
-          'z'
-
-        case ch => ch
-      }
+    val field = charField.mapByValues {
+      case 'S' => Elevation.Lowest
+      case 'E' => Elevation.Highest
+      case ch => Elevation(ch)
     }
 
-    (field, start, end)
+    Task(
+      field = field,
+      start = start,
+      end = end,
+    )
   }
 
-  def part1(data: Parsed): Option[Long] = {
-    val (field, start, end) = data
+  def part1(task: Task): Option[Int] = {
+    val field = task.field
 
-    def successors(c: Coords2D): List[Coords2D] = {
-      val result = c.neighbours(includeDiagonal = false).filter { n =>
+    def successors(c: Coords2D): List[Coords2D] =
+      field.neighboursFor(c, includeDiagonal = false) filter { n =>
         val thisElev = field.atUnsafe(c)
-        val otherElev = field.at(n)
-        otherElev match {
-          case None => false
-          case Some(otherElev) =>         (otherElev.toInt - thisElev.toInt) <= 1
-        }
+        val otherElev = field.atUnsafe(n)
+        thisElev canGoTo otherElev
       }
 
-      // println(s"$c => $result")
-      result
-    }
-
-    val path = Pathfinding.bfs[Coords2D](start, successors, _ == end)
-    // println(path)
-    path.map(_.size - 1)
+    Pathfinding.bfsLength[Coords2D](task.start, successors, _ == task.end)
   }
 
-  def part2(data: Parsed): Long = {
-    val (field, start, end) = data
-
-    val lowestCoords = field.allCoords.filter { c =>
-      field.atUnsafe(c) == 'a'
-    }
-
-    println(lowestCoords.size)
-
-    lowestCoords.flatMap(c => part1(field, c, end)).min
+  def part2(task: Task): Option[Int] = {
+    val lowestCoords = task.field.filterCoordsByValue { _ == Elevation.Lowest }
+    lowestCoords.flatMap(c => part1(task.copy(start = c))).minOption
   }
 
   def main(args: Array[String]): Unit = {
@@ -79,7 +74,7 @@ object Advent12 {
     part1(test) shouldEqual Some(31)
     part1(real) shouldEqual Some(412)
 
-    part2(test) shouldEqual 29
-    part2(real) shouldEqual 402
+    part2(test) shouldEqual Some(29)
+    part2(real) shouldEqual Some(402)
   }
 }
