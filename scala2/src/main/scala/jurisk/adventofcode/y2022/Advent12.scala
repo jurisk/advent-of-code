@@ -65,7 +65,7 @@ object Advent12 {
         (a, b) => b canGoTo a,
         includeDiagonal = false,
       ),
-      c => task.field.atUnsafe(c) == Elevation.Lowest,
+      c => task.field.at(c).contains(Elevation.Lowest),
     )
 
   def main(args: Array[String]): Unit = {

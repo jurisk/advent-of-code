@@ -13,7 +13,7 @@ final case class Field2D[T](data: Vector[Vector[T]]) {
     yIndices.toVector map { y =>
       xIndices.toVector map { x =>
         val coords = Coords2D(x, y)
-        f(coords, atUnsafe(coords))
+        f(coords, this(coords))
       }
     }
   }
@@ -28,10 +28,12 @@ final case class Field2D[T](data: Vector[Vector[T]]) {
     f(c)
   }
 
+  def get(c: Coords2D): Option[T] = at(c)
+
   def at(c: Coords2D): Option[T] =
     data.lift(c.y.value).flatMap(_.lift(c.x.value))
 
-  def atUnsafe(c: Coords2D): T =
+  def apply(c: Coords2D): T =
     at(c).getOrElse(sys.error(s"Coords2D $c are invalid"))
 
   def updatedAtUnsafe(c: Coords2D, newValue: T): Field2D[T] =
@@ -56,7 +58,7 @@ final case class Field2D[T](data: Vector[Vector[T]]) {
     yIndices flatMap { y =>
       xIndices map { x =>
         val c = Coords2D(x, y)
-        c -> atUnsafe(c)
+        c -> this(c)
       }
     }
 
@@ -72,8 +74,8 @@ final case class Field2D[T](data: Vector[Vector[T]]) {
   ): Coords2D => List[Coords2D] = {
     (c: Coords2D) =>
       neighboursFor(c, includeDiagonal = includeDiagonal) filter { n =>
-        val thisSquare = atUnsafe(c)
-        val otherSquare = atUnsafe(n)
+        val thisSquare = this(c)
+        val otherSquare = this(n)
         canGoPredicate(thisSquare, otherSquare)
       }
   }
@@ -92,7 +94,7 @@ object Field2D {
   def toDebugRepresentation(field: Field2D[Char]): String = mergeSeqSeqChar(
     field.yIndices map { y =>
       field.xIndices.map { x =>
-        field.atUnsafe(Coords2D(x, y))
+        field(Coords2D(x, y))
       }
     }
   )

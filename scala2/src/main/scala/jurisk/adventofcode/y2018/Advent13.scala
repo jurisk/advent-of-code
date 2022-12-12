@@ -32,7 +32,7 @@ object Advent13 {
     }
 
     def next(board: Field2D[Track]): Cart = {
-      val square = board.atUnsafe(coords)
+      val square = board(coords)
 
       val newDirection = square match {
         case Track.Intersection =>
