@@ -38,16 +38,17 @@ object Parsing {
   }
 
   implicit class StringOps(s: String) {
-    def removePrefix(prefix: String): Option[String] = {
+    def removePrefix(prefix: String): Option[String] =
       if (s.startsWith(prefix)) {
         s.drop(prefix.length).some
       } else {
         none
       }
-    }
 
     def removePrefixUnsafe(prefix: String): String =
-      removePrefix(prefix).getOrElse(sys.error(s"Expected '$s' to start with '$prefix' but it did not"))
+      removePrefix(prefix).getOrElse(
+        sys.error(s"Expected '$s' to start with '$prefix' but it did not")
+      )
 
     def parseCoords2D: Coords2D = {
       val (x, y): (Int, Int) = s.parsePairUnsafe(",", _.trim.toInt)

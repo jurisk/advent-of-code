@@ -17,9 +17,9 @@ object Advent10 {
       val AddXPrefix = PrefixRemover("addx ")
 
       s match {
-        case "noop"                     => Noop
-        case AddXPrefix(n)              => AddX(2, n.toInt)
-        case _                          => sys.error(s"Failed to parse $s")
+        case "noop"        => Noop
+        case AddXPrefix(n) => AddX(2, n.toInt)
+        case _             => sys.error(s"Failed to parse $s")
       }
     }
   }

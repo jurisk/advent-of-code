@@ -13,16 +13,16 @@ object AdventTemplate {
   object Command {
     final case object Noop extends Command
     final case class Something(
-      value: String
+      values: List[Int]
     ) extends Command
 
     def parse(s: String): Command = {
       val SomethingPrefix = PrefixRemover("something")
 
       s match {
-        case "noop"                          => Noop
-        case SomethingPrefix(rem)            => Something(rem)
-        case _                               => sys.error(s"Failed to parse $s")
+        case "noop"               => Noop
+        case SomethingPrefix(rem) => Something(rem.extractInts)
+        case _                    => sys.error(s"Failed to parse $s")
       }
     }
   }

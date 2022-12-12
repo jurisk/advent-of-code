@@ -33,9 +33,9 @@ object Advent11 {
   private def parseMonkey(s: String): (MonkeyLogic, List[ItemState]) = {
     val Array(m, si, o, t, iT, iF) = s.split("\n")
 
-    val OldTimesOld = "  Operation: new = old * old"
+    val OldTimesOld    = "  Operation: new = old * old"
     val OldTimesPrefix = PrefixRemover("  Operation: new = old * ")
-    val OldPlusPrefix = PrefixRemover("  Operation: new = old + ")
+    val OldPlusPrefix  = PrefixRemover("  Operation: new = old + ")
 
     val logic = MonkeyLogic(
       index = m.extractInts.singleElementUnsafe,
@@ -67,7 +67,7 @@ object Advent11 {
   }
 
   def parse(data: String): Parsed = {
-    val list = data.parseList("\n\n", parseMonkey)
+    val list   = data.parseList("\n\n", parseMonkey)
     val (a, b) = list.unzip
     (a, b.flatten)
   }
@@ -125,15 +125,13 @@ object Advent11 {
     .take(2)
     .product
 
-  private def addCounters(a: Counters, b: Counters): Counters = {
+  private def addCounters(a: Counters, b: Counters): Counters =
     (a zip b).map { case (x, y) => x + y }
-  }
 
-  private def printCounters(counters: Counters): Unit = {
+  private def printCounters(counters: Counters): Unit =
     counters.zipWithIndex foreach { case (value, index) =>
       println(s"Monkey $index inspected items $value times")
     }
-  }
 
   private def simulate(
     monkeyLogic: List[MonkeyLogic],
@@ -142,11 +140,16 @@ object Advent11 {
     simplify: BigInt => BigInt,
   ): Long = {
     @tailrec
-    def process(itemState: ItemState, simplify: Item => Item, counters: Counters = List.fill(monkeyLogic.length)(0)): (ItemState, Counters) = {
-      val logic = monkeyLogic(itemState.atMonkey)
+    def process(
+      itemState: ItemState,
+      simplify: Item => Item,
+      counters: Counters = List.fill(monkeyLogic.length)(0),
+    ): (ItemState, Counters) = {
+      val logic                  = monkeyLogic(itemState.atMonkey)
       val (nextIndex, nextValue) = convert(logic, itemState.value, simplify)
-      val newAcc = counters.updated(itemState.atMonkey, counters(itemState.atMonkey) + 1)
-      val newState = ItemState(nextIndex, nextValue)
+      val newAcc                 =
+        counters.updated(itemState.atMonkey, counters(itemState.atMonkey) + 1)
+      val newState               = ItemState(nextIndex, nextValue)
       if (nextIndex <= itemState.atMonkey) {
         (newState, newAcc)
       } else {
@@ -154,34 +157,36 @@ object Advent11 {
       }
     }
 
-    Simulation.runWithIterationCount((itemStates, List.fill(monkeyLogic.length)(0L))) {
-      case (acc, iteration) =>
-        val (itemStates, monkeyCounters) = acc
-        if (iteration % 20 == 0) {
-          println(s"Iteration $iteration:")
-          monkeyCounters.zipWithIndex foreach { case (value, index) =>
-            println(s"Monkey $index inspected items $value times")
-          }
-          println
+    Simulation.runWithIterationCount(
+      (itemStates, List.fill(monkeyLogic.length)(0L))
+    ) { case (acc, iteration) =>
+      val (itemStates, monkeyCounters) = acc
+      if (iteration % 20 == 0) {
+        println(s"Iteration $iteration:")
+        monkeyCounters.zipWithIndex foreach { case (value, index) =>
+          println(s"Monkey $index inspected items $value times")
+        }
+        println
+      }
+
+      if (iteration >= rounds) {
+        val result = monkeyBusiness(monkeyCounters)
+        println(s"Got $result")
+        result.asLeft
+      } else {
+        val results = itemStates map { itemState =>
+          process(itemState, simplify)
         }
 
-        if (iteration >= rounds) {
-          val result = monkeyBusiness(monkeyCounters)
-          println(s"Got $result")
-          result.asLeft
-        } else {
-          val results = itemStates map { itemState =>
-            process(itemState, simplify)
-          }
+        val (newItemStates, counterDeltas) = results.unzip
 
-          val (newItemStates, counterDeltas) = results.unzip
-
-          val newCounterDeltas: Counters = counterDeltas.foldLeft[Counters](monkeyCounters) { case (a, b) =>
+        val newCounterDeltas: Counters =
+          counterDeltas.foldLeft[Counters](monkeyCounters) { case (a, b) =>
             addCounters(a, b)
           }
 
-          (newItemStates, newCounterDeltas).asRight
-        }
+        (newItemStates, newCounterDeltas).asRight
+      }
     }
   }
 
