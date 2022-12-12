@@ -46,23 +46,37 @@ object Advent12 {
     )
   }
 
-  def part1(task: Task): Option[Int] = {
-    val field = task.field
-
-    def successors(c: Coords2D): List[Coords2D] =
+  private def createSuccessorsFunction[T](
+    field: Field2D[T],
+    canGoPredicate: (T, T) => Boolean,
+  ): Coords2D => List[Coords2D] = {
+    (c: Coords2D) =>
       field.neighboursFor(c, includeDiagonal = false) filter { n =>
         val thisElev = field.atUnsafe(c)
         val otherElev = field.atUnsafe(n)
-        thisElev canGoTo otherElev
+        canGoPredicate(thisElev, otherElev)
       }
-
-    Pathfinding.bfsLength[Coords2D](task.start, successors, _ == task.end)
   }
 
-  def part2(task: Task): Option[Int] = {
-    val lowestCoords = task.field.filterCoordsByValue { _ == Elevation.Lowest }
-    lowestCoords.flatMap(c => part1(task.copy(start = c))).minOption
-  }
+  def part1(task: Task): Option[Int] =
+    Pathfinding.bfsLength[Coords2D](
+      task.start,
+      createSuccessorsFunction[Elevation](
+        task.field,
+        (a, b) => a canGoTo b,
+      ),
+      _ == task.end
+    )
+
+  def part2(task: Task): Option[Int] =
+    Pathfinding.bfsLength[Coords2D](
+      task.end,
+      createSuccessorsFunction[Elevation](
+        task.field,
+        (a, b) => b canGoTo a,
+      ),
+      c => task.field.atUnsafe(c) == Elevation.Lowest,
+    )
 
   def main(args: Array[String]): Unit = {
     val testData = readFileText("2022/12-test.txt")
