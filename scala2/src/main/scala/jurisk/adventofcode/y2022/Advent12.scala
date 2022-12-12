@@ -46,34 +46,23 @@ object Advent12 {
     )
   }
 
-  private def createSuccessorsFunction[T](
-    field: Field2D[T],
-    canGoPredicate: (T, T) => Boolean,
-  ): Coords2D => List[Coords2D] = {
-    (c: Coords2D) =>
-      field.neighboursFor(c, includeDiagonal = false) filter { n =>
-        val thisElev = field.atUnsafe(c)
-        val otherElev = field.atUnsafe(n)
-        canGoPredicate(thisElev, otherElev)
-      }
-  }
 
   def part1(task: Task): Option[Int] =
-    Pathfinding.bfsLength[Coords2D](
+    Pathfinding.shortestPathLength[Coords2D](
       task.start,
-      createSuccessorsFunction[Elevation](
-        task.field,
+      task.field.createSuccessorsFunction(
         (a, b) => a canGoTo b,
+        includeDiagonal = false,
       ),
       _ == task.end
     )
 
   def part2(task: Task): Option[Int] =
-    Pathfinding.bfsLength[Coords2D](
+    Pathfinding.shortestPathLength[Coords2D](
       task.end,
-      createSuccessorsFunction[Elevation](
-        task.field,
+      task.field.createSuccessorsFunction(
         (a, b) => b canGoTo a,
+        includeDiagonal = false,
       ),
       c => task.field.atUnsafe(c) == Elevation.Lowest,
     )

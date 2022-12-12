@@ -64,6 +64,19 @@ final case class Field2D[T](data: Vector[Vector[T]]) {
 
   def count(p: T => Boolean): Int =
     values.count(p)
+
+
+  def createSuccessorsFunction(
+    canGoPredicate: (T, T) => Boolean,
+    includeDiagonal: Boolean,
+  ): Coords2D => List[Coords2D] = {
+    (c: Coords2D) =>
+      neighboursFor(c, includeDiagonal = includeDiagonal) filter { n =>
+        val thisSquare = atUnsafe(c)
+        val otherSquare = atUnsafe(n)
+        canGoPredicate(thisSquare, otherSquare)
+      }
+  }
 }
 
 object Field2D {
