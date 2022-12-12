@@ -14,7 +14,7 @@ object Advent13 {
   type Result2 = String
 
   final case class Cart(
-    direction: Direction2D,
+    direction: CardinalDirection2D,
     coords: Coords2D,
     turnsMade: Int,
   ) {
@@ -110,7 +110,7 @@ object Advent13 {
       }.mkString
 
       val field = Field2D.toDebugRepresentation(
-        carts.foldLeft(board.mapByValues(_.symbol)) { case (acc, cart) =>
+        carts.foldLeft(board.map(_.symbol)) { case (acc, cart) =>
           acc.updatedAtUnsafe(cart.coords, cart.directionSymbol)
         }
       )
@@ -190,7 +190,7 @@ object Advent13 {
       Direction2D.parseCaretToOption(ch) map { d => Cart(d, c, 0) }
     }.toSet
 
-    val board: Field2D[Track] = field.mapByValues {
+    val board: Field2D[Track] = field.map {
       case ' '             => Track.Empty
       case '|' | 'v' | '^' => Track.N_S
       case '-' | '>' | '<' => Track.E_W

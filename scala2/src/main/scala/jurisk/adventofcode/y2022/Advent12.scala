@@ -1,5 +1,6 @@
 package jurisk.adventofcode.y2022
 
+import cats.implicits._
 import jurisk.algorithms.pathfinding.Pathfinding
 import jurisk.geometry.{Coords2D, Field2D}
 import jurisk.utils.FileInput._
@@ -33,7 +34,7 @@ object Advent12 {
     val List(start) = charField.filterCoordsByValue(_ == 'S')
     val List(end) = charField.filterCoordsByValue(_ == 'E')
 
-    val field = charField.mapByValues {
+    val field = charField map {
       case 'S' => Elevation.Lowest
       case 'E' => Elevation.Highest
       case ch => Elevation(ch)

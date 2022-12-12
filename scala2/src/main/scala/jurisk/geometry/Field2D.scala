@@ -1,5 +1,7 @@
 package jurisk.geometry
 
+import cats.Functor
+
 final case class Field2D[T](data: Vector[Vector[T]]) {
   val width: Int  = data.head.length
   val height: Int = data.length
@@ -7,7 +9,7 @@ final case class Field2D[T](data: Vector[Vector[T]]) {
   private def xIndices: Seq[X] = (0 until width).map(X)
   private def yIndices: Seq[Y] = (0 until height).map(Y)
 
-  def map[B](f: (Coords2D, T) => B): Field2D[B] = Field2D {
+  def mapByCoordsWithValues[B](f: (Coords2D, T) => B): Field2D[B] = Field2D {
     yIndices.toVector map { y =>
       xIndices.toVector map { x =>
         val coords = Coords2D(x, y)
@@ -22,10 +24,9 @@ final case class Field2D[T](data: Vector[Vector[T]]) {
     c
   }.toList
 
-  def mapByCoords[B](f: Coords2D => B): Field2D[B] = map { case (c, _) =>
+  def mapByCoords[B](f: Coords2D => B): Field2D[B] = mapByCoordsWithValues { case (c, _) =>
     f(c)
   }
-  def mapByValues[B](f: T => B): Field2D[B]        = map { case (_, v) => f(v) }
 
   def at(c: Coords2D): Option[T] =
     data.lift(c.y.value).flatMap(_.lift(c.x.value))
@@ -65,7 +66,6 @@ final case class Field2D[T](data: Vector[Vector[T]]) {
   def count(p: T => Boolean): Int =
     values.count(p)
 
-
   def createSuccessorsFunction(
     canGoPredicate: (T, T) => Boolean,
     includeDiagonal: Boolean,
@@ -80,6 +80,10 @@ final case class Field2D[T](data: Vector[Vector[T]]) {
 }
 
 object Field2D {
+  implicit val functorField2D: Functor[Field2D] = new Functor[Field2D] {
+    override def map[A, B](fa: Field2D[A])(f: A => B): Field2D[B] = fa.mapByCoordsWithValues { case (_, v) => f(v) }
+  }
+
   def ofSize[T](width: Int, height: Int, initialValue: T): Field2D[T] =
     Field2D(
       Vector.fill(height)(Vector.fill(width)(initialValue))

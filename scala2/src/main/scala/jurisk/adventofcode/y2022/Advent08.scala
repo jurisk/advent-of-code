@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2022
 
 import cats.data.NonEmptyList
+import cats.implicits._
 import jurisk.utils.FileInput._
 import jurisk.geometry.{Coords2D, Field2D}
 import org.scalatest.matchers.should.Matchers._
@@ -52,7 +53,7 @@ object Advent08 {
 
     val visible = data.mapByCoords(isVisible)
 
-    val visualisation: Field2D[Char] = visible.mapByValues {
+    val visualisation: Field2D[Char] = visible map {
       if (_) '█' else '░'
     }
     println(Field2D.toDebugRepresentation(visualisation))
