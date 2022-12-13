@@ -3,10 +3,11 @@ package jurisk.adventofcode.y2018
 import cats.implicits._
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers._
+import scala.collection.mutable.ArrayBuffer
 
 object Advent14 {
   case class State(
-    data: Vector[Byte],
+    data: ArrayBuffer[Byte],
     firstIdx: Int,
     secondIdx: Int,
   ) {
@@ -26,26 +27,28 @@ object Advent14 {
     def next: State = {
       val together: Byte = (data(firstIdx) + data(secondIdx)).toByte
 
-      val newData: Vector[Byte] = together match {
+      together match {
         case n if n >= 10 =>
-          data :+ (n / 10).toByte :+ (n % 10).toByte
-        case n => data :+ n
+          data += (n / 10).toByte
+          data += (n % 10).toByte
+        case n =>
+          data += n
       }
 
       val newFirstIdx = firstIdx + data(firstIdx) + 1
       val newSecondIdx = secondIdx + data(secondIdx) + 1
 
       State(
-        data = newData,
-        firstIdx = newFirstIdx % newData.length,
-        secondIdx = newSecondIdx % newData.length,
+        data = data,
+        firstIdx = newFirstIdx % data.length,
+        secondIdx = newSecondIdx % data.length,
       )
     }
   }
 
   object State {
     def start: State = State(
-      data = Vector(3, 7),
+      data = ArrayBuffer(3, 7),
       firstIdx = 0,
       secondIdx = 1,
     )
@@ -62,12 +65,15 @@ object Advent14 {
   }
 
   def part2(input: String): Int = {
-    val pattern: Vector[Byte] = input.chars().map(x => x - '0').toArray.map(_.toByte).toVector
+    val pattern: ArrayBuffer[Byte] = ArrayBuffer.from(input.chars().map(x => x - '0').toArray.map(_.toByte).toList)
     Simulation.runWithIterationCount(State.start) { case (state, iteration) =>
       if (iteration % 1000000 == 0) {
         println(s"At $iteration the size is ${state.data.length} and indices are at ${state.firstIdx} and ${state.secondIdx}")
       }
-      if (state.data.slice(state.data.length - pattern.length, state.data.length) == pattern) {
+
+      val found: ArrayBuffer[Byte] = state.data.slice(state.data.length - pattern.length, state.data.length)
+
+      if (found == pattern) {
         (state.data.length - pattern.length).asLeft
       } else {
         state.next.asRight
