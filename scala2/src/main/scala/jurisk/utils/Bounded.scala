@@ -11,6 +11,7 @@ object Bounded {
     def maxValue: A = max
   }
 
-  implicit val intBounded: Bounded[Int] = Bounded(Int.MinValue, Int.MaxValue)
-  implicit val longBounded: Bounded[Long] = Bounded(Long.MinValue, Long.MaxValue)
+  implicit val intBounded: Bounded[Int]   = Bounded(Int.MinValue, Int.MaxValue)
+  implicit val longBounded: Bounded[Long] =
+    Bounded(Long.MinValue, Long.MaxValue)
 }

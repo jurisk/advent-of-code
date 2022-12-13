@@ -14,30 +14,29 @@ object Advent12 {
     end: Coords2D,
   )
 
-  final case class Elevation private(value: Char) extends AnyVal {
-    private def intHeight: Int = value - 'a'
+  final case class Elevation private (value: Char) extends AnyVal {
+    private def intHeight: Int             = value - 'a'
     def canGoTo(other: Elevation): Boolean = (other.intHeight - intHeight) <= 1
   }
 
   object Elevation {
-    def apply(ch: Char): Elevation = {
+    def apply(ch: Char): Elevation =
       if ((ch >= 'a') && (ch <= 'z')) new Elevation(ch)
       else s"Bad character $ch".fail
-    }
 
-    val Lowest: Elevation = Elevation('a')
+    val Lowest: Elevation  = Elevation('a')
     val Highest: Elevation = Elevation('z')
   }
 
   def parse(data: String): Task = {
-    val charField = Field2D.parseFromString(data, identity)
+    val charField   = Field2D.parseFromString(data, identity)
     val List(start) = charField.filterCoordsByValue(_ == 'S')
-    val List(end) = charField.filterCoordsByValue(_ == 'E')
+    val List(end)   = charField.filterCoordsByValue(_ == 'E')
 
     val field = charField map {
       case 'S' => Elevation.Lowest
       case 'E' => Elevation.Highest
-      case ch => Elevation(ch)
+      case ch  => Elevation(ch)
     }
 
     Task(
@@ -47,7 +46,6 @@ object Advent12 {
     )
   }
 
-
   def part1(task: Task): Option[Int] =
     Pathfinding.shortestPathLength[Coords2D](
       task.start,
@@ -55,7 +53,7 @@ object Advent12 {
         (a, b) => a canGoTo b,
         includeDiagonal = false,
       ),
-      _ == task.end
+      _ == task.end,
     )
 
   def part2(task: Task): Option[Int] =

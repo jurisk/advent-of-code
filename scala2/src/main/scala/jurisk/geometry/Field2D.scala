@@ -18,14 +18,18 @@ final case class Field2D[T](data: Vector[Vector[T]]) {
     }
   }
 
-  def filterCoordsByValue(p: T => Boolean): List[Coords2D] = entries.filter { case (_, v) =>
-    p(v)
-  }.map { case (c, _) =>
-    c
-  }.toList
+  def filterCoordsByValue(p: T => Boolean): List[Coords2D] = entries
+    .filter { case (_, v) =>
+      p(v)
+    }
+    .map { case (c, _) =>
+      c
+    }
+    .toList
 
-  def mapByCoords[B](f: Coords2D => B): Field2D[B] = mapByCoordsWithValues { case (c, _) =>
-    f(c)
+  def mapByCoords[B](f: Coords2D => B): Field2D[B] = mapByCoordsWithValues {
+    case (c, _) =>
+      f(c)
   }
 
   def get(c: Coords2D): Option[T] = at(c)
@@ -43,7 +47,8 @@ final case class Field2D[T](data: Vector[Vector[T]]) {
 
   def isValidCoordinate(c: Coords2D): Boolean = at(c).isDefined
 
-  def neighboursFor(c: Coords2D, includeDiagonal: Boolean): List[Coords2D] = c.neighbours(includeDiagonal).filter(isValidCoordinate)
+  def neighboursFor(c: Coords2D, includeDiagonal: Boolean): List[Coords2D] =
+    c.neighbours(includeDiagonal).filter(isValidCoordinate)
 
   def allCoords: Seq[Coords2D] =
     yIndices flatMap { y =>
@@ -71,19 +76,19 @@ final case class Field2D[T](data: Vector[Vector[T]]) {
   def createSuccessorsFunction(
     canGoPredicate: (T, T) => Boolean,
     includeDiagonal: Boolean,
-  ): Coords2D => List[Coords2D] = {
-    (c: Coords2D) =>
-      neighboursFor(c, includeDiagonal = includeDiagonal) filter { n =>
-        val thisSquare = this(c)
-        val otherSquare = this(n)
-        canGoPredicate(thisSquare, otherSquare)
-      }
+  ): Coords2D => List[Coords2D] = { (c: Coords2D) =>
+    neighboursFor(c, includeDiagonal = includeDiagonal) filter { n =>
+      val thisSquare  = this(c)
+      val otherSquare = this(n)
+      canGoPredicate(thisSquare, otherSquare)
+    }
   }
 }
 
 object Field2D {
   implicit val functorField2D: Functor[Field2D] = new Functor[Field2D] {
-    override def map[A, B](fa: Field2D[A])(f: A => B): Field2D[B] = fa.mapByCoordsWithValues { case (_, v) => f(v) }
+    override def map[A, B](fa: Field2D[A])(f: A => B): Field2D[B] =
+      fa.mapByCoordsWithValues { case (_, v) => f(v) }
   }
 
   def ofSize[T](width: Int, height: Int, initialValue: T): Field2D[T] =

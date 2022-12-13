@@ -22,7 +22,7 @@ object AdventTemplate {
       s match {
         case "noop"               => Noop
         case SomethingPrefix(rem) => Something(rem.extractInts)
-        case _                    =>s"Failed to parse $s".fail
+        case _                    => s"Failed to parse $s".fail
       }
     }
   }

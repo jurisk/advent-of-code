@@ -9,30 +9,32 @@ sealed trait Direction2D {
 
 object Direction2D {
   sealed trait CardinalDirection2D extends Direction2D {
-    def rotate(rotation: Rotation): CardinalDirection2D = (rotation, this) match {
-      case (NoRotation, _) => this
-      case (Left90, N) => W
-      case (Left90, E) => N
-      case (Left90, S) => E
-      case (Left90, W) => S
-      case (TurnAround, N) => S
-      case (TurnAround, E) => W
-      case (TurnAround, S) => N
-      case (TurnAround, W) => E
-      case (Right90, N) => E
-      case (Right90, E) => S
-      case (Right90, S) => W
-      case (Right90, W) => N
-      case _ =>
-        sys.error(s"rotate does not support rotating $this by $rotation")
-    }
+    def rotate(rotation: Rotation): CardinalDirection2D =
+      (rotation, this) match {
+        case (NoRotation, _) => this
+        case (Left90, N)     => W
+        case (Left90, E)     => N
+        case (Left90, S)     => E
+        case (Left90, W)     => S
+        case (TurnAround, N) => S
+        case (TurnAround, E) => W
+        case (TurnAround, S) => N
+        case (TurnAround, W) => E
+        case (Right90, N)    => E
+        case (Right90, E)    => S
+        case (Right90, S)    => W
+        case (Right90, W)    => N
+        case _               =>
+          sys.error(s"rotate does not support rotating $this by $rotation")
+      }
   }
 
   sealed trait DiagonalDirection2D extends Direction2D
 
   val CardinalDirections: List[CardinalDirection2D] = N :: S :: W :: E :: Nil
-  val DiagonalDirections: List[DiagonalDirection2D] = NW :: NE :: SW :: SE :: Nil
-  val AllDirections: List[Direction2D]      =
+  val DiagonalDirections: List[DiagonalDirection2D] =
+    NW :: NE :: SW :: SE :: Nil
+  val AllDirections: List[Direction2D]              =
     CardinalDirections ::: DiagonalDirections
 
   case object N extends CardinalDirection2D {
@@ -72,7 +74,7 @@ object Direction2D {
     case "D" => S
     case "L" => W
     case "R" => E
-    case _ => sys.error(s"Unrecognized cardinal direction: $s")
+    case _   => sys.error(s"Unrecognized cardinal direction: $s")
   }
 
   def parseCaretToOption(ch: Char): Option[CardinalDirection2D] = ch match {
