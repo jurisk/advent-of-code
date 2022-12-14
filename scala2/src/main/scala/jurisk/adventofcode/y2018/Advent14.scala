@@ -7,7 +7,7 @@ import scala.collection.mutable.ArrayBuffer
 
 object Advent14 {
   case class State(
-    data: ArrayBuffer[Byte],
+    data: ArrayBuffer[Byte], // Mutable!!!
     firstIdx: Int,
     secondIdx: Int,
   ) {
@@ -68,6 +68,7 @@ object Advent14 {
     val pattern: ArrayBuffer[Byte] = ArrayBuffer.from(
       input.chars().map(x => x - '0').toArray.map(_.toByte).toList
     )
+
     Simulation.runWithIterationCount(State.start) { case (state, iteration) =>
       if (iteration % 1000000 == 0) {
         println(
@@ -75,11 +76,21 @@ object Advent14 {
         )
       }
 
-      val found: ArrayBuffer[Byte] =
+      // We could have addeded one digit
+      val found1: ArrayBuffer[Byte] =
         state.data.slice(state.data.length - pattern.length, state.data.length)
 
-      if (found == pattern) {
+      // We could have added two digits
+      val found2: ArrayBuffer[Byte] =
+        state.data.slice(
+          state.data.length - pattern.length - 1,
+          state.data.length - 1,
+        )
+
+      if (found1 == pattern) {
         (state.data.length - pattern.length).asLeft
+      } else if (found2 == pattern) {
+        (state.data.length - pattern.length - 1).asLeft
       } else {
         state.next.asRight
       }
@@ -97,6 +108,6 @@ object Advent14 {
     part2("51589") shouldEqual 9
     part2("92510") shouldEqual 18
     part2("59414") shouldEqual 2018
-    part2("640441") shouldEqual Long.MaxValue
+    part2("640441") shouldEqual 20174745
   }
 }
