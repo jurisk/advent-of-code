@@ -29,14 +29,6 @@ object Parsing {
     f(data, Vector.empty).toList
   }
 
-  object PrefixRemover {
-    def apply(prefix: String) = new PrefixRemover(prefix)
-  }
-
-  class PrefixRemover private (prefix: String) {
-    def unapply(s: String): Option[String] = s.removePrefix(prefix)
-  }
-
   implicit class StringOps(s: String) {
     def fail: Nothing = sys.error(s)
 
