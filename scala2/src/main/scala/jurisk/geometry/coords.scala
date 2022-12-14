@@ -77,4 +77,24 @@ object Coords2D {
     val maxY  = yList.max
     Area2D(X(minX), Y(minY), maxX - minX + 1, maxY - minY + 1)
   }
+
+  def parse(s: String): Coords2D = {
+    val Array(a, b) = s.split(",")
+    Coords2D.of(a.toInt, b.toInt)
+  }
+
+  def allPointsInclusive(a: Coords2D, b: Coords2D): List[Coords2D] = {
+    if (a.x == b.x) {
+      (Math.min(a.y.value, b.y.value) to Math.max(a.y.value, b.y.value)).toList map { y =>
+        Coords2D.of(a.x.value, y)
+      }
+    } else if (a.y == b.y) {
+      (Math.min(a.x.value, b.x.value) to Math.max(a.x.value, b.x.value)).toList map { x =>
+        Coords2D.of(x, a.y.value)
+      }
+
+    } else {
+      sys.error("Unexpected")
+    }
+  }
 }
