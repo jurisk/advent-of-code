@@ -18,7 +18,7 @@ object Advent13 {
     right: Packet,
   ) {
     def packets: List[Packet] = left :: right :: Nil
-    def rightOrder: Boolean = left < right
+    def rightOrder: Boolean   = left < right
   }
 
   sealed trait Packet {
@@ -35,13 +35,15 @@ object Advent13 {
   }
 
   object Packet {
-    implicit val ordering: Ordering[Packet] = (x: Packet, y: Packet) => x compare y
+    implicit val ordering: Ordering[Packet] = (x: Packet, y: Packet) =>
+      x compare y
 
-    case class Nmb(value: Int) extends Packet {
+    case class Nmb(value: Int)               extends Packet {
       override def toString: String = value.toString
     }
     case class Lst(containing: List[Packet]) extends Packet {
-      override def toString: String = containing.map(_.toString).mkString("[", ",", "]")
+      override def toString: String =
+        containing.map(_.toString).mkString("[", ",", "]")
     }
 
     object Lst {
@@ -52,12 +54,14 @@ object Advent13 {
       val packetParser: P[Packet] = P.recursive[Packet] { recurse =>
         // Must be .recursive to avoid a StackOverFlowException
         val nmbParser: P[Packet] = digit.rep.string.map(_.toInt).map(Nmb)
-        val lstParser: P[Lst] = (P.char('[') *> recurse.repSep0(P.char(',')) <* P.char(']')).map(Lst(_))
+        val lstParser: P[Lst]    =
+          (P.char('[') *> recurse.repSep0(P.char(',')) <* P.char(']'))
+            .map(Lst(_))
         nmbParser | lstParser
       }
 
       packetParser.parseAll(s) match {
-        case Left(value) => sys.error(value.toString())
+        case Left(value)  => sys.error(value.toString())
         case Right(value) => value
       }
     }
@@ -89,7 +93,8 @@ object Advent13 {
     val DividerA: Packet = Lst(Lst(Nmb(2)))
     val DividerB: Packet = Lst(Lst(Nmb(6)))
 
-    val allPackets: List[Packet] = DividerA :: DividerB :: data.flatMap(_.packets)
+    val allPackets: List[Packet] =
+      DividerA :: DividerB :: data.flatMap(_.packets)
 
     val sorted = allPackets.sorted
 
@@ -101,7 +106,7 @@ object Advent13 {
 
   def main(args: Array[String]): Unit = {
     val testData = readFileText("2022/13-test.txt")
-     val realData = readFileText("2022/13.txt")
+    val realData = readFileText("2022/13.txt")
 
     val test = parse(testData)
     val real = parse(realData)

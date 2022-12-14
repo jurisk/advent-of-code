@@ -1,6 +1,6 @@
 use advent_of_code_common::parsing::Error;
 
-const DATA: &str = include_str!("../../resources/00.txt");
+const DATA: &str = include_str!("../../resources/07.txt");
 
 #[derive(Debug)]
 struct Data {
@@ -46,7 +46,7 @@ fn main() -> Result<(), Error> {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = include_str!("../../resources/00-test.txt");
+    const TEST_DATA: &str = include_str!("../../resources/07-test.txt");
 
     #[test]
     fn test_solve_1_test() {

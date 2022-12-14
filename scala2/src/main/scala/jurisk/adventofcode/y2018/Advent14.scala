@@ -11,18 +11,17 @@ object Advent14 {
     firstIdx: Int,
     secondIdx: Int,
   ) {
-    override def toString: String = {
+    override def toString: String =
       data.zipWithIndex.map { case (elem, idx) =>
         val (open, close) = (idx == firstIdx, idx == secondIdx) match {
-          case (true, true) =>  ('{', '}')
-          case (true, false) => ('(', ')')
-          case (false, true) => ('[', ']')
+          case (true, true)   => ('{', '}')
+          case (true, false)  => ('(', ')')
+          case (false, true)  => ('[', ']')
           case (false, false) => (' ', ' ')
         }
 
         s"$open$elem$close"
       }.mkString
-    }
 
     def next: State = {
       val together: Byte = (data(firstIdx) + data(secondIdx)).toByte
@@ -31,16 +30,16 @@ object Advent14 {
         case n if n >= 10 =>
           data += (n / 10).toByte
           data += (n % 10).toByte
-        case n =>
+        case n            =>
           data += n
       }
 
-      val newFirstIdx = firstIdx + data(firstIdx) + 1
+      val newFirstIdx  = firstIdx + data(firstIdx) + 1
       val newSecondIdx = secondIdx + data(secondIdx) + 1
 
       State(
         data = data,
-        firstIdx = newFirstIdx % data.length,
+        firstIdx = newFirstIdx   % data.length,
         secondIdx = newSecondIdx % data.length,
       )
     }
@@ -57,21 +56,27 @@ object Advent14 {
   def part1(input: Int): String = {
     val iterations = input + 10
 
-    val resulting = Simulation.runWithIterationCount(State.start) { case (state, iteration) =>
-      if (iteration < iterations) state.next.asRight else state.asLeft
+    val resulting = Simulation.runWithIterationCount(State.start) {
+      case (state, iteration) =>
+        if (iteration < iterations) state.next.asRight else state.asLeft
     }
 
     resulting.data.slice(input, input + 10).map(_.toString).mkString
   }
 
   def part2(input: String): Int = {
-    val pattern: ArrayBuffer[Byte] = ArrayBuffer.from(input.chars().map(x => x - '0').toArray.map(_.toByte).toList)
+    val pattern: ArrayBuffer[Byte] = ArrayBuffer.from(
+      input.chars().map(x => x - '0').toArray.map(_.toByte).toList
+    )
     Simulation.runWithIterationCount(State.start) { case (state, iteration) =>
       if (iteration % 1000000 == 0) {
-        println(s"At $iteration the size is ${state.data.length} and indices are at ${state.firstIdx} and ${state.secondIdx}")
+        println(
+          s"At $iteration the size is ${state.data.length} and indices are at ${state.firstIdx} and ${state.secondIdx}"
+        )
       }
 
-      val found: ArrayBuffer[Byte] = state.data.slice(state.data.length - pattern.length, state.data.length)
+      val found: ArrayBuffer[Byte] =
+        state.data.slice(state.data.length - pattern.length, state.data.length)
 
       if (found == pattern) {
         (state.data.length - pattern.length).asLeft
@@ -80,7 +85,6 @@ object Advent14 {
       }
     }
   }
-
 
   def main(args: Array[String]): Unit = {
     part1(5) shouldEqual "0124515891"

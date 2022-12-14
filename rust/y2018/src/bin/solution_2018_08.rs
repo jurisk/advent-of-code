@@ -1,11 +1,9 @@
 use advent_of_code_common::parsing::{parse_separated_vec, Error};
 use advent_of_code_common::utils::head_tail;
-use nom::bytes::complete::tag;
-use nom::character::complete::digit1;
-use nom::combinator::{complete, map_parser};
-use nom::multi::{count, many1, separated_list1};
+use nom::combinator::complete;
+use nom::multi::count;
 use nom::Err::Incomplete;
-use nom::{Finish, IResult, Needed, Parser};
+use nom::{Finish, IResult, Needed};
 use std::str::FromStr;
 
 const DATA: &str = include_str!("../../resources/08.txt");
