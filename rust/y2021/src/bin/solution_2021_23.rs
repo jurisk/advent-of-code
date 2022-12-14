@@ -438,7 +438,7 @@ impl<const N: usize> FromStr for State<N> {
     type Err = Error;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let lines: Vec<&str> = input.split('\n').collect();
+        let lines: Vec<&str> = input.lines().collect();
         let hallway: Vec<char> = lines[1].chars().collect();
         let room_lines: Vec<Vec<char>> = lines[2..(2 + N)]
             .iter()
@@ -483,7 +483,7 @@ fn solve_1(input: &str) -> Result<Cost, Error> {
 }
 
 fn solve_2(input: &str) -> Result<Cost, Error> {
-    let lines: Vec<&str> = input.split('\n').collect();
+    let lines: Vec<&str> = input.lines().collect();
     let temp = [
         &lines[0..3],
         ["  #D#C#B#A#", "  #D#B#A#C#"].as_slice(),

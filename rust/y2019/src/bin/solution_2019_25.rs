@@ -29,7 +29,7 @@ impl Output {
 
     fn parse(s: &str) -> Output {
         let ejected_back = s.contains("you are ejected back to the checkpoint");
-        let rows: Vec<&str> = s.split('\n').collect();
+        let rows: Vec<&str> = s.lines().collect();
 
         if s.contains("Analysis complete! You may proceed.") {
             let get_in = "get in by typing ";

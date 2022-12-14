@@ -97,7 +97,7 @@ impl Command {
     }
 
     fn parse_many(data: &str) -> Vec<Command> {
-        data.split('\n')
+        data.lines()
             .filter(|s| !s.is_empty())
             .map(Command::parse)
             .collect()

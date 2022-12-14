@@ -92,7 +92,7 @@ fn manhattan_distance(a: Coords, b: Coords) -> Number {
 type CostF = fn(&Coords, &HashMap<Coords, Number>, &HashMap<Coords, Number>) -> Number;
 
 fn solve(data: &str, f: CostF) -> Number {
-    let lines: Vec<&str> = data.split('\n').filter(|x| !x.is_empty()).collect();
+    let lines: Vec<&str> = data.lines().filter(|x| !x.is_empty()).collect();
 
     assert_eq!(lines.len(), 2);
 

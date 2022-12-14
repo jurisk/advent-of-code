@@ -15,7 +15,7 @@ fn fuel2(mass: Number) -> Number {
 
 fn parse_lines(input: &str) -> Vec<Number> {
     input
-        .split('\n')
+        .lines()
         .filter(|x| !x.is_empty())
         .map(|str| str.parse::<Number>().unwrap())
         .collect()

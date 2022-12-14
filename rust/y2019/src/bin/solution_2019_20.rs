@@ -141,7 +141,7 @@ impl Maze {
     }
 
     fn new(data: &str) -> Maze {
-        let rows: Vec<&str> = data.split('\n').collect();
+        let rows: Vec<&str> = data.lines().collect();
 
         let width = rows[2].len() - 2; // we assume the first row of the maze never has a portal on the right side
 

@@ -2,7 +2,7 @@ use itertools::Itertools;
 
 fn parse(input: &str) -> Vec<Vec<char>> {
     input
-        .split('\n')
+        .lines()
         .filter(|x| !x.is_empty())
         .map(|x| x.chars().collect())
         .collect()

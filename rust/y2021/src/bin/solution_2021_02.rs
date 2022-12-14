@@ -86,7 +86,7 @@ impl Command {
 
 fn parse(input: &str) -> Vec<Command> {
     input
-        .split('\n')
+        .lines()
         .filter(|x| !x.is_empty())
         .map(Command::parse)
         .collect()

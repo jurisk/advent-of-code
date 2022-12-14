@@ -2,7 +2,7 @@ use itertools::izip;
 
 fn parse(input: &str) -> Vec<u32> {
     input
-        .split('\n')
+        .lines()
         .filter(|x| !x.is_empty())
         .map(|x| x.parse::<u32>().unwrap())
         .collect()

@@ -71,6 +71,7 @@ dependencies = [
 name = "advent-of-code-common"
 version = "0.1.0"
 dependencies = [
+ "itertools",
  "nonempty",
  "num-traits",
  "pathfinding",

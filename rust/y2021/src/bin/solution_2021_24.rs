@@ -101,7 +101,7 @@ impl State {
 #[allow(clippy::similar_names, clippy::redundant_closure_for_method_calls)]
 fn parse(input: &str) -> Result<Vec<Subroutine>, Error> {
     let lines: Vec<String> = input
-        .split('\n')
+        .lines()
         .filter(|x| !x.is_empty())
         .map(ToString::to_string)
         .collect();

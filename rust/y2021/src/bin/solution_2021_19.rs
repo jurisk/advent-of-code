@@ -1,7 +1,8 @@
 extern crate core;
 
 use advent_of_code_common::parsing::{
-    parse_comma_separated_vec, parse_lines_to_nonempty, parse_separated_nonempty, Error,
+    normalize_newlines, parse_comma_separated_vec, parse_lines_to_nonempty,
+    parse_separated_nonempty, Error,
 };
 use nalgebra::{Matrix3, Vector3};
 use nonempty::{nonempty, NonEmpty};
@@ -131,7 +132,7 @@ impl FromStr for Sensors {
     type Err = Error;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let sensors = parse_separated_nonempty(input, "\n\n")?;
+        let sensors = parse_separated_nonempty(&normalize_newlines(input), "\n\n")?;
         Ok(Sensors { sensors })
     }
 }

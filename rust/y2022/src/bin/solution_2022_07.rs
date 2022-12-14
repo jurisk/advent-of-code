@@ -1,6 +1,6 @@
 #![feature(map_try_insert)]
 
-use advent_of_code_common::parsing::Error;
+use advent_of_code_common::parsing::{normalize_newlines, Error};
 use advent_of_code_common::utils::head_tail;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -201,10 +201,8 @@ fn parse(input: &str) -> Result<Data, Error> {
         complete(many1(command_and_n_output))(input)
     }
 
-    let mut input_finishing_on_newline = input.to_string();
-    if input.chars().last() != Some('\n') {
-        input_finishing_on_newline.push('\n');
-    };
+    let mut input_finishing_on_newline = normalize_newlines(input);
+    input_finishing_on_newline.push('\n');
 
     let (unparsed, result) = parser(&input_finishing_on_newline).map_err(|e| format!("{e}"))?;
     assert_eq!(unparsed, "");

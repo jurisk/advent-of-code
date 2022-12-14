@@ -1,4 +1,7 @@
 ```shell
+rustup update
+rustup toolchain install nightly
+rustup default nightly
 cargo clippy
 cargo clippy --all-targets --all-features -- -D warnings
 cargo clippy -- -W clippy::pedantic

@@ -1,3 +1,4 @@
+use advent_of_code_common::parsing::segments_separated_by_double_newline;
 use nalgebra::{Matrix1x5, Matrix5, SMatrix};
 
 type Number = u8;
@@ -12,7 +13,7 @@ struct Board {
 impl Board {
     fn parse(data: &str) -> Result<Board, Error> {
         let tmp_vec: Result<Vec<Matrix1x5<Number>>, Error> = data
-            .split('\n')
+            .lines()
             .filter(|row| !row.is_empty())
             .map(|row| {
                 let v: Result<Vec<Number>, Error> = row
@@ -97,7 +98,7 @@ impl Game {
 
 impl Game {
     fn parse(input: &str) -> Result<Game, Error> {
-        let blocks: Vec<&str> = input.split("\n\n").filter(|x| !x.is_empty()).collect();
+        let blocks: Vec<String> = segments_separated_by_double_newline(input);
 
         let drawn_numbers_str: &str = blocks
             .first()

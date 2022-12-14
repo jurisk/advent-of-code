@@ -109,7 +109,7 @@ fn update_element_at<T: Clone>(positions: &[T], position_idx: usize, new_positio
 impl Maze {
     fn parse(data: &str) -> Maze {
         let chars: Vec<Vec<char>> = data
-            .split('\n')
+            .lines()
             .filter(|s| !s.is_empty())
             .map(|s| s.chars().collect())
             .collect();
@@ -318,7 +318,7 @@ fn hack_line(data: &str, what: &str, idx_at: usize) -> String {
 }
 
 fn hack_to_convert_part_1_to_part_2(data: &str) -> String {
-    let mut lines: Vec<&str> = data.split('\n').collect();
+    let mut lines: Vec<&str> = data.lines().collect();
     let l_39 = &hack_line(lines[39], "@#@", 39);
     lines[39] = l_39;
     let l_40 = &hack_line(lines[40], "###", 39);
@@ -326,7 +326,6 @@ fn hack_to_convert_part_1_to_part_2(data: &str) -> String {
     let l_41 = &hack_line(lines[41], "@#@", 39);
     lines[41] = l_41;
     let result = lines.join("\n");
-    assert_eq!(data.len(), result.len());
     result
 }
 

@@ -6,7 +6,7 @@ const SIZE: usize = 5;
 type Field = [[bool; SIZE]; SIZE];
 
 fn parse(data: &str) -> Field {
-    data.split('\n')
+    data.lines()
         .filter(|x| !x.is_empty())
         .map(|r| {
             r.chars()

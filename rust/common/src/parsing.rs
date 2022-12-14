@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use nonempty::NonEmpty;
 use pathfinding::matrix::Matrix;
 use std::collections::{HashMap, HashSet};
@@ -22,7 +23,7 @@ where
     T::Err: Debug,
 {
     let result: Result<Vec<T>, T::Err> = input
-        .split('\n')
+        .lines()
         .filter(|x| !x.is_empty())
         .map(|x| str::parse::<T>(x.trim()))
         .collect();
@@ -37,7 +38,7 @@ where
     T::Err: Debug,
 {
     let result: Result<HashSet<T>, T::Err> = input
-        .split('\n')
+        .lines()
         .filter(|x| !x.is_empty())
         .map(|x| str::parse::<T>(x.trim()))
         .collect();
@@ -84,7 +85,7 @@ where
     V::Err: Debug,
 {
     let k_v: Result<Vec<(K, V)>, Error> = input
-        .split('\n')
+        .lines()
         .filter(|x| !x.is_empty())
         .map(|s| parse_kv_pair(s, delimiter))
         .collect();
@@ -192,7 +193,7 @@ where
     PF: Fn(char) -> Result<T, Error>,
 {
     let result_vec_vec: Result<Vec<_>, Error> = input
-        .split('\n')
+        .lines()
         .filter(|r| !r.is_empty())
         .map(|r| {
             r.chars()
@@ -209,4 +210,22 @@ where
         vec_vec.into_iter().flatten().collect(),
     )
     .map_err(|err| format!("{err:?}"))
+}
+
+pub fn normalize_newlines(input: &str) -> String {
+    input.lines().join("\n")
+}
+
+pub fn segments_separated_by_double_newline(input: &str) -> Vec<String> {
+    normalize_newlines(input)
+        .split("\n\n")
+        .map(|x| x.to_string())
+        .filter(|x| !x.is_empty())
+        .collect()
+}
+
+pub fn split_into_two_segments_separated_by_double_newline(
+    input: &str,
+) -> Result<(String, String), Error> {
+    split_into_two_strings(&normalize_newlines(input), "\n\n")
 }

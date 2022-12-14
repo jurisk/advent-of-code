@@ -1,4 +1,6 @@
-use advent_of_code_common::parsing::{parse_matrix, split_into_two_strings, Error};
+use advent_of_code_common::parsing::{
+    parse_matrix, split_into_two_segments_separated_by_double_newline, Error,
+};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use pathfinding::matrix::Matrix;
 use std::str::FromStr;
@@ -121,7 +123,7 @@ impl FromStr for Data {
     type Err = Error;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let (a, b) = split_into_two_strings(input, "\n\n")?;
+        let (a, b) = split_into_two_segments_separated_by_double_newline(input)?;
         let mapping_vec_result: Result<Vec<_>, _> =
             a.chars().map(|ch| Pixel::try_from(ch as u8)).collect();
         let mapping_vec = mapping_vec_result.map_err(|err| format!("{err:?}"))?;

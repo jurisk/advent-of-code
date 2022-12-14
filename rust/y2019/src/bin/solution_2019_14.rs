@@ -113,7 +113,7 @@ fn ore_for_n_fuel(conversions: &HashMap<Ingredient, Conversion>, fuel_required: 
 
 fn parse_data(data: &str) -> HashMap<Ingredient, Conversion> {
     let conversions_vec: Vec<_> = data
-        .split('\n')
+        .lines()
         .filter(|x| !x.is_empty())
         .map(Conversion::parse)
         .collect();

@@ -1,6 +1,7 @@
 use crate::FoldInstruction::{AlongX, AlongY};
 use advent_of_code_common::parsing::{
-    parse_lines_to_hashset, parse_lines_to_vec, split_into_two_strings, Error,
+    parse_lines_to_hashset, parse_lines_to_vec,
+    split_into_two_segments_separated_by_double_newline, split_into_two_strings, Error,
 };
 use advent_of_code_common::utils::head_tail;
 use itertools::Itertools;
@@ -117,7 +118,7 @@ impl FromStr for Manual {
     type Err = Error;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let (a, b) = split_into_two_strings(input, "\n\n")?;
+        let (a, b) = split_into_two_segments_separated_by_double_newline(input)?;
         let dots = parse_lines_to_hashset(&a)?;
         let instructions = parse_lines_to_vec(&b)?;
         Ok(Manual { dots, instructions })

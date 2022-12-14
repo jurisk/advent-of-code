@@ -126,7 +126,7 @@ fn parse_line(x: &str) -> ParsingResult {
 }
 
 fn parse_data(data: &str) -> Vec<ParsingResult> {
-    data.split('\n').map(parse_line).collect()
+    data.lines().map(parse_line).collect()
 }
 
 fn part_1(data: &[ParsingResult]) -> u32 {

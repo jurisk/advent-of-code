@@ -1,5 +1,6 @@
 use advent_of_code_common::parsing::{
-    parse_lines_to_hashmap, parse_string_to_nonempty, split_into_two_strings, Error,
+    parse_lines_to_hashmap, parse_string_to_nonempty,
+    split_into_two_segments_separated_by_double_newline, Error,
 };
 use advent_of_code_common::utils::additive_hashmap_from_vec;
 use nonempty::NonEmpty;
@@ -99,7 +100,7 @@ impl FromStr for Data {
     type Err = Error;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let (a, b) = split_into_two_strings(input, "\n\n")?;
+        let (a, b) = split_into_two_segments_separated_by_double_newline(input)?;
         let starting_polymer: NonEmpty<Element> = parse_string_to_nonempty(&a)?;
         let templates: HashMap<SearchPattern, Element> = parse_lines_to_hashmap(&b, " -> ")?;
 

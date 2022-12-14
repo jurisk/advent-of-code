@@ -65,7 +65,7 @@ struct Board {
 impl Board {
     fn parse(s: &str) -> Board {
         let map_squares: Vec<Vec<MapSquare>> = s
-            .split('\n')
+            .lines()
             .filter(|x| !x.is_empty())
             .map(|x| x.chars().map(MapSquare::from_char).collect())
             .collect();

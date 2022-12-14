@@ -35,7 +35,7 @@ impl Sub for Coords {
 }
 
 fn parse(s: &str) -> Vec<Vec<Cell>> {
-    s.split('\n')
+    s.lines()
         .filter(|x| !x.is_empty())
         .map(|row| {
             row.trim()

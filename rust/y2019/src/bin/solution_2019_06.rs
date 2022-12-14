@@ -24,7 +24,7 @@ struct OrbitalRelationship {
 fn parse_lines(data: &str) -> Vec<OrbitalRelationship> {
     let re = Regex::new(r"^([0-9A-Za-z]+)\)([0-9A-Za-z]+)$").unwrap();
 
-    data.split('\n')
+    data.lines()
         .filter(|s| !s.is_empty())
         .map(|s| {
             let captures = re.captures(s).unwrap();
