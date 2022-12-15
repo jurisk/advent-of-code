@@ -1,6 +1,6 @@
 package jurisk.algorithms.pathfinding
 
-import jurisk.algorithms.pathfinding.Pathfinding.{bfs, dfs, shortestPath}
+import jurisk.algorithms.pathfinding.Pathfinding.shortestPath
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 
@@ -14,7 +14,7 @@ class PathfindingSpec extends AnyFlatSpec {
   }
 
   "BFS" should "find shortest path" in {
-    bfs[Int](
+    Bfs.bfs[Int](
       0,
       x => List(x + 1, x * 2, x * 3, x * 7),
       _ == 1337,
@@ -22,7 +22,7 @@ class PathfindingSpec extends AnyFlatSpec {
   }
 
   "DFS" should "find path" in {
-    dfs[Int](
+    Dfs.dfs[Int](
       1,
       x => if (x > 1000) Nil else List(x * 2, x * 3, x * 5, x * 7),
       _ == 210,
