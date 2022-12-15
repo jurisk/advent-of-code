@@ -14,12 +14,12 @@ object Advent14 {
   type Parsed = List[Path]
 
   final case class Path(
-    points: List[Coords2D],
+    points: List[Coords2D]
   )
 
   object Path {
     def parse(s: String): Path = Path {
-      s.split(" -> ").toList.filter(_.nonEmpty).map(Coords2D.parse)
+      s.split(" -> ").toList.map(Coords2D.parse)
     }
   }
 
@@ -27,21 +27,21 @@ object Advent14 {
   object Square {
     case object Empty extends Square
     case object Block extends Square
-    case object Sand extends Square
+    case object Sand  extends Square
   }
 
   private def toField(parsed: Parsed, rockBounded: Boolean): Field2D[Square] = {
     val width = 2000
 
-    val maxY = parsed.flatMap(_.points).map(_.y.value).max
+    val maxY   = parsed.flatMap(_.points).map(_.y.value).max
     val height = maxY + 3
 
     val newField = Field2D.ofSize[Square](width, height, Square.Empty)
-    val result = parsed.foldLeft(newField) { case (acc1, path) =>
+    val result   = parsed.foldLeft(newField) { case (acc1, path) =>
       val pathSegments = path.points.sliding(2)
       pathSegments.foldLeft(acc1) { case (acc2, seg) =>
         val List(from, to) = seg
-        val points = Coords2D.allPointsInclusive(from, to)
+        val points         = Coords2D.allPointsInclusive(from, to)
         points.foldLeft(acc2) { case (acc3, point) =>
           acc3.updatedAtUnsafe(point, Block)
         }
@@ -58,12 +58,17 @@ object Advent14 {
   }
 
   @tailrec
-  private def nextSandGoesWhere(field: Field2D[Square], from: Coords2D): Coords2D = {
-    val potentialDestinations = (Direction2D.S :: Direction2D.SW :: Direction2D.SE :: Nil).map(from + _.diff)
+  private def nextSandGoesWhere(
+    field: Field2D[Square],
+    from: Coords2D,
+  ): Coords2D = {
+    val potentialDestinations =
+      (Direction2D.S :: Direction2D.SW :: Direction2D.SE :: Nil)
+        .map(from + _.diff)
 
     val found = potentialDestinations.find(c => field.at(c).contains(Empty))
     found match {
-      case None => from
+      case None        => from
       case Some(found) =>
         nextSandGoesWhere(field, found)
     }
@@ -76,7 +81,7 @@ object Advent14 {
     val display = field.map {
       case Empty => '.'
       case Block => '#'
-      case Sand => 'o'
+      case Sand  => 'o'
     }
 
     println(Field2D.toDebugRepresentation(display))
@@ -84,7 +89,10 @@ object Advent14 {
 
   private val SandOrigin: Coords2D = Coords2D.of(500, 0)
 
-  private def sandSimulation(field: Field2D[Square], terminationClause: Coords2D => Boolean): Int = {
+  private def sandSimulation(
+    field: Field2D[Square],
+    terminationClause: Coords2D => Boolean,
+  ): Int =
     Simulation.runWithIterationCount(field) { case (field, iteration) =>
       val sandGoes = nextSandGoesWhere(field, SandOrigin)
 
@@ -95,7 +103,6 @@ object Advent14 {
         field.updatedAtUnsafe(sandGoes, Sand).asRight
       }
     }
-  }
 
   def part1(data: Parsed): Int = {
     val field = toField(data, rockBounded = false)
@@ -106,7 +113,6 @@ object Advent14 {
     val field = toField(data, rockBounded = true)
     sandSimulation(field, _ == SandOrigin) + 1
   }
-
 
   def main(args: Array[String]): Unit = {
     val testData = readFileText("2022/14-test.txt")

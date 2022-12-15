@@ -95,9 +95,6 @@ object Advent07 {
       inProgress: List[(Int, Step)],
     ): Int = {
       val currentSecond = nextSecond - 1
-      println(
-        s"currentSecond = $currentSecond, nextSecond = $nextSecond, remaining = $remaining, finished = $finished, inProgress = $inProgress"
-      )
       if (remaining.isEmpty && inProgress.isEmpty) {
         nextSecond
       } else {
