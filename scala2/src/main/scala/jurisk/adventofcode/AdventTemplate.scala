@@ -16,13 +16,12 @@ object AdventTemplate {
       values: List[Int]
     ) extends Command
 
-    def parse(s: String): Command = {
+    def parse(s: String): Command =
       s match {
-        case "noop"               => Noop
-        case s"something $rem"    => Something(rem.extractInts)
-        case _                    => s"Failed to parse $s".fail
+        case "noop"            => Noop
+        case s"something $rem" => Something(rem.extractInts)
+        case _                 => s"Failed to parse $s".fail
       }
-    }
   }
 
   def parse(data: String): Parsed =

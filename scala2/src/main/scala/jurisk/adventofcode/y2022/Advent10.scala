@@ -13,13 +13,12 @@ object Advent10 {
     case object Noop                             extends Op
     case class AddX(cyclesLeft: Int, value: Int) extends Op
 
-    def parse(s: String): Op = {
+    def parse(s: String): Op =
       s match {
-        case "noop"        => Noop
-        case s"addx $n"    => AddX(2, n.toInt)
-        case _             => sys.error(s"Failed to parse $s")
+        case "noop"     => Noop
+        case s"addx $n" => AddX(2, n.toInt)
+        case _          => sys.error(s"Failed to parse $s")
       }
-    }
   }
 
   def parse(data: String): Parsed =
