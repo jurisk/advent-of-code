@@ -1,5 +1,6 @@
 package jurisk.utils
 
+import jurisk.math.InclusiveDiscreteInterval
 import org.scalatest.matchers.should.Matchers._
 import org.scalatest.flatspec.AnyFlatSpec
 

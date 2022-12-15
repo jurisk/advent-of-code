@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
-import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.geometry.{Coords2D, Direction2D, Field2D, Y}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
@@ -31,12 +31,13 @@ object Advent14 {
   }
 
   private def toField(parsed: Parsed, rockBounded: Boolean): Field2D[Square] = {
-    val width = 2000
+    val minX = parsed.flatMap(_.points).map(_.x.value).min
 
     val maxY   = parsed.flatMap(_.points).map(_.y.value).max
     val height = maxY + 3
+    val width = height * 3
 
-    val newField = Field2D.ofSize[Square](width, height, Square.Empty)
+    val newField = Field2D.ofSize[Square](width, height, Square.Empty, topLeft = Coords2D.of(minX - height, 0))
     val result   = parsed.foldLeft(newField) { case (acc1, path) =>
       val pathSegments = path.points.sliding(2)
       pathSegments.foldLeft(acc1) { case (acc2, seg) =>
@@ -49,8 +50,8 @@ object Advent14 {
     }
 
     if (rockBounded) {
-      (0 until width).foldLeft(result) { case (acc, x) =>
-        acc.updatedAtUnsafe(Coords2D.of(x, height - 1), Block)
+      result.coordsForRow(Y(height - 1)).foldLeft(result) { case (acc, c) =>
+        acc.updatedAtUnsafe(c, Block)
       }
     } else {
       result

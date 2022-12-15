@@ -1,4 +1,4 @@
-package jurisk.utils
+package jurisk.math
 
 final case class NonOverlappingDiscreteIntervalSet(
   data: Set[InclusiveDiscreteInterval],

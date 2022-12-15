@@ -58,4 +58,8 @@ class AllSolutionSpec extends AnyFlatSpec {
   "Advent14" should "work" in {
     Advent14.main(Array.empty)
   }
+
+  "Advent15" should "work" in {
+    Advent15.main(Array.empty)
+  }
 }

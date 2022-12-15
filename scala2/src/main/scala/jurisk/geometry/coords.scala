@@ -49,6 +49,9 @@ final case class Coords2D(x: X, y: Y) {
   def manhattanDistance(other: Coords2D): Int =
     (this - other).manhattanDistanceToOrigin
 
+  def adjacent4: List[Coords2D] = neighbours(includeDiagonal = false)
+  def adjacent8: List[Coords2D] = neighbours(includeDiagonal = true)
+
   def neighbours(includeDiagonal: Boolean): List[Coords2D] = {
     val directions = if (includeDiagonal) {
       Direction2D.AllDirections
@@ -80,7 +83,7 @@ object Coords2D {
 
   def parse(s: String): Coords2D = {
     val Array(a, b) = s.split(",")
-    Coords2D.of(a.toInt, b.toInt)
+    Coords2D.of(a.trim.toInt, b.trim.toInt)
   }
 
   def allPointsInclusive(a: Coords2D, b: Coords2D): List[Coords2D] =
