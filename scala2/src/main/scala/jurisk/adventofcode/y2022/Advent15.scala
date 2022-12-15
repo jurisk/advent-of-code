@@ -1,152 +1,87 @@
 package jurisk.adventofcode.y2022
 
-import jurisk.adventofcode.y2022.Advent15.Interval
-import jurisk.geometry.{Area2D, Coords2D, Field2D, X, Y}
+import jurisk.geometry.{Coords2D, Field2D}
 import jurisk.utils.FileInput._
+import jurisk.utils.{
+  InclusiveDiscreteInterval,
+  NonOverlappingDiscreteIntervalSet,
+}
 import jurisk.utils.Parsing.StringOps
-import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
+import mouse.all._
 
 object Advent15 {
   type Parsed = List[Entry]
 
   final case class Entry(sensor: Coords2D, closestBeacon: Coords2D) {
-    def impossibleToHaveBeacon(c: Coords2D): Boolean = {
-      sensor.manhattanDistance(c) <= sensor.manhattanDistance(closestBeacon)
-    }
+    def impossibleToHaveBeacon(c: Coords2D): Boolean =
+      sensor.manhattanDistance(c) <= radius
 
     def minX: Int = Math.min(sensor.x.value, closestBeacon.x.value)
     def maxX: Int = Math.max(sensor.x.value, closestBeacon.x.value)
 
-    def intervalWithY(y: Int): Option[Interval] = {
-      val dy = Math.abs(sensor.y.value - y)
-      val dist = sensor.manhattanDistance(closestBeacon)
-      if (dist < dy) {
-        None
-      } else {
-        Some(
-          Interval(sensor.x.value - (dist - dy), sensor.x.value + (dist - dy))
-        )
-      }
+    def radius: Int = sensor manhattanDistance closestBeacon
+
+    def intervalWithY(y: Int): Option[InclusiveDiscreteInterval] = {
+      val dy    = Math.abs(sensor.y.value - y)
+      val delta = radius - dy
+      (delta >= 0) option InclusiveDiscreteInterval(
+        sensor.x.value - delta,
+        sensor.x.value + delta,
+      )
     }
   }
 
   object Entry {
     def parse(s: String): Entry =
       s match {
-        case s"Sensor at x=$sx, y=$sy: closest beacon is at x=$bx, y=$by"            =>
-          Entry(Coords2D.of(sx.toInt, sy.toInt), Coords2D.of(bx.toInt, by.toInt))
+        case s"Sensor at x=$sx, y=$sy: closest beacon is at x=$bx, y=$by" =>
+          Entry(
+            Coords2D.of(sx.toInt, sy.toInt),
+            Coords2D.of(bx.toInt, by.toInt),
+          )
+        case _                                                            => s"Unrecognized $s".fail
       }
   }
 
   def parse(data: String): Parsed =
     data.parseList("\n", Entry.parse)
 
-  private def impossibleToHaveBeacon(data: Parsed, c: Coords2D): Boolean = {
+  private def impossibleToHaveBeacon(data: Parsed, c: Coords2D): Boolean =
     data.exists(_.impossibleToHaveBeacon(c))
-  }
 
-  final case class NonOverlappingIntervalSet(
-    data: Set[Interval],
-  ) {
-    def subtract(interval: Interval): NonOverlappingIntervalSet = NonOverlappingIntervalSet(
-      data.flatMap(_.subtract(interval))
-    )
-
-    def size: Int = data.map(_.size).sum
-    def values: Set[Int] = data.flatMap(_.values)
-  }
-
-  object NonOverlappingIntervalSet {
-    def create(from: Int, to: Int): NonOverlappingIntervalSet = NonOverlappingIntervalSet(
-      Set(Interval(from, to))
-    )
-  }
-
-  // Inclusive!
-  final case class Interval(from: Int, to: Int) {
-    def size: Int = to - from + 1
-    def values: List[Int] = (from to to).toList
-    def subtract(other: Interval): Set[Interval] = {
-      val result: Set[Interval] =
-        if (other.from > to) {
-          Set(this)
-        } else if (other.to < from) {
-          Set(this)
-        } else if ((other.from <= from) && (other.to >= to)) {
-          Set.empty
-        } else if ((other.from > from) && (other.to < to)) {
-          Set(
-            Interval(from, other.from - 1),
-            Interval(other.to + 1, to),
-          )
-        } else if ((other.from <= from) && (other.to < to)) {
-          Set(
-            Interval(other.to + 1, to)
-          )
-        } else if ((other.from > from) && (other.to >= to)) {
-          Set(
-            Interval(from, other.from - 1)
-          )
-        } else if (other.from > to) {
-          Set(this)
-        } else if (other.to < from) {
-          Set(this)
-        } else {
-          sys.error(s"Unexpected $this subtract $other")
+  private def impossibilityIntervalsInRow(
+    data: Parsed,
+    y: Int,
+    from: Int,
+    to: Int,
+  ): NonOverlappingDiscreteIntervalSet =
+    data.foldLeft(NonOverlappingDiscreteIntervalSet.createInclusive(from, to)) {
+      case (acc, e) =>
+        e intervalWithY y match {
+          case Some(interval) => acc.subtract(interval)
+          case None           => acc
         }
-
-      // println(s"$this - $other = $result")
-
-      result
     }
-  }
-
-  private def impossibilityIntervalsInRow(data: Parsed, y: Int, from: Int, to: Int): NonOverlappingIntervalSet = {
-    val result = data.foldLeft(NonOverlappingIntervalSet.create(from, to)) { case (acc, e) =>
-      val interval = e.intervalWithY(y)
-      // println(s"Entry $e interval with $y is $interval")
-      interval match {
-        case Some(interval) => acc.subtract(interval)
-        case None => acc
-      }
-    }
-    // println(s"Row $y from $from to $to: ${result.data} and ${result.values.toList.sorted}")
-    result
-  }
 
   def part1(data: Parsed, y: Int): Int = {
-    val minX = data.map(_.minX).min * 2
-    val maxX = data.map(_.maxX).max * 2
-    // println(s"$minX, $maxX")
+    val minX = data.map(_.minX).min - data.map(_.radius).max
+    val maxX = data.map(_.maxX).max + data.map(_.radius).max
 
     require(!impossibleToHaveBeacon(data, Coords2D.of(minX, y)))
     require(!impossibleToHaveBeacon(data, Coords2D.of(maxX, y)))
 
-
     val intervalSet = impossibilityIntervalsInRow(data, y, minX, maxX)
-    val thisSize = intervalSet.size
-    val rangeSize = maxX - minX
-    val resultNew = rangeSize - thisSize
-
-    val resultLegacy = (minX to maxX).count { x =>
-      val c = Coords2D.of(x, y)
-      impossibleToHaveBeacon(data, c)
-    }
-//
-//    require(resultNew == resultLegacy)
-//
-//    val beaconsHere = data.map(_.closestBeacon.y.value).distinct.count(_ == y)
-//
-//    resultLegacy - beaconsHere
-    resultNew
+    val thisSize    = intervalSet.size
+    val rangeSize   = maxX - minX
+    rangeSize - thisSize
   }
 
   def printData(data: Parsed, maxCoords: Int): Unit = {
     val sensorsAt = data.map(_.sensor).toSet
     val beaconsAt = data.map(_.closestBeacon).toSet
 
-    val field = Field2D.ofSize(maxCoords + 1, maxCoords + 1, ' ')
+    val field     = Field2D.ofSize(maxCoords + 1, maxCoords + 1, ' ')
     val filledOut = field.mapByCoords(c =>
       if (sensorsAt.contains(c)) {
         'S'
@@ -161,63 +96,59 @@ object Advent15 {
     println(Field2D.toDebugRepresentation(filledOut))
   }
 
-  def findHiddenBeacon(data: Parsed, maxCoords: Int): Coords2D = {
+  private def findHiddenBeacon(
+    data: Parsed,
+    maxCoords: Int,
+  ): Option[Coords2D] = {
     val sensorsAt = data.map(_.sensor).toSet
     val beaconsAt = data.map(_.closestBeacon).toSet
 
-    (0 to maxCoords) foreach { y =>
-      if (y % 100000 == 0) {
-        println(s"Processing row $y")
-      }
-      val impossibilityInRow = impossibilityIntervalsInRow(data, y, 0, maxCoords)
-      val values = impossibilityInRow.values
-
-      values foreach { x =>
-        val c = Coords2D.of(x, y)
-        if (sensorsAt.contains(c)) {
-        } else if (beaconsAt.contains(c)) {
-        } else {
-          return c
+    (0 to maxCoords)
+      .map { y =>
+        if (y % 100000 == 0) {
+          println(s"Processing row $y")
         }
+
+        val impossibilityInRow =
+          impossibilityIntervalsInRow(data, y, 0, maxCoords)
+        val values             = impossibilityInRow.values
+
+        values
+          .map { x =>
+            Coords2D.of(x, y)
+          }
+          .find { c =>
+            !sensorsAt.contains(c) && !beaconsAt.contains(c)
+          }
       }
+      .find(_.isDefined)
+      .flatten
+  }
+
+  private val MagicValue                                = 4000000
+  def part2(data: Parsed, maxCoords: Int): Option[Long] =
+    findHiddenBeacon(data, maxCoords) map { result =>
+      result.x.value.toLong * MagicValue + result.y.value
     }
 
-    sys.error("fase")
-
-  }
-
-  def part2(data: Parsed,  maxCoords: Int): Long = {
-    val result = findHiddenBeacon(data, maxCoords)
-    result.x.value.toLong * 4000000 + result.y.value
-  }
-
-
   def main(args: Array[String]): Unit = {
-    Entry(Coords2D.of(8, 7), Coords2D.of(2, 10)).intervalWithY(10) shouldEqual Some(
-      Interval(2, 14)
+    Entry(Coords2D.of(8, 7), Coords2D.of(2, 10))
+      .intervalWithY(10) shouldEqual Some(
+      InclusiveDiscreteInterval(2, 14)
     )
 
-    Entry(Coords2D.of(8, 7), Coords2D.of(2, 10)).intervalWithY(7) shouldEqual Some(
-      Interval(-1, 17)
+    Entry(Coords2D.of(8, 7), Coords2D.of(2, 10))
+      .intervalWithY(7) shouldEqual Some(
+      InclusiveDiscreteInterval(-1, 17)
     )
 
-    Entry(Coords2D.of(8, 7), Coords2D.of(2, 10)).intervalWithY(-4) shouldEqual None
+    Entry(Coords2D.of(8, 7), Coords2D.of(2, 10))
+      .intervalWithY(-4) shouldEqual None
 
-    Entry(Coords2D.of(8, 7), Coords2D.of(2, 10)).intervalWithY(21) shouldEqual None
-
-    // https://i.stack.imgur.com/h2Nw2.png
-    Interval(11, 30) subtract Interval(36, 41) shouldEqual Set(Interval(11, 30))
-    Interval(11, 30) subtract Interval(5, 20) shouldEqual Set(Interval(21, 30))
-    Interval(11, 30) subtract Interval(30, 33) shouldEqual Set(Interval(11, 29))
-    Interval(11, 30) subtract Interval(8, 35) shouldEqual Set.empty
-    Interval(11, 30) subtract Interval(3, 8) shouldEqual Set(Interval(11, 30))
-    Interval(11, 30) subtract Interval(18, 27) shouldEqual Set(
-      Interval(11, 17),
-      Interval(28, 30),
-    )
+    Entry(Coords2D.of(8, 7), Coords2D.of(2, 10))
+      .intervalWithY(21) shouldEqual None
 
     val testData = readFileText("2022/15-test.txt")
-    // val testData = """""";
     val realData = readFileText("2022/15.txt")
 
     val test = parse(testData)
@@ -226,7 +157,7 @@ object Advent15 {
     part1(test, 10) shouldEqual 26
     part1(real, 2000000) shouldEqual 4861076
 
-    part2(test, 20) shouldEqual 56000011
-    part2(real, 4000000) shouldEqual 10649103160102L
+    part2(test, 20) shouldEqual Some(56000011)
+    part2(real, MagicValue) shouldEqual Some(10649103160102L)
   }
 }
