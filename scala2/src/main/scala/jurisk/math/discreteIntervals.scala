@@ -1,9 +1,17 @@
 package jurisk.math
 
 final case class NonOverlappingDiscreteIntervalSet(
-  data: Set[InclusiveDiscreteInterval],
+  data: Set[InclusiveDiscreteInterval]
 ) {
-  def subtract(interval: InclusiveDiscreteInterval): NonOverlappingDiscreteIntervalSet = NonOverlappingDiscreteIntervalSet(
+  def add(
+    interval: InclusiveDiscreteInterval
+  ): NonOverlappingDiscreteIntervalSet = NonOverlappingDiscreteIntervalSet(
+    data.flatMap(_.add(interval))
+  )
+
+  def subtract(
+    interval: InclusiveDiscreteInterval
+  ): NonOverlappingDiscreteIntervalSet = NonOverlappingDiscreteIntervalSet(
     data.flatMap(_.subtract(interval))
   )
 
@@ -13,9 +21,10 @@ final case class NonOverlappingDiscreteIntervalSet(
 }
 
 object NonOverlappingDiscreteIntervalSet {
-  def createInclusive(from: Int, to: Int): NonOverlappingDiscreteIntervalSet = NonOverlappingDiscreteIntervalSet(
-    Set(InclusiveDiscreteInterval(from, to))
-  )
+  def createInclusive(from: Int, to: Int): NonOverlappingDiscreteIntervalSet =
+    NonOverlappingDiscreteIntervalSet(
+      Set(InclusiveDiscreteInterval(from, to))
+    )
 }
 
 final case class InclusiveDiscreteInterval(from: Int, to: Int) {
@@ -23,7 +32,19 @@ final case class InclusiveDiscreteInterval(from: Int, to: Int) {
 
   def values: List[Int] = (from to to).toList
 
-  def subtract(other: InclusiveDiscreteInterval): Set[InclusiveDiscreteInterval] = {
+  def add(other: InclusiveDiscreteInterval): Set[InclusiveDiscreteInterval] =
+    if (other.from > to || other.to < from) Set(this, other)
+    else
+      Set(
+        InclusiveDiscreteInterval(
+          Math.min(this.from, other.from),
+          Math.max(this.to, other.to),
+        )
+      )
+
+  def subtract(
+    other: InclusiveDiscreteInterval
+  ): Set[InclusiveDiscreteInterval] =
     if (other.from > to || other.to < from) {
       Set(this)
     } else if (other.from <= from && other.to >= to) {
@@ -42,5 +63,4 @@ final case class InclusiveDiscreteInterval(from: Int, to: Int) {
         InclusiveDiscreteInterval(from, other.from - 1)
       )
     }
-  }
 }
