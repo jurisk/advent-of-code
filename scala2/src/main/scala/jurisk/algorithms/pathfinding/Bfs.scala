@@ -5,6 +5,29 @@ import cats.data.NonEmptyList
 import scala.collection.mutable
 
 object Bfs {
+  def bfsVisitAll[N](
+    start: N,
+    successors: N => List[N],
+    visit: N => Unit,
+  ): Unit = {
+    val visited: mutable.Set[N] = mutable.Set()
+    val queue: mutable.Queue[N] = mutable.Queue()
+
+    queue.enqueue(start)
+    visited.add(start)
+
+    while (queue.nonEmpty) {
+      val next = queue.dequeue()
+      visit(next)
+      successors(next) foreach { successor =>
+        if (!visited.contains(successor)) {
+          visited.add(successor)
+          queue.enqueue(successor)
+        }
+      }
+    }
+  }
+
   def bfsLength[N](
     start: N,
     successors: N => List[N],
