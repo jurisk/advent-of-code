@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits.{catsSyntaxOptionId, none}
-import jurisk.algorithms.pathfinding.Bfs
+import jurisk.algorithms.pathfinding.{Bfs, Dfs}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
@@ -43,9 +43,11 @@ object Advent16 {
           ) { // already open or useless (e.g. AA) so we go elsewhere
             val valvesStillClosed: ValveIdSet =
               definition.usefulValves -- valvesOpen
-            valvesStillClosed.toList map { whereWeWantToGo =>
+            valvesStillClosed.toList.map { whereWeWantToGo =>
               val distance = definition.howFarIsIt((location, whereWeWantToGo))
               (whereWeWantToGo, distance - 1, None)
+            }.sortBy { case (_, d, _) =>
+              d
             }
           } else {
             (location, 0, Option(location)) :: Nil // opening it
@@ -54,7 +56,7 @@ object Advent16 {
         case n if n > 0 =>
           (location, n - 1, None) :: Nil
 
-        case n => sys.error("wtf $n")
+        case n => sys.error(s"wtf $n")
       }
 
       result
@@ -174,16 +176,17 @@ object Advent16 {
               val optionsForA = rolled.variousOptions(a, this)
               val optionsForB = rolled.variousOptions(b, this)
 
-              // TODO: I think we can have conflicting stuff here, perhaps if both try to open the same valve then let us skip?
-              optionsForA.flatMap { ao =>
+              val results = optionsForA.flatMap { ao =>
                 val (ao1, ao2, ao3) = ao
                 optionsForB.flatMap { bo =>
                   val (bo1, bo2, bo3) = bo
                   if (ao3.isDefined && ao3 == bo3) {
-                    none
+                    none // TODO: hope this is right
                   } else {
+                    val newLocations = (ao1, ao2) :: (bo1, bo2) :: Nil
+
                     rolled
-                      .copy(locations = (ao1, ao2) :: (bo1, bo2) :: Nil)
+                      .copy(locations = newLocations.sorted)
                       .copy(valvesOpen =
                         addToBitSet(addToBitSet(rolled.valvesOpen, ao3), bo3)
                       )
@@ -191,6 +194,8 @@ object Advent16 {
                   }
                 }
               }
+
+              results
 
             case _ => sys.error("wtf")
           }
@@ -260,6 +265,10 @@ object Advent16 {
     type Key2 = (Int, List[(ValveId, Int)], ValveIdSet)
     val bestCache2: mutable.Map[Key2, State2] = mutable.Map.empty
 
+    // If we are at location with X earned and Y valves open, but
+    // there are known solutions at location with X1 > X earned and Y1 <= Y valves open
+    // then this is better
+
     def successors(state: State2): List[State2] = {
       val key: Key2           = (
         state.timeElapsed,
@@ -267,7 +276,7 @@ object Advent16 {
         state.valvesOpen,
       )
       val bestAtThisSituation =
-        bestCache2.get(key).map(_.waterReleased).getOrElse(0)
+        bestCache2.get(key).map(_.waterReleased).getOrElse(Int.MinValue)
 
       if (bestAtThisSituation > state.waterReleased) {
         Nil // prune
@@ -288,7 +297,11 @@ object Advent16 {
       }
     }
 
-    Bfs.bfsVisitAll(start, successors, visit)
+    def successors2(state: State2): List[State2] = {
+      taskDefinition.successors2(state)
+    }
+
+    Dfs.dfsVisitAll(start, successors, visit)
 
 //    (1 to 27) foreach { n =>
 //      println(s"Best in minute $n: ")
@@ -310,10 +323,10 @@ object Advent16 {
 
     println(real.keySet)
 
-    part1(test) shouldEqual 1651
-    part1(real) shouldEqual 1701
+//    part1(test) shouldEqual 1651
+//    part1(real) shouldEqual 1701
 
-    part2(test) shouldEqual 1707
+//    part2(test) shouldEqual 1707
     part2(real) shouldEqual 12345678
   }
 }
