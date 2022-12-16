@@ -1,30 +1,32 @@
 package jurisk.adventofcode.y2022
 
-import cats.data.NonEmptyList
 import cats.implicits.{catsSyntaxOptionId, none}
-import jurisk.algorithms.pathfinding.{Bfs, Dijkstra, Pathfinding}
+import jurisk.algorithms.pathfinding.Bfs
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
+import scala.collection.immutable.BitSet
 import scala.collection.mutable
 
 object Advent16 {
   type Parsed = ValveDefinitions
-  type ValveId = String
+  type ValveId = Int
+  type ValveIdSet = BitSet
 
   final case class ValveDefinition(
     id: ValveId,
+    idString: String,
     flowRate: Int,
-    leadsTo: Set[ValveId],
+    leadsToString: Set[String],
+    leadsTo: ValveIdSet,
   )
 
   final case class State1(
     timeElapsed: Int,
     waterReleased: Int,
     location: ValveId,
-    valvesOpen: Set[ValveId],
+    valvesOpen: ValveIdSet,
   ) {
     def currentWaterRate(definitions: ValveDefinitions): Int = {
       valvesOpen.map { v =>
@@ -50,8 +52,8 @@ object Advent16 {
   final case class State2(
     timeElapsed: Int,
     waterReleased: Int,
-    locations: Set[ValveId],
-    valvesOpen: Set[ValveId],
+    locations: ValveIdSet,
+    valvesOpen: ValveIdSet,
   ) {
     def goFromBoth(definitions: ValveDefinitions, a: ValveId, b: ValveId): List[State2] = {
       val neighboursA = definitions(a).leadsTo.toList
@@ -62,7 +64,7 @@ object Advent16 {
       } yield State2(
         timeElapsed,
         waterReleased,
-        Set(an, bn),
+        BitSet.fromSpecific(an :: bn :: Nil),
         valvesOpen,
       )
     }
@@ -72,7 +74,7 @@ object Advent16 {
         State2(
           timeElapsed,
           waterReleased,
-          Set(valveToOpen, newLocation),
+          BitSet.fromSpecific(valveToOpen :: newLocation :: Nil),
           valvesOpen + valveToOpen
         )
       }
@@ -81,16 +83,17 @@ object Advent16 {
     def openTwoValves(a: ValveId, b: ValveId): State2 = State2(
       timeElapsed,
       waterReleased,
-      Set(a, b),
+      BitSet.fromSpecific(a :: b :: Nil),
       valvesOpen + a + b,
     )
 
-    def rollTurn(definitions: ValveDefinitions): State2 = State2(
-                    timeElapsed + 1,
-                    waterReleased + currentWaterRate(definitions),
-      locations,
-      valvesOpen,
-    )
+    def rollTurn(definitions: ValveDefinitions): State2 =
+      State2(
+        timeElapsed + 1,
+        waterReleased + currentWaterRate(definitions),
+        locations,
+        valvesOpen,
+      )
 
     def currentWaterRate(definitions: ValveDefinitions): Int = {
       valvesOpen.map { v =>
@@ -120,17 +123,21 @@ object Advent16 {
   }
 
   object ValveDefinition {
-    def parse(s: String): ValveDefinition = {
+    def parse(id: Int, s: String): ValveDefinition = {
       s match {
-        case s"Valve $id has flow rate=$flowRate; tunnels lead to valves $others" => ValveDefinition(
+        case s"Valve $idString has flow rate=$flowRate; tunnels lead to valves $others" => ValveDefinition(
           id,
+          idString,
           flowRate.toInt,
           others.split(", ").toSet,
+          BitSet.empty,
         )
-        case s"Valve $id has flow rate=$flowRate; tunnel leads to valve $other" => ValveDefinition(
+        case s"Valve $idString has flow rate=$flowRate; tunnel leads to valve $other" => ValveDefinition(
           id,
+          idString,
           flowRate.toInt,
           Set(other),
+          BitSet.empty,
         )
         case _                 => s"Failed to parse $s".fail
       }
@@ -210,32 +217,45 @@ object Advent16 {
 
           val third: List[State2] = state.rollTurn(definitions).goFromBoth(definitions, a, b)
 
-          first ::: second1 ::: second2 ::: third
+          (first ::: second1 ::: second2 ::: third).distinct.sortBy(_.valvesOpen.size)(Ordering[Int].reverse)
         }
       }
     }
 
   }
 
-  type Key1 = (Int, ValveId, Set[ValveId])
+  // (time, location, openValves)
+  type Key1 = (Int, ValveId, ValveIdSet)
   var bestCache1: mutable.Map[Key1, State1] = mutable.Map.empty
 
-  type Key2 = (Int, Set[ValveId], Set[ValveId])
+  // (time, locations, openValves)
+  type Key2 = (Int, ValveIdSet, ValveIdSet)
   var bestCache2: mutable.Map[Key2, State2] = mutable.Map.empty
 
   def parse(data: String): Parsed = {
-    data.parseList("\n", ValveDefinition.parse).map { x =>
-      x.id -> x
+    val input = data.split("\n")
+    val parsed: Array[ValveDefinition] = input.zipWithIndex.map { case (s, idx) =>
+      ValveDefinition.parse(idx, s)
+    }
+
+    parsed.toList.map { x =>
+      x.id -> x.copy(
+        leadsTo = BitSet.fromSpecific(
+          x.leadsToString.map(s => parsed.find(_.idString == s).get.id)
+        )
+      )
     }.toMap
   }
 
   def part1(definitions: Parsed): Int = {
+    val startValve = definitions.values.find(_.idString == "AA").get.id
+
     println(definitions)
     val start = State1(
       1,
       0,
-      "AA",
-      Set.empty,
+      startValve,
+      BitSet.empty,
     )
 
     var best: Int = 0
@@ -273,11 +293,13 @@ object Advent16 {
 
   def part2(definitions: Parsed): Int = {
     println(definitions)
+    val startValve = definitions.values.find(_.idString == "AA").get.id
+
     val start = State2(
       1,
       0,
-      Set("AA"),
-      Set.empty,
+      BitSet.fromSpecific(startValve :: Nil),
+      BitSet.empty,
     )
 
     var best: Int = 0
@@ -285,6 +307,7 @@ object Advent16 {
     def visit(state: State2): Unit = {
       if (state.waterReleased > best) {
         best = state.waterReleased
+        println(s"Found better $best at $state")
       }
     }
 
@@ -292,27 +315,17 @@ object Advent16 {
 
     def successors(state: State2): List[State2] = {
       val key: Key2 = (state.timeElapsed, state.locations, state.valvesOpen)
-      val bestSoFar = bestCache2.get(key)
-      bestSoFar match {
-        case Some(x) =>
-          if (x.waterReleased > state.waterReleased) {
-            Nil
-          } else {
-//            println(s"Found $key ${state}")
-//            state.debug(definitions)
-//            println()
-            bestCache2.update(key, state)
-            taskDefinition.successors2(state)
-          }
+      val bestAtThisSituation = bestCache2.get(key).map(_.waterReleased).getOrElse(0)
 
-        case None =>
-//          println(s"Found $key ${state}")
-//          state.debug(definitions)
-//          println()
-          bestCache2.update(key, state)
-          taskDefinition.successors2(state)
+      if (bestAtThisSituation > state.waterReleased) {
+        Nil // prune
+      } else {
+        if (bestCache2.size % 10000 == 0) {
+          println(bestCache2.size)
+        }
+        bestCache2.update(key, state)
+        taskDefinition.successors2(state)
       }
-
     }
 
     Bfs.bfsVisitAll(start, successors, visit)
@@ -324,6 +337,7 @@ object Advent16 {
 //      println()
 //    }
 
+    println(s"Found $best, the cache size is ${bestCache2.size}")
     best
   }
 
@@ -335,9 +349,11 @@ object Advent16 {
     val test = parse(testData)
     val real = parse(realData)
 
-    part1(test) shouldEqual 1651
-    part1(real) shouldEqual 1701
+    println(real.keySet)
 
+//    part1(test) shouldEqual 1651
+//    part1(real) shouldEqual 1701
+//
     part2(test) shouldEqual 1707
     part2(real) shouldEqual 1234465
   }
