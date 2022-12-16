@@ -10,19 +10,19 @@ import scala.collection.mutable
 object AStar {
   /** @param start
     *   The starting node.
-    * @param successors
+    * @param neighbours
     *   List of successors for a given node, along with the cost of moving from
     *   the given node to this successor.
     * @param heuristic
     *   Approximation of the cost from the given node to the goal. Must not be
     *   greater than the real cost, or a wrong path may be returned!
-    * @param success
+    * @param isGoal
     *   Is the node reached? A function, not a node, because some problems
     *   require a dynamic solution.
     * @tparam N
-    *   Node type
+    *   Node type.
     * @tparam C
-    *   Cost type
+    *   Cost type.
     * @return
     *   The shortest path starting from `start` up to a node for which `success`
     *   returns `true`, along with the total cost, in a `Some`. If no path can
