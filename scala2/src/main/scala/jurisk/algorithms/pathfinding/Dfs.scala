@@ -5,6 +5,30 @@ import cats.data.NonEmptyList
 import scala.collection.mutable
 
 object Dfs {
+  def dfsVisitAll[N](
+    start: N,
+    successors: N => List[N],
+    visit: N => Unit,
+  ): Unit = {
+    val visited: mutable.Set[N] = mutable.Set()
+    val stack: mutable.Stack[N] = mutable.Stack()
+    val parents: mutable.Map[N, N] = mutable.Map()
+
+    stack.push(start)
+
+    while (stack.nonEmpty) {
+      val next = stack.pop()
+      visit(next)
+      if (!visited.contains(next)) {
+        visited.add(next)
+        successors(next) foreach { successor =>
+          parents.put(successor, next)
+          stack.push(successor)
+        }
+      }
+    }
+  }
+
   def dfsLength[N](
     start: N,
     successors: N => List[N],
