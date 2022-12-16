@@ -26,36 +26,37 @@ object Advent16 {
     timeElapsed: Int,
     waterReleased: Int,
     locations: List[
-      (ValveId, Option[ValveId]) // (location, destinationWithIntentionToOpen)
+      (ValveId, Int) // (location, arrival there after how much?)
     ],
     valvesOpen: ValveIdSet,
   ) {
     def variousOptions(
-      actorWithIntention: (ValveId, Option[ValveId]),
+      locationWithArrivalAfterX: (ValveId, Int),
       definition: TaskDefinition,
-    ): List[(ValveId, Option[ValveId], Option[ValveId])] = {
-      val (currentLocation, intention) = actorWithIntention
-      val result                       = intention match {
-        case Some(whereWeWantToGo) =>
-          if (whereWeWantToGo == currentLocation) { // we wanted to open this valve so we do it
-            (currentLocation, None, Some(currentLocation)) :: Nil
-          } else { // follow our intention
-            val nextStep =
-              definition.howDoWeGoTo((currentLocation, whereWeWantToGo))
-            // println(s"Next step of going from ${definition.nodeName(currentLocation)} to ${definition.nodeName(whereWeWantToGo)} is ${definition.nodeName(nextStep)}")
-            (nextStep, Some(whereWeWantToGo), None) :: Nil
+    ): List[(ValveId, Int, Option[ValveId])] = {
+      val (location, arrival) = locationWithArrivalAfterX
+      val result              = arrival match {
+        case 0 =>
+          if (
+            valvesOpen
+              .contains(location) || !definition.usefulValves.contains(location)
+          ) { // already open or useless (e.g. AA) so we go elsewhere
+            val valvesStillClosed: ValveIdSet =
+              definition.usefulValves -- valvesOpen
+            valvesStillClosed.toList map { whereWeWantToGo =>
+              val distance = definition.howFarIsIt((location, whereWeWantToGo))
+              (whereWeWantToGo, distance - 1, None)
+            }
+          } else {
+            (location, 0, Option(location)) :: Nil // opening it
           }
 
-        case None =>
-          val valvesStillClosed: ValveIdSet =
-            definition.usefulValves -- valvesOpen
-          valvesStillClosed.toList map { whereWeWantToGo =>
-            val firstStep =
-              definition.howDoWeGoTo((currentLocation, whereWeWantToGo))
-            // println(s"Next step of going from ${definition.nodeName(currentLocation)} to ${definition.nodeName(whereWeWantToGo)} is ${definition.nodeName(firstStep)}")
-            (firstStep, Some(whereWeWantToGo), None)
-          }
+        case n if n > 0 =>
+          (location, n - 1, None) :: Nil
+
+        case n => sys.error("wtf $n")
       }
+
       result
     }
 
@@ -86,7 +87,7 @@ object Advent16 {
       }
       println(s"You are at ${locations
           .map { case (a, b) =>
-            definition.nodeName(a) + " intending for " + (b.map(definition.nodeName))
+            definition.nodeName(a) + " arriving īn " + b
           }
           .mkString(", ")} and $waterReleased water has been released so far.")
     }
@@ -122,7 +123,7 @@ object Advent16 {
   ) {
     def nodeName(x: ValveId): String = definitions(x).idString
 
-    val howDoWeGoTo: Map[(ValveId, ValveId), ValveId] = {
+    val howFarIsIt: Map[(ValveId, ValveId), Int] = {
       val results: Iterable[(ValveId, ValveId, Option[ValveId])] = for {
         from <- definitions.keys
         to   <- definitions.keys
@@ -131,12 +132,11 @@ object Advent16 {
         from,
         to,
         Bfs
-          .bfs(
+          .bfsLength(
             from,
             (n: ValveId) => definitions(n).leadsTo.toList,
             (n: ValveId) => n == to,
-          )
-          .map(x => x.tail.head),
+          ),
       )
 
       results.flatMap { case (from, to, q) =>
@@ -164,12 +164,11 @@ object Advent16 {
 
           locations match {
             case x :: Nil      =>
-              rolled.variousOptions(x, this).map {
-                opt: (ValveId, Option[ValveId], Option[ValveId]) =>
-                  val (a1, a2, a3) = opt
-                  rolled
-                    .copy(locations = (a1, a2) :: Nil)
-                    .copy(valvesOpen = addToBitSet(rolled.valvesOpen, a3))
+              rolled.variousOptions(x, this).map { opt =>
+                val (a1, a2, a3) = opt
+                rolled
+                  .copy(locations = (a1, a2) :: Nil)
+                  .copy(valvesOpen = addToBitSet(rolled.valvesOpen, a3))
               }
             case a :: b :: Nil =>
               val optionsForA = rolled.variousOptions(a, this)
@@ -224,7 +223,7 @@ object Advent16 {
     val start = State2(
       1,
       0,
-      (startValve, None) :: Nil,
+      (startValve, 0) :: Nil,
       BitSet.empty,
     )
 
@@ -237,7 +236,7 @@ object Advent16 {
     val start = State2(
       1,
       0,
-      (startValve, None) :: (startValve, None) :: Nil,
+      (startValve, 0) :: (startValve, 0) :: Nil,
       BitSet.empty,
     )
 
@@ -258,13 +257,13 @@ object Advent16 {
     val taskDefinition = TaskDefinition(definitions, maxTime)
 
     // (time, locations, openValves)
-    type Key2 = (Int, ValveIdSet, ValveIdSet)
+    type Key2 = (Int, List[(ValveId, Int)], ValveIdSet)
     val bestCache2: mutable.Map[Key2, State2] = mutable.Map.empty
 
     def successors(state: State2): List[State2] = {
       val key: Key2           = (
         state.timeElapsed,
-        BitSet.fromSpecific(state.locations.map(_._1)),
+        state.locations,
         state.valvesOpen,
       )
       val bestAtThisSituation =
