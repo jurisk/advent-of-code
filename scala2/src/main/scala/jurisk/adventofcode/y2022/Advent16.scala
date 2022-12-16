@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits.{catsSyntaxOptionId, none}
-import jurisk.algorithms.pathfinding.{Bfs, Dfs}
+import jurisk.algorithms.pathfinding.{Bfs, Dfs, Dijkstra}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
@@ -30,6 +30,10 @@ object Advent16 {
     ],
     valvesOpen: ValveIdSet,
   ) {
+    def wastedPotential(definition: TaskDefinition): Int = {
+      definition.definitions.values.filterNot(x => valvesOpen.contains(x.id)).map(_.flowRate).sum // * definition.timeLeft(timeElapsed)
+    }
+
     def variousOptions(
       locationWithArrivalAfterX: (ValveId, Int),
       definition: TaskDefinition,
@@ -123,6 +127,8 @@ object Advent16 {
     definitions: ValveDefinitions,
     maxTime: Int,
   ) {
+    def timeLeft(timeElapsed: Int): Int = maxTime - timeElapsed + 1
+
     def nodeName(x: ValveId): String = definitions(x).idString
 
     val howFarIsIt: Map[(ValveId, ValveId), Int] = {
@@ -204,6 +210,9 @@ object Advent16 {
 
     val usefulValves: ValveIdSet =
       BitSet.fromSpecific(definitions.values.filter(_.flowRate > 0).map(_.id))
+
+    val uselessValves: ValveIdSet =
+      BitSet.fromSpecific(definitions.values.filter(_.flowRate == 0).map(_.id))
   }
 
   def parse(data: String): Parsed = {
@@ -249,6 +258,23 @@ object Advent16 {
   }
 
   def solve(definitions: Parsed, start: State2, maxTime: Int): Int = {
+    val taskDefinition = TaskDefinition(definitions, maxTime)
+    // val allUselessOpen = start.copy(valvesOpen = taskDefinition.uselessValves)
+    def successors(state: State2): List[(State2, Int)] = {
+      taskDefinition.successors2(state).map { s =>
+        s -> s.wastedPotential(taskDefinition)
+      }
+    }
+
+    val result = Dijkstra.dijkstra[State2, Int](start, successors, _.isFinished(maxTime)).get._1.toList
+    result foreach { x =>
+      x.debug(taskDefinition)
+    }
+
+    result.last.waterReleased
+  }
+
+  def solve2(definitions: Parsed, start: State2, maxTime: Int): Int = {
     // println(definitions)
 
     var best: Int = 0
@@ -281,7 +307,7 @@ object Advent16 {
       if (bestAtThisSituation > state.waterReleased) {
         Nil // prune
       } else {
-        if (bestCache2.size % 100000 == 0) {
+        if (bestCache2.size % 1000000 == 0) {
           println(bestCache2.size)
         }
         bestCache2.update(key, state)
@@ -301,7 +327,7 @@ object Advent16 {
       taskDefinition.successors2(state)
     }
 
-    Dfs.dfsVisitAll(start, successors, visit)
+    Dfs.dfsVisitAll(start, successors2, visit)
 
 //    (1 to 27) foreach { n =>
 //      println(s"Best in minute $n: ")
@@ -324,9 +350,9 @@ object Advent16 {
     println(real.keySet)
 
 //    part1(test) shouldEqual 1651
-//    part1(real) shouldEqual 1701
+    part1(real) shouldEqual 1701
 
 //    part2(test) shouldEqual 1707
-    part2(real) shouldEqual 12345678
+//    part2(real) shouldEqual 12345678
   }
 }
