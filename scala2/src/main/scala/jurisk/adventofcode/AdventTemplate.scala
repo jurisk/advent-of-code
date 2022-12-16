@@ -35,7 +35,7 @@ object AdventTemplate {
 
   def main(args: Array[String]): Unit = {
     val testData = readFileText("2022/00-test.txt")
-    // val testData = """""";
+    // val testData = """"""
     val realData = readFileText("2022/00.txt")
 
     val test = parse(testData)
