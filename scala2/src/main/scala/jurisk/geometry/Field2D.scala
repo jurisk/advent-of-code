@@ -6,8 +6,8 @@ final case class Field2D[T](data: Vector[Vector[T]], topLeft: Coords2D = Coords2
   val width: Int  = data.head.length
   val height: Int = data.length
 
-  private def xIndices: Seq[X] = (0 until width).map(x => X(x) + topLeft.x)
-  private def yIndices: Seq[Y] = (0 until height).map(y => Y(y) + topLeft.y)
+  def xIndices: Seq[X] = (0 until width).map(x => X(x) + topLeft.x)
+  def yIndices: Seq[Y] = (0 until height).map(y => Y(y) + topLeft.y)
 
   def mapByCoordsWithValues[B](f: (Coords2D, T) => B): Field2D[B] = Field2D {
     yIndices.toVector map { y =>
