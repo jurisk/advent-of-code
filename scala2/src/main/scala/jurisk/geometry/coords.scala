@@ -63,6 +63,12 @@ final case class Coords2D(x: X, y: Y) {
   }
 
   override def toString: String = s"($x, $y)"
+
+  def E: Coords2D = this + Direction2D.E.diff
+  def N: Coords2D = this + Direction2D.N.diff
+  def NE: Coords2D = this + Direction2D.NE.diff
+  def S: Coords2D = this + Direction2D.S.diff
+  def W: Coords2D = this + Direction2D.W.diff
 }
 
 object Coords2D {
