@@ -64,11 +64,14 @@ final case class Coords2D(x: X, y: Y) {
 
   override def toString: String = s"($x, $y)"
 
-  def E: Coords2D = this + Direction2D.E.diff
   def N: Coords2D = this + Direction2D.N.diff
-  def NE: Coords2D = this + Direction2D.NE.diff
+  def E: Coords2D = this + Direction2D.E.diff
   def S: Coords2D = this + Direction2D.S.diff
   def W: Coords2D = this + Direction2D.W.diff
+  def NE: Coords2D = this + Direction2D.NE.diff
+  def NW: Coords2D = this + Direction2D.NW.diff
+  def SE: Coords2D = this + Direction2D.SE.diff
+  def SW: Coords2D = this + Direction2D.SW.diff
 }
 
 object Coords2D {

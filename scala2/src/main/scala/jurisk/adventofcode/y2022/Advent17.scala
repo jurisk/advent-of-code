@@ -139,7 +139,7 @@ object Advent17 {
     rock: RockPattern,
     jetPatternOffset: Int,
   ): (Field2D[Square], Int) = {
-    val minY                    = fieldMinY(field) // should perhaps cache
+    val minY                    = fieldMinY(field)
     val startPosition: Coords2D = Coords2D.of(2, minY - 4)
     val rockCoords              = rock.coords.map(_ + startPosition)
 
@@ -203,11 +203,12 @@ object Advent17 {
     (result, newOffset)
   }
 
-  private val FieldWidth = 7
-  def fieldWithBottom(height: Int): Field2D[Square] = {
-    val emptyField: Field2D[Square] = Field2D.ofSize(FieldWidth, height, Square.Empty)
+  private val FieldWidth                                    = 7
+  private def fieldWithBottom(height: Int): Field2D[Square] = {
+    val emptyField: Field2D[Square] =
+      Field2D.ofSize(FieldWidth, height, Square.Empty)
     emptyField.mapByCoords { c =>
-      if (c.y.value == emptyField.height - 1) { // (c.x.value == 0) || (c.x.value == emptyField.width - 1)
+      if (c.y.value == emptyField.height - 1) {
         Square.Wall
       } else {
         Square.Empty
@@ -227,10 +228,8 @@ object Advent17 {
           println(s"Finished with jet pattern offset $jetPatternOffset")
           acc.asLeft
         } else {
-          val rockIdx = iteration % RockPattern.RockPatterns.length
-          val chosenRock                    = RockPattern.RockPatterns(rockIdx)
-
-          // println(s"Iteration $iteration has jet pattern idx ${jetPatternOffset % jetPattern.length} and rock index of ${rockIdx}")
+          val rockIdx    = iteration % RockPattern.RockPatterns.length
+          val chosenRock = RockPattern.RockPatterns(rockIdx)
 
           val (result, newJetPatternOffset) =
             dropRock(acc, jetPattern, chosenRock, jetPatternOffset)
@@ -246,9 +245,11 @@ object Advent17 {
   }
 
   type FrontierIndex = Int
-  private var nextFrontierIndex: Int = 0
-  private val frontierMap1: mutable.Map[FrontierIndex, Set[Coords2D]] = mutable.Map.empty
-  private val frontierMap2: mutable.Map[Set[Coords2D], FrontierIndex] = mutable.Map.empty
+  private var nextFrontierIndex: Int                                  = 0
+  private val frontierMap1: mutable.Map[FrontierIndex, Set[Coords2D]] =
+    mutable.Map.empty
+  private val frontierMap2: mutable.Map[Set[Coords2D], FrontierIndex] =
+    mutable.Map.empty
 
   final case class State(
     frontierIndex: FrontierIndex,
@@ -256,12 +257,15 @@ object Advent17 {
     jetPatternOffset: Int,
   )
 
-  private def transitionFunction(jetPattern: JetPattern, state: State): (State, Int) = {
+  private def transitionFunction(
+    jetPattern: JetPattern,
+    state: State,
+  ): (State, Int) = {
     val thisRock = RockPattern.RockPatterns(state.rockOffset)
 
     val newRockOffset = (state.rockOffset + 1) % RockPattern.RockPatterns.length
 
-    val field = calculateField(state.frontierIndex)
+    val field                                      = calculateField(state.frontierIndex)
     val (resultingField, returnedJetPatternOffset) = dropRock(
       field,
       jetPattern,
@@ -270,8 +274,8 @@ object Advent17 {
     )
 
     val newJetPatternOffset = returnedJetPatternOffset % jetPattern.length
-    val newFrontierIndex = calculateAndCacheFrontier(resultingField)
-    val heightDiff = fieldMinY(field) - fieldMinY(resultingField)
+    val newFrontierIndex    = calculateAndCacheFrontier(resultingField)
+    val heightDiff          = fieldMinY(field) - fieldMinY(resultingField)
 
     (
       State(
@@ -283,47 +287,43 @@ object Advent17 {
     )
   }
 
-  private def calculateField(frontierIndex: FrontierIndex): Field2D[Square] = {
+  private def calculateField(frontierIndex: FrontierIndex): Field2D[Square] =
     calculateField(frontierMap1(frontierIndex))
-  }
 
-  val FieldHeightForExperiments = 100
+  private val FieldHeightForExperiments                                = 100
   private def calculateField(frontier: Set[Coords2D]): Field2D[Square] = {
-    val field: Field2D[Square] = Field2D.ofSize(FieldWidth, FieldHeightForExperiments, Square.Empty)
-    val frontierMaxY = frontier.map(_.y.value).max
-    val yDelta = field.height - frontierMaxY - 1
+    val field: Field2D[Square] =
+      Field2D.ofSize(FieldWidth, FieldHeightForExperiments, Square.Empty)
+    val frontierMaxY           = frontier.map(_.y.value).max
+    val yDelta                 = field.height - frontierMaxY - 1
 
     val result = frontier.foldLeft(field) { case (acc, c) =>
       acc.updatedAtUnsafe(c + Coords2D.of(0, yDelta), Square.Wall)
     }
 
-//    printField(result)
     result
   }
 
-  def printFrontier(frontier: Set[Coords2D]): Unit = {
+  private def printFrontier(frontier: Set[Coords2D]): Unit =
     printField(calculateField(frontier))
-  }
 
   private def calculateFrontier(field: Field2D[Square]): Set[Coords2D] = {
-    val minY = fieldMinY(field)
+    val minY                            = fieldMinY(field)
     val frontier: mutable.Set[Coords2D] = mutable.Set.empty
 
     (0 until field.width) foreach { x =>
       Bfs.bfsVisitAll[Coords2D](
         Coords2D.of(x, minY - 1),
-        c => {
+        c =>
           if (field(c) == Square.Empty) {
             field.adjacent4(c).filter(_.y.value >= minY - 1)
           } else {
             Nil
-          }
-        },
-        c => {
+          },
+        c =>
           if (field(c) != Square.Empty) {
             frontier.add(c)
-          }
-        }
+          },
       )
     }
 
@@ -341,7 +341,9 @@ object Advent17 {
     result
   }
 
-  private def calculateAndCacheFrontier(field: Field2D[Square]): FrontierIndex = {
+  private def calculateAndCacheFrontier(
+    field: Field2D[Square]
+  ): FrontierIndex = {
     val frontier = calculateFrontier(field)
     frontierMap2.get(frontier) match {
       case Some(idx) =>
@@ -356,35 +358,45 @@ object Advent17 {
     }
   }
 
-  def part2(jetPattern: JetPattern, rocksToCount: Long, loopDetection: Boolean = true): Long = {
-    val initialField = fieldWithBottom(FieldHeightForExperiments)
+  def part2(
+    jetPattern: JetPattern,
+    rocksToCount: Long,
+    loopDetection: Boolean = true,
+  ): Long = {
+    val initialField    = fieldWithBottom(FieldHeightForExperiments)
     val initialFrontier = calculateAndCacheFrontier(initialField)
 
-    var state = State(initialFrontier, 0, 0)
+    var state                                         = State(initialFrontier, 0, 0)
     // State -> (move_num, growth_num)
     val visited: mutable.HashMap[State, (Long, Long)] = mutable.HashMap.empty
     visited.put(state, (0, 0))
 
-    var acc: Long = 0
+    var acc: Long  = 0
     var move: Long = 0
     while (move <= rocksToCount) {
       val (newState, growth) = transitionFunction(jetPattern, state)
       if (loopDetection && visited.contains(newState)) { // we have our loop
         move += 1
-        val nowAt = acc + growth
+        val nowAt                       = acc + growth
         val (whenWeSawIt, howTallWasIt) = visited(newState)
-        val loopSizeInMoves = move - whenWeSawIt
-        val loopSizeInGrowth = nowAt - howTallWasIt
-        val remaining = rocksToCount - move
-        val loopsThatFit = remaining / loopSizeInMoves
-        println(s"omg loop $newState after $move moves which we first saw in $whenWeSawIt (move delta $loopSizeInMoves, growth delta $loopSizeInGrowth)")
-        // TODO: we end up not reusing much of this stuff
-        // val newRocksToCount = rocksToCount % loopSizeInMoves // rocksToCount - (loopsThatFit * loopSizeInMoves)
-        val newRocksToCount = rocksToCount - (loopsThatFit * loopSizeInMoves)
+        val loopSizeInMoves             = move - whenWeSawIt
+        val loopSizeInGrowth            = nowAt - howTallWasIt
+        val remaining                   = rocksToCount - move
+        val loopsThatFit                = remaining / loopSizeInMoves
+        println(
+          s"zomg loop $newState after $move moves which we first saw in $whenWeSawIt (move delta $loopSizeInMoves, growth delta $loopSizeInGrowth)"
+        )
+        val newRocksToCount             = rocksToCount - (loopsThatFit * loopSizeInMoves)
 
-        println(s"New rocks to count = ${newRocksToCount}")
+        println(s"New rocks to count = $newRocksToCount")
         println(s"Extras is ${loopsThatFit * loopSizeInGrowth}")
-        return part2(jetPattern, newRocksToCount, loopDetection = false) + loopsThatFit * loopSizeInGrowth
+
+        // Perhaps part2 could be improved to return the exact results instead of just basically detect loops,
+        // but it is what it is, so we have to invoke `part1` here
+        return part1(
+          jetPattern,
+          newRocksToCount,
+        ) + loopsThatFit * loopSizeInGrowth
       } else {
         acc += growth
         state = newState
@@ -403,32 +415,14 @@ object Advent17 {
     val test = parse(testData)
     val real = parse(realData)
 
-//    part1(test, 2022) shouldEqual 3068
-//    part1(real, 2022) shouldEqual 3071
+    part1(test, 2022) shouldEqual 3068
+    part1(real, 2022) shouldEqual 3071
 
-//      part1(test, 97) + 2915 shouldEqual 3068
+    part2(test, 2022) shouldEqual 3068
 
-//      part2(test, 2022) shouldEqual 3068
-//      part2(test, 2022, loopDetection = false) shouldEqual 3068
-//    part2(real, 2022) shouldEqual 3071
-//    part2(test, 1000000000000L) shouldEqual 1514285714288L
+    part2(real, 2022) shouldEqual 3071
+    part2(test, 1000000000000L) shouldEqual 1514285714288L
 
-    part1(test, 85) + 1514285714157L shouldEqual 1514285714288L
-
-    val newRocks = 3445
-    val extras = 1523615155101L
-
-    part1(real, newRocks) + extras shouldEqual 1523615160362L
-//    part2(real, 1000000000000L) shouldEqual "todo"
-
-
-    // 1523615160353 too low
-    // 1523615160354 too low
-
-    // 1523615160362 try next
-
-    // 1523615160363 incorrect
-    // 1523615160364 incorrect
-    // 1523615160365 too high
+    part2(real, 1000000000000L) shouldEqual 1523615160362L
   }
 }
