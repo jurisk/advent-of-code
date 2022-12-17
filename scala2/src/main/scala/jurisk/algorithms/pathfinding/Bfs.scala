@@ -5,6 +5,17 @@ import cats.data.NonEmptyList
 import scala.collection.mutable
 
 object Bfs {
+  def bfsReachable[N](
+   start: N,
+   successors: N => List[N],
+  ): List[N] = {
+    var results: Vector[N] = Vector.empty
+
+    bfsVisitAll[N](start, successors, n => results = results.appended(n))
+
+    results.toList
+  }
+
   def bfsVisitAll[N](
     start: N,
     successors: N => List[N],
