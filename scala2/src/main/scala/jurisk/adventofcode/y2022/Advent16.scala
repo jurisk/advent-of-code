@@ -1,6 +1,6 @@
 package jurisk.adventofcode.y2022
 
-import jurisk.algorithms.pathfinding.Bfs
+import jurisk.algorithms.pathfinding.FloydWarshall
 import jurisk.utils.FileInput.readFileText
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
@@ -31,7 +31,8 @@ object Advent16 {
             flowRate.toInt,
             Set(other),
           )
-        case _                                                                    => s"Failed to parse $s".fail
+        case _                                                                    =>
+          s"Failed to parse $s".fail
       }
   }
 
@@ -49,29 +50,13 @@ object Advent16 {
   }
 
   final case class Task(valves: Map[ValveId, ValveDefinition]) {
-    // Floyd-Warshall would be better, but this crude alternative will work
-    private val distancesToAll: Map[(ValveId, ValveId), Int] = {
-      val results: Iterable[(ValveId, ValveId, Option[Int])] = for {
-        from <- valves.keys
-        to   <- valves.keys
-        if from != to
-      } yield (
-        from,
-        to,
-        Bfs
-          .bfsLength(
-            from,
-            (n: ValveId) => valves(n).leadsTo.toList,
-            (n: ValveId) => n == to,
-          ),
+    private val distancesToAll: Map[(ValveId, ValveId), Int] =
+      FloydWarshall.allPairsDistances[ValveId, Int](
+        valves.keySet.toList,
+        (from, to) => if (valves(from).leadsTo.contains(to)) Some(1) else None,
       )
 
-      results.flatMap { case (from, to, dist) =>
-        dist map { q =>
-          (from, to) -> q
-        }
-      }.toMap
-    }
+    def distance(from: ValveId, to: ValveId): Int = distancesToAll((from, to))
 
     private val usefulValves: Set[ValveId] =
       valves.values.filter(_.flowRate > 0).map(_.id).toSet
@@ -83,13 +68,13 @@ object Advent16 {
     ): List[Vector[ValveId]] = {
       val candidateValves = usefulValves -- openValves.toSet
       val reachable       =
-        candidateValves.filter(v => distancesToAll((from, v)) < timeLeft)
+        candidateValves.filter(v => distance(from, v) < timeLeft)
 
       openValves :: reachable.toList.flatMap { next =>
         allWaysToOpen(
           next,
           openValves :+ next,
-          timeLeft - distancesToAll((from, next)) - 1,
+          timeLeft - distance(from, next) - 1,
         )
       }
     }
@@ -104,7 +89,7 @@ object Advent16 {
       wayToOpen match {
         case Nil               => acc
         case next :: remaining =>
-          val newTimeLeft = timeLeft - distancesToAll((curr, next)) - 1
+          val newTimeLeft = timeLeft - distance(curr, next) - 1
           score(
             next,
             remaining,
