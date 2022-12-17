@@ -27,7 +27,8 @@ object Advent17 {
       case JetMove.Right => Direction2D.E.diff
     }
   }
-  object JetMove       {
+
+  private object JetMove {
     object Left  extends JetMove
     object Right extends JetMove
   }
@@ -50,7 +51,7 @@ object Advent17 {
   object RockPattern {
     import Coords2D.Zero
 
-    val Horizontal = RockPattern(
+    private val Horizontal = RockPattern(
       Set(
         Zero,
         Zero.E,
@@ -58,7 +59,7 @@ object Advent17 {
         Zero.E.E.E,
       )
     )
-    val Cross      = RockPattern(
+    private val Cross      = RockPattern(
       Set(
         Zero.N,
         Zero.E,
@@ -67,7 +68,7 @@ object Advent17 {
         Zero.NE.E,
       )
     )
-    val ReverseL   = RockPattern(
+    private val ReverseL   = RockPattern(
       Set(
         Zero,
         Zero.E,
@@ -76,7 +77,7 @@ object Advent17 {
         Zero.NE.NE,
       )
     )
-    val Vertical   = RockPattern(
+    private val Vertical   = RockPattern(
       Set(
         Zero,
         Zero.N,
@@ -84,7 +85,7 @@ object Advent17 {
         Zero.N.N.N,
       )
     )
-    val Block      = RockPattern(
+    private val Block      = RockPattern(
       Set(
         Zero,
         Zero.N,
@@ -97,13 +98,13 @@ object Advent17 {
       Array(Horizontal, Cross, ReverseL, Vertical, Block)
   }
 
-  def hitsFieldOrSides(
+  private def hitsFieldOrSides(
     field: Field2D[Square],
     rockCoords: Set[Coords2D],
   ): Boolean =
     !rockCoords.forall(c => field.at(c).contains(Empty))
 
-  def fieldMinY(field: Field2D[Square]): Int =
+  private def fieldMinY(field: Field2D[Square]): Int =
     field
       .filterCoordsByValue {
         case Square.Wall  => true
@@ -132,7 +133,7 @@ object Advent17 {
     println
   }
 
-  val Debug = false
+  private val Debug = false
   private def dropRock(
     field: Field2D[Square],
     jetPattern: JetPattern,
@@ -244,7 +245,7 @@ object Advent17 {
     result.height - fieldMinY(result) - 1
   }
 
-  type FrontierIndex = Int
+  private type FrontierIndex = Int
   private var nextFrontierIndex: Int                                  = 0
   private val frontierMap1: mutable.Map[FrontierIndex, Set[Coords2D]] =
     mutable.Map.empty
@@ -367,8 +368,8 @@ object Advent17 {
     val initialFrontier = calculateAndCacheFrontier(initialField)
 
     var state                                         = State(initialFrontier, 0, 0)
-    // State -> (move_num, growth_num)
-    val visited: mutable.HashMap[State, (Long, Long)] = mutable.HashMap.empty
+    val visited: mutable.HashMap[State, (Long, Long)] =
+      mutable.HashMap.empty // State -> (move_num, growth_num)
     visited.put(state, (0, 0))
 
     var acc: Long  = 0
@@ -391,7 +392,7 @@ object Advent17 {
         println(s"New rocks to count = $newRocksToCount")
         println(s"Extras is ${loopsThatFit * loopSizeInGrowth}")
 
-        // Perhaps part2 could be improved to return the exact results instead of just basically detect loops,
+        // Perhaps part2 could be improved to return the exact results instead of just detect loops,
         // but it is what it is, so we have to invoke `part1` here
         return part1(
           jetPattern,
@@ -405,7 +406,9 @@ object Advent17 {
       }
     }
 
-    acc
+    sys.error(
+      s"part2 doesn't actually calculate exact results, the approx result was $acc"
+    )
   }
 
   def main(args: Array[String]): Unit = {
@@ -419,10 +422,9 @@ object Advent17 {
     part1(real, 2022) shouldEqual 3071
 
     part2(test, 2022) shouldEqual 3068
-
     part2(real, 2022) shouldEqual 3071
-    part2(test, 1000000000000L) shouldEqual 1514285714288L
 
+    part2(test, 1000000000000L) shouldEqual 1514285714288L
     part2(real, 1000000000000L) shouldEqual 1523615160362L
   }
 }
