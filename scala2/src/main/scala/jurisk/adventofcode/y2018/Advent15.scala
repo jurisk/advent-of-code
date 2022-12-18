@@ -184,6 +184,7 @@ object Advent15 {
       }
     }
 
+    // Left - combat ends, Right - combat continues
     private def performTurn(warriorId: WarriorId): Either[State, State] = {
       val self = units(warriorId)
       if (self.isAlive) {
@@ -202,7 +203,9 @@ object Advent15 {
               findDistancesToMany(self.location, squaresAdjacentToTargets)
             chooseBestSquare(squaresAdjacentToTargetsWithDistances) match {
               case Some(chosenSquare) =>
-                takeStepTowards(self, chosenSquare).attackIfPossible(warriorId).asRight
+                takeStepTowards(self, chosenSquare)
+                  .attackIfPossible(warriorId)
+                  .asRight
               case None               =>
                 this.asRight
             }
@@ -223,12 +226,9 @@ object Advent15 {
         }
 
         val result = warriorIdsInOrder
-          .foldLeft[Either[State, State]](this.asRight) { case (acc, warriorId) =>
-            acc match {
-              case Left(acc) => acc.asLeft
-              case Right(acc) =>
-                acc.performTurn(warriorId)
-            }
+          .foldLeft[Either[State, State]](this.asRight) {
+            case (acc, warriorId) =>
+              acc.flatMap(_.performTurn(warriorId))
           }
 
         result.map(_.copy(roundsCompleted + 1))
@@ -288,58 +288,21 @@ object Advent15 {
   }
 
   def part1(initial: State): (State, Int) = {
-    val state = Simulation.run(initial) { state =>
-      state.debugPrint()
-      state.nextRound
-    }
-
+    val state = Simulation.run(initial)(_.nextRound)
     (state, state.roundsCompleted * state.hitPointsRemaining)
-  }
-
-  // low - Elves lose at this, high - Elves win at this
-  @tailrec
-  private def pivotSearch(initial: State, low: Int, high: Int): Int = {
-    require(low < high)
-    if (high - low == 1) {
-      high
-    } else {
-      val mid    = (high + low) / 2
-      val result = doElvesWinWithoutAnyLosses(initial, mid)
-      result match {
-        case Some(_) => pivotSearch(initial, low, mid)
-        case None    => pivotSearch(initial, mid, high)
-      }
-    }
-  }
-
-  def part2(initial: State): Int = {
-    var min                   = 3
-    require(doElvesWinWithoutAnyLosses(initial, min).isEmpty)
-    var max                   = 9
-    while (doElvesWinWithoutAnyLosses(initial, max).isEmpty) {
-      min = max
-      max *= 2
-    }
-    val foundMinNoLossWinning = pivotSearch(initial, min, max)
-    println(s"Found min no loss winning: $foundMinNoLossWinning")
-
-    // Here we run it again though we could have avoided it
-    doElvesWinWithoutAnyLosses(initial, foundMinNoLossWinning).get._2
   }
 
   // None - Elves lose, Some - Elves win with some finish State & score
   private def doElvesWinWithoutAnyLosses(
     initial: State,
     elvenPower: Int,
-  ): Option[(State, Int)] = {
+  ): Option[Int] = {
     println(s"Running with elven power $elvenPower")
 
     val adjusted          = initial.updateAttackPower(Elf, elvenPower)
     val initialElvenCount = initial.aliveOfRace(Elf)
 
     val result: Option[State] = Simulation.run(adjusted) { state =>
-      // state.debugPrint()
-
       state.nextRound match {
         case Right(newState) =>
           val currentElvenCount = newState.aliveOfRace(Elf)
@@ -368,7 +331,16 @@ object Advent15 {
       println(
         s"The Elves won, elven power $elvenPower was sufficient, score $score"
       )
-      (state, score)
+      score
+    }
+  }
+
+  @tailrec
+  def part2(initial: State, elvenDamage: Int = 4): Int = {
+    val result = doElvesWinWithoutAnyLosses(initial, elvenDamage)
+    result match {
+      case Some(value) => value
+      case None        => part2(initial, elvenDamage + 1)
     }
   }
 
@@ -378,6 +350,6 @@ object Advent15 {
     val real = parse(realData)
 
     part1(real)._2 shouldEqual 243390
-    part2(real) shouldEqual "todo" // TODO; 50184 is too low
+    part2(real) shouldEqual 59886
   }
 }

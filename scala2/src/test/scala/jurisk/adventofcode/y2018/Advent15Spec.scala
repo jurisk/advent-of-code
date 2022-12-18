@@ -244,6 +244,7 @@ class Advent15Spec extends AnyFlatSpec {
   it should "part 2 for real" in {
     val realData = readFileText("2018/15.txt")
     val real     = parse(realData)
-    part2(real) shouldEqual 1234567890 // TODO
+    val answer   = 59886
+    part2(real) shouldEqual answer
   }
 }
