@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2022
 
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.geometry.{Area3D, Coords3D}
+import jurisk.geometry.Coords3D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
@@ -18,10 +18,7 @@ object Advent18 {
 
   def part2(points: Set[Coords3D]): Int = {
     val boundingBox         = Coords3D.boundingBoxInclusive(points)
-    val expandedBoundingBox = Area3D(
-      boundingBox.min - Coords3D(1, 1, 1),
-      boundingBox.max + Coords3D(1, 1, 1),
-    )
+    val expandedBoundingBox = boundingBox.expandInEachDirectionBy(1)
 
     val startingPointForSearch = expandedBoundingBox.min
     val reachable              = Bfs

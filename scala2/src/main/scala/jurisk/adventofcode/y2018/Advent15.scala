@@ -1,12 +1,15 @@
 package jurisk.adventofcode.y2018
 
 import cats.implicits._
+import jurisk.adventofcode.y2018.Advent15.Race.{Elf, Goblin}
 import jurisk.algorithms.pathfinding.Pathfinding
 import jurisk.geometry.{Coords2D, Field2D}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers._
+
+import scala.annotation.tailrec
 
 object Advent15 {
   final case class WarriorId(initialPosition: Coords2D) extends AnyVal
@@ -25,7 +28,6 @@ object Advent15 {
     Ordering[(Int, Int)].contramap(c => (c.y.value, c.x.value))
 
   object Warrior {
-    val AttackPower: Int      = 3
     val InitialHitPoints: Int = 200
   }
 
@@ -33,7 +35,14 @@ object Advent15 {
     roundsCompleted: Int,
     walls: Field2D[Boolean],
     units: Map[WarriorId, Warrior],
+    attackPower: Map[Race, Int],
   ) {
+    def aliveOfRace(race: Race): Int =
+      activeUnits.values.count(_.race == race)
+
+    def updateAttackPower(race: Race, power: Int): State =
+      copy(attackPower = attackPower.updated(race, power))
+
     def debugRepresentation: String = {
       val charField = walls.mapByCoordsWithValues { case (c, w) =>
         units.values.filter(q => q.location == c && q.isAlive).toList match {
@@ -100,8 +109,9 @@ object Advent15 {
       )
 
     private def performAttack(targets: Iterable[Warrior]): State = {
-      val target       = chooseTarget(targets)
-      val newHitPoints = Math.max(target.hitPoints - Warrior.AttackPower, 0)
+      val target        = chooseTarget(targets)
+      val hitPointsLost = attackPower(target.race.enemyRace)
+      val newHitPoints  = Math.max(target.hitPoints - hitPointsLost, 0)
 
       setUnitHitPoints(target, newHitPoints)
     }
@@ -210,14 +220,18 @@ object Advent15 {
         val warriorIdsInOrder = activeUnits.keys.toList.sortBy { warriorId =>
           units(warriorId).location
         }
-        warriorIdsInOrder
+
+        val result = warriorIdsInOrder
           .foldLeft(this) { case (acc, warriorId) =>
             acc.performTurn(warriorId)
           }
-          .copy(
-            roundsCompleted + 1
-          )
-          .some
+
+        if (result != this) result.copy(roundsCompleted + 1).some
+        else {
+          println(s"This is happening, cannot remove")
+          // TODO: if this is never happening we can remove this
+          none
+        }
       }
   }
 
@@ -269,12 +283,13 @@ object Advent15 {
       0,
       walls,
       units,
+      Map(Elf -> 3, Goblin -> 3),
     )
   }
 
   def part1(initial: State): (State, Int) = {
     val state = Simulation.run(initial) { state =>
-      state.debugPrint()
+      // state.debugPrint()
 
       state.nextRound match {
         case Some(newState) => newState.asRight
@@ -282,17 +297,90 @@ object Advent15 {
       }
     }
 
+//    val hackedState = state.copy(roundsCompleted = state.roundsCompleted - 1) // No idea why the `- 1` is needed, but it works on everything except Test 1
+//    (hackedState, hackedState.roundsCompleted * hackedState.hitPointsRemaining)
     (state, state.roundsCompleted * state.hitPointsRemaining)
   }
 
-  def part2(initial: State): String =
-    initial.toString
+  // low - Elves lose at this, high - Elves win at this
+  @tailrec
+  private def pivotSearch(initial: State, low: Int, high: Int): Int = {
+    require(low < high)
+    if (high - low == 1) {
+      high
+    } else {
+      val mid    = (high + low) / 2
+      val result = doElvesWinWithoutAnyLosses(initial, mid)
+      result match {
+        case Some(_) => pivotSearch(initial, low, mid)
+        case None    => pivotSearch(initial, mid, high)
+      }
+    }
+  }
+
+  def part2(initial: State): Int = {
+    var min                   = 3
+    require(doElvesWinWithoutAnyLosses(initial, min).isEmpty)
+    var max                   = 9
+    while (doElvesWinWithoutAnyLosses(initial, max).isEmpty) {
+      min = max
+      max *= 2
+    }
+    val foundMinNoLossWinning = pivotSearch(initial, min, max)
+    println(s"Found min no loss winning: $foundMinNoLossWinning")
+
+    // Here we run it again though we could have avoided it
+    doElvesWinWithoutAnyLosses(initial, foundMinNoLossWinning).get._2
+  }
+
+  // None - Elves lose, Some - Elves win with some finish State & score
+  private def doElvesWinWithoutAnyLosses(
+    initial: State,
+    elvenPower: Int,
+  ): Option[(State, Int)] = {
+    println(s"Running with elven power $elvenPower")
+
+    val adjusted          = initial.updateAttackPower(Elf, elvenPower)
+    val initialElvenCount = initial.aliveOfRace(Elf)
+
+    val result: Option[State] = Simulation.run(adjusted) { state =>
+      // state.debugPrint()
+
+      state.nextRound match {
+        case Some(newState) =>
+          val currentElvenCount = newState.aliveOfRace(Elf)
+          if (currentElvenCount < initialElvenCount) { // an Elf has died
+            none.asLeft
+          } else {
+            newState.asRight
+          }
+
+        case None => state.some.asLeft
+      }
+    }
+
+    if (result.isEmpty) {
+      println(s"The Elves lost, elven power $elvenPower was insufficient")
+    }
+
+    result.map { state =>
+//      val hackedState = state.copy(roundsCompleted = state.roundsCompleted - 1) // No idea why the `- 1` is needed, but it works on everything except Test 1
+//      val hackedScore = hackedState.roundsCompleted * hackedState.hitPointsRemaining
+      val score = state.roundsCompleted * state.hitPointsRemaining
+      println(
+        s"The Elves won, elven power $elvenPower was sufficient, score $score"
+      )
+//       (hackedState, hackedScore)
+      (state, score)
+    }
+  }
 
   def main(args: Array[String]): Unit = {
     val realData = readFileText("2018/15.txt")
 
     val real = parse(realData)
 
-    part1(real) shouldEqual 12345678
+    part1(real)._2 shouldEqual 243390
+    part2(real) shouldEqual "todo" // TODO; 50184 is too low
   }
 }

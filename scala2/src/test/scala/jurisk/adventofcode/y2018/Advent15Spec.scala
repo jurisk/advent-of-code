@@ -2,8 +2,9 @@ package jurisk.adventofcode.y2018
 
 import org.scalatest.flatspec.AnyFlatSpec
 import Advent15._
-import cats.implicits._
+import jurisk.adventofcode.y2018.Advent15.Race.Elf
 import jurisk.geometry.Coords2D
+import jurisk.utils.FileInput.readFileText
 import org.scalatest.matchers.should.Matchers._
 
 class Advent15Spec extends AnyFlatSpec {
@@ -54,34 +55,14 @@ class Advent15Spec extends AnyFlatSpec {
     outcome: Int,
     rounds: Int,
     expected: String,
+    elvenAttackPower: Int,
   ): Unit = {
-    val parsed                 = parse(test)
+    val parsed                 = parse(test).updateAttackPower(Elf, elvenAttackPower)
     val (finishState, result)  = part1(parsed)
     val obtainedRepresentation = finishState.debugRepresentation
     obtainedRepresentation shouldEqual expected.replace("\r\n", "\n")
     finishState.roundsCompleted shouldEqual rounds
     result shouldEqual outcome
-  }
-
-  it should "work test 1" in {
-    val testData1 =
-      """#######
-        |#.G...#
-        |#...EG#
-        |#.#.#G#
-        |#..G#E#
-        |#.....#
-        |#######""".stripMargin
-
-    val expected = """#######
-                     |#G....#   G(200)
-                     |#.G...#   G(131)
-                     |#.#.#G#   G(59)
-                     |#...#.#
-                     |#....G#   G(200)
-                     |#######""".stripMargin
-
-    runTestAgainstExpected(testData1, 27730, 47, expected)
   }
 
   private def splitCombatSummary(data: String): (String, String) = {
@@ -92,13 +73,36 @@ class Advent15Spec extends AnyFlatSpec {
     (a.mkString("\n"), b.mkString("\n"))
   }
 
-  private def runTest(data: String, outcome: Int, rounds: Int): Unit = {
+  private def runTestPart1(data: String, outcome: Int, rounds: Int): Unit = {
     val (input, expected) = splitCombatSummary(data)
-    runTestAgainstExpected(input, outcome, rounds: Int, expected)
+    runTestAgainstExpected(input, outcome, rounds, expected, 3)
   }
 
-  it should "work in test 2" in {
-    val testData =
+  private def runTestPart2(
+    data: String,
+    outcome: Int,
+    rounds: Int,
+    elvenAttackPower: Int,
+  ): Unit = {
+    val (input, expected) = splitCombatSummary(data)
+    runTestAgainstExpected(input, outcome, rounds, expected, elvenAttackPower)
+  }
+
+  it should "part 1 test 1" in { // Not sure why this fails when everything else succeeds
+    val testData1 =
+      """#######       #######
+        |#.G...#       #G....#   G(200)
+        |#...EG#       #.G...#   G(131)
+        |#.#.#G#       #.#.#G#   G(59)
+        |#..G#E#       #...#.#
+        |#.....#       #....G#   G(200)
+        |#######       #######""".stripMargin
+
+    runTestPart1(testData1, 27730, 47)
+  }
+
+  it should "part 1 in test 2" in {
+    val testData2 =
       """#######       #######
         |#G..#E#       #...#E#   E(200)
         |#E#E.E#       #E#...#   E(197)
@@ -107,10 +111,10 @@ class Advent15Spec extends AnyFlatSpec {
         |#...E.#       #.....#
         |#######       #######""".stripMargin
 
-    runTest(testData, 36334, 37)
+    runTestPart1(testData2, 36334, 37)
   }
 
-  it should "work in test 3" in {
+  it should "part 1 in test 3" in {
     val testData3 =
       """#######       #######
         |#E..EG#       #.E.E.#   E(164), E(197)
@@ -120,11 +124,10 @@ class Advent15Spec extends AnyFlatSpec {
         |#..E#.#       #...#.#
         |#######       #######""".stripMargin
 
-    runTest(testData3, 39514, 46)
+    runTestPart1(testData3, 39514, 46)
   }
 
-  it should "work in test 4" in {
-
+  it should "part 1 in test 4" in {
     val testData4 =
       """#######       #######
         |#E.G#.#       #G.G#.#   G(200), G(98)
@@ -133,11 +136,10 @@ class Advent15Spec extends AnyFlatSpec {
         |#G..#.#       #...#G#   G(95)
         |#...E.#       #...G.#   G(200)
         |#######       #######""".stripMargin
-    runTest(testData4, 27755, 35)
+    runTestPart1(testData4, 27755, 35)
   }
 
-  it should "work in test 5" in {
-
+  it should "part 1 in test 5" in {
     val testData5 =
       """#######       #######
         |#.E...#       #.....#
@@ -147,10 +149,10 @@ class Advent15Spec extends AnyFlatSpec {
         |#...#G#       #G.G#G#   G(98), G(38), G(200)
         |#######       #######""".stripMargin
 
-    runTest(testData5, 28944, 54)
+    runTestPart1(testData5, 28944, 54)
   }
 
-  it should "work in test 6" in {
+  it should "part 1 in test 6" in {
     val testData6 =
       """#########       #########
         |#G......#       #.G.....#   G(137)
@@ -162,6 +164,85 @@ class Advent15Spec extends AnyFlatSpec {
         |#.....G.#       #.......#
         |#########       #########""".stripMargin
 
-    runTest(testData6, 18740, 20)
+    runTestPart1(testData6, 18740, 20)
+  }
+
+  it should "part 1 for real" in {
+    val realData = readFileText("2018/15.txt")
+    val real     = parse(realData)
+    part1(real)._2 shouldEqual 243390
+  }
+
+  it should "part 2 in test 1" in {
+    val testData1 =
+      """#######       #######
+        |#.G...#       #..E..#   E(158)
+        |#...EG#       #...E.#   E(14)
+        |#.#.#G#  -->  #.#.#.#
+        |#..G#E#       #...#.#
+        |#.....#       #.....#
+        |#######       #######""".stripMargin
+
+    runTestPart2(testData1, 4988, 29, 15)
+  }
+
+  it should "part 2 in test 2" in {
+    val testData =
+      """#######       #######
+        |#E..EG#       #.E.E.#   E(200), E(23)
+        |#.#G.E#       #.#E..#   E(200)
+        |#E.##E#  -->  #E.##E#   E(125), E(200)
+        |#G..#.#       #.E.#.#   E(200)
+        |#..E#.#       #...#.#
+        |#######       #######""".stripMargin
+
+    runTestPart2(testData, 31284, 33, 4)
+  }
+
+  it should "part 2 in test 3" in {
+    val testData =
+      """#######       #######
+        |#E.G#.#       #.E.#.#   E(8)
+        |#.#G..#       #.#E..#   E(86)
+        |#G.#.G#  -->  #..#..#
+        |#G..#.#       #...#.#
+        |#...E.#       #.....#
+        |#######       #######""".stripMargin
+
+    runTestPart2(testData, 3478, 37, 15)
+  }
+
+  it should "part 2 in test 4" in {
+    val testData =
+      """#######       #######
+        |#.E...#       #...E.#   E(14)
+        |#.#..G#       #.#..E#   E(152)
+        |#.###.#  -->  #.###.#
+        |#E#G#G#       #.#.#.#
+        |#...#G#       #...#.#
+        |#######       #######""".stripMargin
+
+    runTestPart2(testData, 6474, 39, 12)
+  }
+
+  it should "part 2 in test 5" in {
+    val testData =
+      """#########       #########
+        |#G......#       #.......#
+        |#.E.#...#       #.E.#...#   E(38)
+        |#..##..G#       #..##...#
+        |#...##..#  -->  #...##..#
+        |#...#...#       #...#...#
+        |#.G...G.#       #.......#
+        |#.....G.#       #.......#
+        |#########       #########""".stripMargin
+
+    runTestPart2(testData, 1140, 30, 34)
+  }
+
+  it should "part 2 for real" in {
+    val realData = readFileText("2018/15.txt")
+    val real     = parse(realData)
+    part2(real) shouldEqual 1234567890 // TODO
   }
 }
