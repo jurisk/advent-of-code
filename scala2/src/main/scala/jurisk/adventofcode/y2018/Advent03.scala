@@ -15,7 +15,7 @@ object Advent03 {
     def parse(s: String): Claim =
       s match {
         case RegEx(id, left, top, width, height) =>
-          Claim(id.toInt, Area2D(left.toX, top.toY, width.toInt, height.toInt))
+          Claim(id.toInt, Area2D.fromLeftTopWidthHeight(left.toX, top.toY, width.toInt, height.toInt))
         case _                                   => sys.error(s"Failed to parse $s")
       }
   }
@@ -25,7 +25,7 @@ object Advent03 {
 
   private def aggregate(data: List[Claim]): Map[Coords2D, Int] =
     data.foldLeft(Map.empty[Coords2D, Int]) { case (acc, claim) =>
-      claim.area.pointSet.foldLeft(acc) { case (mapAcc, point) =>
+      claim.area.points.foldLeft(acc) { case (mapAcc, point) =>
         mapAcc.updatedWith(point) { oldValue =>
           (oldValue.getOrElse(0) + 1).some
         }
@@ -41,7 +41,7 @@ object Advent03 {
     val counts = aggregate(data)
 
     val nonOverlapping = data filter { claim =>
-      claim.area.pointSet forall { coords =>
+      claim.area.points forall { coords =>
         counts(coords) == 1
       }
     }

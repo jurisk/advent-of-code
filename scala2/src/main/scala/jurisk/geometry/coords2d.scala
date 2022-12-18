@@ -64,10 +64,10 @@ final case class Coords2D(x: X, y: Y) {
 
   override def toString: String = s"($x, $y)"
 
-  def N: Coords2D = this + Direction2D.N.diff
-  def E: Coords2D = this + Direction2D.E.diff
-  def S: Coords2D = this + Direction2D.S.diff
-  def W: Coords2D = this + Direction2D.W.diff
+  def N: Coords2D  = this + Direction2D.N.diff
+  def E: Coords2D  = this + Direction2D.E.diff
+  def S: Coords2D  = this + Direction2D.S.diff
+  def W: Coords2D  = this + Direction2D.W.diff
   def NE: Coords2D = this + Direction2D.NE.diff
   def NW: Coords2D = this + Direction2D.NW.diff
   def SE: Coords2D = this + Direction2D.SE.diff
@@ -87,7 +87,7 @@ object Coords2D {
     val yList = coords.map(_.y.value)
     val minY  = yList.min
     val maxY  = yList.max
-    Area2D(X(minX), Y(minY), maxX - minX + 1, maxY - minY + 1)
+    Area2D(Coords2D.of(minX, minY),Coords2D.of(maxX, maxY))
   }
 
   def parse(s: String): Coords2D = {

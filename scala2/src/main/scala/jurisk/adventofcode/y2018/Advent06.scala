@@ -35,7 +35,7 @@ object Advent06 {
       }
     }
 
-    val allPoints  = boundingBox.pointSet.toList
+    val allPoints  = boundingBox.points
     val edgePoints = allPoints.filter(onEdgeOfBoundingBox)
     val inf        = edgePoints.toSet.flatMap(closestPointTo)
 
@@ -47,7 +47,7 @@ object Advent06 {
   }
 
   def part2(points: List[Coords2D], limit: Int): Int =
-    Coords2D.boundingBoxInclusive(points).pointSet.toList.count { point =>
+    Coords2D.boundingBoxInclusive(points).points.count { point =>
       val distanceToAll = points.map(_.manhattanDistance(point)).sum
       distanceToAll < limit
     }
