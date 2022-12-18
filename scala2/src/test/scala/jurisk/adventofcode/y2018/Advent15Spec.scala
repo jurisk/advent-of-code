@@ -43,7 +43,8 @@ class Advent15Spec extends AnyFlatSpec {
     println("Test 1 After 24 rounds expected:")
     test1After24RoundsExpected.debugPrint()
 
-    val test1After24RoundsObtained = test1After23Rounds.nextRound.get
+    val test1After24RoundsObtained =
+      test1After23Rounds.nextRound.getOrElse(sys.error("Failed"))
     println("Test 1 After 24 rounds obtained:")
     test1After24RoundsObtained.debugPrint()
 

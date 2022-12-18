@@ -184,54 +184,54 @@ object Advent15 {
       }
     }
 
-    private def performTurn(warriorId: WarriorId): State = {
+    private def performTurn(warriorId: WarriorId): Either[State, State] = {
       val self = units(warriorId)
       if (self.isAlive) {
         // Each unit begins its turn by identifying all possible targets (enemy units).
         val targets = activeUnits.values.filter(_.race == self.race.enemyRace)
         if (targets.isEmpty) {
-          this // If no targets remain, combat ends.
+          this.asLeft // If no targets remain, combat ends.
         } else {
           val targetsDirectlyAdjacent =
             targets.filter(_.location.manhattanDistance(self.location) == 1)
           if (targetsDirectlyAdjacent.nonEmpty) {
-            performAttack(targetsDirectlyAdjacent)
+            performAttack(targetsDirectlyAdjacent).asRight
           } else {
             val squaresAdjacentToTargets              = findSquaresAdjacentToTargets(targets)
             val squaresAdjacentToTargetsWithDistances =
               findDistancesToMany(self.location, squaresAdjacentToTargets)
             chooseBestSquare(squaresAdjacentToTargetsWithDistances) match {
               case Some(chosenSquare) =>
-                takeStepTowards(self, chosenSquare).attackIfPossible(warriorId)
+                takeStepTowards(self, chosenSquare).attackIfPossible(warriorId).asRight
               case None               =>
-                this
+                this.asRight
             }
           }
         }
-      } else this
+      } else this.asRight
     }
 
     def hitPointsRemaining: Int = units.values.map(_.hitPoints).sum
 
-    def nextRound: Option[State] =
+    /** Left - game over, Right - game continuing */
+    def nextRound: Either[State, State] =
       if (activeUnits.values.map(_.race).toSet.size < 2) {
-        none // combat is over
+        this.asLeft // combat is over
       } else {
         val warriorIdsInOrder = activeUnits.keys.toList.sortBy { warriorId =>
           units(warriorId).location
         }
 
         val result = warriorIdsInOrder
-          .foldLeft(this) { case (acc, warriorId) =>
-            acc.performTurn(warriorId)
+          .foldLeft[Either[State, State]](this.asRight) { case (acc, warriorId) =>
+            acc match {
+              case Left(acc) => acc.asLeft
+              case Right(acc) =>
+                acc.performTurn(warriorId)
+            }
           }
 
-        if (result != this) result.copy(roundsCompleted + 1).some
-        else {
-          println(s"This is happening, cannot remove")
-          // TODO: if this is never happening we can remove this
-          none
-        }
+        result.map(_.copy(roundsCompleted + 1))
       }
   }
 
@@ -289,16 +289,10 @@ object Advent15 {
 
   def part1(initial: State): (State, Int) = {
     val state = Simulation.run(initial) { state =>
-      // state.debugPrint()
-
-      state.nextRound match {
-        case Some(newState) => newState.asRight
-        case None           => state.asLeft
-      }
+      state.debugPrint()
+      state.nextRound
     }
 
-//    val hackedState = state.copy(roundsCompleted = state.roundsCompleted - 1) // No idea why the `- 1` is needed, but it works on everything except Test 1
-//    (hackedState, hackedState.roundsCompleted * hackedState.hitPointsRemaining)
     (state, state.roundsCompleted * state.hitPointsRemaining)
   }
 
@@ -347,7 +341,7 @@ object Advent15 {
       // state.debugPrint()
 
       state.nextRound match {
-        case Some(newState) =>
+        case Right(newState) =>
           val currentElvenCount = newState.aliveOfRace(Elf)
           if (currentElvenCount < initialElvenCount) { // an Elf has died
             none.asLeft
@@ -355,7 +349,13 @@ object Advent15 {
             newState.asRight
           }
 
-        case None => state.some.asLeft
+        case Left(newState) =>
+          val currentElvenCount = newState.aliveOfRace(Elf)
+          if (currentElvenCount < initialElvenCount) { // an Elf has died
+            none.asLeft
+          } else {
+            newState.some.asLeft
+          }
       }
     }
 
@@ -364,13 +364,10 @@ object Advent15 {
     }
 
     result.map { state =>
-//      val hackedState = state.copy(roundsCompleted = state.roundsCompleted - 1) // No idea why the `- 1` is needed, but it works on everything except Test 1
-//      val hackedScore = hackedState.roundsCompleted * hackedState.hitPointsRemaining
       val score = state.roundsCompleted * state.hitPointsRemaining
       println(
         s"The Elves won, elven power $elvenPower was sufficient, score $score"
       )
-//       (hackedState, hackedScore)
       (state, score)
     }
   }
