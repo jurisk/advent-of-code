@@ -35,7 +35,6 @@ object Advent15 {
     units: Map[WarriorId, Warrior],
   ) {
     def debugRepresentation: String = {
-      val heading   = s"After $roundsCompleted rounds"
       val charField = walls.mapByCoordsWithValues { case (c, w) =>
         units.values.filter(q => q.location == c && q.isAlive).toList match {
           case Nil            => if (w) '#' else '.'
@@ -60,14 +59,16 @@ object Advent15 {
 
       val result = (fieldInfo zip unitInfo).toList
         .map { case (a, b) =>
-          s"$a $b"
+          s"$a   $b".trim
         }
 
-      (heading :: result).mkString("\n")
+      result.mkString("\n")
     }
 
-    def debugPrint(): Unit =
+    def debugPrint(): Unit = {
+      println(s"After $roundsCompleted rounds:")
       println(debugRepresentation)
+    }
 
     private def isFree(c: Coords2D): Boolean =
       walls.at(c).contains(false) && !units.values.exists(w =>
@@ -271,140 +272,27 @@ object Advent15 {
     )
   }
 
-  def part1(initial: State): Int =
-    Simulation.run(initial) { state =>
+  def part1(initial: State): (State, Int) = {
+    val state = Simulation.run(initial) { state =>
       state.debugPrint()
 
       state.nextRound match {
         case Some(newState) => newState.asRight
-        case None           => (state.roundsCompleted * state.hitPointsRemaining).asLeft
+        case None           => state.asLeft
       }
     }
+
+    (state, state.roundsCompleted * state.hitPointsRemaining)
+  }
 
   def part2(initial: State): String =
     initial.toString
 
-  private def usefulTestCase1(): Unit = {
-    val test1After23Rounds = parse("""#######
-                                     |#...G.#
-                                     |#..G.G#
-                                     |#.#.#G#
-                                     |#...#E#
-                                     |#.....#
-                                     |#######
-                                     |""".stripMargin)
-      .copy(
-        roundsCompleted = 23
-      )
-      .setUnitHitPoints(WarriorId(Coords2D.of(5, 2)), 131)
-      .setUnitHitPoints(WarriorId(Coords2D.of(5, 3)), 131)
-      .setUnitHitPoints(WarriorId(Coords2D.of(5, 4)), 131)
-
-    println("Test 1 After 23 rounds input:")
-    test1After23Rounds.debugPrint()
-
-    val test1After24RoundsExpected = parse("""#######
-                                             |#..G..#
-                                             |#...G.#
-                                             |#.#G#G#
-                                             |#...#E#
-                                             |#.....#
-                                             |#######""".stripMargin)
-      .copy(
-        roundsCompleted = 24
-      )
-      .setUnitHitPoints(WarriorId(Coords2D.of(4, 2)), 131)
-      .setUnitHitPoints(WarriorId(Coords2D.of(5, 3)), 128)
-      .setUnitHitPoints(WarriorId(Coords2D.of(5, 4)), 128)
-    println("Test 1 After 24 rounds expected:")
-    test1After24RoundsExpected.debugPrint()
-
-    val test1After24RoundsObtained = test1After23Rounds.nextRound.get
-    println("Test 1 After 24 rounds obtained:")
-    test1After24RoundsObtained.debugPrint()
-
-    test1After24RoundsObtained.debugRepresentation shouldEqual test1After24RoundsExpected.debugRepresentation
-  }
-
   def main(args: Array[String]): Unit = {
-    val testData1 =
-      """#######
-        |#.G...#
-        |#...EG#
-        |#.#.#G#
-        |#..G#E#
-        |#.....#
-        |#######""".stripMargin
-
-    val testData2 =
-      """#######
-        |#G..#E#
-        |#E#E.E#
-        |#G.##.#
-        |#...#E#
-        |#...E.#
-        |#######""".stripMargin
-
-    val testData3 =
-      """#######
-        |#E..EG#
-        |#.#G.E#
-        |#E.##E#
-        |#G..#.#
-        |#..E#.#
-        |#######""".stripMargin
-
-    val testData4 =
-      """#######
-        |#E.G#.#
-        |#.#G..#
-        |#G.#.G#
-        |#G..#.#
-        |#...E.#
-        |#######""".stripMargin
-
-    val testData5 =
-      """#######
-        |#.E...#
-        |#.#..G#
-        |#.###.#
-        |#E#G#G#
-        |#...#G#
-        |#######""".stripMargin
-
-    val testData6 =
-      """#########
-        |#G......#
-        |#.E.#...#
-        |#..##..G#
-        |#...##..#
-        |#...#...#
-        |#.G...G.#
-        |#.....G.#
-        |#########""".stripMargin
-
     val realData = readFileText("2018/15.txt")
 
-    val test1 = parse(testData1)
-    val test2 = parse(testData2)
-    val test3 = parse(testData3)
-    val test4 = parse(testData4)
-    val test5 = parse(testData5)
-    val test6 = parse(testData6)
-    val real  = parse(realData)
-
-    usefulTestCase1()
-
-    part1(test1) shouldEqual 27730
-    part1(test2) shouldEqual 36334
-    part1(test3) shouldEqual 39514
-    part1(test4) shouldEqual 27755
-    part1(test5) shouldEqual 28944
-    part1(test6) shouldEqual 18740
+    val real = parse(realData)
 
     part1(real) shouldEqual 12345678
-
-    part2(test1) shouldEqual "asdf"
-    part2(real) shouldEqual "asdf"
   }
 }
