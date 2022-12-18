@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2018
 
 import cats.implicits._
-import jurisk.algorithms.pathfinding.{FloydWarshall, Pathfinding}
+import jurisk.algorithms.pathfinding.Pathfinding
 import jurisk.geometry.{Coords2D, Field2D}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -16,7 +16,8 @@ object Advent15 {
     race: Race,
     hitPoints: Int,
   ) {
-    def toChar: Char = if (hitPoints <= 0) '.' else race.toChar
+    def isAlive: Boolean = hitPoints > 0
+    def toChar: Char     = if (isAlive) race.toChar else '.'
   }
 
   // When multiple choices are equally valid, ties are broken in reading order: top-to-bottom, then left-to-right.
@@ -33,10 +34,10 @@ object Advent15 {
     walls: Field2D[Boolean],
     units: Map[WarriorId, Warrior],
   ) {
-    def debugPrint(): Unit = {
-      println(s"After $roundsCompleted rounds")
+    def debugRepresentation: String = {
+      val heading   = s"After $roundsCompleted rounds"
       val charField = walls.mapByCoordsWithValues { case (c, w) =>
-        units.values.filter(_.location == c).toList match {
+        units.values.filter(q => q.location == c && q.isAlive).toList match {
           case Nil            => if (w) '#' else '.'
           case warrior :: Nil => warrior.toChar
           case more           =>
@@ -48,7 +49,7 @@ object Advent15 {
       val unitInfo = walls.yIndices map { y =>
         units.values
           .filter(_.location.y == y)
-          .filter(_.hitPoints > 0)
+          .filter(_.isAlive)
           .toList
           .sortBy(_.location.x.value)
           .map(w => s"${w.race.toChar}(${w.hitPoints})")
@@ -57,21 +58,24 @@ object Advent15 {
 
       require(fieldInfo.length == unitInfo.length)
 
-      val result = (fieldInfo zip unitInfo)
+      val result = (fieldInfo zip unitInfo).toList
         .map { case (a, b) =>
           s"$a $b"
         }
-        .mkString("\n")
 
-      println(result)
-      println
+      (heading :: result).mkString("\n")
     }
 
+    def debugPrint(): Unit =
+      println(debugRepresentation)
+
     private def isFree(c: Coords2D): Boolean =
-      walls.at(c).contains(false) && !units.values.exists(_.location == c)
+      walls.at(c).contains(false) && !units.values.exists(w =>
+        w.location == c && w.isAlive
+      )
 
     private def activeUnits: Map[WarriorId, Warrior] = units.filter {
-      case (_, v) => v.hitPoints > 0
+      case (_, v) => v.isAlive
     }
 
     private def chooseTarget(targets: Iterable[Warrior]): Warrior = {
@@ -80,13 +84,25 @@ object Advent15 {
       withMinHitpoints.minBy(_.location)
     }
 
+    def setUnitHitPoints(warriorId: WarriorId, newHitPoints: Int): State =
+      setUnitHitPoints(units(warriorId), newHitPoints)
+
+    def setUnitHitPoints(warrior: Warrior, newHitPoints: Int): State =
+      copy(
+        units =
+          units.updated(warrior.id, warrior.copy(hitPoints = newHitPoints))
+      )
+
+    def setUnitLocation(warrior: Warrior, newLocation: Coords2D): State =
+      copy(
+        units = units.updated(warrior.id, warrior.copy(location = newLocation))
+      )
+
     private def performAttack(targets: Iterable[Warrior]): State = {
       val target       = chooseTarget(targets)
       val newHitPoints = Math.max(target.hitPoints - Warrior.AttackPower, 0)
 
-      copy(
-        units = units.updated(target.id, target.copy(hitPoints = newHitPoints))
-      )
+      setUnitHitPoints(target, newHitPoints)
     }
 
     private def findSquaresAdjacentToTargets(
@@ -138,9 +154,7 @@ object Advent15 {
 
       chooseBestSquare(withDistances) match {
         case Some(chosen) =>
-          copy(
-            units = units.updated(warrior.id, warrior.copy(location = chosen))
-          )
+          setUnitLocation(warrior, chosen)
 
         case None =>
           this
@@ -161,9 +175,7 @@ object Advent15 {
 
     private def performTurn(warriorId: WarriorId): State = {
       val self = units(warriorId)
-      if (self.hitPoints <= 0) {
-        this
-      } else {
+      if (self.isAlive) {
         // Each unit begins its turn by identifying all possible targets (enemy units).
         val targets = activeUnits.values.filter(_.race == self.race.enemyRace)
         if (targets.isEmpty) {
@@ -185,7 +197,7 @@ object Advent15 {
             }
           }
         }
-      }
+      } else this
     }
 
     def hitPointsRemaining: Int = units.values.map(_.hitPoints).sum
@@ -272,6 +284,48 @@ object Advent15 {
   def part2(initial: State): String =
     initial.toString
 
+  private def usefulTestCase1(): Unit = {
+    val test1After23Rounds = parse("""#######
+                                     |#...G.#
+                                     |#..G.G#
+                                     |#.#.#G#
+                                     |#...#E#
+                                     |#.....#
+                                     |#######
+                                     |""".stripMargin)
+      .copy(
+        roundsCompleted = 23
+      )
+      .setUnitHitPoints(WarriorId(Coords2D.of(5, 2)), 131)
+      .setUnitHitPoints(WarriorId(Coords2D.of(5, 3)), 131)
+      .setUnitHitPoints(WarriorId(Coords2D.of(5, 4)), 131)
+
+    println("Test 1 After 23 rounds input:")
+    test1After23Rounds.debugPrint()
+
+    val test1After24RoundsExpected = parse("""#######
+                                             |#..G..#
+                                             |#...G.#
+                                             |#.#G#G#
+                                             |#...#E#
+                                             |#.....#
+                                             |#######""".stripMargin)
+      .copy(
+        roundsCompleted = 24
+      )
+      .setUnitHitPoints(WarriorId(Coords2D.of(4, 2)), 131)
+      .setUnitHitPoints(WarriorId(Coords2D.of(5, 3)), 128)
+      .setUnitHitPoints(WarriorId(Coords2D.of(5, 4)), 128)
+    println("Test 1 After 24 rounds expected:")
+    test1After24RoundsExpected.debugPrint()
+
+    val test1After24RoundsObtained = test1After23Rounds.nextRound.get
+    println("Test 1 After 24 rounds obtained:")
+    test1After24RoundsObtained.debugPrint()
+
+    test1After24RoundsObtained.debugRepresentation shouldEqual test1After24RoundsExpected.debugRepresentation
+  }
+
   def main(args: Array[String]): Unit = {
     val testData1 =
       """#######
@@ -338,6 +392,8 @@ object Advent15 {
     val test5 = parse(testData5)
     val test6 = parse(testData6)
     val real  = parse(realData)
+
+    usefulTestCase1()
 
     part1(test1) shouldEqual 27730
     part1(test2) shouldEqual 36334
