@@ -33,11 +33,9 @@ object Advent18 {
       )
       .toSet
 
-    val filledOutPoints = boundingBox.points.foldLeft(points) { case (acc, c) =>
-      if (reachable contains c) acc else acc + c
-    }
+    val nonReachable = boundingBox.points.toSet -- reachable
 
-    part1(filledOutPoints)
+    part1(nonReachable)
   }
 
   def main(args: Array[String]): Unit = {
