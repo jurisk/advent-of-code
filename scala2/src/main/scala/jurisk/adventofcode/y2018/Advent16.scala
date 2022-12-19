@@ -45,9 +45,20 @@ object Advent16 {
   ) {
     def instructionsThisMayMatch: List[Instruction] = {
       val candidates = Instruction.allOptionsFromInstructionBinary(instructionBinary)
-      candidates.filter { instruction =>
-        instruction.execute(before) == after
+      val results = candidates.filter { instruction =>
+        val result = instruction.execute(before)
+        println(s"Testing $instruction:")
+        println(s"Obtained: $result")
+        println(s"Expected: $after")
+        println
+        result == after
       }
+
+      println(s"${results.length} instructions match $this:")
+      results foreach println
+      println
+
+      results
     }
   }
 
@@ -66,6 +77,20 @@ object Advent16 {
     private val AllInstructions: List[(Int, Int, Int) => Instruction] = List(
       AddR,
       AddI,
+      MulR,
+      MulI,
+      BAnR,
+      BAnI,
+      BOrR,
+      BOrI,
+      SetR,
+      SetI,
+      GtIR,
+      GtRI,
+      GtRR,
+      EqIR,
+      EqRI,
+      EqRR,
     )
 
     def allOptionsFromInstructionBinary(binary: InstructionBinary): List[Instruction] = AllInstructions.map { instruction =>
@@ -78,6 +103,62 @@ object Advent16 {
 
     case class AddI(a: Int, b: Int, c: Int) extends Instruction {
       override def whatToStoreInC(registers: Registers): Int = registers(a) + b
+    }
+
+    case class MulR(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = registers(a) * registers(b)
+    }
+
+    case class MulI(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = registers(a) * b
+    }
+
+    case class BAnR(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = registers(a) & registers(b)
+    }
+
+    case class BAnI(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = registers(a) & b
+    }
+
+    case class BOrR(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = registers(a) | registers(b)
+    }
+
+    case class BOrI(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = registers(a) | b
+    }
+
+    case class SetR(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = registers(a)
+    }
+
+    case class SetI(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = a
+    }
+
+    case class GtIR(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = if (a > registers(b)) 1 else 0
+    }
+
+    case class GtRI(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = if (registers(a) > b) 1 else 0
+    }
+
+    case class GtRR(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = if (registers(a) > registers(b)) 1 else 0
+    }
+
+    case class EqIR(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = if (a == registers(b)) 1 else 0
+    }
+
+    case class EqRI(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = if (registers(a) == b) 1 else 0
+    }
+
+    case class EqRR(a: Int, b: Int, c: Int) extends Instruction {
+      override def whatToStoreInC(registers: Registers): Int = if (registers(a) == registers(b)) 1 else 0
     }
   }
 
@@ -127,7 +208,7 @@ object Advent16 {
     val real = parse(realData)
 
     part1(test) shouldEqual 1
-    part1(real) shouldEqual 12345678
+    part1(real) shouldEqual 12345678 // not 101
 
     part2(test) shouldEqual "asdf"
     part2(real) shouldEqual "asdf"
