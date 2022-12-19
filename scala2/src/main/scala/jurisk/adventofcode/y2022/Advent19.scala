@@ -166,7 +166,7 @@ object Advent19 {
     }
 
     def qualityLevel: Int =
-      id * geodesCanOpen(24)
+      id * geodesCanOpen(Part1Minutes)
 
     override def toString: String =
       s"""Blueprint $id:
@@ -207,8 +207,20 @@ object Advent19 {
     }.sum
   }
 
-  def part2(data: Parsed): String =
-    data.counts.toString
+  def part2(data: Parsed): Int = {
+    require(data.length == 3)
+    data.map { blueprint =>
+      println(s"Calculating for:")
+      println(blueprint)
+      val result = blueprint.geodesCanOpen(Part2Minutes)
+      println(s"Can open $result")
+      println
+      result
+    }.product
+  }
+
+  private val Part1Minutes = 24
+  private val Part2Minutes = 32
 
   def main(args: Array[String]): Unit = {
     val testData = readFileText("2022/19-test.txt")
@@ -235,16 +247,18 @@ object Advent19 {
       State(minutesPassed = 5, oreRobots = 1, clayRobots = 2, ore = 1, clay = 2)
     m4.successors(test1) should contain(m5)
 
-//    test1.geodesCanOpen(24) shouldEqual 9
-//
-//    val test2 = test(1)
-//    test2.geodesCanOpen(24) shouldEqual 12
+//    test1.geodesCanOpen(Part1Minutes) shouldEqual 9
+
+    val test2 = test(1)
+//    test2.geodesCanOpen(Part1Minutes) shouldEqual 12
 
 //    part1(test) shouldEqual 33
 
-    part1(real) shouldEqual 12345678
-//
-//    part2(test) shouldEqual "asdf"
-//    part2(real) shouldEqual "asdf"
+//    part1(real) shouldEqual 1624
+
+      test1.geodesCanOpen(Part2Minutes) shouldEqual 56
+//      test2.geodesCanOpen(Part2Minutes) shouldEqual 62
+
+      part2(test.take(3)) shouldEqual "todo"
   }
 }
