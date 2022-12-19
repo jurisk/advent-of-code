@@ -5,6 +5,26 @@ import cats.data.NonEmptyList
 import scala.collection.mutable
 
 object Dfs {
+  def dfsVisitAllNoMemory[N](
+    start: N,
+    successors: N => List[N],
+    visit: N => Unit,
+  ): Unit = {
+    val stack: mutable.Stack[N] = mutable.Stack()
+    val parents: mutable.Map[N, N] = mutable.Map()
+
+    stack.push(start)
+
+    while (stack.nonEmpty) {
+      val next = stack.pop()
+      visit(next)
+      successors(next) foreach { successor =>
+        parents.put(successor, next)
+        stack.push(successor)
+      }
+    }
+  }
+
   def dfsVisitAll[N](
     start: N,
     successors: N => List[N],
