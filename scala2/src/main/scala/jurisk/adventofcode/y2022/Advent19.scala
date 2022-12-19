@@ -1,11 +1,13 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
-import jurisk.algorithms.pathfinding.Dfs
+import jurisk.algorithms.pathfinding.{AStar, Dfs, Dijkstra}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
+
+import scala.collection.mutable
 
 object Advent19 {
   type Parsed = List[Blueprint]
@@ -80,14 +82,17 @@ object Advent19 {
       )
 
     def successors(blueprint: Blueprint): List[State] =
-      // TODO: this builds only 1 robot! Not enough! Do we need combinations?
-      List(
-        maybeBuildGeodeRobot(blueprint),
-        maybeBuildObsidianRobot(blueprint),
-        maybeBuildClayRobot(blueprint),
-        maybeBuildOreRobot(blueprint),
-        maybeDoNothing(blueprint),
-      ).flatten.map(_.addProductionFrom(this))
+      if (maybeBuildGeodeRobot(blueprint).isDefined) {
+        maybeBuildGeodeRobot(blueprint).map(_.addProductionFrom(this)).toList
+      } else {
+        List(
+          maybeBuildGeodeRobot(blueprint),
+          maybeBuildObsidianRobot(blueprint),
+          maybeBuildClayRobot(blueprint),
+          maybeBuildOreRobot(blueprint),
+          maybeDoNothing(blueprint),
+        ).flatten.map(_.addProductionFrom(this))
+      }
 
     override def toString: String =
       s"Minutes = $minutesPassed | Robots ore = $oreRobots clay = $clayRobots obsidian = $obsidianRobots geode = $geodeRobots | Resources ore = $ore clay = $clay obsidian = $obsidian geodes = $openGeodes"
@@ -113,27 +118,63 @@ object Advent19 {
       var bestSeen: Int = 0
 
       def visit(state: State): Unit =
-        // println(state)
+//        println(state)
 
         if (state.openGeodes > bestSeen) {
           bestSeen = state.openGeodes
           println(s"Found better than before $bestSeen, state is $state")
         }
 
-      def successors(state: State): List[State] =
+      val ALot = 10_000_000_000L
+
+      var pruning: mutable.Map[Int, Long] = mutable.Map.empty
+
+      // Larger is better
+      def heuristic(state: State): Long =
+        state.openGeodes * 1_000_000_000L +
+          state.geodeRobots * 1_000_000L +
+          state.obsidianRobots * 100_000L +
+          state.clayRobots * 10_000 +
+          state.oreRobots * 1000 +
+          state.obsidian * 100 +
+          state.clay * 10 +
+          state.ore
+
+      def successors(state: State): List[State] = {
+        visit(state)
+
         if (state.minutesPassed >= minutes) {
           Nil
         } else {
           state.successors(this)
         }
+      }
+
+      def successorsWithCost(state: State): List[(State, Long)] =
+        successors(state).map { successor =>
+          val heuristicImprovement = heuristic(successor) - heuristic(state)
+          (successor, ALot - heuristicImprovement)
+        }
+
+//      Dijkstra.dijkstra[State, Long](State.Start, successorsWithCost, _ => false)
+//      AStar.aStar(State.Start, successorsWithCost, heuristic, _ => false)
 
       Dfs.dfsVisitAll[State](State.Start, successors, visit)
+//      Dfs.dfsVisitAllNoMemory[State](State.Start, successors, visit)
 
       bestSeen
     }
 
     def qualityLevel: Int =
       id * geodesCanOpen(24)
+
+    override def toString: String =
+      s"""Blueprint $id:
+         |  Each ore robot costs $oreRobotCostsNOre ore.
+         |  Each clay robot costs $clayRobotCostsNOre ore.
+         |  Each obsidian robot costs $obsidianRobotCostsNOre ore and $obsidianRobotCostsMClay clay.
+         |  Each geode robot costs $geodeRobotCostsNOre ore and $geodeRobotCostsMObsidian obsidian.
+         |""".stripMargin
   }
 
   object Blueprint {
@@ -157,7 +198,8 @@ object Advent19 {
   def part1(data: Parsed): Int = {
     println(s"Blueprint count: ${data.length}")
     data.map { blueprint =>
-      println(s"Calculating for: $blueprint")
+      println(s"Calculating for:")
+      println(blueprint)
       val ql = blueprint.qualityLevel
       println(s"Quality level: $ql")
       println
@@ -182,14 +224,25 @@ object Advent19 {
     val m2    = State(minutesPassed = 2, oreRobots = 1, ore = 2)
     m1.successors(test1) shouldEqual m2 :: Nil
 
-    test1.geodesCanOpen(24) shouldEqual 9
+    val m3 = State(minutesPassed = 3, oreRobots = 1, clayRobots = 1, ore = 1)
+    m2.successors(test1) should contain(m3)
 
-    val test2 = test(1)
-    test2.geodesCanOpen(24) shouldEqual 12
+    val m4 =
+      State(minutesPassed = 4, oreRobots = 1, clayRobots = 1, ore = 2, clay = 1)
+    m3.successors(test1) should contain(m4)
+
+    val m5 =
+      State(minutesPassed = 5, oreRobots = 1, clayRobots = 2, ore = 1, clay = 2)
+    m4.successors(test1) should contain(m5)
+
+//    test1.geodesCanOpen(24) shouldEqual 9
+//
+//    val test2 = test(1)
+//    test2.geodesCanOpen(24) shouldEqual 12
 
 //    part1(test) shouldEqual 33
 
-//    part1(real) shouldEqual 12345678
+    part1(real) shouldEqual 12345678
 //
 //    part2(test) shouldEqual "asdf"
 //    part2(real) shouldEqual "asdf"
