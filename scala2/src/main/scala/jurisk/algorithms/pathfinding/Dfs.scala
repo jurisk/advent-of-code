@@ -10,7 +10,7 @@ object Dfs {
     successors: N => List[N],
     visit: N => Unit,
   ): Unit = {
-    val stack: mutable.Stack[N] = mutable.Stack()
+    val stack: mutable.Stack[N]    = mutable.Stack()
     val parents: mutable.Map[N, N] = mutable.Map()
 
     stack.push(start)
@@ -30,8 +30,8 @@ object Dfs {
     successors: N => List[N],
     visit: N => Unit,
   ): Unit = {
-    val visited: mutable.Set[N] = mutable.Set()
-    val stack: mutable.Stack[N] = mutable.Stack()
+    val visited: mutable.Set[N]    = mutable.Set()
+    val stack: mutable.Stack[N]    = mutable.Stack()
     val parents: mutable.Map[N, N] = mutable.Map()
 
     stack.push(start)

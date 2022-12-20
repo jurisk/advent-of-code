@@ -2,7 +2,10 @@ package jurisk.geometry
 
 import cats.Functor
 
-final case class Field2D[T](data: Vector[Vector[T]], topLeft: Coords2D = Coords2D.Zero) {
+final case class Field2D[T](
+  data: Vector[Vector[T]],
+  topLeft: Coords2D = Coords2D.Zero,
+) {
   val width: Int  = data.head.length
   val height: Int = data.length
 
@@ -35,7 +38,9 @@ final case class Field2D[T](data: Vector[Vector[T]], topLeft: Coords2D = Coords2
   def get(c: Coords2D): Option[T] = at(c)
 
   def at(c: Coords2D): Option[T] =
-    data.lift(c.y.value - topLeft.y.value).flatMap(_.lift(c.x.value - topLeft.x.value))
+    data
+      .lift(c.y.value - topLeft.y.value)
+      .flatMap(_.lift(c.x.value - topLeft.x.value))
 
   def apply(c: Coords2D): T =
     at(c).getOrElse(sys.error(s"Coords2D $c are invalid"))
@@ -43,14 +48,19 @@ final case class Field2D[T](data: Vector[Vector[T]], topLeft: Coords2D = Coords2
   def updatedAtUnsafe(c: Coords2D, newValue: T): Field2D[T] = {
     val yIdx = c.y.value - topLeft.y.value
     copy(
-      data = data.updated(yIdx, data(yIdx).updated(c.x.value - topLeft.x.value, newValue))
+      data = data.updated(
+        yIdx,
+        data(yIdx).updated(c.x.value - topLeft.x.value, newValue),
+      )
     )
   }
 
   def isValidCoordinate(c: Coords2D): Boolean = at(c).isDefined
 
-  def adjacent4(c: Coords2D): List[Coords2D] = neighboursFor(c, includeDiagonal = false)
-  def adjacent8(c: Coords2D): List[Coords2D] = neighboursFor(c, includeDiagonal = true)
+  def adjacent4(c: Coords2D): List[Coords2D] =
+    neighboursFor(c, includeDiagonal = false)
+  def adjacent8(c: Coords2D): List[Coords2D] =
+    neighboursFor(c, includeDiagonal = true)
 
   def neighboursFor(c: Coords2D, includeDiagonal: Boolean): List[Coords2D] =
     c.neighbours(includeDiagonal).filter(isValidCoordinate)
@@ -72,12 +82,12 @@ final case class Field2D[T](data: Vector[Vector[T]], topLeft: Coords2D = Coords2
       }
     }
 
-  def row(y: Y): Vector[T]    = data(y.value - topLeft.y.value)
+  def row(y: Y): Vector[T]               = data(y.value - topLeft.y.value)
   def coordsForRow(y: Y): List[Coords2D] = xIndices.toList map { x =>
     Coords2D(x, y)
   }
 
-  def column(x: X): Vector[T] = data.map(_(x.value - topLeft.x.value))
+  def column(x: X): Vector[T]               = data.map(_(x.value - topLeft.x.value))
   def coordsForColumn(x: X): List[Coords2D] = yIndices.toList map { y =>
     Coords2D(x, y)
   }
@@ -103,7 +113,12 @@ object Field2D {
       fa.mapByCoordsWithValues { case (_, v) => f(v) }
   }
 
-  def ofSize[T](width: Int, height: Int, initialValue: T, topLeft: Coords2D = Coords2D.Zero): Field2D[T] =
+  def ofSize[T](
+    width: Int,
+    height: Int,
+    initialValue: T,
+    topLeft: Coords2D = Coords2D.Zero,
+  ): Field2D[T] =
     Field2D(
       Vector.fill(height)(Vector.fill(width)(initialValue)),
       topLeft,

@@ -1,7 +1,10 @@
 package jurisk.adventofcode.y2022
 
 import jurisk.geometry.{Coords2D, Field2D}
-import jurisk.math.{InclusiveDiscreteInterval, NonOverlappingDiscreteIntervalSet}
+import jurisk.math.{
+  InclusiveDiscreteInterval,
+  NonOverlappingDiscreteIntervalSet,
+}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._

@@ -87,7 +87,7 @@ object Coords2D {
     val yList = coords.map(_.y.value)
     val minY  = yList.min
     val maxY  = yList.max
-    Area2D(Coords2D.of(minX, minY),Coords2D.of(maxX, maxY))
+    Area2D(Coords2D.of(minX, minY), Coords2D.of(maxX, maxY))
   }
 
   def parse(s: String): Coords2D = {

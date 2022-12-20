@@ -15,7 +15,15 @@ object Advent03 {
     def parse(s: String): Claim =
       s match {
         case RegEx(id, left, top, width, height) =>
-          Claim(id.toInt, Area2D.fromLeftTopWidthHeight(left.toX, top.toY, width.toInt, height.toInt))
+          Claim(
+            id.toInt,
+            Area2D.fromLeftTopWidthHeight(
+              left.toX,
+              top.toY,
+              width.toInt,
+              height.toInt,
+            ),
+          )
         case _                                   => sys.error(s"Failed to parse $s")
       }
   }

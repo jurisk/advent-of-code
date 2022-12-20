@@ -35,9 +35,14 @@ object Advent14 {
 
     val maxY   = parsed.flatMap(_.points).map(_.y.value).max
     val height = maxY + 3
-    val width = height * 3
+    val width  = height * 3
 
-    val newField = Field2D.ofSize[Square](width, height, Square.Empty, topLeft = Coords2D.of(minX - height, 0))
+    val newField = Field2D.ofSize[Square](
+      width,
+      height,
+      Square.Empty,
+      topLeft = Coords2D.of(minX - height, 0),
+    )
     val result   = parsed.foldLeft(newField) { case (acc1, path) =>
       val pathSegments = path.points.sliding(2)
       pathSegments.foldLeft(acc1) { case (acc2, seg) =>

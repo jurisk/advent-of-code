@@ -6,8 +6,8 @@ import scala.collection.mutable
 
 object Bfs {
   def bfsReachable[N](
-   start: N,
-   successors: N => List[N],
+    start: N,
+    successors: N => List[N],
   ): List[N] = {
     var results: Vector[N] = Vector.empty
 

@@ -8,6 +8,7 @@ import scala.math.Ordering.Implicits._
 import scala.collection.mutable
 
 object AStar {
+
   /** @param start
     *   The starting node.
     * @param neighbours
