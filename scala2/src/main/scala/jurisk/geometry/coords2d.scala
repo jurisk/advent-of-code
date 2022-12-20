@@ -112,6 +112,6 @@ object Coords2D {
       }
 
     } else {
-      sys.error("Unexpected")
+      sys.error(s"Expected $a and $b to have same x or y coordinates, but they do not")
     }
 }

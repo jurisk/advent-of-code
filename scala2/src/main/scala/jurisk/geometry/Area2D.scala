@@ -17,6 +17,11 @@ final case class Area2D(min: Coords2D, max: Coords2D) {
 
   def left: X = min.x
   def top: Y  = min.y
+
+  def expandInEachDirectionBy(n: Int): Area2D = Area2D(
+    min - Coords2D.of(n, n),
+    max + Coords2D.of(n, n),
+  )
 }
 
 object Area2D {

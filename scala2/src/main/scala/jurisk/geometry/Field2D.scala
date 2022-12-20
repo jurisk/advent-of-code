@@ -55,6 +55,14 @@ final case class Field2D[T](
     )
   }
 
+  def conditionalUpdate(c: Coords2D, condition: T => Boolean, valueIfTrue: => T): Field2D[T] = {
+    if (at(c).exists(condition)) {
+      updatedAtUnsafe(c, valueIfTrue)
+    } else {
+      this
+    }
+  }
+
   def isValidCoordinate(c: Coords2D): Boolean = at(c).isDefined
 
   def adjacent4(c: Coords2D): List[Coords2D] =
@@ -123,6 +131,10 @@ object Field2D {
       Vector.fill(height)(Vector.fill(width)(initialValue)),
       topLeft,
     )
+
+  def forArea[T](boundingBox: Area2D, initialValue: T): Field2D[T] = {
+    ofSize(boundingBox.width, boundingBox.height, initialValue, boundingBox.topLeft)
+  }
 
   def toDebugRepresentation(field: Field2D[Char]): String = mergeSeqSeqChar(
     field.yIndices map { y =>
