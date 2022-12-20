@@ -162,7 +162,7 @@ object Advent11 {
         monkeyCounters.zipWithIndex foreach { case (value, index) =>
           println(s"Monkey $index inspected items $value times")
         }
-        println
+        println()
       }
 
       if (iteration >= rounds) {

@@ -4,22 +4,22 @@ const DATA: &str = include_str!("../../resources/07.txt");
 
 #[derive(Debug)]
 struct Data {
-    _placeholder: String,
+    placeholder: String,
 }
 
 fn parse(input: &str) -> Result<Data, Error> {
-    todo!("Parsing not implemented for '{}'", input)
+    Ok(Data { placeholder: "placeholder".to_string() })
 }
 
 type Output1 = usize;
 type Output2 = usize;
 
 fn solve_1(data: &Data) -> Output1 {
-    todo!("Solving is not implemented for {:?}", data)
+    Output2::MAX
 }
 
 fn solve_2(data: &Data) -> Output2 {
-    todo!("Solving is not implemented for {:?}", data)
+    Output2::MAX
 }
 
 fn part_1(input: &str) -> Result<Output1, Error> {

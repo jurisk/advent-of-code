@@ -67,13 +67,13 @@ object Advent16 {
         println(s"Testing $instruction:")
         println(s"Obtained: $result")
         println(s"Expected: $after")
-        println
+        println()
         result == after
       }
 
       println(s"${results.size} instructions match $this:")
       results foreach println
-      println
+      println()
 
       results
     }

@@ -197,7 +197,7 @@ object Advent19 {
       println(blueprint)
       val ql = blueprint.qualityLevel
       println(s"Quality level: $ql")
-      println
+      println()
       ql
     }.sum
   }
@@ -209,7 +209,7 @@ object Advent19 {
       println(blueprint)
       val result = blueprint.geodesCanOpen(Part2Minutes)
       println(s"Can open $result")
-      println
+      println()
       result
     }.product
   }

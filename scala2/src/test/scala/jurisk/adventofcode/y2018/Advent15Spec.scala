@@ -168,7 +168,7 @@ class Advent15Spec extends AnyFlatSpec {
     runTestPart1(testData6, 18740, 20)
   }
 
-  it should "part 1 for real" in {
+  it should "part 1 for real" ignore {
     val realData = readFileText("2018/15.txt")
     val real     = parse(realData)
     part1(real)._2 shouldEqual 243390
@@ -241,7 +241,7 @@ class Advent15Spec extends AnyFlatSpec {
     runTestPart2(testData, 1140, 30, 34)
   }
 
-  it should "part 2 for real" in {
+  it should "part 2 for real" ignore {
     val realData = readFileText("2018/15.txt")
     val real     = parse(realData)
     val answer   = 59886

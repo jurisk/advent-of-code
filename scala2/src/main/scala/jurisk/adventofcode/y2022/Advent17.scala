@@ -130,7 +130,7 @@ object Advent17 {
 
     val asString = Field2D.toDebugRepresentation(charField)
     println(asString)
-    println
+    println()
   }
 
   private val Debug = false
@@ -336,7 +336,7 @@ object Advent17 {
       printField(field)
       println("Frontier")
       printFrontier(result)
-      println
+      println()
     }
 
     result

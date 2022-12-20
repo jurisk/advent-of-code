@@ -84,7 +84,7 @@ object Advent05 {
     val newFrom = oldFrom.drop(command.amount)
     val newTo   = craneType.liftCrates(oldFrom.take(command.amount)) ++ oldTo
 
-    stacks + (command.from -> newFrom) + (command.to -> newTo)
+    stacks ++ SortedMap(command.from -> newFrom, command.to -> newTo)
   }
 
   private def solve(data: Input, craneType: CraneType): Output = {

@@ -25,7 +25,7 @@ final case class SparseField[T](points: Map[Coords2D, T]) {
           display(value.some)
       }
 
-      mergeSeqSeqChar(buffers.map(_.toList))
+      mergeSeqSeqChar(buffers.toIndexedSeq.map(_.toList))
     }
   }
 }

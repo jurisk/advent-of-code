@@ -82,7 +82,7 @@ object Advent13 {
       println(s"== Pair ${index + 1} == ")
       println(s"- Compare ${pair.left} vs ${pair.right}")
       println(s"- Right order = ${pair.rightOrder}")
-      println
+      println()
       pair.rightOrder.option(index + 1)
     }.sum
 
