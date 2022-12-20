@@ -110,4 +110,5 @@
 | 2018-12  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent12.scala) |                                                |                                                |
 | 2018-13  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent13.scala) |                                                |                                                |
 | 2018-14  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent14.scala) |                                                |                                                |
-| 2018-14  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent15.scala) |                                                |                                                |
+| 2018-15  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent15.scala) |                                                |                                                |
+| 2018-16  | [Code](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent16.scala) |                                                |                                                |
