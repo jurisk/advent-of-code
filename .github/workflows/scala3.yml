@@ -3,8 +3,12 @@ name: Scala 3 CI
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'scala3/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'scala3/**'
 
 permissions:
   contents: read

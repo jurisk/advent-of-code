@@ -3,8 +3,12 @@ name: Scala 2 CI
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'scala2/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'scala2/**'
 
 permissions:
   contents: read
