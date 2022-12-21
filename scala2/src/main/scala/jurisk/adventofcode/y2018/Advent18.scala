@@ -9,7 +9,7 @@ import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent18 {
-  type Parsed = Field2D[Square]
+  type Field = Field2D[Square]
 
   sealed trait Square {
     def toChar: Char
@@ -34,10 +34,10 @@ object Advent18 {
       }
   }
 
-  def parse(data: String): Parsed =
+  def parse(data: String): Field =
     Field2D.parseFromString(data, Square.parse)
 
-  private def next(state: Field2D[Square]): Field2D[Square] =
+  private def next(state: Field): Field =
     state.mapByCoordsWithValues { case (c, v) =>
       val adjacent8: Map[Square, Int] =
         state.adjacent8Values(c).counts.withDefaultValue(0)
@@ -51,22 +51,13 @@ object Advent18 {
       }
     }
 
-  def part1(initial: Parsed, times: Long): Int = {
-    val result = Simulation.runNIterations(initial, times) { case (state, _) =>
-      next(state)
+  def solve(initial: Field, times: Long): Int = {
+    val result = Simulation.runNIterationsRemovingLoops(initial, times) {
+      case (state, _) =>
+        next(state)
     }
 
     result.count(_ == Trees) * result.count(_ == Lumberyard)
-  }
-
-  def part2(initial: Parsed, times: Long): Int = {
-    val (loopAt1, loopAt2) = Simulation.detectLoop(initial) { case (state, _) =>
-      next(state)
-    }
-
-    val loopSize = loopAt2 - loopAt1
-    val tail     = times - loopAt1
-    part1(initial, loopAt1 + tail % loopSize)
   }
 
   def main(args: Array[String]): Unit = {
@@ -76,9 +67,9 @@ object Advent18 {
     val test = parse(testData)
     val real = parse(realData)
 
-    part1(test, 10) shouldEqual 1147
-    part1(real, 10) shouldEqual 763804
+    solve(test, 10) shouldEqual 1147
+    solve(real, 10) shouldEqual 763804
 
-    part2(real, 1000000000) shouldEqual 188400
+    solve(real, 1000000000) shouldEqual 188400
   }
 }
