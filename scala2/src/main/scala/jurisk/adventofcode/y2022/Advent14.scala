@@ -98,7 +98,7 @@ object Advent14 {
   private def sandSimulation(
     field: Field2D[Square],
     terminationClause: Coords2D => Boolean,
-  ): Int =
+  ): Long =
     Simulation.runWithIterationCount(field) { case (field, iteration) =>
       val sandGoes = nextSandGoesWhere(field, SandOrigin)
 
@@ -110,12 +110,12 @@ object Advent14 {
       }
     }
 
-  def part1(data: Parsed): Int = {
+  def part1(data: Parsed): Long = {
     val field = toField(data, rockBounded = false)
     sandSimulation(field, _.y.value >= field.height - 1)
   }
 
-  def part2(data: Parsed): Int = {
+  def part2(data: Parsed): Long = {
     val field = toField(data, rockBounded = true)
     sandSimulation(field, _ == SandOrigin) + 1
   }

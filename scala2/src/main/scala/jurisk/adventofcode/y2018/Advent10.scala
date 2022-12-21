@@ -9,7 +9,7 @@ import org.scalatest.matchers.should.Matchers._
 
 object Advent10 {
   type Parsed  = List[PointWithVelocity]
-  type Result1 = Int
+  type Result1 = Long
 
   final case class PointWithVelocity(
     location: Coords2D,
@@ -32,7 +32,7 @@ object Advent10 {
     val field = data.toSet
 
     Simulation.runWithIterationCount(()) { case ((), time) =>
-      val atTime      = field.map(x => x.atTime(time))
+      val atTime      = field.map(x => x.atTime(time.toInt))
       val boundingBox = Coords2D.boundingBoxInclusive(atTime)
       if (boundingBox.height <= limit) {
         val fieldAtTime = SparseBooleanField(atTime, 100).toDebugRepresentation

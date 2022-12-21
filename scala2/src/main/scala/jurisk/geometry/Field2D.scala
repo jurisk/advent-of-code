@@ -1,6 +1,8 @@
 package jurisk.geometry
 
 import cats.Functor
+import cats.implicits.toFunctorOps
+import jurisk.adventofcode.y2018.Advent17
 
 final case class Field2D[T](
   data: Vector[Vector[T]],
@@ -67,8 +69,15 @@ final case class Field2D[T](
 
   def adjacent4(c: Coords2D): List[Coords2D] =
     neighboursFor(c, includeDiagonal = false)
+
+  def adjacent4Values(c: Coords2D): List[T] =
+    adjacent4(c).flatMap(at)
+
   def adjacent8(c: Coords2D): List[Coords2D] =
     neighboursFor(c, includeDiagonal = true)
+
+  def adjacent8Values(c: Coords2D): List[T] =
+    adjacent8(c).flatMap(at)
 
   def neighboursFor(c: Coords2D, includeDiagonal: Boolean): List[Coords2D] =
     c.neighbours(includeDiagonal).filter(isValidCoordinate)
@@ -143,6 +152,14 @@ object Field2D {
       }
     }
   )
+
+  def printField[T](intro: String, field: Field2D[T], toChar: T => Char): Unit = {
+    println(intro)
+    val charField = field.map(toChar)
+    val representation = Field2D.toDebugRepresentation(charField)
+    println(representation)
+    println()
+  }
 
   def parseFromString[T](data: String, parser: Char => T): Field2D[T] =
     parseFromLines(

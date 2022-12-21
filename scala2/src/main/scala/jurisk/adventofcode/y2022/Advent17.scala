@@ -156,7 +156,7 @@ object Advent17 {
           if (Debug) {
             println(s"Offset in jet pattern: $totalJetPatternOffset")
           }
-          val nextMove              = jetPattern(totalJetPatternOffset % jetPattern.length)
+          val nextMove              = jetPattern((totalJetPatternOffset % jetPattern.length).toInt)
 
           val movedByJetStream = rockCoords.map(_ + nextMove.diff)
           val adjusted         = if (hitsFieldOrSides(field, movedByJetStream)) {
@@ -201,7 +201,7 @@ object Advent17 {
       acc.updatedAtUnsafe(c, Square.Wall)
     }
 
-    (result, newOffset)
+    (result, newOffset.toInt)
   }
 
   private val FieldWidth                                    = 7
@@ -222,23 +222,19 @@ object Advent17 {
 
     val withBottom = fieldWithBottom(10000)
 
-    val result = Simulation.runWithIterationCount((withBottom, 0)) {
+    val (result, jetPatternOffset) = Simulation.runNIterations((withBottom, 0), rocksToCount) {
       case (state, iteration) =>
         val (acc, jetPatternOffset) = state
-        if (iteration >= rocksToCount) {
-          println(s"Finished with jet pattern offset $jetPatternOffset")
-          acc.asLeft
-        } else {
-          val rockIdx    = iteration % RockPattern.RockPatterns.length
-          val chosenRock = RockPattern.RockPatterns(rockIdx)
+        val rockIdx    = iteration % RockPattern.RockPatterns.length
+        val chosenRock = RockPattern.RockPatterns(rockIdx.toInt)
 
-          val (result, newJetPatternOffset) =
-            dropRock(acc, jetPattern, chosenRock, jetPatternOffset)
+        val (result, newJetPatternOffset) =
+          dropRock(acc, jetPattern, chosenRock, jetPatternOffset)
 
-          (result, newJetPatternOffset).asRight
-        }
+        (result, newJetPatternOffset)
     }
 
+    println(s"Finished with jet pattern offset $jetPatternOffset")
     printField(result, Set.empty)
 
     // tower height

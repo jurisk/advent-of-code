@@ -167,33 +167,24 @@ object Advent17 {
   }
 
   private def printField(name: String, field: Field2D[Square]): Unit = {
-    println(name)
-    val charField      = field.map(sq => sq.toChar)
-    val representation = Field2D.toDebugRepresentation(charField)
-    println(representation)
-    println()
+    Field2D.printField[Square](name, field, _.toChar)
   }
 
   def simulate(field: Field2D[Square]): Field2D[Square] = {
     printField("Before:", field)
 
-    val result = Simulation.runWithIterationCount(State(field)) {
+    val result = Simulation.runUntilStableState(State(field)) {
       case (state, iteration) =>
         val newState = state.next
         if (iteration % 100 == 0) {
           printField("Next", newState.field)
         }
-
-        if (newState == state) {
-          state.field.asLeft
-        } else {
-          newState.asRight
-        }
+        newState
     }
 
-    printField("After:", result)
+    printField("After:", result.field)
 
-    result
+    result.field
   }
 
   private def squareCount(

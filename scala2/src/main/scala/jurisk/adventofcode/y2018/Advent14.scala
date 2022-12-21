@@ -56,9 +56,8 @@ object Advent14 {
   def part1(input: Int): String = {
     val iterations = input + 10
 
-    val resulting = Simulation.runWithIterationCount(State.start) {
-      case (state, iteration) =>
-        if (iteration < iterations) state.next.asRight else state.asLeft
+    val resulting = Simulation.runNIterations(State.start, iterations) { case (state, _) =>
+      state.next
     }
 
     resulting.data.slice(input, input + 10).map(_.toString).mkString
