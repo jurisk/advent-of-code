@@ -60,11 +60,12 @@ def parse(file_name: str) -> dict[str, str]:
       entries = map(lambda s: s.split(': '), lines)
       return dict(entries)
 
-test_data = parse("day21-test.txt")
-real_data = parse("day21.txt")
+if __name__ == '__main__':
+      test_data = parse("day21-test.txt")
+      real_data = parse("day21.txt")
 
-assert part1(test_data) == 152
-assert part1(real_data) == 87457751482938
+      assert part1(test_data) == 152
+      assert part1(real_data) == 87457751482938
 
-assert part2(test_data) == 301
-assert part2(real_data) == 3221245824363
+      assert part2(test_data) == 301
+      assert part2(real_data) == 3221245824363

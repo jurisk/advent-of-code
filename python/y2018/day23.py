@@ -27,16 +27,16 @@ class Nanobot:
     def id(self) -> str:
         return "p_" + str(self.location.x) + "_" + str(self.location.y) + "_" + str(self.location.z) + "_" + str(self.radius)
 
-def parse_nanobot(line: str) -> Nanobot:
-    x, y, z, r = map(int, re.search(r'^pos=<(-?\d+),(-?\d+),(-?\d+)>, r=(-?\d+)$', line).groups())
-    return Nanobot(Coords3D(x, y, z), r) 
+    def parse(line: str) -> 'Nanobot':
+        x, y, z, r = map(int, re.search(r'^pos=<(-?\d+),(-?\d+),(-?\d+)>, r=(-?\d+)$', line).groups())
+        return Nanobot(Coords3D(x, y, z), r) 
 
 def parse(file_name: str) -> list[Nanobot]:
       SCRIPT_DIR = Path(__file__).parent
       TEST_FILE = Path(SCRIPT_DIR, file_name)
       with open(TEST_FILE, "r", encoding="UTF-8") as file:
             lines = file.read().splitlines()
-      return [parse_nanobot(s) for s in lines]
+      return [Nanobot.parse(s) for s in lines]
 
 def part1(nanobots: list[Nanobot]) -> int:
     strongest = max(nanobots, key = lambda n: n.radius)
@@ -87,21 +87,22 @@ def part2(nanobots: list[Nanobot]) -> int:
     coords = find_coords_in_range_of_most_points(nanobots)
     return coords.manhattan_distance_to_origin()
 
-test_data_1 = parse("day23-test-1.txt")
-test_data_2 = parse("day23-test-2.txt")
-real_data = parse("day23.txt")
+if __name__ == '__main__':
+    test_data_1 = parse("day23-test-1.txt")
+    test_data_2 = parse("day23-test-2.txt")
+    real_data = parse("day23.txt")
 
-test_1 = part1(test_data_1)
-print(test_1)
-assert test_1 == 7
+    test_1 = part1(test_data_1)
+    print(test_1)
+    assert test_1 == 7
 
-real_1 = part1(real_data)
-print(real_1)
-assert real_1 == 393
+    real_1 = part1(real_data)
+    print(real_1)
+    assert real_1 == 393
 
-test_2 = part2(test_data_2)
-print(test_2)
-assert test_2 == 36
-real_2 = part2(real_data)
-print(real_2)
-assert real_2 == 113799398
+    test_2 = part2(test_data_2)
+    print(test_2)
+    assert test_2 == 36
+    real_2 = part2(real_data)
+    print(real_2)
+    assert real_2 == 113799398

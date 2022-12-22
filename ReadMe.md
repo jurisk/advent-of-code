@@ -20,9 +20,10 @@
 | 2022-16  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent16.scala) |                                                |                                                   |
 | 2022-17  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent17.scala) |                                                |                                                   |
 | 2022-18  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent18.scala) |                                                |                                                   |
-| 2022-19  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent19.scala) |                                                |                                                   |
+| 2022-19  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent19.scala) |                                                |          [Python](python/y2022/day19.py)          |
 | 2022-20  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent20.scala) |                                                |                                                   |
 | 2022-21  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent21.scala) |                                                |          [Python](python/y2022/day21.py)          |
+| 2022-22  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2022/Advent22.scala) |                                                |                                                   |
 | 2021-01  |                                                                         | [Rust](rust/y2021/src/bin/solution_2021_01.rs) |                                                   |
 | 2021-02  |                                                                         | [Rust](rust/y2021/src/bin/solution_2021_02.rs) |                                                   |
 | 2021-03  |                                                                         | [Rust](rust/y2021/src/bin/solution_2021_03.rs) |                                                   |

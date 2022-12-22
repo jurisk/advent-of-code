@@ -3,7 +3,9 @@
 ```
 pip3 install z3-solver
 pip3 install more-itertools
+pip3 install numpy
 python3 y20AB/dayXY.py
+python3 -m pytest
 ```
 
 # Types
