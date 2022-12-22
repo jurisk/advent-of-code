@@ -160,9 +160,6 @@ object Advent19 {
       bestSeen
     }
 
-    def qualityLevel: Int =
-      id * geodesCanOpen(Part1Minutes)
-
     override def toString: String =
       s"""Blueprint $id:
          |  Each ore robot costs $oreRobotCostsNOre ore.
@@ -195,7 +192,7 @@ object Advent19 {
     data.map { blueprint =>
       println(s"Calculating for:")
       println(blueprint)
-      val ql = blueprint.qualityLevel
+      val ql = blueprint.id * blueprint.geodesCanOpen(Part1Minutes)
       println(s"Quality level: $ql")
       println()
       ql

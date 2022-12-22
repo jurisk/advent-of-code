@@ -22,6 +22,9 @@ final case class Area2D(min: Coords2D, max: Coords2D) {
     min - Coords2D.of(n, n),
     max + Coords2D.of(n, n),
   )
+
+  def contains(c: Coords2D): Boolean =
+    c.x.value >= min.x.value && c.x.value <= max.x.value && c.y.value >= min.y.value && c.y.value <= max.y.value
 }
 
 object Area2D {
