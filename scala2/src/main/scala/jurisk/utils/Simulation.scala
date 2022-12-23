@@ -22,11 +22,11 @@ object Simulation {
 
   def runUntilStableState[State](state: State)(
     f: (State, Counter) => State
-  ): State =
+  ): (State, Counter) =
     runWithIterationCount(state) { case (state, iteration) =>
       val newState = f(state, iteration)
       if (newState == state) {
-        state.asLeft
+        (state, iteration + 1).asLeft
       } else {
         newState.asRight
       }

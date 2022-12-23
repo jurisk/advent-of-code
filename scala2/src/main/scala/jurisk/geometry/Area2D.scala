@@ -30,4 +30,6 @@ final case class Area2D(min: Coords2D, max: Coords2D) {
 object Area2D {
   def fromLeftTopWidthHeight(left: X, top: Y, width: Int, height: Int): Area2D =
     Area2D(Coords2D(left, top), Coords2D(left + width - 1, top + height - 1))
+
+  def boundingBoxInclusive(coords: Seq[Coords2D]): Area2D = Coords2D.boundingBoxInclusive(coords)
 }

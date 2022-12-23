@@ -90,4 +90,8 @@ class AllSolutionSpec extends AnyFlatSpec {
   "Advent22" should "work" ignore {
     Advent22.main(Array.empty)
   }
+
+  "Advent23" should "work" ignore {
+    Advent23.main(Array.empty)
+  }
 }
