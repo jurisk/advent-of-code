@@ -39,34 +39,42 @@ object Direction2D {
 
   case object N extends CardinalDirection2D {
     val diff: Coords2D = Coords2D.of(0, -1)
+    override def toString: String = "N"
   }
 
   case object NE extends DiagonalDirection2D {
     val diff: Coords2D = N.diff + E.diff
+    override def toString: String = "NE"
   }
 
   case object NW extends DiagonalDirection2D {
     val diff: Coords2D = N.diff + W.diff
+    override def toString: String = "NW"
   }
 
   case object S extends CardinalDirection2D {
     val diff: Coords2D = Coords2D.of(0, +1)
+    override def toString: String = "S"
   }
 
   case object SE extends DiagonalDirection2D {
     val diff: Coords2D = S.diff + E.diff
+    override def toString: String = "SE"
   }
 
   case object SW extends DiagonalDirection2D {
     val diff: Coords2D = S.diff + W.diff
+    override def toString: String = "SW"
   }
 
   case object W extends CardinalDirection2D {
     val diff: Coords2D = Coords2D.of(-1, 0)
+    override def toString: String = "W"
   }
 
   case object E extends CardinalDirection2D {
     val diff: Coords2D = Coords2D.of(1, 0)
+    override def toString: String = "E"
   }
 
   def parseUDLR(s: String): CardinalDirection2D = s match {

@@ -24,8 +24,7 @@ object Advent15 {
   }
 
   // When multiple choices are equally valid, ties are broken in reading order: top-to-bottom, then left-to-right.
-  implicit private val coordsOrdering: Ordering[Coords2D] =
-    Ordering[(Int, Int)].contramap(c => (c.y.value, c.x.value))
+  import Coords2D.readingOrdering
 
   object Warrior {
     val InitialHitPoints: Int = 200

@@ -1,5 +1,7 @@
 package jurisk.geometry
 
+import cats.implicits._
+
 // X and Y do not "extends AnyVal" on purpose because of type erasure issues
 final case class X(value: Int) {
   def *(n: Int): X = X(value * n)
@@ -75,6 +77,8 @@ final case class Coords2D(x: X, y: Y) {
 }
 
 object Coords2D {
+  implicit val readingOrdering: Ordering[Coords2D] = Ordering[(Int, Int)].contramap(c => (c.y.value, c.x.value))
+
   val Zero: Coords2D = Coords2D.of(0, 0)
 
   def of(x: Int, y: Int): Coords2D =

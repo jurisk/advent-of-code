@@ -24,8 +24,8 @@ object AdventTemplate {
       }
   }
 
-  def parse(data: String): Parsed =
-    data.parseList("\n", Command.parse)
+  def parse(input: String): Parsed =
+    input.parseList("\n", Command.parse)
 
   def part1(data: Parsed): Int =
     data.length

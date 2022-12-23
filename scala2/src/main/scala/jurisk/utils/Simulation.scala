@@ -96,4 +96,19 @@ object Simulation {
       }
     }
   }
+
+  def detectLoop[State, Result](initial: State)(
+    f: (State, Counter) => Either[Result, State]
+  ): Either[Result, (Counter, Counter)] = {
+    val alreadySeen: mutable.HashMap[State, Counter] = mutable.HashMap.empty
+    runWithIterationCount(initial) { case (state, iteration) =>
+      alreadySeen.get(state) match {
+        case Some(iterationWeSawThisBefore) =>
+          (iterationWeSawThisBefore, iteration).asRight.asLeft
+        case None =>
+          alreadySeen.update(state, iteration)
+          f(state, iteration).leftMap(_.asLeft)
+      }
+    }
+  }
 }
