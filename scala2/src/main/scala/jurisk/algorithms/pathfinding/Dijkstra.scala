@@ -62,10 +62,10 @@ object Dijkstra {
           dist.update(v, alt)
           // 17                  prev[v] ← u
           prev.update(v, u)
-        }
 
-        if (queue.count(_ == v) == 0) {
-          queue.enqueue(v)
+          if (queue.count(_ == v) == 0) {
+            queue.enqueue(v)
+          }
         }
       }
     }
