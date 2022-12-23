@@ -11,27 +11,6 @@ import scala.collection.immutable.ArraySeq
 object Advent16 {
   type Parsed = (List[Sample], List[InstructionBinary])
 
-  final case class Registers(data: ArraySeq[Int]) {
-    require(data.length == 4)
-
-    def apply(index: Int): Int =
-      data(index)
-
-    def setRegister(index: Int, value: Int): Registers =
-      Registers(
-        data.updated(index, value)
-      )
-  }
-
-  object Registers {
-    def apply(a: Int, b: Int, c: Int, d: Int): Registers =
-      Registers(
-        ArraySeq(a, b, c, d)
-      )
-
-    val Start: Registers = Registers(0, 0, 0, 0)
-  }
-
   final case class InstructionBinary(data: ArraySeq[Int]) {
     require(data.length == 4)
 
@@ -49,6 +28,13 @@ object Advent16 {
   }
 
   object InstructionBinary {
+    def allOptionsFromInstructionBinary(
+      binary: InstructionBinary
+    ): Iterable[Instruction] = Instruction.AllInstructions.values.map {
+      instruction =>
+        instruction(binary(1), binary(2), binary(3))
+    }
+
     def parse(s: String): InstructionBinary = InstructionBinary(
       ArraySeq.from(s.split(" ").map(_.toInt))
     )
@@ -61,7 +47,7 @@ object Advent16 {
   ) {
     def instructionsThisMayMatch: Iterable[Instruction] = {
       val candidates =
-        Instruction.allOptionsFromInstructionBinary(instructionBinary)
+        InstructionBinary.allOptionsFromInstructionBinary(instructionBinary)
       val results    = candidates.filter { instruction =>
         val result = instruction.execute(before)
         println(s"Testing $instruction:")
@@ -76,133 +62,6 @@ object Advent16 {
       println()
 
       results
-    }
-  }
-
-  final case class InstructionName(name: String) extends AnyVal
-
-  sealed trait Instruction {
-    val a: Int
-    val b: Int
-    val c: Int
-
-    def instructionName: InstructionName = InstructionName(
-      getClass.getSimpleName
-    )
-
-    def execute(registers: Registers): Registers =
-      registers.setRegister(c, whatToStoreInC(registers))
-
-    def whatToStoreInC(registers: Registers): Int
-  }
-
-  type InstructionFactoryF = (Int, Int, Int) => Instruction
-
-  case object Instruction {
-    private val AllInstructions: Map[InstructionName, InstructionFactoryF] =
-      List(
-        AddR,
-        AddI,
-        MulR,
-        MulI,
-        BAnR,
-        BAnI,
-        BOrR,
-        BOrI,
-        SetR,
-        SetI,
-        GtIR,
-        GtRI,
-        GtRR,
-        EqIR,
-        EqRI,
-        EqRR,
-      ).map { f =>
-        f(0, 0, 0).instructionName -> f
-      }.toMap
-
-    def instructionFactoryByName(
-      instructionName: InstructionName
-    ): InstructionFactoryF = AllInstructions(instructionName)
-
-    def allOptionsFromInstructionBinary(
-      binary: InstructionBinary
-    ): Iterable[Instruction] = AllInstructions.values.map { instruction =>
-      instruction(binary(1), binary(2), binary(3))
-    }
-
-    case class AddR(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int =
-        registers(a) + registers(b)
-    }
-
-    case class AddI(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int = registers(a) + b
-    }
-
-    case class MulR(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int =
-        registers(a) * registers(b)
-    }
-
-    case class MulI(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int = registers(a) * b
-    }
-
-    case class BAnR(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int =
-        registers(a) & registers(b)
-    }
-
-    case class BAnI(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int = registers(a) & b
-    }
-
-    case class BOrR(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int =
-        registers(a) | registers(b)
-    }
-
-    case class BOrI(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int = registers(a) | b
-    }
-
-    case class SetR(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int = registers(a)
-    }
-
-    case class SetI(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int = a
-    }
-
-    case class GtIR(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int =
-        if (a > registers(b)) 1 else 0
-    }
-
-    case class GtRI(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int =
-        if (registers(a) > b) 1 else 0
-    }
-
-    case class GtRR(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int =
-        if (registers(a) > registers(b)) 1 else 0
-    }
-
-    case class EqIR(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int =
-        if (a == registers(b)) 1 else 0
-    }
-
-    case class EqRI(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int =
-        if (registers(a) == b) 1 else 0
-    }
-
-    case class EqRR(a: Int, b: Int, c: Int) extends Instruction {
-      override def whatToStoreInC(registers: Registers): Int =
-        if (registers(a) == registers(b)) 1 else 0
     }
   }
 
@@ -285,7 +144,7 @@ object Advent16 {
       opcodeToPotentialNames
     )
     val instructions                             = programBinary.map(_.toInstruction(opcodeMapping))
-    val result                                   = instructions.foldLeft(Registers.Start) {
+    val result                                   = instructions.foldLeft(Registers.empty(4)) {
       case (acc, instruction) =>
         instruction.execute(acc)
     }
