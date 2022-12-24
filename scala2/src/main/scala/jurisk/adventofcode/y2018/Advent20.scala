@@ -2,7 +2,6 @@ package jurisk.adventofcode.y2018
 
 import cats.data.NonEmptyList
 import cats.implicits._
-import cats.parse.{Parser => P}
 import jurisk.adventofcode.y2018.Advent20.Command.{Branch, Move}
 import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
 import jurisk.geometry.Coords2D
@@ -49,6 +48,8 @@ object Advent20 {
   }
 
   def parse(input: String): RegEx = {
+    import cats.parse.{Parser => P}
+
     val moveN: P[Move]      = P.char('N').map(_ => Move(N))
     val moveS: P[Move]      = P.char('S').map(_ => Move(S))
     val moveE: P[Move]      = P.char('E').map(_ => Move(E))
@@ -62,9 +63,10 @@ object Advent20 {
 
       val commandParser: P[Command] = moveParser | branchParser
 
-      P.char('∅').map(_ => RegEx(Vector.empty)) | commandParser.rep.map(x =>
-        RegEx(x.toList.toVector)
-      )
+      val emptyRegEx = P.char('∅').map(_ => RegEx(Vector.empty))
+      val nonEmptyRegEx = commandParser.rep.map(x => RegEx(x.toList.toVector))
+
+      emptyRegEx | nonEmptyRegEx
     }
 
     val rootParser: P[RegEx] = regExParser.between(P.char('^'), P.char('$'))

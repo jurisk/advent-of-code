@@ -1,7 +1,5 @@
 package jurisk.adventofcode.y2022
 
-import cats.parse.{Parser => P}
-import cats.parse.Rfc5234.digit
 import jurisk.adventofcode.y2022.Advent13.Packet.{Lst, Nmb}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -51,6 +49,9 @@ object Advent13 {
     }
 
     def parse(s: String): Packet = {
+      import cats.parse.{Parser => P}
+      import cats.parse.Rfc5234.digit
+
       val packetParser: P[Packet] = P.recursive[Packet] { recurse =>
         // Must be .recursive to avoid a StackOverFlowException
         val nmbParser: P[Packet] = digit.rep.string.map(_.toInt).map(Nmb)
