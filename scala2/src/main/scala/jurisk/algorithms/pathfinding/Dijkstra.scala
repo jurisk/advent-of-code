@@ -92,4 +92,13 @@ object Dijkstra {
     val Zero = implicitly[Numeric[C]].zero
     aStar[N, C](start, successors, _ => Zero, success)
   }
+
+  def dijkstraWithIdenticalCosts[N, C: Numeric : Ordering : Bounded](
+    start: N,
+    successors: N => List[N],
+    success: N => Boolean,
+  ): Option[(NonEmptyList[N], C)] = {
+    val One = implicitly[Numeric[C]].one
+    dijkstra[N, C](start, n => successors(n).map { r => (r, One) }, success)
+  }
 }

@@ -2,7 +2,6 @@ package jurisk.geometry
 
 import cats.Functor
 import cats.implicits.toFunctorOps
-import jurisk.adventofcode.y2018.Advent17
 
 final case class Field2D[T](
   data: Vector[Vector[T]],
@@ -10,6 +9,8 @@ final case class Field2D[T](
 ) {
   val width: Int  = data.head.length
   val height: Int = data.length
+
+  def bottomRight: Coords2D = topLeft + Coords2D.of(width - 1, height - 1)
 
   def xIndices: Seq[X] = (0 until width).map(x => X(x) + topLeft.x)
   def yIndices: Seq[Y] = (0 until height).map(y => Y(y) + topLeft.y)
@@ -57,13 +58,16 @@ final case class Field2D[T](
     )
   }
 
-  def conditionalUpdate(c: Coords2D, condition: T => Boolean, valueIfTrue: => T): Field2D[T] = {
+  def conditionalUpdate(
+    c: Coords2D,
+    condition: T => Boolean,
+    valueIfTrue: => T,
+  ): Field2D[T] =
     if (at(c).exists(condition)) {
       updatedAtUnsafe(c, valueIfTrue)
     } else {
       this
     }
-  }
 
   def isValidCoordinate(c: Coords2D): Boolean = at(c).isDefined
 
@@ -109,6 +113,12 @@ final case class Field2D[T](
     Coords2D(x, y)
   }
 
+  def firstRowValues: Vector[T] = row(Y(0))
+  def lastRowValues: Vector[T]  = row(Y(height - 1))
+
+  def firstColumnValues: Vector[T] = column(X(0))
+  def lastColumnValues: Vector[T]  = column(X(width - 1))
+
   def count(p: T => Boolean): Int =
     values.count(p)
 
@@ -141,9 +151,13 @@ object Field2D {
       topLeft,
     )
 
-  def forArea[T](boundingBox: Area2D, initialValue: T): Field2D[T] = {
-    ofSize(boundingBox.width, boundingBox.height, initialValue, boundingBox.topLeft)
-  }
+  def forArea[T](boundingBox: Area2D, initialValue: T): Field2D[T] =
+    ofSize(
+      boundingBox.width,
+      boundingBox.height,
+      initialValue,
+      boundingBox.topLeft,
+    )
 
   def toDebugRepresentation(field: Field2D[Char]): String = mergeSeqSeqChar(
     field.yIndices map { y =>
@@ -153,9 +167,13 @@ object Field2D {
     }
   )
 
-  def printField[T](intro: String, field: Field2D[T], toChar: T => Char): Unit = {
+  def printField[T](
+    intro: String,
+    field: Field2D[T],
+    toChar: T => Char,
+  ): Unit = {
     println(intro)
-    val charField = field.map(toChar)
+    val charField      = field.map(toChar)
     val representation = Field2D.toDebugRepresentation(charField)
     println(representation)
     println()

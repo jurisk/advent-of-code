@@ -2,7 +2,10 @@ package jurisk.algorithms.pathfinding
 
 import cats.data.NonEmptyList
 import cats.implicits._
-import jurisk.algorithms.pathfinding.Dijkstra.dijkstra
+import jurisk.algorithms.pathfinding.Dijkstra.{
+  dijkstra,
+  dijkstraWithIdenticalCosts,
+}
 import jurisk.utils.Bounded._
 
 object Pathfinding {
@@ -17,9 +20,9 @@ object Pathfinding {
     successors: N => List[N],
     isGoal: N => Boolean,
   ): Option[NonEmptyList[N]] =
-    dijkstra[N, Int](
+    dijkstraWithIdenticalCosts[N, Int](
       start,
-      n => successors(n).map(x => x -> 1),
+      successors,
       isGoal,
     ).map { case (path, cost) =>
       require(

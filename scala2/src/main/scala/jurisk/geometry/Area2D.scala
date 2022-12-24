@@ -1,6 +1,9 @@
 package jurisk.geometry
 
 final case class Area2D(min: Coords2D, max: Coords2D) {
+  def onInsideEdge(c: Coords2D): Boolean =
+    (c.x == min.x) || (c.x == max.x) || (c.y == min.y) || (c.y == max.y)
+
   def points: List[Coords2D] = {
     (min.x.value to max.x.value) flatMap { x =>
       (min.y.value to max.y.value) map { y =>
@@ -31,5 +34,6 @@ object Area2D {
   def fromLeftTopWidthHeight(left: X, top: Y, width: Int, height: Int): Area2D =
     Area2D(Coords2D(left, top), Coords2D(left + width - 1, top + height - 1))
 
-  def boundingBoxInclusive(coords: Seq[Coords2D]): Area2D = Coords2D.boundingBoxInclusive(coords)
+  def boundingBoxInclusive(coords: Seq[Coords2D]): Area2D =
+    Coords2D.boundingBoxInclusive(coords)
 }

@@ -276,11 +276,20 @@ object Advent24 {
       .sum
   }
 
-  def part2(state: State): Int =
+  def part2(state: State): Int = {
     // TODO:
     // Find lowest `n` so that `state.boostImmuneSystem(n)` has Immune System win.
     // How many units is it left with?
+
+    // Binary search?
     ???
+  }
+
+  // Some(unitsLeft) if Immune System wins, None otherwise
+  def hypotheticalBoost(state: State, n: Int): Option[Int] = {
+    val boosted = state.boostImmuneSystem(n)
+    ???
+  }
 
   def main(args: Array[String]): Unit = {
     val testData = readFileText("2018/24-test.txt")
@@ -292,7 +301,7 @@ object Advent24 {
     part1(test) shouldEqual 5216
     part1(real) shouldEqual 29865
 
-    part2(test) shouldEqual 51
+    hypotheticalBoost(test, 1570) shouldEqual Some(51)
     part2(real) shouldEqual 1234567
   }
 }

@@ -9,6 +9,11 @@ sealed trait Direction2D {
 
 object Direction2D {
   sealed trait CardinalDirection2D extends Direction2D {
+    def isVertical: Boolean
+    def isHorizontal: Boolean = !isVertical
+
+    def toCaret: Char
+
     def rotate(rotation: Rotation): CardinalDirection2D =
       (rotation, this) match {
         case (NoRotation, _) => this
@@ -38,43 +43,51 @@ object Direction2D {
     CardinalDirections ::: DiagonalDirections
 
   case object N extends CardinalDirection2D {
-    val diff: Coords2D = Coords2D.of(0, -1)
-    override def toString: String = "N"
+    val diff: Coords2D               = Coords2D.of(0, -1)
+    override def toString: String    = "N"
+    override def toCaret: Char       = '^'
+    override def isVertical: Boolean = true
   }
 
   case object NE extends DiagonalDirection2D {
-    val diff: Coords2D = N.diff + E.diff
+    val diff: Coords2D            = N.diff + E.diff
     override def toString: String = "NE"
   }
 
   case object NW extends DiagonalDirection2D {
-    val diff: Coords2D = N.diff + W.diff
+    val diff: Coords2D            = N.diff + W.diff
     override def toString: String = "NW"
   }
 
   case object S extends CardinalDirection2D {
-    val diff: Coords2D = Coords2D.of(0, +1)
-    override def toString: String = "S"
+    val diff: Coords2D               = Coords2D.of(0, +1)
+    override def toString: String    = "S"
+    override def toCaret: Char       = 'v'
+    override def isVertical: Boolean = true
   }
 
   case object SE extends DiagonalDirection2D {
-    val diff: Coords2D = S.diff + E.diff
+    val diff: Coords2D            = S.diff + E.diff
     override def toString: String = "SE"
   }
 
   case object SW extends DiagonalDirection2D {
-    val diff: Coords2D = S.diff + W.diff
+    val diff: Coords2D            = S.diff + W.diff
     override def toString: String = "SW"
   }
 
   case object W extends CardinalDirection2D {
-    val diff: Coords2D = Coords2D.of(-1, 0)
-    override def toString: String = "W"
+    val diff: Coords2D               = Coords2D.of(-1, 0)
+    override def toString: String    = "W"
+    override def toCaret: Char       = '<'
+    override def isVertical: Boolean = false
   }
 
   case object E extends CardinalDirection2D {
-    val diff: Coords2D = Coords2D.of(1, 0)
-    override def toString: String = "E"
+    val diff: Coords2D               = Coords2D.of(1, 0)
+    override def toString: String    = "E"
+    override def toCaret: Char       = '>'
+    override def isVertical: Boolean = false
   }
 
   def parseUDLR(s: String): CardinalDirection2D = s match {
