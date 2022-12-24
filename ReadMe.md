@@ -124,5 +124,5 @@
 | 2018-21  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent21.scala) |                                                |                                                   |
 | 2018-22  |                                                                         |                                                |                                                   |
 | 2018-23  |                                                                         |                                                |          [Python](python/y2018/day23.py)          |
-| 2018-24  |                                                                         |                                                |                                                   |
+| 2018-24  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent24.scala) |                                                |                                                   |
 | 2018-25  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent25.scala) |                                                |                                                   |

@@ -1,13 +1,13 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
+import jurisk.utils.Memoize.memoize
 import jurisk.algorithms.pathfinding.Pathfinding
 import jurisk.geometry.Direction2D.CardinalDirection2D
 import jurisk.geometry.{Area2D, Coords2D, Direction2D, Field2D}
 import jurisk.math.{absForWrappingAround, lcm}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import jurisk.utils.memoize
 import org.scalatest.matchers.should.Matchers._
 
 object Advent24 {

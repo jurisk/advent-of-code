@@ -1,10 +1,13 @@
 package jurisk.adventofcode.y2018
 
 import cats.implicits._
+import jurisk.algorithms.search.BinarySearch.binarySearchForLowestValidN
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers._
+
+import scala.annotation.tailrec
 
 object Advent24 {
   final case class AttackType(value: String)
@@ -266,29 +269,39 @@ object Advent24 {
     }
   }
 
-  def part1(state: State): Int = {
+  private def simulateRound(state: State): (Int, Int) = {
     val (result, _) = Simulation.runUntilStableState(state) { case (state, _) =>
       state.next
     }
 
-    result.immuneSystem.values.map(_.units).sum + result.infection.values
-      .map(_.units)
-      .sum
+    (
+      result.immuneSystem.values.map(_.units).sum,
+      result.infection.values.map(_.units).sum,
+    )
   }
 
-  def part2(state: State): Int = {
-    // TODO:
-    // Find lowest `n` so that `state.boostImmuneSystem(n)` has Immune System win.
-    // How many units is it left with?
-
-    // Binary search?
-    ???
+  def part1(state: State): Int = {
+    val (immuneSystemUnits, infectionUnits) = simulateRound(state)
+    immuneSystemUnits + infectionUnits
   }
 
   // Some(unitsLeft) if Immune System wins, None otherwise
-  def hypotheticalBoost(state: State, n: Int): Option[Int] = {
-    val boosted = state.boostImmuneSystem(n)
-    ???
+  private def hypotheticalBoost(state: State, n: Int): Option[Int] = {
+    val boosted                             = state.boostImmuneSystem(n)
+    val (immuneSystemUnits, infectionUnits) = simulateRound(boosted)
+    if (infectionUnits == 0) {
+      immuneSystemUnits.some
+    } else {
+      none
+    }
+  }
+
+  def part2(state: State): Int = {
+    // Find lowest `n` so that `state.boostImmuneSystem(n)` has Immune System win.
+    // How many units is it left with?
+    val (_, units) =
+      binarySearchForLowestValidN(0, 1, n => hypotheticalBoost(state, n))
+    units
   }
 
   def main(args: Array[String]): Unit = {
@@ -302,6 +315,6 @@ object Advent24 {
     part1(real) shouldEqual 29865
 
     hypotheticalBoost(test, 1570) shouldEqual Some(51)
-    part2(real) shouldEqual 1234567
+    part2(real) shouldEqual 2444
   }
 }
