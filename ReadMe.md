@@ -1,3 +1,7 @@
+[![Scala 2 CI](https://github.com/jurisk/advent-of-code/actions/workflows/scala2.yml/badge.svg)](https://github.com/jurisk/advent-of-code/actions/workflows/scala2.yml)
+[![Scala 3 CI](https://github.com/jurisk/advent-of-code/actions/workflows/scala3.yml/badge.svg)](https://github.com/jurisk/advent-of-code/actions/workflows/scala3.yml)
+[![Rust](https://github.com/jurisk/advent-of-code/actions/workflows/rust.yml/badge.svg)](https://github.com/jurisk/advent-of-code/actions/workflows/rust.yml)
+
 # Advent of Code
 
 | Year-Day |                                  Scala                                  |                      Rust                      |                      Others                       |
@@ -122,7 +126,7 @@
 | 2018-19  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent19.scala) |                                                |                                                   |
 | 2018-20  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent20.scala) |                                                |                                                   |
 | 2018-21  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent21.scala) |                                                |                                                   |
-| 2018-22  |                                                                         |                                                |                                                   |
+| 2018-22  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent22.scala) |                                                |                                                   |
 | 2018-23  |                                                                         |                                                |          [Python](python/y2018/day23.py)          |
 | 2018-24  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent24.scala) |                                                |                                                   |
 | 2018-25  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent25.scala) |                                                |                                                   |

@@ -1,8 +1,10 @@
 package jurisk.algorithms.pathfinding
 
 import cats.data.NonEmptyList
+import cats.implicits._
 import jurisk.algorithms.pathfinding.AStar.aStar
 import jurisk.utils.Bounded
+
 import scala.math.Numeric.Implicits._
 import scala.math.Ordering.Implicits._
 import scala.collection.mutable
@@ -37,10 +39,11 @@ object Dijkstra {
     //  5          prev[v] ← UNDEFINED
     val prev: mutable.Map[N, N]         = mutable.Map()
     //  6          add v to Q
-    val queue: mutable.PriorityQueue[N] = mutable.PriorityQueue.empty(
-      Ordering.by(dist).reverse
+    val queue: mutable.PriorityQueue[(N, C)] = mutable.PriorityQueue.empty(
+      Ordering[C].reverse.contramap { case (_, c) => c }
     )
-    queue.enqueue(start)
+
+    queue.enqueue((start, Zero))
     //  7      dist[source] ← 0
     dist.update(start, Zero)
 
@@ -49,7 +52,10 @@ object Dijkstra {
       // 10          u ← vertex in Q with min dist[u]
 
       // 11          remove u from Q
-      val u = queue.dequeue()
+      val (u, _) = queue.dequeue()
+
+      // TODO:  We may have inserted several nodes into the priority queue if we found a better way.
+      //        We should ensure we are dealing with the best path and discard the others.
 
       // 13          for each neighbor v of u still in Q:
       successors(u) foreach { case (v, distance) =>
@@ -63,9 +69,8 @@ object Dijkstra {
           // 17                  prev[v] ← u
           prev.update(v, u)
 
-          if (queue.count(_ == v) == 0) {
-            queue.enqueue(v)
-          }
+          // we are forced to insert potentially duplicate elements as there is no "reprioritise" on PriorityQueue
+          queue.enqueue((v, alt))
         }
       }
     }

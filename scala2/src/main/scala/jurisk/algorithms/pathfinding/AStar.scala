@@ -69,13 +69,16 @@ object AStar {
     // The set of discovered nodes that may need to be (re-)expanded.
     // Initially, only the start node is known.
     // This is usually implemented as a min-heap or priority queue rather than a hash-set.
-    val openSet: mutable.PriorityQueue[N] = mutable.PriorityQueue.apply(start)(
-      Ordering.by(fScore).reverse
+    val openSet: mutable.PriorityQueue[(N, C)] = mutable.PriorityQueue.apply((start, fScore(start)))(
+      Ordering[C].reverse.contramap { case (_, c) => c }
     )
-
     while (openSet.nonEmpty) {
       // This operation can occur in O(1) time if openSet is a min-heap or a priority queue
-      val current = openSet.dequeue()
+       val (current, dequeuedCost) = openSet.dequeue()
+
+      // TODO:  We may have inserted several nodes into the priority queue if we found a better way.
+      //        We should ensure we are dealing with the best path and discard the others.
+
       if (isGoal(current))
         return (reconstructPath(cameFrom, current), gScore(current)).some
 
@@ -90,9 +93,8 @@ object AStar {
           gScore.update(neighbour, tentativeGScore)
           fScore.update(neighbour, tentativeGScore + heuristic(neighbour))
 
-          if (openSet.count(_ == neighbour) == 0) {
-            openSet.enqueue(neighbour)
-          }
+          // we are forced to insert potentially duplicate elements as there is no "reprioritise" on PriorityQueue
+          openSet.enqueue((neighbour, fScore(neighbour)))
         }
       }
     }
