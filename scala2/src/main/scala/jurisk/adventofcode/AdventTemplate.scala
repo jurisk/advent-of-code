@@ -30,8 +30,8 @@ object AdventTemplate {
   def part1(data: Parsed): Int =
     data.length
 
-  def part2(data: Parsed): String =
-    data.counts.toString
+  def part2(data: Parsed): Int =
+    data.length
 
   def main(args: Array[String]): Unit = {
     val testData = readFileText("2022/00-test.txt")
@@ -44,7 +44,7 @@ object AdventTemplate {
     part1(test) shouldEqual 12345678
     part1(real) shouldEqual 12345678
 
-    part2(test) shouldEqual "asdf"
-    part2(real) shouldEqual "asdf"
+    part2(test) shouldEqual 12345678
+    part2(real) shouldEqual 12345678
   }
 }
