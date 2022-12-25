@@ -1,4 +1,4 @@
-use advent_of_code_common::parsing::Error;
+use advent_of_code_common::parsing::{Error, normalize_newlines};
 
 const DATA: &str = include_str!("../../resources/07.txt");
 
@@ -12,7 +12,7 @@ fn parse(input: &str) -> Result<Data, Error> {
         Err("empty".to_string())
     } else {
         Ok(Data {
-            placeholder: input.to_string(),
+            placeholder: normalize_newlines(input),
         })
     }
 }
@@ -56,21 +56,21 @@ mod tests {
 
     #[test]
     fn test_solve_1_test() {
-        assert_eq!(part_1(TEST_DATA), Ok(215));
+        assert_eq!(part_1(TEST_DATA), Ok(191));
     }
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(part_1(DATA), Ok(12056));
+        assert_eq!(part_1(DATA), Ok(11003));
     }
 
     #[test]
     fn test_solve_2_test() {
-        assert_eq!(part_2(TEST_DATA), Ok(215));
+        assert_eq!(part_2(TEST_DATA), Ok(191));
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA), Ok(12056));
+        assert_eq!(part_2(DATA), Ok(11003));
     }
 }
