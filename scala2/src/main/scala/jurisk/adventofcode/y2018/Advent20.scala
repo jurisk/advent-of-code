@@ -58,23 +58,22 @@ object Advent20 {
 
     val regExParser: P[RegEx] = P.recursive[RegEx] { recurse =>
       // Must be .recursive to avoid a StackOverFlowException
-      val branchParser: P[Branch] =
-        (P.char('(') *> recurse.repSep(P.char('|')) <* P.char(')')).map(Branch)
+      val branchParser: P[Branch] = {
+        val maybeEmpty = recurse.?.map(_.getOrElse(RegEx(Vector.empty)))
+        val regExList  = (maybeEmpty ~ (P.char('|') *> maybeEmpty).rep0)
+          .map { case (head, tail) => NonEmptyList(head, tail) }
+
+        (P.char('(') *> regExList <* P.char(')')).map(Branch)
+      }
 
       val commandParser: P[Command] = moveParser | branchParser
 
-      val emptyRegEx = P.char('∅').map(_ => RegEx(Vector.empty))
-      val nonEmptyRegEx = commandParser.rep.map(x => RegEx(x.toList.toVector))
-
-      emptyRegEx | nonEmptyRegEx
+      commandParser.rep.map(x => RegEx(x.toList.toVector))
     }
 
     val rootParser: P[RegEx] = regExParser.between(P.char('^'), P.char('$'))
 
-    val hackedInput = input
-      .replace("|)", "|∅)")
-
-    rootParser.parseAll(hackedInput) match {
+    rootParser.parseAll(input) match {
       case Left(error)  =>
         sys.error(
           s"Error $error at '${error.input.getOrElse("").drop(error.failedAtOffset)}'"
