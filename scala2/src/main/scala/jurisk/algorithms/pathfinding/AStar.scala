@@ -76,27 +76,29 @@ object AStar {
       // This operation can occur in O(1) time if openSet is a min-heap or a priority queue
        val (current, dequeuedCost) = openSet.dequeue()
 
-      // TODO:  We may have inserted several nodes into the priority queue if we found a better way.
-      //        We should ensure we are dealing with the best path and discard the others.
+      // We may have inserted several nodes into the priority queue if we found a better way.
+      // We should ensure we are dealing with the best path and ignore the others.
+      if (dequeuedCost <= fScore(current)) {
+        if (isGoal(current))
+          return (reconstructPath(cameFrom, current), gScore(current)).some
 
-      if (isGoal(current))
-        return (reconstructPath(cameFrom, current), gScore(current)).some
+        neighbours(current) foreach { case (neighbour, d) =>
+          // d(current, neighbor) is the weight of the edge from current to neighbor
 
-      neighbours(current) foreach { case (neighbour, d) =>
-        // d(current, neighbor) is the weight of the edge from current to neighbor
+          // tentative_gScore is the distance from start to the neighbor through current
+          val tentativeGScore = gScore(current) + d
+          if (tentativeGScore < gScore(neighbour)) {
+            // This path to neighbor is better than any previous one. Record it!
+            cameFrom.update(neighbour, current)
+            gScore.update(neighbour, tentativeGScore)
+            fScore.update(neighbour, tentativeGScore + heuristic(neighbour))
 
-        // tentative_gScore is the distance from start to the neighbor through current
-        val tentativeGScore = gScore(current) + d
-        if (tentativeGScore < gScore(neighbour)) {
-          // This path to neighbor is better than any previous one. Record it!
-          cameFrom.update(neighbour, current)
-          gScore.update(neighbour, tentativeGScore)
-          fScore.update(neighbour, tentativeGScore + heuristic(neighbour))
-
-          // we are forced to insert potentially duplicate elements as there is no "reprioritise" on PriorityQueue
-          openSet.enqueue((neighbour, fScore(neighbour)))
+            // We are forced to insert potentially duplicate elements as there is no "reprioritise" on PriorityQueue
+            openSet.enqueue((neighbour, fScore(neighbour)))
+          }
         }
       }
+
     }
 
     // Open set is empty but goal was never reached

@@ -52,25 +52,27 @@ object Dijkstra {
       // 10          u ← vertex in Q with min dist[u]
 
       // 11          remove u from Q
-      val (u, _) = queue.dequeue()
+      val (u, dequeuedCostOfU) = queue.dequeue()
 
-      // TODO:  We may have inserted several nodes into the priority queue if we found a better way.
-      //        We should ensure we are dealing with the best path and discard the others.
+      // We may have inserted several nodes into the priority queue if we found a better way.
+      // We should ensure we are dealing with the best path and ignore the others.
+      if (dequeuedCostOfU <= dist(u)) {
 
-      // 13          for each neighbor v of u still in Q:
-      successors(u) foreach { case (v, distance) =>
-        // 14              alt ← dist[u] + Graph.Edges(u, v)
-        val alt = dist(u) + distance
+        // 13          for each neighbor v of u still in Q:
+        successors(u) foreach { case (v, distance) =>
+          // 14              alt ← dist[u] + Graph.Edges(u, v)
+          val alt = dist(u) + distance
 
-        // 15              if alt < dist[v]:
-        if (alt < dist(v)) {
-          // 16                  dist[v] ← alt
-          dist.update(v, alt)
-          // 17                  prev[v] ← u
-          prev.update(v, u)
+          // 15              if alt < dist[v]:
+          if (alt < dist(v)) {
+            // 16                  dist[v] ← alt
+            dist.update(v, alt)
+            // 17                  prev[v] ← u
+            prev.update(v, u)
 
-          // we are forced to insert potentially duplicate elements as there is no "reprioritise" on PriorityQueue
-          queue.enqueue((v, alt))
+            // We are forced to insert potentially duplicate elements as there is no "reprioritise" on PriorityQueue
+            queue.enqueue((v, alt))
+          }
         }
       }
     }
