@@ -22,7 +22,7 @@ object Advent23 {
           _.conditionsSatisfied(location, allCoords)
         } match {
           case Some(proposal) =>
-            copy(location = location + proposal.moveTo.diff)
+            copy(location = location + proposal.moveTo)
           case None           => this
         }
       }
@@ -36,7 +36,7 @@ object Advent23 {
   ) {
     def conditionsSatisfied(location: Coords2D, all: Set[Coords2D]): Boolean =
       considered.forall { d =>
-        !all.contains(location + d.diff)
+        !all.contains(location + d)
       }
   }
 

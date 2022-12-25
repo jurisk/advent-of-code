@@ -70,7 +70,7 @@ object Advent14 {
   ): Coords2D = {
     val potentialDestinations =
       (Direction2D.S :: Direction2D.SW :: Direction2D.SE :: Nil)
-        .map(from + _.diff)
+        .map(from + _)
 
     val found = potentialDestinations.find(c => field.at(c).contains(Empty))
     found match {

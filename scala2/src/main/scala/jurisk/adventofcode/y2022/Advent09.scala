@@ -57,7 +57,7 @@ object Advent09 {
 
   case class Rope(elems: List[Coords2D]) {
     def applyMove(direction: Direction2D): Rope = {
-      val newH     = elems.head + direction.diff
+      val newH     = elems.head + direction
       val newElems = Rope.catchUpRope(newH :: elems.tail)
       Rope(newElems)
     }

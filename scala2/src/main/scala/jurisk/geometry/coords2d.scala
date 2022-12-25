@@ -61,19 +61,21 @@ final case class Coords2D(x: X, y: Y) {
       Direction2D.CardinalDirections
     }
 
-    directions.map(d => this + d.diff)
+    directions.map(this + _)
   }
 
   override def toString: String = s"($x, $y)"
 
-  def N: Coords2D  = this + Direction2D.N.diff
-  def E: Coords2D  = this + Direction2D.E.diff
-  def S: Coords2D  = this + Direction2D.S.diff
-  def W: Coords2D  = this + Direction2D.W.diff
-  def NE: Coords2D = this + Direction2D.NE.diff
-  def NW: Coords2D = this + Direction2D.NW.diff
-  def SE: Coords2D = this + Direction2D.SE.diff
-  def SW: Coords2D = this + Direction2D.SW.diff
+  def +(direction: Direction2D): Coords2D = this + direction.diff
+
+  def N: Coords2D  = this + Direction2D.N
+  def E: Coords2D  = this + Direction2D.E
+  def S: Coords2D  = this + Direction2D.S
+  def W: Coords2D  = this + Direction2D.W
+  def NE: Coords2D = this + Direction2D.NE
+  def NW: Coords2D = this + Direction2D.NW
+  def SE: Coords2D = this + Direction2D.SE
+  def SW: Coords2D = this + Direction2D.SW
 }
 
 object Coords2D {

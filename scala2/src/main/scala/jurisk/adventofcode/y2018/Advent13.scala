@@ -62,7 +62,7 @@ object Advent13 {
 
       Cart(
         newDirection,
-        coords + newDirection.diff,
+        coords + newDirection,
         turnsMade + (if (square == Track.Intersection) 1 else 0),
       )
     }

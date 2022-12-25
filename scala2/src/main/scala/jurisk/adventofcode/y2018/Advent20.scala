@@ -97,7 +97,7 @@ object Advent20 {
           }
 
         case Move(direction) +: next =>
-          val newCoords = coords + direction.diff
+          val newCoords = coords + direction
           doors.add(Door(coords, newCoords))
           if (doors.size % 1000 == 0) println(s"${doors.size} doors added...")
           List((next, newCoords))

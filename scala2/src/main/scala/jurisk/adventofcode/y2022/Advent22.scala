@@ -107,7 +107,7 @@ object Advent22 {
       def firstSuitable(coords: List[Coords2D]): Coords2D =
         coords.find(isValid).get
 
-      val raw   = position + direction.diff
+      val raw   = position + direction
       val valid = isValid(raw)
 
       val newPosition = if (valid) {
@@ -146,7 +146,7 @@ object Advent22 {
               └─────┘
      */
     private def nextWithWrapAround2: (Coords2D, CardinalDirection2D) = {
-      val raw = position + direction.diff
+      val raw = position + direction
       if (isValid(raw)) {
         (raw, direction)
       } else {
