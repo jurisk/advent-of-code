@@ -19,7 +19,7 @@ fn parse_layers(data: &str, width: Number, height: Number) -> Vec<Vec<u8>> {
     let numbers: Vec<_> = data.chars().map(|x| (x as u8) - b'0').collect();
     let layers: Vec<_> = numbers
         .chunks_exact(layer_size)
-        .map(|x| x.to_vec())
+        .map(<[u8]>::to_vec)
         .collect();
     layers
 }
@@ -63,10 +63,10 @@ fn main() {
     let data = include_str!("../../resources/08.txt").trim();
     let part_1 = solve_1(data, 25, 6);
     assert_eq!(part_1, 1965);
-    println!("Part 1: {}", part_1);
+    println!("Part 1: {part_1}");
 
     let part_2 = solve_2(data, 25, 6);
-    println!("Part 2:\n{}", part_2);
+    println!("Part 2:\n{part_2}");
 }
 
 #[cfg(test)]

@@ -22,6 +22,7 @@ fn solve(groups: &[Group], f: MergeFunction<Answer>) -> usize {
     groups.iter().map(|g| merge_group(g, f).len()).sum()
 }
 
+#[allow(clippy::needless_for_each)]
 fn main() {
     let raw_data = include_str!("../../resources/06.txt");
 
@@ -46,5 +47,5 @@ fn main() {
 
     vec![union, intersection]
         .into_iter()
-        .for_each(|f| println!("{}", solve(&groups, f)))
+        .for_each(|f| println!("{}", solve(&groups, f)));
 }

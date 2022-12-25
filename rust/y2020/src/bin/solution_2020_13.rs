@@ -71,7 +71,7 @@ fn chinese_remainder(residues: &[Number], modulii: &[Number]) -> Option<Number> 
     let mut sum = 0;
     for (&residue, &modulus) in residues.iter().zip(modulii) {
         let p = prod / modulus;
-        sum += residue * mod_inv(p, modulus)? * p
+        sum += residue * mod_inv(p, modulus)? * p;
     }
     Some(sum % prod)
 }

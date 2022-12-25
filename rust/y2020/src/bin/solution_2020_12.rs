@@ -38,6 +38,7 @@ impl Location {
         }
     }
 
+    #[allow(clippy::match_same_arms)]
     fn apply(self, command: Command) -> Location {
         fn delta_x(n: isize, bearing: isize) -> isize {
             match bearing {

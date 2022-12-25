@@ -114,13 +114,13 @@ fn iterate_bits<F>(mask: u64, value: u64, mut callback: F)
 where
     F: FnMut(u64),
 {
-    let mut queue: VecDeque<Entry> = VecDeque::new();
-
     struct Entry {
         remaining_mask: u64,
         mask_0: u64,
         mask_1: u64,
     }
+
+    let mut queue: VecDeque<Entry> = VecDeque::new();
 
     queue.push_front(Entry {
         remaining_mask: mask,
@@ -149,7 +149,7 @@ where
                 } else {
                     // remaining_mask is empty now
                     let applied = apply_mask(value, entry.mask_0, entry.mask_1);
-                    callback(applied)
+                    callback(applied);
                 }
             },
         }

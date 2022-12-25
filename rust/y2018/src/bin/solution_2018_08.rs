@@ -17,11 +17,7 @@ struct Node {
 impl Node {
     fn recursive_sum(&self) -> usize {
         self.metadata.iter().sum::<usize>()
-            + self
-                .children
-                .iter()
-                .map(|x| x.recursive_sum())
-                .sum::<usize>()
+            + self.children.iter().map(Node::recursive_sum).sum::<usize>()
     }
 
     fn root_node(&self) -> usize {
@@ -30,12 +26,7 @@ impl Node {
         } else {
             self.metadata
                 .iter()
-                .map(|idx| {
-                    self.children
-                        .get(idx - 1)
-                        .map(|x| x.root_node())
-                        .unwrap_or(0)
-                })
+                .map(|idx| self.children.get(idx - 1).map_or(0, Node::root_node))
                 .sum()
         }
     }

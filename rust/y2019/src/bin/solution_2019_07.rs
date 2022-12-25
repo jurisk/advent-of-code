@@ -11,13 +11,13 @@ fn amplifier(program: &MachineCodeRef, phase_setting: u8, input: Entry) -> Entry
     process.next_output_unsafe()
 }
 
-fn signal_1(program: &MachineCodeRef, phases: Vec<u8>) -> Entry {
+fn signal_1(program: &MachineCodeRef, phases: &[u8]) -> Entry {
     phases.iter().fold(0, |acc, phase_setting| {
         amplifier(program, *phase_setting, acc)
     })
 }
 
-fn signal_2(program: &MachineCodeRef, phases: Vec<u8>) -> Entry {
+fn signal_2(program: &MachineCodeRef, phases: &[u8]) -> Entry {
     let mut processes: Vec<Process> = phases
         .iter()
         .map(|phase| {
@@ -44,9 +44,9 @@ fn signal_2(program: &MachineCodeRef, phases: Vec<u8>) -> Entry {
 fn solve(
     program: &MachineCodeRef,
     range: RangeInclusive<u8>,
-    f: fn(&MachineCodeRef, Vec<u8>) -> Entry,
+    f: fn(&MachineCodeRef, &[u8]) -> Entry,
 ) -> Entry {
-    range.permutations(5).map(|x| f(program, x)).max().unwrap()
+    range.permutations(5).map(|x| f(program, &x)).max().unwrap()
 }
 
 fn part_1(program: &MachineCodeRef) -> Entry {

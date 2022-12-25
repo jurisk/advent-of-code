@@ -50,7 +50,7 @@ impl Direction {
 
 type Number = i32;
 
-#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+#[derive(PartialEq, Eq, Hash, Clone, Debug, Copy)]
 struct Coords {
     x: Number,
     y: Number,
@@ -61,7 +61,7 @@ impl Coords {
         Coords { x, y }
     }
 
-    fn movement(&self, direction: &Direction) -> Coords {
+    fn movement(self, direction: &Direction) -> Coords {
         Coords {
             x: self.x + i32::from(*direction == Direction::East)
                 - i32::from(*direction == Direction::West),
@@ -70,7 +70,7 @@ impl Coords {
         }
     }
 
-    fn neighbours(&self) -> Vec<Coords> {
+    fn neighbours(self) -> Vec<Coords> {
         Direction::all()
             .iter()
             .map(|direction| self.movement(direction))
@@ -171,7 +171,7 @@ impl Robot {
                 self.current_direction, self.current_position
             );
         } else {
-            self.current_position = target_position.clone();
+            self.current_position = target_position;
             self.current_direction = self.current_direction.rotate_right();
             println!(
                 "Moved to {:?}, known is\n{}",
@@ -211,11 +211,11 @@ fn bfs(tiles: &HashMap<Coords, Tile>, start: Coords, end: Coords) -> Vec<Coords>
                 .filter(|x| *tiles.get(x).unwrap() != Tile::Wall)
                 .for_each(|adjacent| {
                     let mut new_path = path.clone();
-                    new_path.push(adjacent.clone());
+                    new_path.push(*adjacent);
                     queue.push_back(new_path);
                 });
 
-            visited.insert(last_node.clone());
+            visited.insert(*last_node);
         }
     }
 
@@ -223,12 +223,7 @@ fn bfs(tiles: &HashMap<Coords, Tile>, start: Coords, end: Coords) -> Vec<Coords>
 }
 
 fn goal_tile(tiles: &HashMap<Coords, Tile>) -> Coords {
-    tiles
-        .iter()
-        .find(|(_, v)| **v == Tile::Goal)
-        .unwrap()
-        .0
-        .clone()
+    *tiles.iter().find(|(_, v)| **v == Tile::Goal).unwrap().0
 }
 
 fn find_best_route(tiles: &HashMap<Coords, Tile>) -> Vec<Coords> {
@@ -289,11 +284,11 @@ fn bfs_depth(tiles: &HashMap<Coords, Tile>, from: Coords) -> usize {
                 .filter(|x| *tiles.get(x).unwrap() != Tile::Wall)
                 .for_each(|adjacent| {
                     let mut new_path = path.clone();
-                    new_path.push(adjacent.clone());
+                    new_path.push(*adjacent);
                     queue.push_back(new_path);
                 });
 
-            visited.insert(last_node.clone());
+            visited.insert(*last_node);
         }
     }
 

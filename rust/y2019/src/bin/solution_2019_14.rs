@@ -103,10 +103,7 @@ fn ore_for_n_fuel(conversions: &HashMap<Ingredient, Conversion>, fuel_required: 
         }
     }
 
-    println!(
-        "{} ore is needed to produce {} fuel",
-        ore_needed, fuel_required
-    );
+    println!("{ore_needed} ore is needed to produce {fuel_required} fuel");
 
     ore_needed
 }

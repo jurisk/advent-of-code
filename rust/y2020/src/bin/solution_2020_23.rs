@@ -51,7 +51,7 @@ impl Cups {
         let mut links: Vec<usize> = Vec::with_capacity(length);
 
         for i in 0..length {
-            links.push(i + 1)
+            links.push(i + 1);
         }
 
         let input: Vec<usize> = string

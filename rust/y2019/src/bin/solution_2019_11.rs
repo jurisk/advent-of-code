@@ -29,6 +29,7 @@ enum Direction {
 }
 
 impl Direction {
+    #[allow(clippy::match_same_arms)]
     fn rotate(&self, rotation: Rotation) -> Direction {
         match (rotation, self) {
             (Rotation::Left90, Direction::North) => Direction::West,

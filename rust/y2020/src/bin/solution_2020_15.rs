@@ -15,7 +15,7 @@ fn solve(numbers: &[u64], target: usize) -> u64 {
                 "Processing index {}, size of map is {}",
                 current_idx,
                 number_positions.len()
-            )
+            );
         }
 
         let previous: Option<u64> = number_positions.insert(current, current_idx);

@@ -144,8 +144,7 @@ fn solve_1(data: &str) -> Result<usize, Error> {
         let winning = &game.winning_boards_in_order_of_winning;
         if winning.len() > 1 {
             return Err(format!(
-                "Did not expect to have multiple winning boards: {:?}",
-                winning
+                "Did not expect to have multiple winning boards: {winning:?}"
             ));
         }
 

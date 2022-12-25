@@ -178,16 +178,10 @@ impl Maze {
                     if (coords.x == 0 || coords.x == (width - 1) as i32)
                         || (coords.y == 0 || coords.y == (height - 1) as i32)
                     {
-                        println!(
-                            "Matched {:?} as outer {:?} and inner {:?}",
-                            name, coords, existing
-                        );
+                        println!("Matched {name:?} as outer {coords:?} and inner {existing:?}");
                         portals.insert(coords, existing);
                     } else {
-                        println!(
-                            "Matched {:?} as outer {:?} and inner {:?}",
-                            name, existing, coords
-                        );
+                        println!("Matched {name:?} as outer {existing:?} and inner {coords:?}");
                         portals.insert(existing, coords);
                     }
                 },

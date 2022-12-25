@@ -55,14 +55,14 @@ impl Directory {
         let others: Vec<&Directory> = self
             .directories
             .values()
-            .flat_map(|x| x.all_directories_including_self())
+            .flat_map(Directory::all_directories_including_self)
             .collect();
 
         vec![vec![self], others].concat()
     }
 
     fn total_size(&self) -> N {
-        let sub_dir_size: N = self.directories.values().map(|x| x.total_size()).sum();
+        let sub_dir_size: N = self.directories.values().map(Directory::total_size).sum();
         let file_size: N = self.files.values().sum();
         sub_dir_size + file_size
     }
@@ -158,10 +158,8 @@ fn parse(input: &str) -> Result<Data, Error> {
     }
 
     fn name(input: &str) -> IResult<&str, &str> {
-        input.split_at_position1_complete(
-            |item| !item.is_alphanum() && !(item == '.'),
-            ErrorKind::Fail,
-        )
+        input
+            .split_at_position1_complete(|item| !item.is_alphanum() && item != '.', ErrorKind::Fail)
     }
 
     fn dir(input: &str) -> IResult<&str, OutputLine> {
@@ -213,7 +211,7 @@ fn parse(input: &str) -> Result<Data, Error> {
 fn solve_1(root: &Directory, limit: N) -> N {
     root.all_directories_including_self()
         .into_iter()
-        .map(|x| x.total_size())
+        .map(Directory::total_size)
         .filter(|&x| x <= limit)
         .sum()
 }
@@ -238,9 +236,9 @@ fn part_2(input: &str, limit: N) -> Result<N, Error> {
     Ok(solve_2(&processed, limit))
 }
 
-const PART_1_LIMIT: N = 100000;
+const PART_1_LIMIT: N = 100_000;
 
-const PART_2_LIMIT: N = 70000000 - 30000000;
+const PART_2_LIMIT: N = 70_000_000 - 30_000_000;
 
 fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA, PART_1_LIMIT)?;
@@ -265,16 +263,16 @@ mod tests {
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(part_1(DATA, PART_1_LIMIT), Ok(1428881));
+        assert_eq!(part_1(DATA, PART_1_LIMIT), Ok(1_428_881));
     }
 
     #[test]
     fn test_solve_2_test() {
-        assert_eq!(part_2(TEST_DATA, PART_2_LIMIT), Ok(24933642));
+        assert_eq!(part_2(TEST_DATA, PART_2_LIMIT), Ok(24_933_642));
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA, PART_2_LIMIT), Ok(10475598));
+        assert_eq!(part_2(DATA, PART_2_LIMIT), Ok(10_475_598));
     }
 }

@@ -325,8 +325,8 @@ fn hack_to_convert_part_1_to_part_2(data: &str) -> String {
     lines[40] = l_40;
     let l_41 = &hack_line(lines[41], "@#@", 39);
     lines[41] = l_41;
-    let result = lines.join("\n");
-    result
+
+    lines.join("\n")
 }
 
 fn main() {

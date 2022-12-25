@@ -8,9 +8,13 @@ struct Data {
 }
 
 fn parse(input: &str) -> Result<Data, Error> {
-    Ok(Data {
-        placeholder: input.to_string(),
-    })
+    if input.is_empty() {
+        Err("empty".to_string())
+    } else {
+        Ok(Data {
+            placeholder: input.to_string(),
+        })
+    }
 }
 
 type Output1 = usize;
@@ -52,21 +56,21 @@ mod tests {
 
     #[test]
     fn test_solve_1_test() {
-        assert_eq!(part_1(TEST_DATA), Ok(Output1::MAX));
+        assert_eq!(part_1(TEST_DATA), Ok(215));
     }
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(part_1(DATA), Ok(Output1::MAX));
+        assert_eq!(part_1(DATA), Ok(12056));
     }
 
     #[test]
     fn test_solve_2_test() {
-        assert_eq!(part_2(TEST_DATA), Ok(Output2::MAX));
+        assert_eq!(part_2(TEST_DATA), Ok(215));
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA), Ok(Output2::MAX));
+        assert_eq!(part_2(DATA), Ok(12056));
     }
 }

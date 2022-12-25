@@ -166,7 +166,7 @@ pub fn split_into_two_strings(input: &str, separator: &str) -> Result<(String, S
     if results.len() == 2 {
         Ok((results[0].to_string(), results[1].to_string()))
     } else {
-        Err(format!("Invalid count of segments: {:?}", results))
+        Err(format!("Invalid count of segments: {results:?}"))
     }
 }
 
@@ -212,18 +212,23 @@ where
     .map_err(|err| format!("{err:?}"))
 }
 
+#[must_use]
 pub fn normalize_newlines(input: &str) -> String {
     input.lines().join("\n")
 }
 
+#[must_use]
 pub fn segments_separated_by_double_newline(input: &str) -> Vec<String> {
     normalize_newlines(input)
         .split("\n\n")
-        .map(|x| x.to_string())
+        .map(std::string::ToString::to_string)
         .filter(|x| !x.is_empty())
         .collect()
 }
 
+/// # Errors
+///
+/// Will return `Err` if parsing fails.
 pub fn split_into_two_segments_separated_by_double_newline(
     input: &str,
 ) -> Result<(String, String), Error> {

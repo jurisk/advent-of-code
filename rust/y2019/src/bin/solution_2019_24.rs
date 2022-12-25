@@ -129,6 +129,7 @@ fn new_level(data: &HashMap<i32, Field>, level: i32) -> Field {
     result
 }
 
+#[allow(clippy::needless_pass_by_value)]
 fn bool_count(vec: Vec<bool>) -> usize {
     vec.iter().filter(|x| **x).count()
 }
