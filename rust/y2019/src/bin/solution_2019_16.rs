@@ -114,6 +114,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore] // Slow
     fn test_solve_2() {
         part_2();
     }

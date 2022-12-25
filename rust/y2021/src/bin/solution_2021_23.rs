@@ -652,12 +652,14 @@ mod tests {
     }
 
     #[test]
+    #[ignore] // Slow
     fn test_solve_1() {
         let result = solve_1(TEST);
         assert_eq!(result, Ok(12521));
     }
 
     #[test]
+    #[ignore] // Slow
     fn real_solve_1() {
         let result = solve_1(DATA);
         assert_eq!(result, Ok(19167));

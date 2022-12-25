@@ -346,6 +346,7 @@ cut -1";
     }
 
     #[test]
+    #[ignore] // Slow
     fn test_solve_1_real() {
         assert_eq!(solve_1(DATA), Some(4485));
     }

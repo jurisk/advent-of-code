@@ -176,7 +176,7 @@ pub fn split_into_two_strings(input: &str, separator: &str) -> Result<(String, S
 pub fn parse_u8_matrix(input: &str) -> Result<Matrix<u8>, Error> {
     parse_matrix(input, |ch| {
         let chr = ch as u8;
-        if (b'0'..=b'9').contains(&chr) {
+        if chr.is_ascii_digit() {
             Ok(chr - b'0')
         } else {
             Err(format!("{ch:?}"))

@@ -8,18 +8,20 @@ struct Data {
 }
 
 fn parse(input: &str) -> Result<Data, Error> {
-    Ok(Data { placeholder: "placeholder".to_string() })
+    Ok(Data {
+        placeholder: input.to_string(),
+    })
 }
 
 type Output1 = usize;
 type Output2 = usize;
 
 fn solve_1(data: &Data) -> Output1 {
-    Output2::MAX
+    data.placeholder.len()
 }
 
 fn solve_2(data: &Data) -> Output2 {
-    Output2::MAX
+    data.placeholder.len()
 }
 
 fn part_1(input: &str) -> Result<Output1, Error> {
