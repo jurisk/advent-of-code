@@ -12,8 +12,8 @@ final case class Field2D[T](
 
   def bottomRight: Coords2D = topLeft + Coords2D.of(width - 1, height - 1)
 
-  def xIndices: Seq[X] = (0 until width).map(x => X(x) + topLeft.x)
-  def yIndices: Seq[Y] = (0 until height).map(y => Y(y) + topLeft.y)
+  def xIndices: Seq[Int] = (0 until width).map(x => x + topLeft.x)
+  def yIndices: Seq[Int] = (0 until height).map(y => y + topLeft.y)
 
   def mapByCoordsWithValues[B](f: (Coords2D, T) => B): Field2D[B] = Field2D {
     yIndices.toVector map { y =>
@@ -42,18 +42,18 @@ final case class Field2D[T](
 
   def at(c: Coords2D): Option[T] =
     data
-      .lift(c.y.value - topLeft.y.value)
-      .flatMap(_.lift(c.x.value - topLeft.x.value))
+      .lift(c.y - topLeft.y)
+      .flatMap(_.lift(c.x - topLeft.x))
 
   def apply(c: Coords2D): T =
     at(c).getOrElse(sys.error(s"Coords2D $c are invalid"))
 
   def updatedAtUnsafe(c: Coords2D, newValue: T): Field2D[T] = {
-    val yIdx = c.y.value - topLeft.y.value
+    val yIdx = c.y - topLeft.y
     copy(
       data = data.updated(
         yIdx,
-        data(yIdx).updated(c.x.value - topLeft.x.value, newValue),
+        data(yIdx).updated(c.x - topLeft.x, newValue),
       )
     )
   }
@@ -103,21 +103,21 @@ final case class Field2D[T](
       }
     }
 
-  def row(y: Y): Vector[T]               = data(y.value - topLeft.y.value)
-  def coordsForRow(y: Y): List[Coords2D] = xIndices.toList map { x =>
+  def row(y: Int): Vector[T]               = data(y - topLeft.y)
+  def coordsForRow(y: Int): List[Coords2D] = xIndices.toList map { x =>
     Coords2D(x, y)
   }
 
-  def column(x: X): Vector[T]               = data.map(_(x.value - topLeft.x.value))
-  def coordsForColumn(x: X): List[Coords2D] = yIndices.toList map { y =>
+  def column(x: Int): Vector[T]               = data.map(_(x - topLeft.x))
+  def coordsForColumn(x: Int): List[Coords2D] = yIndices.toList map { y =>
     Coords2D(x, y)
   }
 
-  def firstRowValues: Vector[T] = row(Y(0))
-  def lastRowValues: Vector[T]  = row(Y(height - 1))
+  def firstRowValues: Vector[T] = row(0)
+  def lastRowValues: Vector[T]  = row(height - 1)
 
-  def firstColumnValues: Vector[T] = column(X(0))
-  def lastColumnValues: Vector[T]  = column(X(width - 1))
+  def firstColumnValues: Vector[T] = column(0)
+  def lastColumnValues: Vector[T]  = column(width - 1)
 
   def count(p: T => Boolean): Int =
     values.count(p)

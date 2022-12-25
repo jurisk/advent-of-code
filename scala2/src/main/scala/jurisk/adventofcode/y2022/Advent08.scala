@@ -43,8 +43,8 @@ object Advent08 {
 
     splitBothDirections(
       data.column(from.x),
-      from.y.value,
-    ) ::: splitBothDirections(data.row(from.y), from.x.value)
+      from.y,
+    ) ::: splitBothDirections(data.row(from.y), from.x)
   }
 
   def part1(data: Parsed): Result1 = {

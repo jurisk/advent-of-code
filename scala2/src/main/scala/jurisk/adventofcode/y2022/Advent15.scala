@@ -17,17 +17,17 @@ object Advent15 {
     def impossibleToHaveBeacon(c: Coords2D): Boolean =
       sensor.manhattanDistance(c) <= radius
 
-    def minX: Int = Math.min(sensor.x.value, closestBeacon.x.value)
-    def maxX: Int = Math.max(sensor.x.value, closestBeacon.x.value)
+    def minX: Int = Math.min(sensor.x, closestBeacon.x)
+    def maxX: Int = Math.max(sensor.x, closestBeacon.x)
 
     def radius: Int = sensor manhattanDistance closestBeacon
 
     def intervalWithY(y: Int): Option[InclusiveDiscreteInterval] = {
-      val dy    = Math.abs(sensor.y.value - y)
+      val dy    = Math.abs(sensor.y - y)
       val delta = radius - dy
       (delta >= 0) option InclusiveDiscreteInterval(
-        sensor.x.value - delta,
-        sensor.x.value + delta,
+        sensor.x - delta,
+        sensor.x + delta,
       )
     }
   }
@@ -128,7 +128,7 @@ object Advent15 {
   private val MagicValue                                = 4000000
   def part2(data: Parsed, maxCoords: Int): Option[Long] =
     findHiddenBeacon(data, maxCoords) map { result =>
-      result.x.value.toLong * MagicValue + result.y.value
+      result.x.toLong * MagicValue + result.y
     }
 
   def main(args: Array[String]): Unit = {

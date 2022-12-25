@@ -2,7 +2,7 @@ package jurisk.adventofcode.y2018
 
 import cats.implicits._
 import jurisk.utils.FileInput.parseFileLines
-import jurisk.geometry.{Area2D, Coords2D, StringOps}
+import jurisk.geometry.{Area2D, Coords2D}
 import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
@@ -18,8 +18,8 @@ object Advent03 {
           Claim(
             id.toInt,
             Area2D.fromLeftTopWidthHeight(
-              left.toX,
-              top.toY,
+              left.toInt,
+              top.toInt,
               width.toInt,
               height.toInt,
             ),

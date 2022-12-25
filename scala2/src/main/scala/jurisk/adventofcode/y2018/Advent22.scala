@@ -46,7 +46,7 @@ object Advent22 {
     lazy val regionType: Coords2D => RegionType = memoize(calculateRegionType)
 
     private def calculateRegionType(c: Coords2D): RegionType =
-      if ((c.x.value < 0) || (c.y.value < 0)) {
+      if ((c.x < 0) || (c.y < 0)) {
         Impassable
       } else {
         erosionLevel(c) % 3 match {
@@ -63,11 +63,11 @@ object Advent22 {
     private def geologicIndex(c: Coords2D): Int =
       if (c == Coords2D.Zero) 0
       else if (c == target) 0
-      else if (c.y.value == 0) {
-        c.x.value * 16807
-      } else if (c.x.value == 0) {
-        c.y.value * 48271
-      } else if ((c.x.value < 0) || (c.y.value < 0)) {
+      else if (c.y == 0) {
+        c.x * 16807
+      } else if (c.x == 0) {
+        c.y * 48271
+      } else if ((c.x < 0) || (c.y < 0)) {
         "Should not be traversed".fail
       } else {
         erosionLevel(c.W) * erosionLevel(c.N)

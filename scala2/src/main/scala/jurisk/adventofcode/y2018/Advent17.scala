@@ -193,7 +193,7 @@ object Advent17 {
   ): Int = {
     val yCoords = field.entries.flatMap { case (c, v) =>
       if (v == Clay) {
-        c.y.value.some
+        c.y.some
       } else {
         none
       }
@@ -203,7 +203,7 @@ object Advent17 {
 
     field.entries.map { case (c, v) =>
       if (
-        (c.y.value >= minY) && (c.y.value <= maxY) && lookingFor.contains(v)
+        (c.y >= minY) && (c.y <= maxY) && lookingFor.contains(v)
       ) {
         1
       } else {

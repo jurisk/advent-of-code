@@ -2,40 +2,7 @@ package jurisk.geometry
 
 import cats.implicits._
 
-// X and Y do not "extends AnyVal" on purpose because of type erasure issues
-final case class X(value: Int) {
-  def *(n: Int): X = X(value * n)
-  def /(n: Int): X = X(value / n)
-
-  def <(other: X): Boolean = value < other.value
-  def >(other: X): Boolean = value > other.value
-
-  def +(other: X): X   = this + other.value
-  def -(other: X): X   = this - other.value
-  def +(other: Int): X = X(value + other)
-  def -(other: Int): X = X(value - other)
-  def abs: Int         = Math.abs(value)
-
-  override def toString: String = value.toString
-}
-
-final case class Y(value: Int) {
-  def *(n: Int): Y = Y(value * n)
-  def /(n: Int): Y = Y(value / n)
-
-  def <(other: Y): Boolean = value < other.value
-  def >(other: Y): Boolean = value > other.value
-
-  def +(other: Y): Y   = this + other.value
-  def -(other: Y): Y   = this - other.value
-  def +(other: Int): Y = Y(value + other)
-  def -(other: Int): Y = Y(value - other)
-  def abs: Int         = Math.abs(value)
-
-  override def toString: String = value.toString
-}
-
-final case class Coords2D(x: X, y: Y) {
+final case class Coords2D(x: Int, y: Int) {
   def +(other: Coords2D): Coords2D =
     Coords2D(x + other.x, y + other.y)
 
@@ -46,7 +13,7 @@ final case class Coords2D(x: X, y: Y) {
     Coords2D(x * n, y * n)
 
   def manhattanDistanceToOrigin: Int =
-    Math.abs(x.value) + Math.abs(y.value)
+    Math.abs(x) + Math.abs(y)
 
   def manhattanDistance(other: Coords2D): Int =
     (this - other).manhattanDistanceToOrigin
@@ -79,18 +46,19 @@ final case class Coords2D(x: X, y: Y) {
 }
 
 object Coords2D {
-  implicit val readingOrdering: Ordering[Coords2D] = Ordering[(Int, Int)].contramap(c => (c.y.value, c.x.value))
+  implicit val readingOrdering: Ordering[Coords2D] =
+    Ordering[(Int, Int)].contramap(c => (c.y, c.x))
 
   val Zero: Coords2D = Coords2D.of(0, 0)
 
   def of(x: Int, y: Int): Coords2D =
-    Coords2D(X(x), Y(y))
+    Coords2D(x, y)
 
   def boundingBoxInclusive(coords: Iterable[Coords2D]): Area2D = {
-    val xList = coords.map(_.x.value)
+    val xList = coords.map(_.x)
     val minX  = xList.min
     val maxX  = xList.max
-    val yList = coords.map(_.y.value)
+    val yList = coords.map(_.y)
     val minY  = yList.min
     val maxY  = yList.max
     Area2D(Coords2D.of(minX, minY), Coords2D.of(maxX, maxY))
@@ -103,21 +71,23 @@ object Coords2D {
 
   def allPointsInclusive(a: Coords2D, b: Coords2D): List[Coords2D] =
     if (a.x == b.x) {
-      (Math.min(a.y.value, b.y.value) to Math.max(
-        a.y.value,
-        b.y.value,
+      (Math.min(a.y, b.y) to Math.max(
+        a.y,
+        b.y,
       )).toList map { y =>
-        Coords2D.of(a.x.value, y)
+        Coords2D.of(a.x, y)
       }
     } else if (a.y == b.y) {
-      (Math.min(a.x.value, b.x.value) to Math.max(
-        a.x.value,
-        b.x.value,
+      (Math.min(a.x, b.x) to Math.max(
+        a.x,
+        b.x,
       )).toList map { x =>
-        Coords2D.of(x, a.y.value)
+        Coords2D.of(x, a.y)
       }
 
     } else {
-      sys.error(s"Expected $a and $b to have same x or y coordinates, but they do not")
+      sys.error(
+        s"Expected $a and $b to have same x or y coordinates, but they do not"
+      )
     }
 }

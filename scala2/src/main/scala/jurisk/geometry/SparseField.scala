@@ -8,10 +8,10 @@ final case class SparseField[T](points: Map[Coords2D, T]) {
     limit: Int,
   ): String = {
     val boundingBox = Coords2D.boundingBoxInclusive(points.keys)
-    val xMin        = boundingBox.topLeft.x.value
-    val yMin        = boundingBox.topLeft.y.value
-    val xMax        = boundingBox.bottomRight.x.value
-    val yMax        = boundingBox.bottomRight.y.value
+    val xMin        = boundingBox.topLeft.x
+    val yMin        = boundingBox.topLeft.y
+    val xMax        = boundingBox.bottomRight.x
+    val yMax        = boundingBox.bottomRight.y
     val xSize       = xMax - xMin + 1
     val ySize       = yMax - yMin + 1
 
@@ -21,7 +21,7 @@ final case class SparseField[T](points: Map[Coords2D, T]) {
       val buffers = Array.fill(ySize)(Array.fill(xSize)(display(none)))
 
       points foreach { case (point, value) =>
-        buffers(point.y.value - yMin)(point.x.value - xMin) =
+        buffers(point.y - yMin)(point.x - xMin) =
           display(value.some)
       }
 

@@ -111,7 +111,7 @@ object Advent17 {
         case Square.Rock  => true
         case Square.Empty => false
       }
-      .map(_.y.value)
+      .map(_.y)
       .min
 
   private def printField(
@@ -209,7 +209,7 @@ object Advent17 {
     val emptyField: Field2D[Square] =
       Field2D.ofSize(FieldWidth, height, Square.Empty)
     emptyField.mapByCoords { c =>
-      if (c.y.value == emptyField.height - 1) {
+      if (c.y == emptyField.height - 1) {
         Square.Wall
       } else {
         Square.Empty
@@ -291,7 +291,7 @@ object Advent17 {
   private def calculateField(frontier: Set[Coords2D]): Field2D[Square] = {
     val field: Field2D[Square] =
       Field2D.ofSize(FieldWidth, FieldHeightForExperiments, Square.Empty)
-    val frontierMaxY           = frontier.map(_.y.value).max
+    val frontierMaxY           = frontier.map(_.y).max
     val yDelta                 = field.height - frontierMaxY - 1
 
     val result = frontier.foldLeft(field) { case (acc, c) =>
@@ -313,7 +313,7 @@ object Advent17 {
         Coords2D.of(x, minY - 1),
         c =>
           if (field(c) == Square.Empty) {
-            field.adjacent4(c).filter(_.y.value >= minY - 1)
+            field.adjacent4(c).filter(_.y >= minY - 1)
           } else {
             Nil
           },

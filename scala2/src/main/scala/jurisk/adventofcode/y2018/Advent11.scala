@@ -42,8 +42,8 @@ object Advent11 {
     val (bestCoords, bestPower) = coords
       .map { c =>
         val power = (0 until N).map { i =>
-          grid(c.y.value + i)
-            .slice(c.x.value, c.x.value + N)
+          grid(c.y + i)
+            .slice(c.x, c.x + N)
             .sum
         }.sum
 

@@ -153,10 +153,10 @@ object Advent22 {
         val sideLength: Int =
           Set(field.width / 3, field.height / 4).singleElementUnsafe
 
-        val currentVerticalLane   = position.x.value / sideLength
-        val xOffset               = position.x.value % sideLength
-        val currentHorizontalLane = position.y.value / sideLength
-        val yOffset               = position.y.value % sideLength
+        val currentVerticalLane   = position.x / sideLength
+        val xOffset               = position.x % sideLength
+        val currentHorizontalLane = position.y / sideLength
+        val yOffset               = position.y % sideLength
 
         (currentVerticalLane, currentHorizontalLane, direction) match {
           case (1, 0, W) => (Coords2D.of(0, 3 * sideLength - yOffset - 1), E)
@@ -233,8 +233,8 @@ object Advent22 {
 
     val start = field
       .filterCoordsByValue(_ == Open)
-      .filter(_.y.value == 0)
-      .minBy(_.x.value)
+      .filter(_.y == 0)
+      .minBy(_.x)
 
     val startState = State(
       field,
@@ -247,8 +247,8 @@ object Advent22 {
       state.next(command)
     }
 
-    val rx = result.position.x.value + 1
-    val ry = result.position.y.value + 1
+    val rx = result.position.x + 1
+    val ry = result.position.y + 1
     val rd = result.direction match {
       case Direction2D.N => 3
       case Direction2D.S => 1

@@ -58,7 +58,7 @@ object Advent15 {
           .filter(_.location.y == y)
           .filter(_.isAlive)
           .toList
-          .sortBy(_.location.x.value)
+          .sortBy(_.location.x)
           .map(w => s"${w.race.toChar}(${w.hitPoints})")
           .mkString(", ")
       }

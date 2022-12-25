@@ -178,7 +178,7 @@ object Advent13 {
     def next: Either[Coords2D, State] = {
       // Movement order is important!
       val cartsInMovementOrder =
-        carts.toList.sortBy(cart => (cart.coords.y.value, cart.coords.x.value))
+        carts.toList.sortBy(cart => (cart.coords.y, cart.coords.x))
       val resultingCarts       = moveAllCarts(cartsInMovementOrder)
       resultingCarts map { resultingCarts => copy(carts = resultingCarts) }
     }

@@ -42,7 +42,7 @@ object Advent09 {
       if (overlapping || neighbouring || diagonalNeighbouring) {
         t // close enough, no move
       } else {
-        Coords2D.of(f(t.x.value, h.x.value), f(t.y.value, h.y.value))
+        Coords2D.of(f(t.x, h.x), f(t.y, h.y))
       }
     }
 
