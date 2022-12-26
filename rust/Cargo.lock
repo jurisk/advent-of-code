@@ -3,6 +3,15 @@
 version = 3
 
 [[package]]
+name = "advent-of-code-2015"
+version = "0.1.0"
+dependencies = [
+ "advent-of-code-common",
+ "itertools",
+ "num_enum",
+]
+
+[[package]]
 name = "advent-of-code-2018"
 version = "0.1.0"
 dependencies = [

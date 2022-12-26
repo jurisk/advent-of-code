@@ -1,6 +1,6 @@
-use advent_of_code_common::parsing::{Error, normalize_newlines};
+use advent_of_code_common::parsing::{normalize_newlines, Error};
 
-const DATA: &str = include_str!("../../resources/07.txt");
+const DATA: &str = include_str!("../../resources/01.txt");
 
 #[derive(Debug)]
 struct Data {
@@ -52,25 +52,25 @@ fn main() -> Result<(), Error> {
 mod tests {
     use super::*;
 
-    const TEST_DATA: &str = include_str!("../../resources/07-test.txt");
+    const TEST_DATA: &str = include_str!("../../resources/01-test.txt");
 
     #[test]
     fn test_solve_1_test() {
-        assert_eq!(part_1(TEST_DATA), Ok(191));
+        assert_eq!(part_1(TEST_DATA), Ok(7));
     }
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(part_1(DATA), Ok(11003));
+        assert_eq!(part_1(DATA), Ok(7000));
     }
 
     #[test]
     fn test_solve_2_test() {
-        assert_eq!(part_2(TEST_DATA), Ok(191));
+        assert_eq!(part_2(TEST_DATA), Ok(7));
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA), Ok(11003));
+        assert_eq!(part_2(DATA), Ok(7000));
     }
 }

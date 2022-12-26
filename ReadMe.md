@@ -131,3 +131,4 @@
 | 2018-23  |                                                                         |                                                |          [Python](python/y2018/day23.py)          |
 | 2018-24  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent24.scala) |                                                |                                                   |
 | 2018-25  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent25.scala) |                                                |                                                   |
+| 2015-01  |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_01.rs) |                                                   |
