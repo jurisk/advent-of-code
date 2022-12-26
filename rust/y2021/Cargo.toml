@@ -1,20 +1,20 @@
 [package]
 name = "advent-of-code-2021"
-version = "0.1.0"
-authors = ["jurisk <jurisk@users.noreply.github.com>"]
-license = "UNLICENSED"
-edition = "2021"
-rust-version = "1.65.0"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 advent-of-code-common = { path = "../common" }
-regex = "1"
-itertools = "0"
-num-traits = "0"
-num-derive = "0"
-nalgebra = "0"
-pathfinding = "4"
-nonempty = "0"
-num_enum = "0"
-memoize = "0"
-nom = "7"
+regex.workspace = true
+itertools.workspace = true
+num-traits.workspace = true
+num-derive.workspace = true
+nalgebra.workspace = true
+pathfinding.workspace = true
+nonempty.workspace = true
+num_enum.workspace = true
+memoize.workspace = true
+nom.workspace = true

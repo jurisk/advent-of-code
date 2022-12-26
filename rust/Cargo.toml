@@ -1,2 +1,26 @@
 [workspace]
 members = ["common", "y2018", "y2019", "y2020", "y2021", "y2022"]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["jurisk <jurisk@users.noreply.github.com>"]
+license = "UNLICENSED"
+edition = "2021"
+rust-version = "1.66.0"
+
+[workspace.dependencies]
+nonempty = "0"
+itertools = "0"
+pathfinding = "4"
+num-traits = "0"
+num-derive = "0"
+num_enum = "0"
+num-integer = "0"
+num-bigint = "0"
+nalgebra = "0"
+memoize = "0"
+nom = "7"
+regex = "1"
+rand = "0"
+bimap = "0"
+lazy_static = "1"

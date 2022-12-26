@@ -1,19 +1,19 @@
 [package]
 name = "advent-of-code-2019"
-version = "0.1.0"
-edition = "2021"
-authors = ["jurisk <jurisk@users.noreply.github.com>"]
-license = "UNLICENSED"
-rust-version = "1.65.0"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
 
 [dependencies]
-regex = "1"
-itertools = "0"
-num-traits = "0"
-num-derive = "0"
-num_enum = "0"
-rand = "0"
-bimap = "0"
-pathfinding = "4"
-num-integer = "0"
-num-bigint = "0"
+regex.workspace = true
+itertools.workspace = true
+num-traits.workspace = true
+num-derive.workspace = true
+num_enum.workspace = true
+rand.workspace = true
+bimap.workspace = true
+pathfinding.workspace = true
+num-integer.workspace = true
+num-bigint.workspace = true

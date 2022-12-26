@@ -12,14 +12,14 @@ fn step(octopuses: &Octopuses) -> (usize, Octopuses) {
     let mut flashes: usize = 0;
 
     // First, the energy level of each octopus increases by 1.
-    for (r, c) in result.indices() {
+    for (r, c) in result.keys() {
         result[(r, c)] += 1;
     }
 
     loop {
         let mut current_batch_flashes: usize = 0;
 
-        for (r, c) in result.indices() {
+        for (r, c) in result.keys() {
             if result[(r, c)] != FLASHED && result[(r, c)] > FLASH_THRESHOLD {
                 // Then, any octopus with an energy level greater than 9 flashes. This increases the energy
                 // level of all adjacent octopuses by 1, including octopuses that are diagonally adjacent.
@@ -44,7 +44,7 @@ fn step(octopuses: &Octopuses) -> (usize, Octopuses) {
 
     // Finally, any octopus that flashed during this step has its energy level set to 0, as it used
     // all of its energy to flash.
-    for (r, c) in result.indices() {
+    for (r, c) in result.keys() {
         if result[(r, c)] == FLASHED {
             result[(r, c)] = 0;
         }

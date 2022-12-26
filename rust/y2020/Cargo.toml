@@ -1,10 +1,11 @@
 [package]
 name = "advent-of-code-2020"
-version = "0.1.0"
-authors = ["jurisk <jurisk@users.noreply.github.com>"]
-license = "UNLICENSED"
-edition = "2021"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
 
 [dependencies]
-lazy_static = "1"
-regex = "1"
+lazy_static.workspace = true
+regex.workspace = true
