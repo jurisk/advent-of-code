@@ -74,8 +74,7 @@ fn parse_mask(line: &str) -> Result<Command, ErrorMessage> {
 
 fn parse_set_memory(line: &str) -> Result<Command, ErrorMessage> {
     lazy_static! {
-        static ref RE: Regex =
-            Regex::new(r"^mem\[(\d+)] = (\d+)$").expect("Failed to parse RegEx");
+        static ref RE: Regex = Regex::new(r"^mem\[(\d+)] = (\d+)$").expect("Failed to parse RegEx");
     }
 
     let caps = RE.captures(line).ok_or("Invalid command")?;

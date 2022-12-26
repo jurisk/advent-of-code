@@ -28,6 +28,7 @@ name = "advent-of-code-2019"
 version = "0.1.0"
 dependencies = [
  "bimap",
+ "bytecount",
  "itertools",
  "num-bigint",
  "num-derive",
@@ -111,6 +112,12 @@ name = "bimap"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc0455254eb5c6964c4545d8bac815e1a1be4f3afe0ae695ea539c12d728d44b"
+
+[[package]]
+name = "bytecount"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c676a478f63e9fa2dd5368a42f28bba0d6c560b775f38583c8bbaa7fcd67c9c"
 
 [[package]]
 name = "bytemuck"

@@ -17,3 +17,4 @@ bimap.workspace = true
 pathfinding.workspace = true
 num-integer.workspace = true
 num-bigint.workspace = true
+bytecount.workspace = true

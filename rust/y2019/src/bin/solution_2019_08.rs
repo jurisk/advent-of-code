@@ -28,9 +28,9 @@ fn solve_1(data: &str, width: Number, height: Number) -> Number {
     let layers = parse_layers(data, width, height);
     let layer = layers
         .iter()
-        .min_by_key(|v| v.iter().filter(|&&x| x == 0).count())
+        .min_by_key(|v| bytecount::count(v, 0))
         .unwrap();
-    layer.iter().filter(|&&x| x == 1).count() * layer.iter().filter(|&&x| x == 2).count()
+    bytecount::count(layer, 1) * bytecount::count(layer, 2)
 }
 
 fn solve_2(data: &str, width: Number, height: Number) -> String {

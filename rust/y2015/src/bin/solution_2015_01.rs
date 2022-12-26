@@ -23,11 +23,10 @@ impl Command {
 type Data = Vec<Command>;
 
 fn parse(input: &str) -> Result<Data, Error> {
-    let data: Vec<_> = input
+    input
         .chars()
         .map(|ch| Command::try_from(ch as u8).map_err(|e| format!("{e}")))
-        .collect();
-    data.into_iter().collect()
+        .collect()
 }
 
 type Output1 = i32;
