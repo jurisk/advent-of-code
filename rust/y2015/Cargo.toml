@@ -10,3 +10,7 @@ rust-version.workspace = true
 advent-of-code-common = { path = "../common" }
 num_enum.workspace = true
 itertools.workspace = true
+nonempty.workspace = true
+regex.workspace = true
+recap.workspace = true
+serde.workspace = true

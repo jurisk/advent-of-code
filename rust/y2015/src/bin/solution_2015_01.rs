@@ -11,11 +11,7 @@ enum Command {
     Down = b')',
 }
 
-trait Diff {
-    fn diff(self) -> i32;
-}
-
-impl Diff for Command {
+impl Command {
     fn diff(self) -> i32 {
         match self {
             Command::Up => 1,

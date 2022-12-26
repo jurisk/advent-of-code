@@ -18,16 +18,25 @@ pub fn convert_error<T, E: Debug>(input: &str, result: Result<T, E>) -> Result<T
 /// # Errors
 ///
 /// Will return `Err` if parsing fails.
+pub fn parse_str<T: FromStr>(input: &str) -> Result<T, Error>
+where
+    <T as FromStr>::Err: Debug,
+{
+    str::parse::<T>(input).map_err(|err| format!("Error parsing {input}: {err:?}"))
+}
+
+/// # Errors
+///
+/// Will return `Err` if parsing fails.
 pub fn parse_lines_to_vec<T: FromStr>(input: &str) -> Result<Vec<T>, Error>
 where
     T::Err: Debug,
 {
-    let result: Result<Vec<T>, T::Err> = input
+    input
         .lines()
         .filter(|x| !x.is_empty())
-        .map(|x| str::parse::<T>(x.trim()))
-        .collect();
-    convert_error(input, result)
+        .map(|x| parse_str(x.trim()))
+        .collect()
 }
 
 /// # Errors
@@ -37,13 +46,11 @@ pub fn parse_lines_to_hashset<T: FromStr + Eq + Hash>(input: &str) -> Result<Has
 where
     T::Err: Debug,
 {
-    let result: Result<HashSet<T>, T::Err> = input
+    input
         .lines()
         .filter(|x| !x.is_empty())
-        .map(|x| str::parse::<T>(x.trim()))
-        .collect();
-
-    convert_error(input, result)
+        .map(|x| parse_str(x.trim()))
+        .collect()
 }
 
 /// # Errors
@@ -66,10 +73,8 @@ where
     V::Err: Debug,
 {
     let (k_str, v_str) = split_into_two_strings(input, delimiter)?;
-    let k_e: Result<K, K::Err> = k_str.parse::<K>();
-    let v_e: Result<V, V::Err> = v_str.parse::<V>();
-    let k = convert_error(&k_str, k_e)?;
-    let v = convert_error(&v_str, v_e)?;
+    let k = parse_str(&k_str)?;
+    let v = parse_str(&v_str)?;
     Ok((k, v))
 }
 
@@ -100,12 +105,9 @@ pub fn parse_string_to_nonempty<T: FromStr>(input: &str) -> Result<NonEmpty<T>, 
 where
     T::Err: Debug,
 {
-    let vec: Result<Vec<T>, T::Err> = input
-        .chars()
-        .map(|ch| ch.to_string().parse::<T>())
-        .collect();
-    let result_vec = convert_error(input, vec)?;
-    NonEmpty::from_vec(result_vec).ok_or_else(|| "Empty".to_string())
+    let vec: Result<Vec<T>, Error> = input.chars().map(|ch| parse_str(&ch.to_string())).collect();
+
+    NonEmpty::from_vec(vec?).ok_or_else(|| "Empty".to_string())
 }
 
 /// # Errors
@@ -115,13 +117,11 @@ pub fn parse_separated_vec<T: FromStr>(input: &str, separator: &str) -> Result<V
 where
     T::Err: Debug,
 {
-    let result: Result<Vec<T>, T::Err> = input
+    input
         .trim()
         .split(separator)
-        .map(|x| str::parse::<T>(x.trim()))
-        .collect();
-
-    convert_error(input, result)
+        .map(|x| parse_str(x.trim()))
+        .collect()
 }
 
 /// # Errors
