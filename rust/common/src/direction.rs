@@ -1,3 +1,5 @@
+use std::ops::Neg;
+use num_traits::{One, Zero};
 use crate::coords2d::Coords2D;
 use crate::rotation::Rotation;
 
@@ -42,12 +44,13 @@ impl Direction {
         ]
     }
 
-    pub fn diff(self) -> Coords2D {
+    pub fn diff<T>(self) -> Coords2D<T>
+        where T : Zero + One + Neg<Output = T> {
         match self {
-            Direction::North => Coords2D { x: 0, y: -1 },
-            Direction::South => Coords2D { x: 0, y: 1 },
-            Direction::West => Coords2D { x: -1, y: 0 },
-            Direction::East => Coords2D { x: 1, y: 0 },
+            Direction::North => Coords2D { x: T::zero(), y: -T::one() },
+            Direction::South => Coords2D { x: T::zero(), y: T::one() },
+            Direction::West => Coords2D { x: -T::one(), y: T::zero() },
+            Direction::East => Coords2D { x: T::one(), y: T::zero() },
         }
     }
 }

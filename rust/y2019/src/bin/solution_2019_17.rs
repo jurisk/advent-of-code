@@ -10,6 +10,8 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
 
+type Coords = Coords2D<i32>;
+
 #[repr(u8)]
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy, TryFromPrimitive)]
 enum MapSquare {
@@ -35,8 +37,8 @@ impl MapSquare {
     }
 }
 
-fn find_robot(map_squares: &Vec<Vec<MapSquare>>) -> Coords2D {
-    let robots: Vec<Coords2D> = (0..map_squares.len())
+fn find_robot(map_squares: &Vec<Vec<MapSquare>>) -> Coords {
+    let robots: Vec<Coords> = (0..map_squares.len())
         .flat_map(|y| {
             (0..map_squares[y].len()).filter_map(move |x| {
                 let sq = map_squares[y][x];
@@ -59,7 +61,7 @@ fn find_robot(map_squares: &Vec<Vec<MapSquare>>) -> Coords2D {
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
 struct Board {
     scaffolds: Vec<Vec<bool>>,
-    robot_location: Coords2D,
+    robot_location: Coords,
     robot_direction: Direction,
 }
 
@@ -93,7 +95,7 @@ impl Board {
         }
     }
 
-    fn all_coordinates(&self) -> Vec<Coords2D> {
+    fn all_coordinates(&self) -> Vec<Coords> {
         (0..self.scaffolds.len())
             .flat_map(|y| {
                 (0..self.scaffolds[y].len())
@@ -101,18 +103,18 @@ impl Board {
                         x: x as i32,
                         y: y as i32,
                     })
-                    .collect::<Vec<Coords2D>>()
+                    .collect::<Vec<Coords>>()
             })
             .collect()
     }
 
-    fn is_intersection(&self, c: Coords2D) -> bool {
-        let mut coords: Vec<Coords2D> = Direction::all().iter().map(|n| c + n.diff()).collect();
+    fn is_intersection(&self, c: Coords) -> bool {
+        let mut coords: Vec<Coords> = Direction::all().iter().map(|n| c + n.diff()).collect();
         coords.push(c);
         coords.iter().all(|x| self.is_scaffold(*x))
     }
 
-    fn is_scaffold(&self, c: Coords2D) -> bool {
+    fn is_scaffold(&self, c: Coords) -> bool {
         *self
             .scaffolds
             .get(c.y as usize)
