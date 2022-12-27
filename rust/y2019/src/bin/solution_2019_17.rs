@@ -44,8 +44,8 @@ fn find_robot(map_squares: &Vec<Vec<MapSquare>>) -> Coords {
                 let sq = map_squares[y][x];
                 if sq.is_robot() {
                     Some(Coords2D {
-                        x: x as i32,
-                        y: y as i32,
+                        x: i32::try_from(x).unwrap(),
+                        y: i32::try_from(y).unwrap(),
                     })
                 } else {
                     None
@@ -66,6 +66,7 @@ struct Board {
 }
 
 impl Board {
+    #[allow(clippy::cast_sign_loss)]
     fn parse(s: &str) -> Board {
         let map_squares: Vec<Vec<MapSquare>> = s
             .lines()
@@ -100,8 +101,8 @@ impl Board {
             .flat_map(|y| {
                 (0..self.scaffolds[y].len())
                     .map(|x| Coords2D {
-                        x: x as i32,
-                        y: y as i32,
+                        x: i32::try_from(x).unwrap(),
+                        y: i32::try_from(y).unwrap(),
                     })
                     .collect::<Vec<Coords>>()
             })
@@ -114,6 +115,7 @@ impl Board {
         coords.iter().all(|x| self.is_scaffold(*x))
     }
 
+    #[allow(clippy::cast_sign_loss)]
     fn is_scaffold(&self, c: Coords) -> bool {
         *self
             .scaffolds

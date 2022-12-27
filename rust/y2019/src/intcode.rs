@@ -167,6 +167,7 @@ impl Process {
         }
     }
 
+    #[allow(clippy::cast_sign_loss)]
     fn op_at_ip(&self) -> Operation {
         let op = self.read_from_memory_offset_by_ip(0);
         let op_code = OperationCode::of((op % 100) as u8);
@@ -375,9 +376,16 @@ impl Process {
         format!("{:?}", self.output)
     }
 
+    /// # Panics
+    ///
+    /// Panics if the output from the `IntCode` program is not displayable as a character
     #[must_use]
     pub fn read_output_as_ascii(&mut self) -> String {
-        let result = self.output.iter().map(|x| (*x as u8) as char).collect();
+        let result = self
+            .output
+            .iter()
+            .map(|x| u8::try_from(*x).unwrap() as char)
+            .collect();
         self.output.clear();
         result
     }

@@ -21,6 +21,7 @@ type Coords = Coords2D<Index>;
 
 type Board = HashMap<Coords, Square>;
 
+#[allow(clippy::redundant_else)]
 fn solve(starting_panel: Square) -> Board {
     let mut program = Process::from_string(include_str!("../../resources/11.txt"));
     let mut board: Board = HashMap::new();

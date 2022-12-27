@@ -21,7 +21,7 @@ fn group(digits: &[u8]) -> Vec<u8> {
         .iter()
         .into_group_map_by(|x| *x)
         .values()
-        .map(|v| v.len() as u8)
+        .map(|v| u8::try_from(v.len()).unwrap())
         .collect()
 }
 

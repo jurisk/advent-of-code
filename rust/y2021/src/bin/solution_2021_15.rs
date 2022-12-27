@@ -24,7 +24,7 @@ fn cost(cavern: &Cavern) -> Result<usize, Error> {
 }
 
 fn wrap_risk(risk: usize) -> u8 {
-    (if risk > 9 { risk - 9 } else { risk }) as u8
+    u8::try_from(if risk > 9 { risk - 9 } else { risk }).unwrap()
 }
 
 fn extend_cavern(cavern: &Cavern) -> Cavern {

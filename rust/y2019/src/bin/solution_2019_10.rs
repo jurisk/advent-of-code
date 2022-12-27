@@ -29,6 +29,7 @@ fn parse(s: &str) -> Vec<Vec<Cell>> {
         .collect()
 }
 
+#[allow(clippy::cast_possible_truncation)]
 fn asteroid_angle(from: Coords, to: Coords) -> Angle {
     const PI_2: f64 = 2f64 * PI as f64;
     let c = from - to;
@@ -47,13 +48,13 @@ fn asteroid_angles(from: Coords, asteroid_coordinates: &HashSet<Coords>) -> Vec<
         .collect()
 }
 
-fn count_visible(from: Coords, asteroid_coordinates: &HashSet<Coords>) -> Number {
+fn count_visible(from: Coords, asteroid_coordinates: &HashSet<Coords>) -> usize {
     let set: HashSet<_> = asteroid_angles(from, asteroid_coordinates)
         .iter()
         .map(|x| format!("{x:.10}")) // A minor hack - but no hash function for f64 and also this solves rounding issues
         .collect();
 
-    set.len() as Number
+    set.len()
 }
 
 fn asteroid_coordinates(input: &str) -> HashSet<Coords> {
@@ -64,8 +65,8 @@ fn asteroid_coordinates(input: &str) -> HashSet<Coords> {
             (0..row.len()).filter_map(move |x| {
                 if row[x] == Cell::Asteroid {
                     Some(Coords {
-                        x: x as Number,
-                        y: y as Number,
+                        x: i32::try_from(x).unwrap(),
+                        y: i32::try_from(y).unwrap(),
                     })
                 } else {
                     None
@@ -75,7 +76,7 @@ fn asteroid_coordinates(input: &str) -> HashSet<Coords> {
         .collect()
 }
 
-fn best_placement(coords: &HashSet<Coords>) -> (Coords, Number) {
+fn best_placement(coords: &HashSet<Coords>) -> (Coords, usize) {
     let options: Vec<_> = coords
         .iter()
         .map(|c| (*c, count_visible(*c, coords)))
@@ -84,7 +85,7 @@ fn best_placement(coords: &HashSet<Coords>) -> (Coords, Number) {
     *options.iter().max_by_key(|(_, num)| num).unwrap()
 }
 
-fn part_1(input: &str) -> (Coords, Number) {
+fn part_1(input: &str) -> (Coords, usize) {
     let coords = asteroid_coordinates(input);
     best_placement(&coords)
 }
@@ -176,7 +177,7 @@ mod tests {
         solve_1();
     }
 
-    fn test_part_1(data: &str, expected_x: Number, expected_y: Number, expected_detected: Number) {
+    fn test_part_1(data: &str, expected_x: Number, expected_y: Number, expected_detected: usize) {
         let (best_coords, detected) = part_1(data);
         assert_eq!(
             best_coords,

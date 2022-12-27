@@ -195,6 +195,8 @@ impl SnailfishNumber {
     // Returns Some if "split" succeeded, None if failed
     #[allow(clippy::manual_map)]
     #[allow(clippy::cast_sign_loss)]
+    #[allow(clippy::cast_possible_truncation)]
+    #[allow(clippy::cast_precision_loss)]
     fn attempt_split_step(&self) -> Option<SnailfishNumber> {
         match self {
             SnailfishNumber::Literal { value } => {
@@ -451,6 +453,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_solve_2_real() {
         assert_eq!(solve_2(DATA), Ok(4673));
     }

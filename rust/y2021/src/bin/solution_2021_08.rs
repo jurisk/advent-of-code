@@ -16,15 +16,15 @@ struct SegmentSet {
 }
 
 impl SegmentSet {
-    fn len(&self) -> u8 {
-        self.segments.len() as u8
+    fn len(&self) -> usize {
+        self.segments.len()
     }
 
-    fn overlap(&self, other: &SegmentSet) -> u8 {
+    fn overlap(&self, other: &SegmentSet) -> usize {
         self.segments
             .iter()
             .filter(|ch| other.segments.contains(ch))
-            .count() as u8
+            .count()
     }
 }
 
@@ -53,7 +53,7 @@ impl Entry {
             .count()
     }
 
-    fn find_pattern<F>(&self, segment_count: u8, extra_condition: F) -> SegmentSet
+    fn find_pattern<F>(&self, segment_count: usize, extra_condition: F) -> SegmentSet
     where
         F: Fn(&SegmentSet) -> bool,
     {

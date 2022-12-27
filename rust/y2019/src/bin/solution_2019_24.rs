@@ -22,6 +22,7 @@ fn parse(data: &str) -> Field {
 
 const DATA: &str = include_str!("../../resources/24.txt");
 
+#[allow(clippy::cast_sign_loss)]
 fn at(field: &Field, x: i32, y: i32) -> bool {
     if x < 0 || x as usize >= SIZE || y < 0 || y as usize >= SIZE {
         false
@@ -34,8 +35,8 @@ fn neighbour_count_simple(field: Field, x: usize, y: usize) -> usize {
     vec![(-1, 0), (1, 0), (0, -1), (0, 1)]
         .iter()
         .filter(|(dx, dy)| {
-            let nx = (x as i32) + dx;
-            let ny = (y as i32) + dy;
+            let nx = i32::try_from(x).unwrap() + dx;
+            let ny = i32::try_from(y).unwrap() + dy;
             at(&field, nx, ny)
         })
         .count()

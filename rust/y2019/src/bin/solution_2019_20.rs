@@ -43,6 +43,8 @@ const PASSAGE: char = '.';
 
 type Name = [char; 2];
 
+#[allow(clippy::cast_possible_wrap)]
+#[allow(clippy::cast_possible_truncation)]
 impl Maze {
     fn build_temp_portals(chars: &Vec<Vec<char>>) -> Vec<(Name, CoordsXY)> {
         let mut temp_portals: Vec<(Name, CoordsXY)> = Vec::new();
@@ -170,6 +172,7 @@ impl Maze {
         }
     }
 
+    #[allow(clippy::cast_sign_loss)]
     fn passage_at(&self, c: CoordsXY) -> bool {
         self.open_passages
             .get(c.y as usize)
@@ -233,7 +236,10 @@ fn solve_1(data: &str, expected: Option<i32>) {
         |n| maze.part_1_rules_neighbours(*n),
         |n| *n == maze.end,
     );
-    assert_eq!(result.map(|r| (r.len() - 1) as i32), expected);
+    assert_eq!(
+        result.map(|r| i32::try_from(r.len()).unwrap() - 1),
+        expected
+    );
     println!("{expected:?}");
 }
 
@@ -244,7 +250,10 @@ fn solve_2(data: &str, expected: Option<i32>) {
         |n| maze.part_2_rules_neighbours(*n),
         |n| *n == CoordsXYL::outermost(maze.end),
     );
-    assert_eq!(result.map(|r| (r.len() - 1) as i32), expected);
+    assert_eq!(
+        result.map(|r| i32::try_from(r.len()).unwrap() - 1),
+        expected
+    );
     println!("{expected:?}");
 }
 

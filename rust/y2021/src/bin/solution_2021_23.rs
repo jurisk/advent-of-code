@@ -116,6 +116,7 @@ impl<const N: usize> Room<N> {
         }
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     fn has_space(&self) -> Option<Steps> {
         // Makes some assumptions about data consistency, but it should be OK
         if self.amphipods.iter().all(Option::is_some) {
@@ -129,7 +130,7 @@ impl<const N: usize> Room<N> {
         let idx = self.first_occupied();
         let found = self.amphipods.get(idx)?;
         let amphipod: Amphipod = (*found)?;
-        Some((amphipod, idx as Steps))
+        Some((amphipod, u8::try_from(idx).unwrap()))
     }
 
     fn pop(&self) -> Room<N> {

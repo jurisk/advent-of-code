@@ -94,6 +94,7 @@ fn solve_1() {
 
         // place messages from computers into message buffers
         #[allow(clippy::needless_range_loop)]
+        #[allow(clippy::cast_sign_loss)]
         for idx in 0..COMPUTER_COUNT {
             let computer = &mut computers[idx];
 
@@ -158,6 +159,7 @@ fn solve_2() {
 
         // place messages from computers into message buffers
         #[allow(clippy::needless_range_loop)]
+        #[allow(clippy::cast_sign_loss)]
         for idx in 0..computer_count {
             let computer = &mut computers[idx];
 

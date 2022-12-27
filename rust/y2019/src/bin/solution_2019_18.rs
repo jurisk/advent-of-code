@@ -94,7 +94,10 @@ impl Maze {
                 let r = &chars[y];
                 (0..r.len()).filter_map(move |x| {
                     if r[x] == '@' {
-                        Some(Coords::new(x as i32, y as i32))
+                        Some(Coords::new(
+                            i32::try_from(x).unwrap(),
+                            i32::try_from(y).unwrap(),
+                        ))
                     } else {
                         None
                     }
@@ -105,6 +108,7 @@ impl Maze {
         Maze { field, entrances }
     }
 
+    #[allow(clippy::cast_sign_loss)]
     fn at(&self, coords: Coords) -> Square {
         self.field[coords.y as usize][coords.x as usize]
     }
@@ -141,8 +145,8 @@ impl Maze {
             .flat_map(|y| {
                 let r = &self.field[y];
                 (0..r.len()).map(move |x| Coords {
-                    x: x as i32,
-                    y: y as i32,
+                    x: i32::try_from(x).unwrap(),
+                    y: i32::try_from(y).unwrap(),
                 })
             })
             .collect()

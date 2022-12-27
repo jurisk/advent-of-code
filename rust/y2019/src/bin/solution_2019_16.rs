@@ -18,7 +18,7 @@ fn apply_phase_1(numbers: &[u8]) -> Vec<u8> {
                 .enumerate()
                 .map(|(index, n)| i32::from(*n) * coef(index, phase))
                 .sum();
-            (summed.abs() % 10) as u8
+            u8::try_from(summed.abs() % 10).unwrap()
         })
         .collect()
 }
@@ -48,8 +48,8 @@ fn apply_phase_2(numbers: &[u8]) -> Vec<u8> {
     let mut sum: i32 = numbers.iter().map(|x| i32::from(*x)).sum();
     let mut out: Vec<u8> = Vec::new();
     for x in numbers.iter() {
-        let res = sum % 10;
-        out.push(res as u8);
+        let res = u8::try_from(sum % 10).unwrap();
+        out.push(res);
         sum -= i32::from(*x);
     }
     out

@@ -5,6 +5,7 @@ const DATA: &str = include_str!("../../resources/11.txt");
 
 type Octopuses = Matrix<u8>;
 
+#[allow(clippy::redundant_else)]
 fn step(octopuses: &Octopuses) -> (usize, Octopuses) {
     const FLASH_THRESHOLD: u8 = 9;
     const FLASHED: u8 = u8::MAX;

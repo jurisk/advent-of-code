@@ -32,3 +32,6 @@ jobs:
     - name: Run tests
       working-directory: ./rust
       run: cargo +nightly test --verbose
+    - name: Clippy
+      working-directory: ./rust
+      run: cargo +nightly clippy -- -W clippy::pedantic

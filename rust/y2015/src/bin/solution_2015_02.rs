@@ -70,11 +70,11 @@ mod tests {
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(part_1(DATA), Ok(1588178));
+        assert_eq!(part_1(DATA), Ok(1_588_178));
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA), Ok(3783758));
+        assert_eq!(part_2(DATA), Ok(3_783_758));
     }
 }

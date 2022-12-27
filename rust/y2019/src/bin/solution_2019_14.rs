@@ -131,6 +131,7 @@ fn ore_for_1_fuel_str(data: &str) -> Number {
     ore_for_n_fuel(&conversions, 1)
 }
 
+#[allow(clippy::redundant_else)]
 fn fuel_from_mega_ore(conversions: &HashMap<Ingredient, Conversion>) -> Number {
     let one_fuel_cost = ore_for_n_fuel(conversions, 1);
     println!("One fuel cost {one_fuel_cost}");

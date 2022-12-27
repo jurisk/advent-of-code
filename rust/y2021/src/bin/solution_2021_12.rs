@@ -226,6 +226,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_solve_2_real() {
         assert_eq!(solve_2(DATA), Ok(84271));
     }

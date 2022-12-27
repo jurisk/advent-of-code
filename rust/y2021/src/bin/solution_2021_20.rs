@@ -41,7 +41,8 @@ impl Image {
         }
     }
 
-    fn bit_at(&self, r: isize, c: isize) -> usize {
+    #[allow(clippy::cast_sign_loss)]
+    fn bit_at(&self, r: i32, c: i32) -> usize {
         let pixel = if r < 0 || c < 0 {
             &self.surrounding_pixels
         } else {
@@ -56,7 +57,7 @@ impl Image {
         }
     }
 
-    fn enhance_pixel(&self, r: isize, c: isize, algorithm: &ImageEnhancementAlgorithm) -> Pixel {
+    fn enhance_pixel(&self, r: i32, c: i32, algorithm: &ImageEnhancementAlgorithm) -> Pixel {
         let idx = self.bit_at(r - 1, c - 1) << 8
             | self.bit_at(r - 1, c) << 7
             | self.bit_at(r - 1, c + 1) << 6
@@ -73,9 +74,13 @@ impl Image {
     fn enhance(&self, algorithm: &ImageEnhancementAlgorithm) -> Image {
         let mut pixels: Matrix<Pixel> =
             Matrix::new(self.pixels.rows + 2, self.pixels.columns + 2, Pixel::Dark);
-        for r in 0..(pixels.rows as isize) {
-            for c in 0..(pixels.columns as isize) {
-                pixels[(r as usize, c as usize)] = self.enhance_pixel(r - 1, c - 1, algorithm);
+        for r in 0..pixels.rows {
+            for c in 0..pixels.columns {
+                pixels[(r, c)] = self.enhance_pixel(
+                    i32::try_from(r).unwrap() - 1,
+                    i32::try_from(c).unwrap() - 1,
+                    algorithm,
+                );
             }
         }
 
