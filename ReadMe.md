@@ -135,3 +135,4 @@
 | 2015-02  |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_02.rs) |                                                   |
 | 2015-03  |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_03.rs) |                                                   |
 | 2015-04  |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_04.rs) |                                                   |
+| 2015-05  |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_05.rs) |                                                   |
