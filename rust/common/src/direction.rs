@@ -1,4 +1,6 @@
 use crate::coords2d::Coords2D;
+use crate::direction::Direction::{East, North, South, West};
+use crate::parsing::Error;
 use crate::rotation::Rotation;
 use num_traits::{One, Zero};
 use std::ops::Neg;
@@ -17,14 +19,14 @@ impl Direction {
     #[must_use]
     pub fn rotate(&self, rotation: Rotation) -> Direction {
         match (rotation, self) {
-            (Rotation::Left90, Direction::North) => Direction::West,
-            (Rotation::Left90, Direction::East) => Direction::North,
-            (Rotation::Left90, Direction::South) => Direction::East,
-            (Rotation::Left90, Direction::West) => Direction::South,
-            (Rotation::Right90, Direction::North) => Direction::East,
-            (Rotation::Right90, Direction::East) => Direction::South,
-            (Rotation::Right90, Direction::South) => Direction::West,
-            (Rotation::Right90, Direction::West) => Direction::North,
+            (Rotation::Left90, North) => West,
+            (Rotation::Left90, East) => North,
+            (Rotation::Left90, South) => East,
+            (Rotation::Left90, West) => South,
+            (Rotation::Right90, North) => East,
+            (Rotation::Right90, East) => South,
+            (Rotation::Right90, South) => West,
+            (Rotation::Right90, West) => North,
         }
     }
 
@@ -40,12 +42,7 @@ impl Direction {
 
     #[must_use]
     pub fn all() -> Vec<Direction> {
-        vec![
-            Direction::North,
-            Direction::South,
-            Direction::West,
-            Direction::East,
-        ]
+        vec![North, South, West, East]
     }
 
     #[must_use]
@@ -54,10 +51,23 @@ impl Direction {
         T: Zero + One + Neg<Output = T> + Copy,
     {
         match self {
-            Direction::North => Coords2D::new(T::zero(), -T::one()),
-            Direction::South => Coords2D::new(T::zero(), T::one()),
-            Direction::West => Coords2D::new(-T::one(), T::zero()),
-            Direction::East => Coords2D::new(T::one(), T::zero()),
+            North => Coords2D::new(T::zero(), -T::one()),
+            West => Coords2D::new(-T::one(), T::zero()),
+            South => Coords2D::new(T::zero(), T::one()),
+            East => Coords2D::new(T::one(), T::zero()),
+        }
+    }
+
+    /// # Errors
+    ///
+    /// Will return `Err` if parsing fails.
+    pub fn try_from_caret(ch: char) -> Result<Direction, Error> {
+        match ch {
+            '^' => Ok(North),
+            '>' => Ok(East),
+            'v' => Ok(South),
+            '<' => Ok(West),
+            _ => Err(format!("Unrecognized direction caret {ch}")),
         }
     }
 }

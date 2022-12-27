@@ -39,7 +39,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
 
     for command in commands {
         match command {
-            Command::Left(n) => {
+            Left(n) => {
                 ((current.x - n)..current.x).rev().for_each(|x| {
                     steps += 1;
                     let _ = result.try_insert(Coords { x, y: current.y }, steps);
@@ -48,7 +48,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
                 current.x -= n;
             },
 
-            Command::Right(n) => {
+            Right(n) => {
                 ((current.x + 1)..=(current.x + n)).for_each(|x| {
                     steps += 1;
                     let _ = result.try_insert(Coords { x, y: current.y }, steps);
@@ -57,7 +57,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
                 current.x += n;
             },
 
-            Command::Up(n) => {
+            Up(n) => {
                 ((current.y + 1)..=(current.y + n)).for_each(|y| {
                     steps += 1;
                     let _ = result.try_insert(Coords { x: current.x, y }, steps);
@@ -66,7 +66,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
                 current.y += n;
             },
 
-            Command::Down(n) => {
+            Down(n) => {
                 ((current.y - n)..current.y).rev().for_each(|y| {
                     steps += 1;
                     let _ = result.try_insert(Coords { x: current.x, y }, steps);
@@ -78,10 +78,6 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
     }
 
     result
-}
-
-fn manhattan_distance(a: Coords, b: Coords) -> Number {
-    (a.x - b.x).abs() + (a.y - b.y).abs()
 }
 
 type CostF = fn(&Coords, &HashMap<Coords, Number>, &HashMap<Coords, Number>) -> Number;
@@ -108,7 +104,7 @@ fn solve(data: &str, f: CostF) -> Number {
 }
 
 fn solve1(data: &str) -> Number {
-    solve(data, |c, _a, _b| manhattan_distance(*c, Coords2D::origin()))
+    solve(data, |c, _a, _b| c.manhattan_distance(Coords2D::origin()))
 }
 
 fn solve2(data: &str) -> Number {

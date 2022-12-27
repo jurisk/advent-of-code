@@ -1,6 +1,6 @@
 use crate::direction::Direction;
 use crate::parsing::{split_into_two_strings, Error};
-use num_traits::{One, Zero};
+use num_traits::{One, Signed, Zero};
 use std::fmt::Debug;
 use std::ops::{Add, Neg, Sub};
 use std::str::FromStr;
@@ -77,6 +77,15 @@ impl<T: Copy + One + Add<Output = T> + Sub<Output = T>> Coords2D<T> {
                 y: self.y,
             },
         ]
+    }
+}
+
+impl<T> Coords2D<T>
+where
+    T: Sub + Signed,
+{
+    pub fn manhattan_distance(self: Coords2D<T>, other: Coords2D<T>) -> T {
+        (self.x - other.x).abs() + (self.y - other.y).abs()
     }
 }
 
