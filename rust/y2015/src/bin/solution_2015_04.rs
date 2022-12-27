@@ -3,38 +3,33 @@ fn md5_for_string(input: &str) -> String {
     format!("{digest:x}")
 }
 
-fn solve_1(secret_key: &str) -> u32 {
-    for n in 0..u32::MAX {
+fn solve<F>(secret_key: &str, p: F) -> Option<u32>
+where
+    F: Fn(&str) -> bool,
+{
+    (0..u32::MAX).find(|n| {
         let input = format!("{secret_key}{n}");
         let md5 = md5_for_string(&input);
-        if md5.starts_with("00000") {
-            return n;
-        }
-    }
-
-    panic!("Not found!")
+        p(&md5)
+    })
 }
 
-fn solve_2(secret_key: &str) -> u32 {
-    for n in 0..u32::MAX {
-        let input = format!("{secret_key}{n}");
-        let md5 = md5_for_string(&input);
-        if md5.starts_with("000000") {
-            return n;
-        }
-    }
+fn solve_1(secret_key: &str) -> Option<u32> {
+    solve(secret_key, |md5| md5.starts_with("00000"))
+}
 
-    panic!("Not found!")
+fn solve_2(secret_key: &str) -> Option<u32> {
+    solve(secret_key, |md5| md5.starts_with("000000"))
 }
 
 const DATA: &str = "bgvyzdsv";
 
 fn main() {
     let result_1 = solve_1(DATA);
-    println!("Part 1: {result_1}");
+    println!("Part 1: {result_1:?}");
 
     let result_2 = solve_2(DATA);
-    println!("Part 2: {result_2}");
+    println!("Part 2: {result_2:?}");
 }
 
 #[cfg(test)]
@@ -42,20 +37,20 @@ mod tests {
     use super::*;
     #[test]
     fn test_solve_1_test_1() {
-        assert_eq!(solve_1("abcdef"), 609043);
+        assert_eq!(solve_1("abcdef"), Some(609043));
     }
     #[test]
     fn test_solve_1_test_2() {
-        assert_eq!(solve_1("pqrstuv"), 1048970);
+        assert_eq!(solve_1("pqrstuv"), Some(1048970));
     }
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(solve_1(DATA), 254575);
+        assert_eq!(solve_1(DATA), Some(254575));
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(solve_2(DATA), 1038736);
+        assert_eq!(solve_2(DATA), Some(1038736));
     }
 }
