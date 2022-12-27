@@ -133,3 +133,5 @@
 | 2018-25  | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2018/Advent25.scala) |                                                |                                                   |
 | 2015-01  |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_01.rs) |                                                   |
 | 2015-02  |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_02.rs) |                                                   |
+| 2015-03  |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_03.rs) |                                                   |
+| 2015-04  |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_04.rs) |                                                   |

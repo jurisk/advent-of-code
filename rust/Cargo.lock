@@ -8,6 +8,7 @@ version = "0.1.0"
 dependencies = [
  "advent-of-code-common",
  "itertools",
+ "md5",
  "nonempty",
  "num_enum",
  "recap",
@@ -220,6 +221,12 @@ checksum = "add85d4dd35074e6fedc608f8c8f513a3548619a9024b751949ef0e8e45a4d84"
 dependencies = [
  "rawpointer",
 ]
+
+[[package]]
+name = "md5"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "490cc448043f947bae3cbee9c203358d62dbee0db12107a74be5c30ccfd09771"
 
 [[package]]
 name = "memchr"

@@ -14,3 +14,4 @@ nonempty.workspace = true
 regex.workspace = true
 recap.workspace = true
 serde.workspace = true
+md5.workspace = true
