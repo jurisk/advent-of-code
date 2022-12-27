@@ -51,7 +51,7 @@ object Advent16 {
         def helper(binary: Bits): Either[Error, (String, Bits)] =
           binary match {
             case 0 :: a :: b :: c :: d :: tail =>
-              Right(fourBits(a, b, c, d), tail)
+              (fourBits(a, b, c, d), tail).asRight
             case 1 :: a :: b :: c :: d :: tail =>
               helper(tail).map { case (n, t) => (fourBits(a, b, c, d) + n, t) }
             case _                             => Left(s"Unexpected $binary")

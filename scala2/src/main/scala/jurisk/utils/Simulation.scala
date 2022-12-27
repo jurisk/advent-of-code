@@ -105,7 +105,7 @@ object Simulation {
       alreadySeen.get(state) match {
         case Some(iterationWeSawThisBefore) =>
           (iterationWeSawThisBefore, iteration).asRight.asLeft
-        case None =>
+        case None                           =>
           alreadySeen.update(state, iteration)
           f(state, iteration).leftMap(_.asLeft)
       }

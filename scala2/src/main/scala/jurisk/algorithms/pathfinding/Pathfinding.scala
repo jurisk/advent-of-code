@@ -1,11 +1,7 @@
 package jurisk.algorithms.pathfinding
 
 import cats.data.NonEmptyList
-import cats.implicits._
-import jurisk.algorithms.pathfinding.Dijkstra.{
-  dijkstra,
-  dijkstraWithIdenticalCosts,
-}
+import jurisk.algorithms.pathfinding.Dijkstra.dijkstraWithIdenticalCosts
 import jurisk.utils.Bounded._
 
 object Pathfinding {

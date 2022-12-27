@@ -7,8 +7,6 @@ import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers._
 
-import scala.annotation.tailrec
-
 object Advent24 {
   final case class AttackType(value: String)
 
@@ -100,6 +98,7 @@ object Advent24 {
                 (AttackType.parseSet(immunities), Set.empty)
               case s"weak to $weaknesses"                        =>
                 (Set.empty, AttackType.parseSet(weaknesses))
+              case _                                             => weaknessesOrImmunities.failedToParse
             }
           Group(
             id,
@@ -111,6 +110,8 @@ object Advent24 {
             AttackType.parse(attackType),
             initiative.toInt,
           )
+
+        case s => s.failedToParse
       }
   }
 

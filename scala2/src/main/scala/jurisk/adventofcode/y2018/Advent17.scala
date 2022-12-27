@@ -145,7 +145,7 @@ object Advent17 {
           Coords2D.of(x1.toInt, y.toInt),
           Coords2D.of(x2.toInt, y.toInt),
         )
-      case _                   => "Failed to parse '$s'".fail
+      case _                   => s.failedToParse
     }
 
   private val SpringOfWater: Coords2D = Coords2D.of(500, 0)
@@ -166,9 +166,8 @@ object Advent17 {
     }
   }
 
-  private def printField(name: String, field: Field2D[Square]): Unit = {
+  private def printField(name: String, field: Field2D[Square]): Unit =
     Field2D.printField[Square](name, field, _.toChar)
-  }
 
   def simulate(field: Field2D[Square]): Field2D[Square] = {
     printField("Before:", field)
@@ -202,9 +201,7 @@ object Advent17 {
     val maxY    = yCoords.max
 
     field.entries.map { case (c, v) =>
-      if (
-        (c.y >= minY) && (c.y <= maxY) && lookingFor.contains(v)
-      ) {
+      if ((c.y >= minY) && (c.y <= maxY) && lookingFor.contains(v)) {
         1
       } else {
         0

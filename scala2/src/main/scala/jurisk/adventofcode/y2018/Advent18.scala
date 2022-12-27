@@ -30,7 +30,7 @@ object Advent18 {
         case Open.toChar       => Open
         case Trees.toChar      => Trees
         case Lumberyard.toChar => Lumberyard
-        case _                 => "Did not recognize '$ch'".fail
+        case _                 => s"Did not recognize '$ch'".fail
       }
   }
 

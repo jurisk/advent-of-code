@@ -28,7 +28,7 @@ object Advent21 {
         case s"$name: $a * $b"  => name -> BinaryMonkey(a, Multiply, b)
         case s"$name: $a / $b"  => name -> BinaryMonkey(a, Divide, b)
         case s"$name: $literal" => name -> Literal(literal.toLong)
-        case _                  => s"Failed to parse $s".fail
+        case _                  => s.failedToParse
       }
   }
 

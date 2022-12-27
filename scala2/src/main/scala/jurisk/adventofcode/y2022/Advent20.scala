@@ -49,7 +49,7 @@ object Advent20 {
   ): Long = {
     val mixed: Vector[Long] = mix(lookup.map(_ * decryptionKey), timesToMix)
     require(mixed.length == lookup.length)
-    val indexOf0            = mixed.indexOf(0)
+    val indexOf0            = mixed.indexOf(0L)
     require(indexOf0 != -1)
     List(1000, 2000, 3000).map { x =>
       mixed((indexOf0 + x) % mixed.length)

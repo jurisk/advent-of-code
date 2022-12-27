@@ -40,7 +40,7 @@ object Advent15 {
             Coords2D.of(sx.toInt, sy.toInt),
             Coords2D.of(bx.toInt, by.toInt),
           )
-        case _                                                            => s"Unrecognized $s".fail
+        case _                                                            => s.failedToParse
       }
   }
 

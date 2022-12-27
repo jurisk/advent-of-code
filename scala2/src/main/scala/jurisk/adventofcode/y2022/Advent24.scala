@@ -41,7 +41,7 @@ object Advent24 {
     def blizzardAt(blizzard: Blizzard, time: Int): Coords2D =
       if (blizzard.direction.isVertical) {
         val newY = absForWrappingAround(
-          ((blizzard.startsAt.y - 1) + (blizzard.direction.diff * time).y),
+          (blizzard.startsAt.y - 1) + (blizzard.direction.diff * time).y,
           area.height - 2,
         ) + 1
         Coords2D.of(
@@ -50,7 +50,7 @@ object Advent24 {
         )
       } else { // horizontal
         val newX = absForWrappingAround(
-          ((blizzard.startsAt.x - 1) + (blizzard.direction.diff * time).x),
+          (blizzard.startsAt.x - 1) + (blizzard.direction.diff * time).x,
           area.width - 2,
         ) + 1
         Coords2D.of(

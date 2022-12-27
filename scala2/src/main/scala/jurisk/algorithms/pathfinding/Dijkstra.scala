@@ -26,7 +26,7 @@ object Dijkstra {
     */
   // https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm#Pseudocode
   //  1  function Dijkstra(Graph, source):
-  def dijkstraAll[N, C: Numeric: Ordering: Bounded](
+  def dijkstraAll[N, C: Numeric: Bounded](
     start: N,
     successors: N => List[(N, C)],
   ): Map[N, (N, C)] = {
@@ -35,9 +35,9 @@ object Dijkstra {
 
     //  3      for each vertex v in Graph.Vertices:
     //  4          dist[v] ← INFINITY
-    val dist: mutable.Map[N, C]         = mutable.Map().withDefaultValue(MaxValue)
+    val dist: mutable.Map[N, C]              = mutable.Map().withDefaultValue(MaxValue)
     //  5          prev[v] ← UNDEFINED
-    val prev: mutable.Map[N, N]         = mutable.Map()
+    val prev: mutable.Map[N, N]              = mutable.Map()
     //  6          add v to Q
     val queue: mutable.PriorityQueue[(N, C)] = mutable.PriorityQueue.empty(
       Ordering[C].reverse.contramap { case (_, c) => c }
@@ -84,14 +84,14 @@ object Dijkstra {
     }.toMap
   }
 
-  def dijkstra[N, C: Numeric: Ordering: Bounded](
+  def dijkstra[N, C: Numeric: Bounded](
     start: N,
     successors: N => List[(N, C)],
     success: N => Boolean,
   ): Option[(NonEmptyList[N], C)] =
     dijkstraUsingAStar(start, successors, success)
 
-  private def dijkstraUsingAStar[N, C: Numeric: Ordering: Bounded](
+  private def dijkstraUsingAStar[N, C: Numeric: Bounded](
     start: N,
     successors: N => List[(N, C)],
     success: N => Boolean,
@@ -100,12 +100,12 @@ object Dijkstra {
     aStar[N, C](start, successors, _ => Zero, success)
   }
 
-  def dijkstraWithIdenticalCosts[N, C: Numeric : Ordering : Bounded](
+  def dijkstraWithIdenticalCosts[N, C: Numeric: Bounded](
     start: N,
     successors: N => List[N],
     success: N => Boolean,
   ): Option[(NonEmptyList[N], C)] = {
     val One = implicitly[Numeric[C]].one
-    dijkstra[N, C](start, n => successors(n).map { r => (r, One) }, success)
+    dijkstra[N, C](start, n => successors(n).map(r => (r, One)), success)
   }
 }

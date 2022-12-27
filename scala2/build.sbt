@@ -11,7 +11,15 @@ lazy val root = (project in file("."))
       "org.typelevel" %% "mouse" % "1.2.1",
       "org.typelevel" %% "cats-parse" % "0.3.8",
       "org.scalatest" %% "scalatest" % "3.2.14" // Not "test" on purpose as it is more convenient to keep everything together
-    )
+    ),
+    tpolecatScalacOptions ~= { opts =>
+      opts.filterNot(Set(
+        ScalacOptions.warnValueDiscard,
+        ScalacOptions.warnUnusedPrivates,
+        ScalacOptions.warnNumericWiden,
+        ScalacOptions.warnUnusedImports,
+      ))
+    }
   )
 
 addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")

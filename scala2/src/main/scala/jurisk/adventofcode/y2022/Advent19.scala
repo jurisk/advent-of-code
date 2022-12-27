@@ -180,7 +180,7 @@ object Advent19 {
             (c.toInt, d.toInt),
             (e.toInt, f.toInt),
           )
-        case _                                                                                                                                                                         => s"Failed to parse $s".fail
+        case _                                                                                                                                                                         => s.failedToParse
       }
   }
 

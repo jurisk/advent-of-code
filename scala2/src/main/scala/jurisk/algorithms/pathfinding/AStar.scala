@@ -29,7 +29,7 @@ object AStar {
     *   returns `true`, along with the total cost, in a `Some`. If no path can
     *   be found, `None` is returned instead.
     */
-  def aStar[N, C: Numeric: Ordering: Bounded](
+  def aStar[N, C: Numeric: Bounded](
     start: N,
     neighbours: N => List[(N, C)],
     heuristic: N => C,
@@ -69,12 +69,13 @@ object AStar {
     // The set of discovered nodes that may need to be (re-)expanded.
     // Initially, only the start node is known.
     // This is usually implemented as a min-heap or priority queue rather than a hash-set.
-    val openSet: mutable.PriorityQueue[(N, C)] = mutable.PriorityQueue.apply((start, fScore(start)))(
-      Ordering[C].reverse.contramap { case (_, c) => c }
-    )
+    val openSet: mutable.PriorityQueue[(N, C)] =
+      mutable.PriorityQueue.apply((start, fScore(start)))(
+        Ordering[C].reverse.contramap { case (_, c) => c }
+      )
     while (openSet.nonEmpty) {
       // This operation can occur in O(1) time if openSet is a min-heap or a priority queue
-       val (current, dequeuedCost) = openSet.dequeue()
+      val (current, dequeuedCost) = openSet.dequeue()
 
       // We may have inserted several nodes into the priority queue if we found a better way.
       // We should ensure we are dealing with the best path and ignore the others.

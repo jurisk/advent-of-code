@@ -21,8 +21,7 @@ final case class SparseField[T](points: Map[Coords2D, T]) {
       val buffers = Array.fill(ySize)(Array.fill(xSize)(display(none)))
 
       points foreach { case (point, value) =>
-        buffers(point.y - yMin)(point.x - xMin) =
-          display(value.some)
+        buffers(point.y - yMin)(point.x - xMin) = display(value.some)
       }
 
       mergeSeqSeqChar(buffers.toIndexedSeq.map(_.toList))

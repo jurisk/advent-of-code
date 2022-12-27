@@ -32,7 +32,7 @@ object Advent16 {
             Set(other),
           )
         case _                                                                    =>
-          s"Failed to parse $s".fail
+          s.failedToParse
       }
   }
 

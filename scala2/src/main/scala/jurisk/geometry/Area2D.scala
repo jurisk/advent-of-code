@@ -18,9 +18,9 @@ final case class Area2D(min: Coords2D, max: Coords2D) {
   def height: Int = (max.y - min.y) + 1
   def width: Int  = (max.x - min.x) + 1
 
-  def left: Int = min.x
-  def right: Int = max.x
-  def top: Int  = min.y
+  def left: Int   = min.x
+  def right: Int  = max.x
+  def top: Int    = min.y
   def bottom: Int = max.y
 
   def expandInEachDirectionBy(n: Int): Area2D = Area2D(
@@ -33,7 +33,12 @@ final case class Area2D(min: Coords2D, max: Coords2D) {
 }
 
 object Area2D {
-  def fromLeftTopWidthHeight(left: Int, top: Int, width: Int, height: Int): Area2D =
+  def fromLeftTopWidthHeight(
+    left: Int,
+    top: Int,
+    width: Int,
+    height: Int,
+  ): Area2D =
     Area2D(Coords2D(left, top), Coords2D(left + width - 1, top + height - 1))
 
   def boundingBoxInclusive(coords: Seq[Coords2D]): Area2D =

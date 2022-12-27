@@ -1,5 +1,7 @@
 package jurisk.adventofcode.y2018
 
+import jurisk.utils.Parsing.StringOps
+
 import scala.collection.immutable.ArraySeq
 
 final case class Program(
@@ -25,9 +27,9 @@ final case class Program(
         f"$idx%2d: $instruction        r$c = r$a | r$b"
       case Instruction.BOrI(a, b, c) =>
         f"$idx%2d: $instruction        r$c = r$a | $b"
-      case Instruction.SetR(a, b, c) =>
+      case Instruction.SetR(a, _, c) =>
         f"$idx%2d: $instruction        r$c = r$a"
-      case Instruction.SetI(a, b, c) =>
+      case Instruction.SetI(a, _, c) =>
         f"$idx%2d: $instruction        r$c = $a"
       case Instruction.GtRR(a, b, c) =>
         f"$idx%2d: $instruction        r$c = if (r$a > r$b) 1 else 0"
@@ -62,6 +64,7 @@ object Program {
     val lines      = data.split("\n")
     val ipRegister = lines.head match {
       case s"#ip $ip" => ip.toInt
+      case s          => s.failedToParse
     }
 
     val instructions = lines.tail.map(Instruction.parse)
@@ -221,5 +224,6 @@ case object Instruction {
           b.toInt,
           c.toInt,
         )
+      case _                 => s.failedToParse
     }
 }

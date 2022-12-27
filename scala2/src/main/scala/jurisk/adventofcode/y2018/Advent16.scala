@@ -70,12 +70,14 @@ object Advent16 {
       val Array(beforeString, instructionString, afterString) = s.split("\n")
       val beforeNumbers                                       = beforeString match {
         case s"Before: [$data]" => data.split(", ").map(_.toInt)
+        case _                  => beforeString.failedToParse
       }
 
       val instructionNumbers = instructionString.split(" ").map(_.toInt)
 
       val afterNumbers = afterString match {
         case s"After:  [$data]" => data.split(", ").map(_.toInt)
+        case _                  => afterString.failedToParse
       }
 
       Sample(
