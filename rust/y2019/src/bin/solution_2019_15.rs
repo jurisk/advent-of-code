@@ -1,4 +1,5 @@
 use advent_of_code_2019::intcode::{Entry, Process};
+use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::direction::Direction;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -14,33 +15,7 @@ fn direction_to_intcode(direction: Direction) -> Entry {
 
 type Number = i32;
 
-#[derive(PartialEq, Eq, Hash, Clone, Debug, Copy)]
-struct Coords {
-    x: Number,
-    y: Number,
-}
-
-impl Coords {
-    fn new(x: i32, y: i32) -> Self {
-        Coords { x, y }
-    }
-
-    fn movement(self, direction: &Direction) -> Coords {
-        Coords {
-            x: self.x + i32::from(*direction == Direction::East)
-                - i32::from(*direction == Direction::West),
-            y: self.y - i32::from(*direction == Direction::North)
-                + i32::from(*direction == Direction::South),
-        }
-    }
-
-    fn neighbours(self) -> Vec<Coords> {
-        Direction::all()
-            .iter()
-            .map(|direction| self.movement(direction))
-            .collect()
-    }
-}
+type Coords = Coords2D<Number>;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 enum Tile {
@@ -62,7 +37,6 @@ impl Tile {
 
 struct Robot {
     known_tiles: HashMap<Coords, Tile>,
-    //     queue: VecDeque<Coords>,
     current_position: Coords,
     current_direction: Direction,
 }
@@ -126,7 +100,9 @@ impl Robot {
     }
 
     fn move_result(&mut self, tile: Tile) {
-        let target_position = self.current_position.movement(&self.current_direction);
+        let target_position = self
+            .current_position
+            .move_in_direction(self.current_direction);
         println!("Found {tile:?} at {target_position:?}");
         if tile == Tile::Wall {
             self.current_direction = self.current_direction.rotate_left();
@@ -170,7 +146,7 @@ fn bfs(tiles: &HashMap<Coords, Tile>, start: Coords, end: Coords) -> Vec<Coords>
         if !visited.contains(last_node) {
             // enumerate all adjacent nodes, construct a new path and push it into the queue
             last_node
-                .neighbours()
+                .adjacent4()
                 .iter()
                 .filter(|x| *tiles.get(x).unwrap() != Tile::Wall)
                 .for_each(|adjacent| {
@@ -243,7 +219,7 @@ fn bfs_depth(tiles: &HashMap<Coords, Tile>, from: Coords) -> usize {
         if !visited.contains(last_node) {
             // enumerate all adjacent nodes, construct a new path and push it into the queue
             last_node
-                .neighbours()
+                .adjacent4()
                 .iter()
                 .filter(|x| *tiles.get(x).unwrap() != Tile::Wall)
                 .for_each(|adjacent| {

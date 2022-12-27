@@ -1,6 +1,6 @@
+use advent_of_code_common::coords2d::Coords2D;
 use std::collections::HashSet;
 use std::f32::consts::PI;
-use std::ops::Sub;
 
 #[derive(Debug, Eq, PartialEq)]
 enum Cell {
@@ -11,28 +11,7 @@ enum Cell {
 type Number = i32;
 type Angle = i32;
 
-#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
-struct Coords {
-    x: Number,
-    y: Number,
-}
-
-impl Coords {
-    fn new(x: Number, y: Number) -> Coords {
-        Coords { x, y }
-    }
-}
-
-impl Sub for Coords {
-    type Output = Coords;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        Coords {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-        }
-    }
-}
+type Coords = Coords2D<i32>;
 
 fn parse(s: &str) -> Vec<Vec<Cell>> {
     s.lines()

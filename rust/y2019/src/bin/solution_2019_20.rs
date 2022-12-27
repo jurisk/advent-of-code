@@ -1,62 +1,34 @@
+use advent_of_code_common::coords2d::Coords2D;
 use bimap::BiMap;
 use itertools::Itertools;
 use pathfinding::prelude::bfs;
 use std::collections::HashMap;
 
-#[derive(Eq, PartialEq, Hash, Copy, Clone, Debug)]
-struct CoordsXY {
-    x: i32,
-    y: i32,
-}
-
-impl CoordsXY {
-    fn all_directions(self) -> Vec<CoordsXY> {
-        vec![
-            CoordsXY {
-                x: self.x + 1,
-                y: self.y,
-            },
-            CoordsXY {
-                x: self.x - 1,
-                y: self.y,
-            },
-            CoordsXY {
-                x: self.x,
-                y: self.y + 1,
-            },
-            CoordsXY {
-                x: self.x,
-                y: self.y - 1,
-            },
-        ]
-    }
-}
-
-impl CoordsXY {
-    fn with_level(self, level: u32) -> CoordsXYL {
-        CoordsXYL {
-            x: self.x,
-            y: self.y,
-            level,
-        }
-    }
-}
-
-impl CoordsXY {
-    fn outermost(self) -> CoordsXYL {
-        CoordsXYL {
-            x: self.x,
-            y: self.y,
-            level: 0,
-        }
-    }
-}
+type CoordsXY = Coords2D<i32>;
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone, Debug)]
 struct CoordsXYL {
     x: i32,
     y: i32,
     level: u32,
+}
+
+impl CoordsXYL {
+    fn with_level(coords: CoordsXY, level: u32) -> CoordsXYL {
+        CoordsXYL {
+            x: coords.x,
+            y: coords.y,
+            level,
+        }
+    }
+
+    fn outermost(coords: CoordsXY) -> CoordsXYL {
+        CoordsXYL {
+            x: coords.x,
+            y: coords.y,
+            level: 0,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -210,7 +182,7 @@ impl Maze {
         let a: Vec<CoordsXY> = a_binding.iter().copied().collect();
         let b_binding = self.portals.get_by_right(&from).copied();
         let b: Vec<CoordsXY> = b_binding.iter().copied().collect();
-        let neighbours = from.all_directions();
+        let neighbours = from.adjacent4();
         let c: Vec<CoordsXY> = neighbours
             .iter()
             .filter(|c| self.passage_at(**c))
@@ -233,21 +205,21 @@ impl Maze {
             let a_binding = self.portals.get_by_left(&from_xy).copied();
             a_binding
                 .iter()
-                .map(|c| c.with_level(from.level - 1))
+                .map(|c| CoordsXYL::with_level(*c, from.level - 1))
                 .collect()
         };
 
         let b_binding = self.portals.get_by_right(&from_xy).copied();
         let b: Vec<CoordsXYL> = b_binding
             .iter()
-            .map(|c| c.with_level(from.level + 1))
+            .map(|c| CoordsXYL::with_level(*c, from.level + 1))
             .collect();
 
         let c: Vec<CoordsXYL> = from_xy
-            .all_directions()
+            .adjacent4()
             .iter()
             .filter(|c| self.passage_at(**c))
-            .map(|c| c.with_level(from.level))
+            .map(|c| CoordsXYL::with_level(*c, from.level))
             .collect();
 
         vec![a, b, c].concat()
@@ -268,9 +240,9 @@ fn solve_1(data: &str, expected: Option<i32>) {
 fn solve_2(data: &str, expected: Option<i32>) {
     let maze = Maze::new(data);
     let result = bfs(
-        &maze.start.outermost(),
+        &CoordsXYL::outermost(maze.start),
         |n| maze.part_2_rules_neighbours(*n),
-        |n| *n == maze.end.outermost(),
+        |n| *n == CoordsXYL::outermost(maze.end),
     );
     assert_eq!(result.map(|r| (r.len() - 1) as i32), expected);
     println!("{expected:?}");

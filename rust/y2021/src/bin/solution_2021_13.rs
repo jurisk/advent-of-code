@@ -1,7 +1,8 @@
 use crate::FoldInstruction::{AlongX, AlongY};
+use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::parsing::{
     parse_lines_to_hashset, parse_lines_to_vec,
-    split_into_two_segments_separated_by_double_newline, split_into_two_strings, Error,
+    split_into_two_segments_separated_by_double_newline, Error,
 };
 use advent_of_code_common::utils::head_tail;
 use itertools::Itertools;
@@ -11,46 +12,30 @@ use std::str::FromStr;
 
 const DATA: &str = include_str!("../../resources/13.txt");
 
-#[derive(Clone, Eq, PartialEq, Hash, Debug)]
-struct CoordsXY {
-    x: usize,
-    y: usize,
-}
+type Coords = Coords2D<usize>;
 
-impl CoordsXY {
-    fn apply(&self, instruction: &FoldInstruction) -> CoordsXY {
-        match instruction {
-            AlongX(x_fold) if self.x < *x_fold => self.clone(),
-            AlongX(x_fold) if self.x > *x_fold => CoordsXY {
-                x: x_fold - (self.x - x_fold),
-                y: self.y,
-            },
-            AlongY(y_fold) if self.y < *y_fold => self.clone(),
-            AlongY(y_fold) if self.y > *y_fold => CoordsXY {
-                x: self.x,
-                y: y_fold - (self.y - y_fold),
-            },
-            _ => panic!("Unexpected {self:?} {instruction:?}"),
-        }
-    }
-}
-
-impl FromStr for CoordsXY {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (x_str, y_str) = split_into_two_strings(s, ",")?;
-        let x = x_str.parse().map_err(|err| format!("{err}"))?;
-        let y = y_str.parse().map_err(|err| format!("{err}"))?;
-
-        Ok(CoordsXY { x, y })
-    }
-}
-
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 enum FoldInstruction {
     AlongX(usize),
     AlongY(usize),
+}
+
+impl FoldInstruction {
+    fn apply_to_coords(self, coords: Coords) -> Coords {
+        match self {
+            AlongX(x_fold) if coords.x < x_fold => coords,
+            AlongX(x_fold) if coords.x > x_fold => Coords {
+                x: x_fold - (coords.x - x_fold),
+                y: coords.y,
+            },
+            AlongY(y_fold) if coords.y < y_fold => coords,
+            AlongY(y_fold) if coords.y > y_fold => Coords {
+                x: coords.x,
+                y: y_fold - (coords.y - y_fold),
+            },
+            _ => panic!("Unexpected {self:?} {self:?}"),
+        }
+    }
 }
 
 impl FromStr for FoldInstruction {
@@ -71,13 +56,15 @@ impl FromStr for FoldInstruction {
 
 #[derive(Clone)]
 struct Manual {
-    dots: HashSet<CoordsXY>,
+    dots: HashSet<Coords>,
     instructions: Vec<FoldInstruction>,
 }
 
 impl Manual {
-    fn fold_dots(dots: &HashSet<CoordsXY>, instruction: &FoldInstruction) -> HashSet<CoordsXY> {
-        dots.iter().map(|dot| dot.apply(instruction)).collect()
+    fn fold_dots(dots: &HashSet<Coords>, instruction: &FoldInstruction) -> HashSet<Coords> {
+        dots.iter()
+            .map(|dot| instruction.apply_to_coords(*dot))
+            .collect()
     }
 
     fn apply_next_instruction(&self) -> Manual {
@@ -100,7 +87,7 @@ impl Display for Manual {
             .map(|y| {
                 (0..=max_x)
                     .map(|x| {
-                        if self.dots.contains(&CoordsXY { x, y }) {
+                        if self.dots.contains(&Coords { x, y }) {
                             '#'
                         } else {
                             '·'
@@ -157,12 +144,12 @@ mod tests {
     fn test_fold_y() {
         let fold = AlongY(7);
         assert_eq!(
-            CoordsXY { x: 4, y: 14 }.apply(&fold),
-            CoordsXY { x: 4, y: 0 }
+            fold.apply_to_coords(Coords { x: 4, y: 14 }),
+            Coords { x: 4, y: 0 }
         );
         assert_eq!(
-            CoordsXY { x: 3, y: 13 }.apply(&fold),
-            CoordsXY { x: 3, y: 1 }
+            fold.apply_to_coords(Coords { x: 3, y: 13 }),
+            Coords { x: 3, y: 1 }
         );
     }
 
@@ -170,12 +157,12 @@ mod tests {
     fn test_fold_x() {
         let fold = AlongX(5);
         assert_eq!(
-            CoordsXY { x: 6, y: 0 }.apply(&fold),
-            CoordsXY { x: 4, y: 0 }
+            fold.apply_to_coords(Coords { x: 6, y: 0 }),
+            Coords { x: 4, y: 0 }
         );
         assert_eq!(
-            CoordsXY { x: 9, y: 0 }.apply(&fold),
-            CoordsXY { x: 1, y: 0 }
+            fold.apply_to_coords(Coords { x: 9, y: 0 }),
+            Coords { x: 1, y: 0 }
         );
     }
 

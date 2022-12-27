@@ -1,4 +1,5 @@
 use advent_of_code_2019::intcode::Process;
+use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::direction::Direction;
 use advent_of_code_common::rotation::Rotation;
 use itertools::Itertools;
@@ -16,27 +17,7 @@ enum Square {
 }
 
 type Index = i32;
-
-#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
-struct Coords {
-    x: Index,
-    y: Index,
-}
-
-impl Coords {
-    fn new(x: Index, y: Index) -> Coords {
-        Coords { x, y }
-    }
-
-    fn move_forward(self, direction: &Direction) -> Coords {
-        match direction {
-            Direction::North => Coords::new(self.x, self.y - 1),
-            Direction::East => Coords::new(self.x + 1, self.y),
-            Direction::South => Coords::new(self.x, self.y + 1),
-            Direction::West => Coords::new(self.x - 1, self.y),
-        }
-    }
-}
+type Coords = Coords2D<Index>;
 
 type Board = HashMap<Coords, Square>;
 
@@ -59,7 +40,7 @@ fn solve(starting_panel: Square) -> Board {
             board.insert(position, colour_to_paint);
             let new_facing = facing.rotate(rotation_to_turn);
             facing = new_facing;
-            position = position.move_forward(&facing);
+            position = position.move_in_direction(facing);
         }
     }
     board

@@ -1,17 +1,12 @@
 #![feature(map_try_insert)]
 
 use crate::Command::{Down, Left, Right, Up};
+use advent_of_code_common::coords2d::Coords2D;
 use std::collections::{HashMap, HashSet};
 
 type Number = i32;
 
-#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
-struct Coords {
-    x: Number,
-    y: Number,
-}
-
-const ORIGIN: Coords = Coords { x: 0, y: 0 };
+type Coords = Coords2D<Number>;
 
 #[derive(Debug)]
 enum Command {
@@ -38,7 +33,7 @@ fn parse_commands(line: &str) -> Vec<Command> {
 }
 
 fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
-    let mut current = ORIGIN;
+    let mut current = Coords::origin();
     let mut result: HashMap<Coords, Number> = HashMap::new();
     let mut steps: Number = 0;
 
@@ -113,7 +108,7 @@ fn solve(data: &str, f: CostF) -> Number {
 }
 
 fn solve1(data: &str) -> Number {
-    solve(data, |c, _a, _b| manhattan_distance(*c, ORIGIN))
+    solve(data, |c, _a, _b| manhattan_distance(*c, Coords2D::origin()))
 }
 
 fn solve2(data: &str) -> Number {

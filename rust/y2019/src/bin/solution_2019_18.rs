@@ -1,43 +1,13 @@
 extern crate core;
 
+use advent_of_code_common::coords2d::Coords2D;
 use pathfinding::prelude::{bfs, dijkstra};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
 const DATA: &str = include_str!("../../resources/18.txt");
 
-#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
-struct CoordsXY {
-    x: i32,
-    y: i32,
-}
-
-impl CoordsXY {
-    fn new(x: i32, y: i32) -> CoordsXY {
-        CoordsXY { x, y }
-    }
-
-    fn neighbours(self) -> Vec<CoordsXY> {
-        vec![
-            CoordsXY {
-                x: self.x,
-                y: self.y + 1,
-            },
-            CoordsXY {
-                x: self.x,
-                y: self.y - 1,
-            },
-            CoordsXY {
-                x: self.x + 1,
-                y: self.y,
-            },
-            CoordsXY {
-                x: self.x - 1,
-                y: self.y,
-            },
-        ]
-    }
-}
+type Coords = Coords2D<i32>;
 
 type DoorKeyPair = char;
 
@@ -91,13 +61,13 @@ impl DoorKeyPairSet {
 
 #[derive(PartialEq, Eq, Debug, Clone, Hash)]
 struct State {
-    positions: Vec<CoordsXY>,
+    positions: Vec<Coords>,
     keys_obtained: DoorKeyPairSet,
 }
 
 struct Maze {
     field: Vec<Vec<Square>>,
-    entrances: Vec<CoordsXY>,
+    entrances: Vec<Coords>,
 }
 
 fn update_element_at<T: Clone>(positions: &[T], position_idx: usize, new_position: T) -> Vec<T> {
@@ -119,12 +89,12 @@ impl Maze {
             .map(|r| r.iter().map(|ch| Square::create(*ch)).collect())
             .collect();
 
-        let entrances: Vec<CoordsXY> = (0..chars.len())
+        let entrances: Vec<Coords> = (0..chars.len())
             .flat_map(|y| {
                 let r = &chars[y];
                 (0..r.len()).filter_map(move |x| {
                     if r[x] == '@' {
-                        Some(CoordsXY::new(x as i32, y as i32))
+                        Some(Coords::new(x as i32, y as i32))
                     } else {
                         None
                     }
@@ -135,12 +105,12 @@ impl Maze {
         Maze { field, entrances }
     }
 
-    fn at(&self, coords: CoordsXY) -> Square {
+    fn at(&self, coords: Coords) -> Square {
         self.field[coords.y as usize][coords.x as usize]
     }
 
-    fn neighbours_only_empty_squares(&self, c: CoordsXY, goal: CoordsXY) -> Vec<CoordsXY> {
-        c.neighbours()
+    fn neighbours_only_empty_squares(&self, c: Coords, goal: Coords) -> Vec<Coords> {
+        c.adjacent4()
             .iter()
             .filter(|n| {
                 if goal == **n {
@@ -157,7 +127,7 @@ impl Maze {
             .collect()
     }
 
-    fn distance_only_using_empty_squares(&self, from: CoordsXY, to: CoordsXY) -> Option<usize> {
+    fn distance_only_using_empty_squares(&self, from: Coords, to: Coords) -> Option<usize> {
         bfs(
             &from,
             |sq| self.neighbours_only_empty_squares(*sq, to),
@@ -166,11 +136,11 @@ impl Maze {
         .map(|v| v.len() - 1)
     }
 
-    fn all_coords(&self) -> Vec<CoordsXY> {
+    fn all_coords(&self) -> Vec<Coords> {
         (0..self.field.len())
             .flat_map(|y| {
                 let r = &self.field[y];
-                (0..r.len()).map(move |x| CoordsXY {
+                (0..r.len()).map(move |x| Coords {
                     x: x as i32,
                     y: y as i32,
                 })
@@ -180,9 +150,9 @@ impl Maze {
 }
 
 struct Graph {
-    entrances: Vec<CoordsXY>,
-    vertices: HashMap<CoordsXY, Square>,
-    distances: HashMap<(CoordsXY, CoordsXY), usize>,
+    entrances: Vec<Coords>,
+    vertices: HashMap<Coords, Square>,
+    distances: HashMap<(Coords, Coords), usize>,
     all_keys: DoorKeyPairSet,
 }
 
@@ -206,7 +176,7 @@ impl Graph {
             all_keys = all_keys.add(key);
         }
 
-        let vertices: HashMap<CoordsXY, Square> = maze
+        let vertices: HashMap<Coords, Square> = maze
             .all_coords()
             .iter()
             .map(|c| (c, maze.at(*c)))
@@ -220,7 +190,7 @@ impl Graph {
 
         println!("vertices length {:?}", vertices.len());
 
-        let mut distances: HashMap<(CoordsXY, CoordsXY), usize> = HashMap::new();
+        let mut distances: HashMap<(Coords, Coords), usize> = HashMap::new();
         for from in vertices.keys() {
             for to in vertices.keys() {
                 if *from != *to {
@@ -241,7 +211,7 @@ impl Graph {
         }
     }
 
-    fn at(&self, coords: CoordsXY) -> Square {
+    fn at(&self, coords: Coords) -> Square {
         self.vertices[&coords]
     }
 
@@ -254,7 +224,7 @@ impl Graph {
 
     fn successors_from_position(&self, state: &State, position_idx: usize) -> Vec<(State, usize)> {
         let from_position = state.positions[position_idx];
-        let candidates: Vec<(CoordsXY, usize)> = self
+        let candidates: Vec<(Coords, usize)> = self
             .distances
             .iter()
             .filter(|((from, _), _)| *from == from_position)

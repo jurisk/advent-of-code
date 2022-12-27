@@ -1,11 +1,8 @@
 use advent_of_code_2019::intcode::{parse_machine_code, MachineCode, Process};
+use advent_of_code_common::coords2d::Coords2D;
 use std::cmp::max;
 
-#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
-struct Coords {
-    x: i32,
-    y: i32,
-}
+type Coords = Coords2D<i32>;
 
 fn machine_code() -> MachineCode {
     parse_machine_code(include_str!("../../resources/19.txt"))

@@ -1,7 +1,7 @@
-use std::ops::Neg;
-use num_traits::{One, Zero};
 use crate::coords2d::Coords2D;
 use crate::rotation::Rotation;
+use num_traits::{One, Zero};
+use std::ops::Neg;
 
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 #[repr(u8)]
@@ -14,6 +14,7 @@ pub enum Direction {
 
 impl Direction {
     #[allow(clippy::match_same_arms)]
+    #[must_use]
     pub fn rotate(&self, rotation: Rotation) -> Direction {
         match (rotation, self) {
             (Rotation::Left90, Direction::North) => Direction::West,
@@ -27,14 +28,17 @@ impl Direction {
         }
     }
 
+    #[must_use]
     pub fn rotate_left(&self) -> Direction {
         self.rotate(Rotation::Left90)
     }
 
+    #[must_use]
     pub fn rotate_right(&self) -> Direction {
         self.rotate(Rotation::Right90)
     }
 
+    #[must_use]
     pub fn all() -> Vec<Direction> {
         vec![
             Direction::North,
@@ -44,13 +48,16 @@ impl Direction {
         ]
     }
 
+    #[must_use]
     pub fn diff<T>(self) -> Coords2D<T>
-        where T : Zero + One + Neg<Output = T> {
+    where
+        T: Zero + One + Neg<Output = T> + Copy,
+    {
         match self {
-            Direction::North => Coords2D { x: T::zero(), y: -T::one() },
-            Direction::South => Coords2D { x: T::zero(), y: T::one() },
-            Direction::West => Coords2D { x: -T::one(), y: T::zero() },
-            Direction::East => Coords2D { x: T::one(), y: T::zero() },
+            Direction::North => Coords2D::new(T::zero(), -T::one()),
+            Direction::South => Coords2D::new(T::zero(), T::one()),
+            Direction::West => Coords2D::new(-T::one(), T::zero()),
+            Direction::East => Coords2D::new(T::one(), T::zero()),
         }
     }
 }

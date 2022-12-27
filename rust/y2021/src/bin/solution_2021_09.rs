@@ -1,33 +1,7 @@
+use advent_of_code_common::coords2d::Coords2D;
 use std::collections::{HashSet, VecDeque};
 
-#[derive(Copy, Clone, Eq, PartialEq, Hash)]
-struct Coords {
-    x: isize,
-    y: isize,
-}
-
-impl Coords {
-    fn neighbours(&self) -> Vec<Coords> {
-        vec![
-            Coords {
-                x: self.x + 1,
-                y: self.y,
-            },
-            Coords {
-                x: self.x - 1,
-                y: self.y,
-            },
-            Coords {
-                x: self.x,
-                y: self.y + 1,
-            },
-            Coords {
-                x: self.x,
-                y: self.y - 1,
-            },
-        ]
-    }
-}
+type Coords = Coords2D<isize>;
 
 struct HeightMap {
     data: Vec<Vec<u8>>,
@@ -65,7 +39,7 @@ impl HeightMap {
     }
 
     fn is_low_point(&self, c: &Coords) -> bool {
-        c.neighbours()
+        c.adjacent4()
             .iter()
             .all(|n| self.height(n) > self.height(c))
     }
@@ -102,7 +76,7 @@ impl HeightMap {
             if height_at_next < HeightMap::MAX_HEIGHT && !visited.contains(&next) {
                 visited.insert(next);
 
-                next.neighbours().iter().for_each(|n| {
+                next.adjacent4().iter().for_each(|n| {
                     if !visited.contains(n) {
                         queue.push_back(*n);
                     }
