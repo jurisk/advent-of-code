@@ -1,4 +1,6 @@
 use advent_of_code_2019::intcode::Process;
+use advent_of_code_common::direction::Direction;
+use advent_of_code_common::rotation::Rotation;
 use itertools::Itertools;
 use num_derive::FromPrimitive;
 use num_derive::ToPrimitive;
@@ -11,37 +13,6 @@ use std::collections::HashMap;
 enum Square {
     Black = 0,
     White = 1,
-}
-
-#[repr(u8)]
-#[derive(FromPrimitive, Debug)]
-enum Rotation {
-    Left90 = 0,
-    Right90 = 1,
-}
-
-#[derive(Debug)]
-enum Direction {
-    North,
-    East,
-    South,
-    West,
-}
-
-impl Direction {
-    #[allow(clippy::match_same_arms)]
-    fn rotate(&self, rotation: Rotation) -> Direction {
-        match (rotation, self) {
-            (Rotation::Left90, Direction::North) => Direction::West,
-            (Rotation::Left90, Direction::East) => Direction::North,
-            (Rotation::Left90, Direction::South) => Direction::East,
-            (Rotation::Left90, Direction::West) => Direction::South,
-            (Rotation::Right90, Direction::North) => Direction::East,
-            (Rotation::Right90, Direction::East) => Direction::South,
-            (Rotation::Right90, Direction::South) => Direction::West,
-            (Rotation::Right90, Direction::West) => Direction::North,
-        }
-    }
 }
 
 type Index = i32;

@@ -1,4 +1,5 @@
 use advent_of_code_2019::intcode::{parse_machine_code, MachineCode, Process};
+use advent_of_code_common::direction::Direction;
 use rand::prelude::SliceRandom;
 use std::collections::HashSet;
 use std::ops::Add;
@@ -49,7 +50,7 @@ impl Output {
         let doors_to_strings = Output::itemize(&rows, "Doors here lead:");
         let doors_to: Vec<Direction> = doors_to_strings
             .iter()
-            .filter_map(|x| Direction::new(x))
+            .filter_map(|x| create_direction(x))
             .collect();
 
         let items = Output::itemize(&rows, "Items here:");
@@ -63,35 +64,25 @@ impl Output {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-enum Direction {
-    N,
-    E,
-    S,
-    W,
+fn create_direction(s: &str) -> Option<Direction> {
+    match s {
+        "north" => Some(Direction::North),
+        "east" => Some(Direction::East),
+        "south" => Some(Direction::South),
+        "west" => Some(Direction::West),
+        _ => None,
+    }
 }
 
-impl Direction {
-    fn new(s: &str) -> Option<Direction> {
-        match s {
-            "north" => Some(Direction::N),
-            "east" => Some(Direction::E),
-            "south" => Some(Direction::S),
-            "west" => Some(Direction::W),
-            _ => None,
-        }
-    }
-
-    fn command(self) -> String {
-        (match self {
-            Direction::N => "north",
-            Direction::E => "east",
-            Direction::S => "south",
-            Direction::W => "west",
-        })
-        .to_string()
-        .add("\n")
-    }
+fn direction_to_command(direction: Direction) -> String {
+    (match direction {
+        Direction::North => "north",
+        Direction::East => "east",
+        Direction::South => "south",
+        Direction::West => "west",
+    })
+    .to_string()
+    .add("\n")
 }
 
 fn machine_code() -> MachineCode {
@@ -143,7 +134,7 @@ fn attempt() -> Option<String> {
         }
 
         let chosen_direction = *parsed.doors_to.choose(&mut rng).unwrap();
-        process.provide_input_as_string(&chosen_direction.command());
+        process.provide_input_as_string(&direction_to_command(chosen_direction));
     }
 }
 

@@ -7,6 +7,7 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+advent-of-code-common = { path = "../common" }
 regex.workspace = true
 itertools.workspace = true
 num-traits.workspace = true

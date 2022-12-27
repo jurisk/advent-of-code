@@ -1,13 +1,14 @@
 #![feature(slice_group_by)]
 
 use advent_of_code_2019::intcode::{parse_machine_code, Process};
+use advent_of_code_common::coords2d::Coords2D;
+use advent_of_code_common::direction::Direction;
 use itertools::Itertools;
 use num_enum::TryFromPrimitive;
 use std::cmp::min;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
-use std::ops::Add;
 
 #[repr(u8)]
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy, TryFromPrimitive)]
@@ -34,13 +35,13 @@ impl MapSquare {
     }
 }
 
-fn find_robot(map_squares: &Vec<Vec<MapSquare>>) -> Coords {
-    let robots: Vec<Coords> = (0..map_squares.len())
+fn find_robot(map_squares: &Vec<Vec<MapSquare>>) -> Coords2D {
+    let robots: Vec<Coords2D> = (0..map_squares.len())
         .flat_map(|y| {
             (0..map_squares[y].len()).filter_map(move |x| {
                 let sq = map_squares[y][x];
                 if sq.is_robot() {
-                    Some(Coords {
+                    Some(Coords2D {
                         x: x as i32,
                         y: y as i32,
                     })
@@ -58,7 +59,7 @@ fn find_robot(map_squares: &Vec<Vec<MapSquare>>) -> Coords {
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
 struct Board {
     scaffolds: Vec<Vec<bool>>,
-    robot_location: Coords,
+    robot_location: Coords2D,
     robot_direction: Direction,
 }
 
@@ -73,10 +74,10 @@ impl Board {
         let robot_location = find_robot(&map_squares);
         let robot_square = map_squares[robot_location.y as usize][robot_location.x as usize];
         let robot_direction = match robot_square {
-            MapSquare::RobotPointingUp => Direction::Up,
-            MapSquare::RobotPointingRight => Direction::Right,
-            MapSquare::RobotPointingLeft => Direction::Left,
-            MapSquare::RobotPointingDown => Direction::Down,
+            MapSquare::RobotPointingUp => Direction::North,
+            MapSquare::RobotPointingRight => Direction::East,
+            MapSquare::RobotPointingLeft => Direction::West,
+            MapSquare::RobotPointingDown => Direction::South,
             sq => panic!("Unexpected map square {sq:?}"),
         };
 
@@ -92,26 +93,26 @@ impl Board {
         }
     }
 
-    fn all_coordinates(&self) -> Vec<Coords> {
+    fn all_coordinates(&self) -> Vec<Coords2D> {
         (0..self.scaffolds.len())
             .flat_map(|y| {
                 (0..self.scaffolds[y].len())
-                    .map(|x| Coords {
+                    .map(|x| Coords2D {
                         x: x as i32,
                         y: y as i32,
                     })
-                    .collect::<Vec<Coords>>()
+                    .collect::<Vec<Coords2D>>()
             })
             .collect()
     }
 
-    fn is_intersection(&self, c: Coords) -> bool {
-        let mut coords: Vec<Coords> = Direction::all().iter().map(|n| c + n.diff()).collect();
+    fn is_intersection(&self, c: Coords2D) -> bool {
+        let mut coords: Vec<Coords2D> = Direction::all().iter().map(|n| c + n.diff()).collect();
         coords.push(c);
         coords.iter().all(|x| self.is_scaffold(*x))
     }
 
-    fn is_scaffold(&self, c: Coords) -> bool {
+    fn is_scaffold(&self, c: Coords2D) -> bool {
         *self
             .scaffolds
             .get(c.y as usize)
@@ -123,76 +124,11 @@ impl Board {
     }
 
     fn left_is_scaffolding(&self) -> bool {
-        self.is_scaffold(self.robot_location + self.robot_direction.turn_left().diff())
+        self.is_scaffold(self.robot_location + self.robot_direction.rotate_left().diff())
     }
 
     fn right_is_scaffolding(&self) -> bool {
-        self.is_scaffold(self.robot_location + self.robot_direction.turn_right().diff())
-    }
-}
-
-#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-impl Direction {
-    fn turn_left(self) -> Direction {
-        match self {
-            Direction::Up => Direction::Left,
-            Direction::Down => Direction::Right,
-            Direction::Left => Direction::Down,
-            Direction::Right => Direction::Up,
-        }
-    }
-
-    fn turn_right(self) -> Direction {
-        match self {
-            Direction::Up => Direction::Right,
-            Direction::Down => Direction::Left,
-            Direction::Left => Direction::Up,
-            Direction::Right => Direction::Down,
-        }
-    }
-}
-
-impl Direction {
-    fn all() -> Vec<Direction> {
-        vec![
-            Direction::Up,
-            Direction::Down,
-            Direction::Left,
-            Direction::Right,
-        ]
-    }
-
-    fn diff(self) -> Coords {
-        match self {
-            Direction::Up => Coords { x: 0, y: -1 },
-            Direction::Down => Coords { x: 0, y: 1 },
-            Direction::Left => Coords { x: -1, y: 0 },
-            Direction::Right => Coords { x: 1, y: 0 },
-        }
-    }
-}
-
-#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
-struct Coords {
-    x: i32,
-    y: i32,
-}
-
-impl Add for Coords {
-    type Output = Coords;
-
-    fn add(self, rhs: Coords) -> Coords {
-        Coords {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-        }
+        self.is_scaffold(self.robot_location + self.robot_direction.rotate_right().diff())
     }
 }
 
@@ -314,7 +250,7 @@ fn simple_path(input_board: &Board) -> Route {
         } else if board.left_is_scaffolding() {
             steps.push(Step::L);
             steps.push(Step::F(1));
-            let new_direction = board.robot_direction.turn_left();
+            let new_direction = board.robot_direction.rotate_left();
             board = Board {
                 scaffolds: board.scaffolds,
                 robot_location: board.robot_location + new_direction.diff(),
@@ -323,11 +259,11 @@ fn simple_path(input_board: &Board) -> Route {
         } else if board.right_is_scaffolding() {
             steps.push(Step::R);
             steps.push(Step::F(1));
-            let new_direction = board.robot_direction.turn_right();
+            let new_direction = board.robot_direction.rotate_right();
             board = Board {
                 scaffolds: board.scaffolds,
                 robot_location: board.robot_location + new_direction.diff(),
-                robot_direction: board.robot_direction.turn_right(),
+                robot_direction: board.robot_direction.rotate_right(),
             }
         } else {
             break;

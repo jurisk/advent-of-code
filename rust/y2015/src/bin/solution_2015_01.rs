@@ -1,5 +1,4 @@
 use advent_of_code_common::parsing::Error;
-use advent_of_code_common::utils::head_tail;
 use itertools::FoldWhile::{Continue, Done};
 use itertools::Itertools;
 use num_enum::TryFromPrimitive;

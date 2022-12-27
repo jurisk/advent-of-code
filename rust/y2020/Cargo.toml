@@ -7,5 +7,6 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+advent-of-code-common = { path = "../common" }
 lazy_static.workspace = true
 regex.workspace = true

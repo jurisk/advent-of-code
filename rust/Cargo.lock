@@ -27,6 +27,7 @@ dependencies = [
 name = "advent-of-code-2019"
 version = "0.1.0"
 dependencies = [
+ "advent-of-code-common",
  "bimap",
  "bytecount",
  "itertools",
@@ -44,6 +45,7 @@ dependencies = [
 name = "advent-of-code-2020"
 version = "0.1.0"
 dependencies = [
+ "advent-of-code-common",
  "lazy_static",
  "regex",
 ]
@@ -79,6 +81,7 @@ version = "0.1.0"
 dependencies = [
  "itertools",
  "nonempty",
+ "num-derive",
  "num-traits",
  "pathfinding",
 ]

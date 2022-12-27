@@ -1,50 +1,14 @@
 use advent_of_code_2019::intcode::{Entry, Process};
+use advent_of_code_common::direction::Direction;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet, VecDeque};
 
-#[derive(Clone, Eq, PartialEq, Debug)]
-enum Direction {
-    North = 1,
-    South = 2,
-    West = 3,
-    East = 4,
-}
-
-impl Direction {
-    fn to_intcode(&self) -> Entry {
-        match self {
-            Direction::North => 1,
-            Direction::South => 2,
-            Direction::West => 3,
-            Direction::East => 4,
-        }
-    }
-
-    fn rotate_left(&self) -> Direction {
-        match self {
-            Direction::North => Direction::West,
-            Direction::South => Direction::East,
-            Direction::West => Direction::South,
-            Direction::East => Direction::North,
-        }
-    }
-
-    fn rotate_right(&self) -> Direction {
-        match self {
-            Direction::North => Direction::East,
-            Direction::South => Direction::West,
-            Direction::West => Direction::North,
-            Direction::East => Direction::South,
-        }
-    }
-
-    fn all() -> Vec<Direction> {
-        vec![
-            Direction::North,
-            Direction::South,
-            Direction::West,
-            Direction::East,
-        ]
+fn direction_to_intcode(direction: Direction) -> Entry {
+    match direction {
+        Direction::North => 1,
+        Direction::South => 2,
+        Direction::West => 3,
+        Direction::East => 4,
     }
 }
 
@@ -124,7 +88,7 @@ impl Robot {
     }
 
     fn pop_next_direction(&self) -> Direction {
-        self.current_direction.clone()
+        self.current_direction
     }
 
     fn map_as_string(&self) -> String {
@@ -235,7 +199,7 @@ fn find_tiles() -> HashMap<Coords, Tile> {
     let mut robot: Robot = Robot::new();
 
     while !robot.has_finished_exploring() {
-        process.provide_input(robot.pop_next_direction().to_intcode());
+        process.provide_input(direction_to_intcode(robot.pop_next_direction()));
         let halted = process.run_to_halt_or_output();
 
         if halted {
