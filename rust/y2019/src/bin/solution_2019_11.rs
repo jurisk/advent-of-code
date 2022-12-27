@@ -36,7 +36,11 @@ fn solve(starting_panel: Square) -> Board {
             break;
         } else {
             let colour_to_paint = Square::from_i128(program.next_output_unsafe()).unwrap();
-            let rotation_to_turn = Rotation::from_i128(program.next_output_unsafe()).unwrap();
+            let rotation_to_turn = match program.next_output_unsafe() {
+                0 => Rotation::Left90,
+                1 => Rotation::Right90,
+                x => panic!("Unexpected {x}"),
+            };
             board.insert(position, colour_to_paint);
             let new_facing = facing.rotate(rotation_to_turn);
             facing = new_facing;

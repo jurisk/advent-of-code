@@ -3,6 +3,6 @@ use num_derive::FromPrimitive;
 #[repr(u8)]
 #[derive(FromPrimitive, Debug)]
 pub enum Rotation {
-    Left90 = 0,
-    Right90 = 1,
+    Left90 = b'L',
+    Right90 = b'R',
 }

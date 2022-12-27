@@ -1,7 +1,8 @@
+use advent_of_code_common::coords3d::Coords3D;
+use advent_of_code_common::cuboid::Cuboid;
 use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
 use memoize::lazy_static::lazy_static;
 use regex::Regex;
-use std::cmp::{max, min};
 use std::str::FromStr;
 
 const DATA: &str = include_str!("../../resources/22.txt");
@@ -36,66 +37,21 @@ impl FromStr for Instruction {
     }
 }
 
-#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-struct Coords3D {
-    x: isize,
-    y: isize,
-    z: isize,
-}
-
-impl Coords3D {
-    fn new(x: isize, y: isize, z: isize) -> Coords3D {
-        Coords3D { x, y, z }
-    }
-}
-
-#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
-struct Cuboid {
-    min: Coords3D,
-    max: Coords3D,
-}
-
-fn task_1_bounds() -> Cuboid {
+fn task_1_bounds() -> Cuboid<isize> {
     Cuboid {
         min: Coords3D::new(-50, -50, -50),
         max: Coords3D::new(50, 50, 50),
     }
 }
 
-impl Cuboid {
-    fn valid_for_task_1(&self) -> bool {
-        self.overlap(&task_1_bounds()).is_some()
-    }
-
-    fn size(&self) -> isize {
-        (self.max.x - self.min.x + 1)
-            * (self.max.y - self.min.y + 1)
-            * (self.max.z - self.min.z + 1)
-    }
-
-    fn overlap(&self, other: &Cuboid) -> Option<Cuboid> {
-        let x1 = max(self.min.x, other.min.x);
-        let x2 = min(self.max.x, other.max.x);
-        let y1 = max(self.min.y, other.min.y);
-        let y2 = min(self.max.y, other.max.y);
-        let z1 = max(self.min.z, other.min.z);
-        let z2 = min(self.max.z, other.max.z);
-
-        if x1 <= x2 && y1 <= y2 && z1 <= z2 {
-            let min = Coords3D::new(x1, y1, z1);
-            let max = Coords3D::new(x2, y2, z2);
-
-            Some(Cuboid { min, max })
-        } else {
-            None
-        }
-    }
+fn valid_for_task_1(cuboid: &Cuboid<isize>) -> bool {
+    cuboid.overlap(&task_1_bounds()).is_some()
 }
 
 #[derive(Copy, Clone, Debug)]
 struct Step {
     instruction: Instruction,
-    cuboid: Cuboid,
+    cuboid: Cuboid<isize>,
 }
 
 impl Step {
@@ -208,7 +164,7 @@ impl Steps {
             steps: self
                 .steps
                 .iter()
-                .filter(|s| s.cuboid.valid_for_task_1())
+                .filter(|s| valid_for_task_1(&s.cuboid))
                 .copied()
                 .collect(),
         }
