@@ -1,3 +1,6 @@
+#![feature(step_trait)]
+
+pub mod area2d;
 pub mod coords2d;
 pub mod coords3d;
 pub mod cuboid;

@@ -1,15 +1,12 @@
 use advent_of_code_2019::intcode::{parse_machine_code, Entry, MachineCode, Process};
+use advent_of_code_common::coords2d::Coords2D;
 use std::collections::HashMap;
 use std::hash::Hash;
 
 const NAT_ADDRESS: Entry = 255;
 const COMPUTER_COUNT: ComputerIndex = 50;
 
-#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
-struct XYPair {
-    x: Entry,
-    y: Entry,
-}
+type XYPair = Coords2D<Entry>;
 
 struct MessageBuffers<K: Eq + Hash, V: Clone> {
     map: HashMap<K, Vec<V>>,

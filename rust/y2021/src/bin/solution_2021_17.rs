@@ -1,28 +1,7 @@
+use advent_of_code_common::coords2d::Coords2D;
 use std::cmp::{max, Ordering};
-use std::ops::Add;
 
-#[derive(Debug)]
-struct XY {
-    x: i32,
-    y: i32,
-}
-
-impl XY {
-    fn zero() -> XY {
-        XY { x: 0, y: 0 }
-    }
-}
-
-impl Add for &XY {
-    type Output = XY;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        XY {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-        }
-    }
-}
+type XY = Coords2D<i32>;
 
 struct Area {
     from: XY,
@@ -38,15 +17,15 @@ impl Area {
         probe.velocity.x == 0 && (probe.position.x > self.to.x || probe.position.x < self.from.x)
     }
 
-    fn hitting(&self, position: &XY) -> bool {
+    fn hitting(&self, position: XY) -> bool {
         self.hitting_x(position) && self.hitting_y(position)
     }
 
-    fn hitting_x(&self, position: &XY) -> bool {
+    fn hitting_x(&self, position: XY) -> bool {
         position.x >= self.from.x && position.x <= self.to.x
     }
 
-    fn hitting_y(&self, position: &XY) -> bool {
+    fn hitting_y(&self, position: XY) -> bool {
         position.y >= self.from.y && position.y <= self.to.y
     }
 }
@@ -65,14 +44,14 @@ struct Probe {
 impl Probe {
     fn new(start_velocity: XY) -> Probe {
         Probe {
-            position: XY::zero(),
+            position: XY::origin(),
             velocity: start_velocity,
         }
     }
 
     fn next_step(&self) -> Probe {
         Probe {
-            position: &self.position + &self.velocity,
+            position: self.position + self.velocity,
             velocity: XY {
                 x: match self.velocity.x.cmp(&0) {
                     Ordering::Less => self.velocity.x + 1,
@@ -87,7 +66,7 @@ impl Probe {
     fn will_hit_area(start_velocity: XY, area: &Area) -> bool {
         let mut current = Probe::new(start_velocity);
         while !area.hopeless_for_y(&current) {
-            if area.hitting(&current.position) {
+            if area.hitting(current.position) {
                 return true;
             }
 
@@ -103,7 +82,7 @@ impl Probe {
         });
 
         while !area.hopeless_for_x(&current) {
-            if area.hitting_x(&current.position) {
+            if area.hitting_x(current.position) {
                 return true;
             }
 
@@ -121,7 +100,7 @@ impl Probe {
         let mut max_y_seen = 0;
         while !area.hopeless_for_y(&current) {
             max_y_seen = max(max_y_seen, current.position.y);
-            if area.hitting_y(&current.position) {
+            if area.hitting_y(current.position) {
                 return Some(max_y_seen);
             }
 
