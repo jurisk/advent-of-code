@@ -87,13 +87,7 @@ fn solve_2(commands: &[Command]) -> u32 {
                 // The phrase turn on actually means that you should increase the brightness of those lights by 1.
                 Operation::TurnOn => old_value + 1,
                 // The phrase turn off actually means that you should decrease the brightness of those lights by 1, to a minimum of zero.
-                Operation::TurnOff => {
-                    if old_value == 0 {
-                        0
-                    } else {
-                        old_value - 1
-                    }
-                },
+                Operation::TurnOff => old_value.saturating_sub(1),
                 // The phrase toggle actually means that you should increase the brightness of those lights by 2.
                 Operation::Toggle => old_value + 2,
             };
