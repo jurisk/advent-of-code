@@ -9,26 +9,39 @@ fn parse(input: &str) -> Result<Vec<String>, Error> {
 
 fn unescape(input: &str) -> String {
     fn f(s: &[char]) -> Vec<char> {
+        let mut result: Vec<char> = Vec::new();
+
         let (h, t) = head_tail(s);
         match h {
-            None => vec![],
-            Some(&h) => match h {
-                '\\' => match t[0] {
-                    '\\' => vec![vec!['\\'], f(&t[1..])].concat(),
-                    '"' => vec![vec!['"'], f(&t[1..])].concat(),
-                    'x' => vec![
-                        vec![char::from_u32(
-                            u32::from_str_radix(&format!("{}{}", t[1], t[2]), 16).unwrap(),
-                        )
-                        .unwrap()],
-                        f(&t[3..]),
-                    ]
-                    .concat(),
-                    _ => panic!("Unexpected character after escape: {}", t[0]),
-                },
-                _ => vec![vec![h], f(&t[0..t.len()])].concat(),
+            None => {},
+            Some(&h) => {
+                let (ch, idx) = if h == '\\' {
+                    match t[0] {
+                        '\\' => ('\\', 1),
+                        '"' => ('"', 1),
+                        'x' => {
+                            let hex_string = format!("{}{}", t[1], t[2]);
+                            let code_point =
+                                u32::from_str_radix(&hex_string, 16).unwrap_or_else(|err| {
+                                    panic!("Invalid hexadecimal number {hex_string}: {err}")
+                                });
+                            let ch: char = char::from_u32(code_point).unwrap_or_else(|| {
+                                panic!("Invalid Unicode code point: {hex_string}")
+                            });
+                            (ch, 3)
+                        },
+                        _ => panic!("Unexpected character after escape: {}", t[0]),
+                    }
+                } else {
+                    (h, 0)
+                };
+
+                result.push(ch);
+                result.append(&mut f(&t[idx..])); // Not tail rec
             },
         }
+
+        result
     }
 
     assert!(input.starts_with('"'));

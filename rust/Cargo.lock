@@ -11,6 +11,7 @@ dependencies = [
  "md5",
  "nonempty",
  "num_enum",
+ "pathfinding",
  "recap",
  "regex",
  "serde",
