@@ -16,3 +16,4 @@ recap.workspace = true
 serde.workspace = true
 md5.workspace = true
 pathfinding.workspace = true
+serde_json.workspace = true
