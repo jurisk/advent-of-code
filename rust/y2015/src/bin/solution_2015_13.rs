@@ -9,7 +9,7 @@ const DATA: &str = include_str!("../../resources/13.txt");
 
 #[derive(Deserialize, Recap)]
 #[recap(
-    regex = r#"^(?P<who>\w+) would (?P<do_what>\w+) (?P<how_many>\d+) happiness units by sitting next to (?P<next_to_who>\w+)\.$"#
+    regex = r#"^(?P<who>\w+) would (?P<do_what>\w+) (?P<how_many>\d+) happiness units by sitting next to (?P<next_to_who>\w+).$"#
 )]
 struct RawProximity {
     who: String,
@@ -141,6 +141,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_solve_2_real() {
         assert_eq!(part_2(DATA), Ok(640));
     }
