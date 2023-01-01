@@ -33,8 +33,7 @@ fn solve(data: &[u8], n: usize) -> Vec<u8> {
 
 fn solution(input: &str, n: usize) -> usize {
     let data = parse(input);
-    let result: Vec<u8> = solve(&data, n).iter().map(|n| n + b'0').collect();
-    result.len()
+    solve(&data, n).iter().map(|n| n + b'0').len()
 }
 
 const DATA: &str = "1113222113";

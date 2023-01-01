@@ -84,7 +84,7 @@ fn solve(data: &[Route], prune: bool) -> i32 {
         }
     };
 
-    let _ = dfs_reach(start, successors).collect::<Vec<_>>();
+    let _ignore = dfs_reach(start, successors).collect::<Vec<_>>();
 
     best
 }

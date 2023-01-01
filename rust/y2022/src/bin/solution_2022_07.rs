@@ -82,7 +82,8 @@ impl Directory {
                 for output_line in output_lines {
                     match output_line {
                         OutputLine::Dir { name } => {
-                            let _ = new_directories.try_insert(name.clone(), Directory::empty());
+                            let _ignore =
+                                new_directories.try_insert(name.clone(), Directory::empty());
                         },
                         OutputLine::File { name, size } => {
                             new_files.insert(name.clone(), *size);
