@@ -3,8 +3,6 @@ use recap::Recap;
 use serde::Deserialize;
 use std::cmp::max;
 
-const DATA: &str = include_str!("../../resources/15.txt");
-
 #[derive(Debug, Deserialize, Recap)]
 #[recap(
     regex = r#"^\w+: capacity (?P<capacity>-?\d+), durability (?P<durability>-?\d+), flavor (?P<flavor>-?\d+), texture (?P<texture>-?\d+), calories (?P<calories>\d+)$"#
@@ -110,6 +108,8 @@ fn part_2(input: &str) -> Result<i32, Error> {
     let data = parse(input)?;
     Ok(solve_2(&data))
 }
+
+const DATA: &str = include_str!("../../resources/15.txt");
 
 fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA)?;

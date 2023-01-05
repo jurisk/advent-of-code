@@ -4,8 +4,6 @@ use recap::Recap;
 use serde::Deserialize;
 use std::collections::HashSet;
 
-const DATA: &str = include_str!("../../resources/09.txt");
-
 type Location = String;
 
 #[derive(Debug, Deserialize, Recap, Clone)]
@@ -107,6 +105,8 @@ fn part_2(input: &str) -> Result<i32, Error> {
     let data = parse(input)?;
     Ok(solve_2(&data))
 }
+
+const DATA: &str = include_str!("../../resources/09.txt");
 
 fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA)?;

@@ -3,8 +3,6 @@ use itertools::FoldWhile::{Continue, Done};
 use itertools::Itertools;
 use num_enum::TryFromPrimitive;
 
-const DATA: &str = include_str!("../../resources/01.txt");
-
 #[derive(Copy, Clone, TryFromPrimitive, Debug)]
 #[repr(u8)]
 enum Command {
@@ -64,6 +62,8 @@ fn part_1(input: &str) -> Result<Output1, Error> {
 fn part_2(input: &str) -> Result<Output2, Error> {
     parse(input).map(|input| solve_2(&input))
 }
+
+const DATA: &str = include_str!("../../resources/01.txt");
 
 fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA)?;

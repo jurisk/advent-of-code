@@ -4,8 +4,6 @@ use advent_of_code_common::parsing::Error;
 use itertools::Itertools;
 use std::collections::HashSet;
 
-const DATA: &str = include_str!("../../resources/03.txt");
-
 type Coords = Coords2D<i32>;
 type Data = Vec<Direction>;
 
@@ -55,6 +53,8 @@ fn part_1(input: &str) -> Result<Output1, Error> {
 fn part_2(input: &str) -> Result<Output2, Error> {
     parse(input).map(|input| solve_2(&input))
 }
+
+const DATA: &str = include_str!("../../resources/03.txt");
 
 fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA)?;

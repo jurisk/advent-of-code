@@ -12,7 +12,7 @@ pub type Error = String;
 ///
 /// Will return `Err` if input is `Err`.
 pub fn convert_error<T, E: Debug>(input: &str, result: Result<T, E>) -> Result<T, Error> {
-    result.map_err(|err| format!("Error parsing {input} {err:?}"))
+    result.map_err(|err| format!("Error parsing `{input}` {err:?}"))
 }
 
 /// # Errors
@@ -22,7 +22,7 @@ pub fn parse_str<T: FromStr>(input: &str) -> Result<T, Error>
 where
     <T as FromStr>::Err: Debug,
 {
-    str::parse::<T>(input).map_err(|err| format!("Error parsing {input}: {err:?}"))
+    str::parse::<T>(input).map_err(|err| format!("Error parsing `{input}`: {err:?}"))
 }
 
 /// # Errors

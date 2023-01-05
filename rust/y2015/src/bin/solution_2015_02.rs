@@ -3,8 +3,6 @@ use nonempty::{nonempty, NonEmpty};
 use recap::Recap;
 use serde::Deserialize;
 
-const DATA: &str = include_str!("../../resources/02.txt");
-
 #[derive(Debug, Deserialize, Recap)]
 #[recap(regex = r#"^(?P<l>\d+)x(?P<w>\d+)x(?P<h>\d+)$"#)]
 struct Box {
@@ -53,6 +51,8 @@ fn part_2(input: &str) -> Result<u32, Error> {
     let data = parse(input)?;
     Ok(solve_2(&data))
 }
+
+const DATA: &str = include_str!("../../resources/02.txt");
 
 fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA)?;

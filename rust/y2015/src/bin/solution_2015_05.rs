@@ -1,8 +1,6 @@
 use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
 use itertools::Itertools;
 
-const DATA: &str = include_str!("../../resources/05.txt");
-
 fn parse(input: &str) -> Result<Vec<String>, Error> {
     parse_lines_to_vec(input)
 }
@@ -53,6 +51,8 @@ fn part_2(input: &str) -> Result<usize, Error> {
     let data = parse(input)?;
     Ok(solve_2(&data))
 }
+
+const DATA: &str = include_str!("../../resources/05.txt");
 
 fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA)?;

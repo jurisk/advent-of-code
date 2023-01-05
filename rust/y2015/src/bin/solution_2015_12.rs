@@ -2,8 +2,6 @@ use advent_of_code_common::parsing::Error;
 use itertools::Itertools;
 use serde_json::{from_str, Value};
 
-const DATA: &str = include_str!("../../resources/12.txt");
-
 fn parse(input: &str) -> Result<Value, Error> {
     from_str(input).map_err(|err| format!("Failed to parse JSON: {err}"))
 }
@@ -57,6 +55,8 @@ fn part_1(input: &str) -> Result<i64, Error> {
 fn part_2(input: &str) -> Result<i64, Error> {
     parse(input).map(|input| solve_2(&input))
 }
+
+const DATA: &str = include_str!("../../resources/12.txt");
 
 fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA)?;

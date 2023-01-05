@@ -5,8 +5,6 @@ use recap::Recap;
 use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 
-const DATA: &str = include_str!("../../resources/06.txt");
-
 #[derive(Debug, Deserialize, Copy, Clone)]
 enum Operation {
     #[serde(rename = "turn on")]
@@ -108,6 +106,8 @@ fn part_2(input: &str) -> Result<u32, Error> {
     let data = parse(input)?;
     Ok(solve_2(&data))
 }
+
+const DATA: &str = include_str!("../../resources/06.txt");
 
 fn main() -> Result<(), Error> {
     // NB - alternative solutions exist which may be more efficient, e.g. go through each pixel

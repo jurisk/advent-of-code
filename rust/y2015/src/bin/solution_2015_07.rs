@@ -8,8 +8,6 @@ use advent_of_code_common::parsing::{
 use std::collections::HashMap;
 use std::str::FromStr;
 
-const DATA: &str = include_str!("../../resources/07.txt");
-
 #[derive(Clone, Debug)]
 enum WireOrLiteral {
     Wire(String),
@@ -124,6 +122,8 @@ fn part_1(input: &str, wire: &str) -> Result<u16, Error> {
 fn part_2(input: &str) -> Result<u16, Error> {
     parse(input).map(|input| solve_2(&input))
 }
+
+const DATA: &str = include_str!("../../resources/07.txt");
 
 fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA, "a")?;

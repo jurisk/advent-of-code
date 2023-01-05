@@ -5,8 +5,6 @@ use serde::Deserialize;
 use std::collections::HashSet;
 use std::str::FromStr;
 
-const DATA: &str = include_str!("../../resources/13.txt");
-
 #[derive(Deserialize, Recap)]
 #[recap(
     regex = r#"^(?P<who>\w+) would (?P<do_what>\w+) (?P<how_many>\d+) happiness units by sitting next to (?P<next_to_who>\w+).$"#
@@ -113,6 +111,8 @@ fn part_2(input: &str) -> Result<i32, Error> {
     let data = parse(input)?;
     Ok(solve_2(&data))
 }
+
+const DATA: &str = include_str!("../../resources/13.txt");
 
 fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA)?;

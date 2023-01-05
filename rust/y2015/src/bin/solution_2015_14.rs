@@ -3,8 +3,6 @@ use recap::Recap;
 use serde::Deserialize;
 use std::cmp::min;
 
-const DATA: &str = include_str!("../../resources/14.txt");
-
 #[derive(Debug, Deserialize, Recap)]
 #[recap(
     regex = r#"^\w+ can fly (?P<speed>\d+) km/s for (?P<fly_for_how_long>\d+) seconds, but then must rest for (?P<rest_for_how_long>\d+) seconds.$"#
@@ -65,6 +63,8 @@ fn part_2(input: &str) -> Result<u32, Error> {
     let data = parse(input)?;
     Ok(solve_2(&data))
 }
+
+const DATA: &str = include_str!("../../resources/14.txt");
 
 fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA)?;
