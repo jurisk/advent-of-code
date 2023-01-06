@@ -147,3 +147,5 @@
 | 2015-14  | [Reindeer Olympics](https://adventofcode.com/2015/day/14)                     |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_14.rs) |                                                   |
 | 2015-15  | [Science for Hungry People](https://adventofcode.com/2015/day/15)             |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_15.rs) |                                                   |
 | 2015-16  | [Aunt Sue](https://adventofcode.com/2015/day/16)                              |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_16.rs) |                                                   |
+| 2015-17  | [No Such Thing as Too Much](https://adventofcode.com/2015/day/17)             |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_17.rs) |                                                   |
+ 
