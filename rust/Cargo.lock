@@ -9,6 +9,7 @@ dependencies = [
  "advent-of-code-common",
  "itertools",
  "md5",
+ "memoize",
  "nonempty",
  "num_enum",
  "pathfinding",
