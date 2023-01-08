@@ -1,11 +1,12 @@
 use pathfinding::matrix::Matrix;
 
 pub trait IsCorner {
-    fn is_corner(&self, r: usize, c: usize) -> bool;
+    fn is_corner(&self, coords: (usize, usize)) -> bool;
 }
 
 impl<T> IsCorner for Matrix<T> {
-    fn is_corner(&self, r: usize, c: usize) -> bool {
+    fn is_corner(&self, coords: (usize, usize)) -> bool {
+        let (r, c) = coords;
         (r == 0 || r == self.rows - 1) && (c == 0 || c == self.columns - 1)
     }
 }

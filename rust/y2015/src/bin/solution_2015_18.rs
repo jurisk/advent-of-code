@@ -13,34 +13,34 @@ fn parse(input: &str) -> Result<Data, Error> {
     })
 }
 
-fn next_value_1(data: &Data, r: usize, c: usize) -> bool {
+fn next_value_1(data: &Data, coords: (usize, usize)) -> bool {
     let neighbours_on: u8 = data
-        .neighbours((r, c), true)
-        .map(|(dr, dc)| u8::from(data[(dr, dc)]))
+        .neighbours(coords, true)
+        .map(|neighbour_coords| u8::from(data[neighbour_coords]))
         .sum();
-    if data[(r, c)] {
+    if data[coords] {
         neighbours_on == 2 || neighbours_on == 3
     } else {
         neighbours_on == 3
     }
 }
 
-fn next_value_2(data: &Data, r: usize, c: usize) -> bool {
-    if data.is_corner(r, c) {
+fn next_value_2(data: &Data, coords: (usize, usize)) -> bool {
+    if data.is_corner(coords) {
         true
     } else {
         let neighbours_on: u8 = data
-            .neighbours((r, c), true)
-            .map(|(dr, dc)| {
-                let neighbour = if data.is_corner(dr, dc) {
+            .neighbours(coords, true)
+            .map(|neighbour_coords| {
+                let neighbour = if data.is_corner(neighbour_coords) {
                     true
                 } else {
-                    data[(dr, dc)]
+                    data[neighbour_coords]
                 };
                 u8::from(neighbour)
             })
             .sum();
-        if data[(r, c)] {
+        if data[coords] {
             neighbours_on == 2 || neighbours_on == 3
         } else {
             neighbours_on == 3
@@ -50,11 +50,11 @@ fn next_value_2(data: &Data, r: usize, c: usize) -> bool {
 
 fn solution<F>(input: &str, steps: usize, next_value: F) -> Result<usize, Error>
 where
-    F: Fn(&Data, usize, usize) -> bool,
+    F: Fn(&Data, (usize, usize)) -> bool,
 {
     let data = parse(input)?;
     let resulting = n_steps(&data, steps, |current| {
-        current.map_by_coords(|(r, c)| next_value(current, r, c))
+        current.map_by_coords(|coords| next_value(current, coords))
     });
 
     let result = resulting.values().filter(|&&b| b).count();
