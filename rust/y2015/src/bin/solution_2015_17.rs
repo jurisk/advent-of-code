@@ -74,14 +74,14 @@ fn solve_1(data: Vec<u16>, target: u16) -> usize {
 #[memoize]
 #[allow(clippy::needless_pass_by_value)]
 fn solve_2_int(data: Vec<u16>, target: u16, bottles_remaining: u16) -> usize {
-    if target == 0 && bottles_remaining == 0 {
-        1
+    if bottles_remaining == 0 {
+        usize::from(target == 0)
     } else {
         let (h, t) = head_tail(&data);
         match h {
             None => 0,
             Some(&h) => {
-                let using_h = if target < h || bottles_remaining == 0 {
+                let using_h = if target < h {
                     0
                 } else {
                     solve_2_int(t.to_vec(), target - h, bottles_remaining - 1)
