@@ -42,6 +42,20 @@ where
 /// # Errors
 ///
 /// Will return `Err` if parsing fails.
+pub fn parse_lines_to_vec_passing_parser<T, F>(input: &str, parser: F) -> Result<Vec<T>, Error>
+where
+    F: Fn(&str) -> Result<T, Error>,
+{
+    input
+        .lines()
+        .filter(|x| !x.is_empty())
+        .map(|x| parser(x.trim()))
+        .collect()
+}
+
+/// # Errors
+///
+/// Will return `Err` if parsing fails.
 pub fn parse_lines_to_hashset<T: FromStr + Eq + Hash>(input: &str) -> Result<HashSet<T>, Error>
 where
     T::Err: Debug,
