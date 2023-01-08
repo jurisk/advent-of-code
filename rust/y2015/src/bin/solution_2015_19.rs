@@ -1,32 +1,77 @@
 use advent_of_code_common::parsing::{
-    normalize_newlines, parse_lines_to_vec_passing_parser, split_into_two_strings, Error,
+    normalize_newlines, parse_lines_to_vec_passing_parser, parse_str, split_into_two_strings, Error,
 };
 use pathfinding::prelude::{bfs, dfs};
 use std::collections::HashSet;
+use std::string::ToString;
+use strum::{Display, EnumIter, EnumString, IntoEnumIterator};
 
-type Data = (Vec<(String, String)>, String);
+#[derive(Eq, PartialEq, Hash, Copy, Clone, EnumIter, EnumString, Display, Debug)]
+#[allow(non_camel_case_types)]
+enum Element {
+    Al,
+    B,
+    Ca,
+    F,
+    H,
+    Mg,
+    N,
+    O,
+    P,
+    Si,
+    Th,
+    Ti,
+    e,
+    Rn,
+    Ar,
+    Y,
+    C,
+}
+
+type Molecule = Vec<Element>;
+type Replacements = Vec<(Element, Molecule)>;
+type Data = (Replacements, Molecule);
+
+fn parse_molecule(input: &str) -> Result<Molecule, Error> {
+    if input.is_empty() {
+        Ok(Molecule::new())
+    } else {
+        for element in Element::iter() {
+            if let Some(remaining) = input.strip_prefix(&element.to_string()) {
+                let tail = parse_molecule(remaining)?;
+                return Ok(vec![vec![element], tail].concat());
+            }
+        }
+
+        Err(format!("Nothing matched for {input}"))
+    }
+}
 
 fn parse(input: &str) -> Result<Data, Error> {
-    let (a, medicine) = split_into_two_strings(&normalize_newlines(input), "\n\n")?;
-    let replacements =
-        parse_lines_to_vec_passing_parser(&a, |x| split_into_two_strings(x, " => "))?;
+    let (replacements_str, medicine_str) =
+        split_into_two_strings(&normalize_newlines(input), "\n\n")?;
+    let replacements = parse_lines_to_vec_passing_parser(&replacements_str, |x| {
+        let (a, b) = split_into_two_strings(x, " => ")?;
+        let element: Element = parse_str(&a)?;
+        let molecule = parse_molecule(&b)?;
+        Ok((element, molecule))
+    })?;
+    let medicine = parse_molecule(&medicine_str)?;
     Ok((replacements, medicine))
 }
 
-fn successors(replacements: &[(String, String)], state: &str) -> Vec<String> {
-    let set: HashSet<String> = replacements
+fn successors(replacements: &Replacements, state: &Molecule) -> Vec<Molecule> {
+    let set: HashSet<Molecule> = replacements
         .iter()
         .flat_map(|(k, v)| {
-            state
-                .match_indices(k)
-                .map(|(idx, s)| {
-                    let mut result: String = String::new();
-                    result.push_str(&state[0..idx]);
-                    result.push_str(v);
-                    result.push_str(&state[idx + s.len()..]);
-                    result
-                })
-                .collect::<HashSet<_>>()
+            let mut options: HashSet<Molecule> = HashSet::new();
+            for (idx, element) in state.iter().enumerate() {
+                if k == element {
+                    let option = vec![&state[0..idx], v.as_slice(), &state[idx + 1..]].concat();
+                    options.insert(option);
+                }
+            }
+            options
         })
         .collect();
 
@@ -42,34 +87,32 @@ fn solve_1(data: &Data) -> usize {
 fn solve_2(data: &Data) -> usize {
     let (replacements, target) = data;
 
-    // Constraint to ensure our short-circuit is reasonable
-    assert!(replacements.iter().all(|(a, b)| a.len() <= b.len()));
-
-    // let result_dfs = dfs(
-    //     "e".to_string(),
-    //     |state| {
-    //         if state.len() > target.len() {
-    //             vec![]
-    //         } else {
-    //             successors(replacements, &state)
-    //         }
-    //     },
-    //     |state| state == target,
-    // )
-    // .unwrap_or_else(|| panic!("Not found!"));
-
-    let result = bfs(
-        &"e".to_string(),
+    let result = dfs(
+        vec![Element::e],
         |state| {
             if state.len() > target.len() {
                 vec![]
             } else {
+                // println!("{state:?}");
                 successors(replacements, state)
             }
         },
         |state| state == target,
     )
     .unwrap_or_else(|| panic!("Not found!"));
+
+    // let result = bfs(
+    //     &vec![Element::e],
+    //     |state| {
+    //         if state.len() > target.len() {
+    //             vec![]
+    //         } else {
+    //             successors(replacements, state)
+    //         }
+    //     },
+    //     |state| state == target,
+    // )
+    // .unwrap_or_else(|| panic!("Not found!"));
 
     result.len() - 1
 }

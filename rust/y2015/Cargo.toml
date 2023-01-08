@@ -18,3 +18,4 @@ md5.workspace = true
 pathfinding.workspace = true
 serde_json.workspace = true
 memoize.workspace = true
+strum.workspace = true
