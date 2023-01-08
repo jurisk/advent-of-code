@@ -1,7 +1,8 @@
 use advent_of_code_common::parsing::{
     normalize_newlines, parse_lines_to_vec_passing_parser, parse_str, split_into_two_strings, Error,
 };
-use pathfinding::prelude::{bfs, dfs};
+use pathfinding::prelude::astar;
+use std::cmp::max;
 use std::collections::HashSet;
 use std::string::ToString;
 use strum::{Display, EnumIter, EnumString, IntoEnumIterator};
@@ -87,34 +88,52 @@ fn solve_1(data: &Data) -> usize {
 fn solve_2(data: &Data) -> usize {
     let (replacements, target) = data;
 
-    let result = dfs(
-        vec![Element::e],
+    let non_terminal: HashSet<Element> = replacements.iter().map(|(a, _)| a).copied().collect();
+    let terminal: HashSet<Element> = Element::iter()
+        .filter(|x| !non_terminal.contains(x))
+        .collect();
+
+    let count_terminal =
+        |w: &Molecule| -> usize { w.iter().filter(|x| terminal.contains(x)).count() };
+
+    let expected_terminal = count_terminal(target);
+
+    println!("Target length: {}", target.len());
+    println!("Terminal elements: {}: {terminal:?}", terminal.len());
+
+    let mut best_seen: usize = 0;
+
+    let (_path, cost) = astar(
+        &vec![Element::e],
         |state| {
-            if state.len() > target.len() {
+            if state.len() > target.len() || count_terminal(state) > expected_terminal {
                 vec![]
             } else {
-                // println!("{state:?}");
                 successors(replacements, state)
+                    .into_iter()
+                    .map(|x| (x, 1))
+                    .collect()
             }
+        },
+        |state| {
+            let correct = state
+                .iter()
+                .zip(target.iter())
+                .take_while(|(a, b)| a == b)
+                .count();
+
+            if correct > best_seen {
+                println!("{correct} {state:?}");
+                best_seen = correct;
+            }
+
+            max(target.len(), state.len()) - correct
         },
         |state| state == target,
     )
-    .unwrap_or_else(|| panic!("Not found!"));
+    .unwrap();
 
-    // let result = bfs(
-    //     &vec![Element::e],
-    //     |state| {
-    //         if state.len() > target.len() {
-    //             vec![]
-    //         } else {
-    //             successors(replacements, state)
-    //         }
-    //     },
-    //     |state| state == target,
-    // )
-    // .unwrap_or_else(|| panic!("Not found!"));
-
-    result.len() - 1
+    cost
 }
 
 fn part_1(input: &str) -> Result<usize, Error> {
@@ -167,7 +186,8 @@ HOHOHO";
     }
 
     #[test]
+    #[ignore] // Works quickly in enough in production builds
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA), Ok(123456));
+        assert_eq!(part_2(DATA), Ok(212));
     }
 }
