@@ -374,20 +374,14 @@ impl<const N: usize> State<N> {
     }
 
     fn successors(&self) -> Vec<(State<N>, Cost)> {
-        // println!("{self}");
-
         let paths_from_hallway_squares: Vec<(State<N>, Cost)> = HallwaySquare::all()
             .iter()
-            .map(|hallway_square| self.hallway_helper(*hallway_square))
-            .into_iter()
-            .flatten()
+            .filter_map(|hallway_square| self.hallway_helper(*hallway_square))
             .collect();
 
         let paths_from_rooms: Vec<(State<N>, Cost)> = Amphipod::all()
             .iter()
-            .map(|room| self.room_helper(*room))
-            .into_iter()
-            .flatten()
+            .flat_map(|room| self.room_helper(*room))
             .collect();
 
         vec![paths_from_hallway_squares, paths_from_rooms].concat()

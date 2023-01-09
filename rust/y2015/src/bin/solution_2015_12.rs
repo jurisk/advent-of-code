@@ -32,7 +32,6 @@ fn solve(data: &Value, ignore_objects_with_property: &Option<String>) -> i64 {
             } else {
                 object
                     .values()
-                    .into_iter()
                     .map(|v| solve(v, ignore_objects_with_property))
                     .sum()
             }
