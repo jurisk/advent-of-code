@@ -151,4 +151,4 @@
 | 2015-18  | [Like a GIF For Your Yard](https://adventofcode.com/2015/day/18)              |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_18.rs) |                                                   |
 | 2015-19  | [Medicine for Rudolph](https://adventofcode.com/2015/day/19)                  |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_19.rs) |                                                   |
 | 2015-20  | [Infinite Elves and Infinite Houses](https://adventofcode.com/2015/day/20)    |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_20.rs) |                                                   |
- 
+| 2015-21  | [RPG Simulator 20XX](https://adventofcode.com/2015/day/21)                    |                                                                         | [Rust](rust/y2015/src/bin/solution_2015_21.rs) |                                                   |
