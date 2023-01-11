@@ -2,19 +2,21 @@ use itertools::Itertools;
 
 type N = u64;
 
+#[allow(clippy::redundant_else)]
 fn solve(data: &[N], group_count: N) -> N {
-    let sum: N = data.into_iter().sum();
+    let sum: N = data.iter().sum();
     assert_eq!(sum % group_count, 0);
 
     let sum_of_each_group = sum / group_count;
 
     let mut n: usize = 1;
+    let max_n: usize = usize::try_from(data.len() as u64 / group_count).unwrap();
 
-    while n <= data.len() / group_count as usize {
+    while n <= max_n {
         if let Some(found) = data
-            .into_iter()
+            .iter()
             .combinations(n)
-            .filter(|x| x.into_iter().copied().sum::<u64>() == sum_of_each_group)
+            .filter(|x| x.iter().copied().sum::<u64>() == sum_of_each_group)
             // We are assuming that the remaining groups can be divided equally into
             // (group_count - 1) groups.
             // This assumption is not proven, but the tests pass, so this check was not added.
