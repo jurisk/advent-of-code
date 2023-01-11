@@ -17,3 +17,37 @@ pub fn factors(n: u32) -> Vec<u32> {
 
     results
 }
+
+// https://en.wikipedia.org/wiki/Modular_exponentiation#Pseudocode
+#[must_use]
+pub fn mod_pow(mut base: u64, mut exponent: u64, modulus: u64) -> u64 {
+    if modulus == 1 {
+        return 0;
+    }
+    let mut result = 1;
+    base %= modulus;
+    while exponent > 0 {
+        if exponent % 2 == 1 {
+            result = result * base % modulus;
+        }
+        exponent >>= 1;
+        base = base * base % modulus;
+    }
+    result
+}
+
+#[must_use]
+pub fn sum_of_standard_arithmetic_progression(n: u64) -> u64 {
+    sum_of_arithmetic_progression(1, 1, n)
+}
+
+#[must_use]
+// https://en.wikipedia.org/wiki/Arithmetic_progression#Sum
+pub fn sum_of_arithmetic_progression(a1: u64, d: u64, n: u64) -> u64 {
+    if n == 0 {
+        0
+    } else {
+        let an = a1 + (n - 1) * d;
+        (n * (a1 + an)) / 2
+    }
+}
