@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use std::cmp::max;
 use std::ops::Add;
 
 #[derive(Clone, Copy)]
@@ -131,13 +132,8 @@ fn wins(player: &Stats, boss: &Stats) -> bool {
     let mut player_hit_points = player.hit_points;
     let mut boss_hit_points = boss.hit_points;
 
-    let player_effective_damage = player.damage.saturating_sub(boss.armour);
-    let boss_effective_damage = boss.damage.saturating_sub(player.armour);
-
-    assert!(
-        !(player_effective_damage == 0 && boss_effective_damage == 0),
-        "The round will never end"
-    );
+    let player_effective_damage = max(player.damage.saturating_sub(boss.armour), 1);
+    let boss_effective_damage = max(boss.damage.saturating_sub(player.armour), 1);
 
     loop {
         boss_hit_points = boss_hit_points.saturating_sub(player_effective_damage);
