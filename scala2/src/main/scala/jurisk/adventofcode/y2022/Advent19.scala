@@ -1,12 +1,14 @@
 package jurisk.adventofcode.y2022
 
+import cats.effect.kernel.Clock
+import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits._
 import jurisk.algorithms.pathfinding.Dfs
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import org.scalatest.matchers.should.Matchers._
+import cats.effect.std.Console
 
-object Advent19 {
+object Advent19 extends IOApp {
   type Parsed = List[Blueprint]
 
   final case class State(
@@ -126,7 +128,9 @@ object Advent19 {
       def visit(state: State): Unit =
         if (state.openGeodes > bestSeen) {
           bestSeen = state.openGeodes
-          println(s"Found better than before $bestSeen, state is $state")
+          println(
+            s"${Thread.currentThread().getName}: Found better than before $bestSeen, state is $state"
+          )
         }
 
       def successors(state: State): List[State] = {
@@ -187,70 +191,64 @@ object Advent19 {
   def parse(data: String): Parsed =
     data.parseList("\n", Blueprint.parse)
 
-  def part1(data: Parsed): Int = {
-    println(s"Blueprint count: ${data.length}")
-    data.map { blueprint =>
-      println(s"Calculating for:")
-      println(blueprint)
-      val ql = blueprint.id * blueprint.geodesCanOpen(Part1Minutes)
-      println(s"Quality level: $ql")
-      println()
-      ql
-    }.sum
-  }
+  def part1(data: Parsed): IO[Int] = for {
+    _       <- Console[IO].println(s"Blueprint count: ${data.length}")
+    results <- data.parTraverse { blueprint =>
+                 for {
+                   _  <-
+                     Console[IO].println(
+                       s"${Thread.currentThread().getName}: Calculating for:\n$blueprint"
+                     )
+                   ql <- IO {
+                           blueprint.id * blueprint.geodesCanOpen(Part1Minutes)
+                         }
+                   _  <-
+                     Console[IO].println(
+                       s"${Thread.currentThread().getName}: Quality level: $ql\n"
+                     )
+                 } yield ql
+               }
+  } yield results.sum
 
-  def part2(data: Parsed): Int = {
+  def part2(data: Parsed): IO[Int] = {
     require(data.length == 3)
-    data.map { blueprint =>
-      println(s"Calculating for:")
-      println(blueprint)
-      val result = blueprint.geodesCanOpen(Part2Minutes)
-      println(s"Can open $result")
-      println()
-      result
-    }.product
+
+    for {
+      results <- data.parTraverse { blueprint =>
+                   for {
+                     _      <-
+                       Console[IO].println(
+                         s"${Thread.currentThread().getName}: Calculating for:\n$blueprint"
+                       )
+                     result <- IO(blueprint.geodesCanOpen(Part2Minutes))
+                     _      <-
+                       Console[IO].println(
+                         s"${Thread.currentThread().getName}: Can open $result\n"
+                       )
+                   } yield result
+                 }
+    } yield results.product
   }
 
-  private val Part1Minutes = 24
-  private val Part2Minutes = 32
+  val Part1Minutes = 24
+  val Part2Minutes = 32
 
-  def main(args: Array[String]): Unit = {
-    val testData = readFileText("2022/19-test.txt")
-    val realData = readFileText("2022/19.txt")
+  private def read(fileName: String): IO[Parsed] = for {
+    data <- IO(readFileText(fileName))
+  } yield parse(data)
 
-    val test = parse(testData)
-    val real = parse(realData)
+  def realData: IO[Parsed] = read("2022/19.txt")
+  def testData: IO[Parsed] = read("2022/19-test.txt")
 
-    val test1 = test.head
-    State.Start shouldEqual State(oreRobots = 1)
-    val m1    = State(minutesPassed = 1, oreRobots = 1, ore = 1)
-    State.Start.successors(test1) shouldEqual m1 :: Nil
-    val m2    = State(minutesPassed = 2, oreRobots = 1, ore = 2)
-    m1.successors(test1) shouldEqual m2 :: Nil
-
-    val m3 = State(minutesPassed = 3, oreRobots = 1, clayRobots = 1, ore = 1)
-    m2.successors(test1) should contain(m3)
-
-    val m4 =
-      State(minutesPassed = 4, oreRobots = 1, clayRobots = 1, ore = 2, clay = 1)
-    m3.successors(test1) should contain(m4)
-
-    val m5 =
-      State(minutesPassed = 5, oreRobots = 1, clayRobots = 2, ore = 1, clay = 2)
-    m4.successors(test1) should contain(m5)
-
-    test1.geodesCanOpen(Part1Minutes) shouldEqual 9
-
-    val test2 = test(1)
-    test2.geodesCanOpen(Part1Minutes) shouldEqual 12
-
-    part1(test) shouldEqual 33
-
-    part1(real) shouldEqual 1624
-
-    test1.geodesCanOpen(Part2Minutes) shouldEqual 56
-    test2.geodesCanOpen(Part2Minutes) shouldEqual 62
-
-    part2(real.take(3)) shouldEqual 12628
-  }
+  override def run(args: List[String]): IO[ExitCode] = for {
+    start   <- Clock[IO].monotonic
+    real    <- realData
+    result1 <- part1(real)
+    _       <- Console[IO].println(s"Part 1: $result1")
+    result2 <- part2(real.take(3))
+    _       <- Console[IO].println(s"Part 2: $result2")
+    end     <- Clock[IO].monotonic
+    delta    = end - start
+    _       <- Console[IO].println(s"Elapsed seconds: ${delta.toSeconds}")
+  } yield ExitCode.Success
 }
