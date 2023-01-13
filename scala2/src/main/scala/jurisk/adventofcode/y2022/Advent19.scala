@@ -128,9 +128,7 @@ object Advent19 extends IOApp {
       def visit(state: State): Unit =
         if (state.openGeodes > bestSeen) {
           bestSeen = state.openGeodes
-          println(
-            s"${Thread.currentThread().getName}: Found better than before $bestSeen, state is $state"
-          )
+//        println(s"${Thread.currentThread().getName}: Found better than before $bestSeen, state is $state")
         }
 
       def successors(state: State): List[State] = {

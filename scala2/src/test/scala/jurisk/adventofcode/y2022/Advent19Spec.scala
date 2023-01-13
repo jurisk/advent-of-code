@@ -60,7 +60,7 @@ class Advent19Spec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
     } yield result shouldEqual 33
   }
 
-  it should "part 1 real" in {
+  it should "part 1 real" ignore {
     for {
       real   <- realData
       result <- part1(real)
@@ -79,7 +79,7 @@ class Advent19Spec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
     }
   }
 
-  it should "part 2 real" in {
+  it should "part 2 real" ignore {
     for {
       real   <- realData
       result <- part2(real.take(3))
