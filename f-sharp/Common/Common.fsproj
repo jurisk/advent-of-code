@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- <OutputType>Library</OutputType> -->
+    <TargetFramework>net7.0</TargetFramework>
+    <RootNamespace>Common</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="IO.fs" />
+  </ItemGroup>
+
+</Project>

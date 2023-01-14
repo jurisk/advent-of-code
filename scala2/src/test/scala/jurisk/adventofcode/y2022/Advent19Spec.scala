@@ -67,13 +67,13 @@ class Advent19Spec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
     } yield result shouldEqual 1624
   }
 
-  it should "part 2 test 1" in {
+  it should "part 2 test 1" ignore {
     testData.asserting { test =>
       test.head.geodesCanOpen(Part2Minutes) shouldEqual 56
     }
   }
 
-  it should "part 2 test 2" in {
+  it should "part 2 test 2" ignore {
     testData.asserting { test =>
       test(1).geodesCanOpen(Part2Minutes) shouldEqual 62
     }

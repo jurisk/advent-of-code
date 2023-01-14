@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <!-- <RootNamespace>advent_of_code_2016</RootNamespace> -->
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Day01.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.fsproj" />
+  </ItemGroup>
+</Project>
