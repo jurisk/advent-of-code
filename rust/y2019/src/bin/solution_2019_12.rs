@@ -1,6 +1,6 @@
+use num_integer::lcm;
 use num_traits::signum;
 use std::ops::Add;
-use num_integer::lcm;
 
 type Number = i64;
 

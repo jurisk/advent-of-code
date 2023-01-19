@@ -51,3 +51,17 @@ pub fn sum_of_arithmetic_progression(a1: u64, d: u64, n: u64) -> u64 {
         (n * (a1 + an)) / 2
     }
 }
+
+#[must_use]
+pub fn gcd(a: i64, b: i64) -> i64 {
+    if b == 0 {
+        a
+    } else {
+        gcd(b, a % b)
+    }
+}
+
+#[must_use]
+pub fn lcm(a: i64, b: i64) -> i64 {
+    a.abs() * b.abs() / gcd(a, b)
+}
