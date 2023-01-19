@@ -1,5 +1,6 @@
 use num_traits::signum;
 use std::ops::Add;
+use num_integer::lcm;
 
 type Number = i64;
 
@@ -126,18 +127,6 @@ fn loop_size(data: &[Vector3D], extract_coordinate: fn(&Vector3D) -> Number) -> 
     }
 
     unreachable!()
-}
-
-fn gcd(a: Number, b: Number) -> Number {
-    if b == 0 {
-        a
-    } else {
-        gcd(b, a % b)
-    }
-}
-
-fn lcm(a: Number, b: Number) -> Number {
-    a * b / gcd(a, b)
 }
 
 fn lcm3(a: Number, b: Number, c: Number) -> Number {
