@@ -1,4 +1,4 @@
-import «AdventOfCode»
+import «Common»
 
 def parseLine (line: String): List Nat :=
   List.map parseNatUnsafe (line.splitOn "\t")
