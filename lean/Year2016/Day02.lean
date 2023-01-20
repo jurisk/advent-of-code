@@ -2,7 +2,6 @@ import «Common»
 
 structure Directions where
   directions: List Direction
-deriving Inhabited
 
 def parseLine (line: String): Directions :=
   let directions := List.map Direction.parseUnsafeURDL line.toList

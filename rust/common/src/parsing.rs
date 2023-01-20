@@ -141,6 +141,20 @@ where
 /// # Errors
 ///
 /// Will return `Err` if parsing fails.
+pub fn parse_ascii_whitespace_separated_vec<T: FromStr>(input: &str) -> Result<Vec<T>, Error>
+where
+    T::Err: Debug,
+{
+    input
+        .trim()
+        .split_ascii_whitespace()
+        .map(|x| parse_str(x.trim()))
+        .collect()
+}
+
+/// # Errors
+///
+/// Will return `Err` if parsing fails.
 pub fn parse_separated_nonempty<T: FromStr>(
     input: &str,
     separator: &str,

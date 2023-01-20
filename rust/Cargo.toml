@@ -1,12 +1,12 @@
 [workspace]
-members = ["common", "y2015", "y2018", "y2019", "y2020", "y2021", "y2022"]
+members = ["common", "y2015", "y2016", "y2018", "y2019", "y2020", "y2021", "y2022"]
 
 [workspace.package]
 version = "0.1.0"
 authors = ["jurisk <jurisk@users.noreply.github.com>"]
 license = "UNLICENSED"
 edition = "2021"
-rust-version = "1.66.0"
+rust-version = "1.66.1"
 
 [workspace.dependencies]
 nonempty = "0.8"
@@ -17,8 +17,8 @@ num-derive = "0.3"
 num_enum = "0.5"
 num-integer = "0.1"
 num-bigint = "0.4"
-nalgebra = "0.31"
-memoize = "0.3"
+nalgebra = "0.32"
+memoize = "0.4"
 nom = "7.1"
 regex = "1.7"
 rand = "0.8"
