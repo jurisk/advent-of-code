@@ -75,15 +75,15 @@ impl FromStr for Step {
             .unwrap();
         }
 
-        let qq = RE.captures(input).unwrap();
+        let c = RE.captures(input).unwrap();
         let groups = (
-            qq.get(1),
-            qq.get(2),
-            qq.get(3),
-            qq.get(4),
-            qq.get(5),
-            qq.get(6),
-            qq.get(7),
+            c.get(1),
+            c.get(2),
+            c.get(3),
+            c.get(4),
+            c.get(5),
+            c.get(6),
+            c.get(7),
         );
 
         match groups {

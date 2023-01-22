@@ -9,3 +9,5 @@ rust-version.workspace = true
 [dependencies]
 advent-of-code-common = { path = "../common" }
 itertools.workspace = true
+regex.workspace = true
+memoize.workspace = true
