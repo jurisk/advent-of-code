@@ -78,6 +78,30 @@ impl<T: Copy + One + Add<Output = T> + Sub<Output = T>> Coords2D<T> {
             },
         ]
     }
+
+    #[must_use]
+    pub fn adjacent8(self) -> Vec<Coords2D<T>> {
+        let diagonals = vec![
+            Coords2D {
+                x: self.x + T::one(),
+                y: self.y + T::one(),
+            },
+            Coords2D {
+                x: self.x - T::one(),
+                y: self.y - T::one(),
+            },
+            Coords2D {
+                x: self.x + T::one(),
+                y: self.y - T::one(),
+            },
+            Coords2D {
+                x: self.x - T::one(),
+                y: self.y + T::one(),
+            },
+        ];
+
+        vec![self.adjacent4(), diagonals].concat()
+    }
 }
 
 impl<T> Coords2D<T>
@@ -86,6 +110,10 @@ where
 {
     pub fn manhattan_distance(self: Coords2D<T>, other: Coords2D<T>) -> T {
         (self.x - other.x).abs() + (self.y - other.y).abs()
+    }
+
+    pub fn manhattan_distance_to_origin(self: Coords2D<T>) -> T {
+        self.x.abs() + self.y.abs()
     }
 }
 

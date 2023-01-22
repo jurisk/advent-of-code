@@ -1,5 +1,5 @@
 [workspace]
-members = ["common", "y2015", "y2016", "y2018", "y2019", "y2020", "y2021", "y2022"]
+members = ["common", "y2015", "y2016", "y2017", "y2018", "y2019", "y2020", "y2021", "y2022"]
 
 [workspace.package]
 version = "0.1.0"
@@ -30,3 +30,4 @@ serde_json = "1.0"
 bytecount = "0.6"
 md5 = "0"
 strum = { version = "0.24", features = ["derive"] }
+integer-sqrt = "0"
