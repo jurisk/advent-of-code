@@ -8,7 +8,6 @@ version = "0.1.0"
 dependencies = [
  "advent-of-code-common",
  "itertools",
- "md5",
  "memoize",
  "nonempty",
  "num_enum",
@@ -104,6 +103,7 @@ name = "advent-of-code-common"
 version = "0.1.0"
 dependencies = [
  "itertools",
+ "md5",
  "nonempty",
  "num-derive",
  "num-traits",

@@ -1,7 +1,4 @@
-fn md5_for_string(input: &str) -> String {
-    let digest = md5::compute(input);
-    format!("{digest:x}")
-}
+use advent_of_code_common::cryptography::md5_for_string;
 
 fn solve<F>(secret_key: &str, p: F) -> Option<u32>
 where
