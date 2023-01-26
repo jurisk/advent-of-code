@@ -1,3 +1,4 @@
+use advent_of_code_common::utils::transpose;
 use itertools::Itertools;
 
 fn parse(input: &str) -> Vec<Vec<char>> {
@@ -33,17 +34,9 @@ fn binary_mult(a: &[char], b: &[char]) -> usize {
     to_binary(a) * to_binary(b)
 }
 
-fn nth_from_all(lines: &[Vec<char>], idx: usize) -> Vec<char> {
-    lines.iter().map(|line| line[idx]).collect()
-}
-
 fn part_1(input: &str) -> usize {
     let lines = parse(input);
-    let number_of_digits = lines[0].len();
-
-    let transposed: Vec<Vec<char>> = (0..number_of_digits)
-        .map(|idx| nth_from_all(&lines, idx))
-        .collect();
+    let transposed: Vec<Vec<char>> = transpose(&lines);
 
     let gamma_rate: Vec<char> = transposed.iter().map(|x| most_common(x)).collect();
     let epsilon_rate: Vec<char> = transposed.iter().map(|x| least_common(x)).collect();
@@ -52,11 +45,13 @@ fn part_1(input: &str) -> usize {
 }
 
 fn solve_2(numbers: &[Vec<char>], idx: usize, f: fn(&[char]) -> char) -> Vec<char> {
+    let transposed: Vec<Vec<char>> = transpose(numbers);
+
     if numbers.len() == 1 {
         numbers[0].clone()
     } else {
-        let appropriate_chars = nth_from_all(numbers, idx);
-        let needed = f(&appropriate_chars);
+        let appropriate_chars = &transposed[idx];
+        let needed = f(appropriate_chars);
         let valid: Vec<_> = numbers
             .iter()
             .filter(|s| s[idx] == needed)
