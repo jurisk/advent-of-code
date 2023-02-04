@@ -15,7 +15,7 @@ where
 }
 
 #[must_use]
-pub fn until_state_repeats2<F, T: Clone + Eq + Hash>(start: &T, next: F) -> (usize, T)
+pub fn until_state_repeats<F, T: Clone + Eq + Hash>(start: &T, next: F) -> (usize, T)
 where
     F: Fn(&T) -> T,
 {
