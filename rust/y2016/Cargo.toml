@@ -11,3 +11,4 @@ advent-of-code-common = { path = "../common" }
 itertools.workspace = true
 regex.workspace = true
 memoize.workspace = true
+nom.workspace = true

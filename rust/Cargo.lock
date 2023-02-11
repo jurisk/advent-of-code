@@ -26,6 +26,7 @@ dependencies = [
  "advent-of-code-common",
  "itertools",
  "memoize",
+ "nom",
  "regex",
 ]
 

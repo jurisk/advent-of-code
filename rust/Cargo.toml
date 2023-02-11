@@ -6,7 +6,7 @@ version = "0.1.0"
 authors = ["jurisk <jurisk@users.noreply.github.com>"]
 license = "UNLICENSED"
 edition = "2021"
-rust-version = "1.67.0"
+rust-version = "1.67.1"
 
 [workspace.dependencies]
 nonempty = "0.8"
