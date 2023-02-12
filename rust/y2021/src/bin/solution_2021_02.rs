@@ -6,30 +6,36 @@ enum Command {
 
 struct Location {
     position: i32,
-    depth: i32,
+    depth:    i32,
 }
 
 impl Location {
     fn zero() -> Location {
         Location {
             position: 0,
-            depth: 0,
+            depth:    0,
         }
     }
 
     fn apply(&self, command: &Command) -> Location {
         match command {
-            Command::Up(x) => Location {
-                depth: self.depth - x,
-                ..*self
+            Command::Up(x) => {
+                Location {
+                    depth: self.depth - x,
+                    ..*self
+                }
             },
-            Command::Down(x) => Location {
-                depth: self.depth + x,
-                ..*self
+            Command::Down(x) => {
+                Location {
+                    depth: self.depth + x,
+                    ..*self
+                }
             },
-            Command::Forward(x) => Location {
-                position: self.position + x,
-                ..*self
+            Command::Forward(x) => {
+                Location {
+                    position: self.position + x,
+                    ..*self
+                }
             },
         }
     }
@@ -37,33 +43,39 @@ impl Location {
 
 struct LocationWithAim {
     position: i32,
-    depth: i32,
-    aim: i32,
+    depth:    i32,
+    aim:      i32,
 }
 
 impl LocationWithAim {
     fn zero() -> LocationWithAim {
         LocationWithAim {
             position: 0,
-            depth: 0,
-            aim: 0,
+            depth:    0,
+            aim:      0,
         }
     }
 
     fn apply(&self, command: &Command) -> LocationWithAim {
         match command {
-            Command::Up(x) => LocationWithAim {
-                aim: self.aim - x,
-                ..*self
+            Command::Up(x) => {
+                LocationWithAim {
+                    aim: self.aim - x,
+                    ..*self
+                }
             },
-            Command::Down(x) => LocationWithAim {
-                aim: self.aim + x,
-                ..*self
+            Command::Down(x) => {
+                LocationWithAim {
+                    aim: self.aim + x,
+                    ..*self
+                }
             },
-            Command::Forward(x) => LocationWithAim {
-                position: self.position + x,
-                depth: self.depth + self.aim * x,
-                ..*self
+            Command::Forward(x) => {
+                LocationWithAim {
+                    position: self.position + x,
+                    depth: self.depth + self.aim * x,
+                    ..*self
+                }
             },
         }
     }

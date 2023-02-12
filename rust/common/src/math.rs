@@ -4,7 +4,7 @@ pub fn factors(n: u32) -> Vec<u32> {
     let upper_bound = f64::from(n).sqrt().floor() as u32;
     let mut results: Vec<_> = Vec::new();
 
-    for i in 1..=upper_bound {
+    for i in 1 ..= upper_bound {
         let divides = n % i;
         let b = n / i;
         if divides == 0 {
@@ -54,11 +54,7 @@ pub fn sum_of_arithmetic_progression(a1: u64, d: u64, n: u64) -> u64 {
 
 #[must_use]
 pub fn gcd(a: i64, b: i64) -> i64 {
-    if b == 0 {
-        a
-    } else {
-        gcd(b, a % b)
-    }
+    if b == 0 { a } else { gcd(b, a % b) }
 }
 
 #[must_use]

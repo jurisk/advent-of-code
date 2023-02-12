@@ -6,7 +6,7 @@ use num_enum::TryFromPrimitive;
 #[derive(Copy, Clone, TryFromPrimitive, Debug)]
 #[repr(u8)]
 enum Command {
-    Up = b'(',
+    Up   = b'(',
     Down = b')',
 }
 

@@ -1,26 +1,27 @@
 #![feature(slice_group_by)]
 
+use std::cmp::min;
+use std::collections::HashMap;
+use std::fmt;
+use std::fmt::Formatter;
+
 use advent_of_code_2019::intcode::{parse_machine_code, Process};
 use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::direction::Direction;
 use itertools::Itertools;
 use num_enum::TryFromPrimitive;
-use std::cmp::min;
-use std::collections::HashMap;
-use std::fmt;
-use std::fmt::Formatter;
 
 type Coords = Coords2D<i32>;
 
 #[repr(u8)]
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy, TryFromPrimitive)]
 enum MapSquare {
-    Empty = b'.',
-    Scaffold = b'#',
-    RobotPointingUp = b'^',
+    Empty              = b'.',
+    Scaffold           = b'#',
+    RobotPointingUp    = b'^',
     RobotPointingRight = b'>',
-    RobotPointingLeft = b'<',
-    RobotPointingDown = b'v',
+    RobotPointingLeft  = b'<',
+    RobotPointingDown  = b'v',
 }
 
 impl MapSquare {
@@ -38,9 +39,9 @@ impl MapSquare {
 }
 
 fn find_robot(map_squares: &Vec<Vec<MapSquare>>) -> Coords {
-    let robots: Vec<Coords> = (0..map_squares.len())
+    let robots: Vec<Coords> = (0 .. map_squares.len())
         .flat_map(|y| {
-            (0..map_squares[y].len()).filter_map(move |x| {
+            (0 .. map_squares[y].len()).filter_map(move |x| {
                 let sq = map_squares[y][x];
                 if sq.is_robot() {
                     Some(Coords2D {
@@ -60,8 +61,8 @@ fn find_robot(map_squares: &Vec<Vec<MapSquare>>) -> Coords {
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
 struct Board {
-    scaffolds: Vec<Vec<bool>>,
-    robot_location: Coords,
+    scaffolds:       Vec<Vec<bool>>,
+    robot_location:  Coords,
     robot_direction: Direction,
 }
 
@@ -97,12 +98,14 @@ impl Board {
     }
 
     fn all_coordinates(&self) -> Vec<Coords> {
-        (0..self.scaffolds.len())
+        (0 .. self.scaffolds.len())
             .flat_map(|y| {
-                (0..self.scaffolds[y].len())
-                    .map(|x| Coords2D {
-                        x: i32::try_from(x).unwrap(),
-                        y: i32::try_from(y).unwrap(),
+                (0 .. self.scaffolds[y].len())
+                    .map(|x| {
+                        Coords2D {
+                            x: i32::try_from(x).unwrap(),
+                            y: i32::try_from(y).unwrap(),
+                        }
                     })
                     .collect::<Vec<Coords>>()
             })
@@ -247,8 +250,8 @@ fn simple_path(input_board: &Board) -> Route {
         if board.pointing_at_scaffolding() {
             steps.push(Step::F(1));
             board = Board {
-                scaffolds: board.scaffolds,
-                robot_location: board.robot_location + board.robot_direction.diff(),
+                scaffolds:       board.scaffolds,
+                robot_location:  board.robot_location + board.robot_direction.diff(),
                 robot_direction: board.robot_direction,
             }
         } else if board.left_is_scaffolding() {
@@ -256,8 +259,8 @@ fn simple_path(input_board: &Board) -> Route {
             steps.push(Step::F(1));
             let new_direction = board.robot_direction.rotate_left();
             board = Board {
-                scaffolds: board.scaffolds,
-                robot_location: board.robot_location + new_direction.diff(),
+                scaffolds:       board.scaffolds,
+                robot_location:  board.robot_location + new_direction.diff(),
                 robot_direction: new_direction,
             }
         } else if board.right_is_scaffolding() {
@@ -265,8 +268,8 @@ fn simple_path(input_board: &Board) -> Route {
             steps.push(Step::F(1));
             let new_direction = board.robot_direction.rotate_right();
             board = Board {
-                scaffolds: board.scaffolds,
-                robot_location: board.robot_location + new_direction.diff(),
+                scaffolds:       board.scaffolds,
+                robot_location:  board.robot_location + new_direction.diff(),
                 robot_direction: board.robot_direction.rotate_right(),
             }
         } else {
@@ -281,14 +284,14 @@ type SubroutineName = char;
 
 #[derive(PartialEq, Eq, Debug, Clone)]
 struct WithSubroutines {
-    main: Vec<SubroutineName>,
+    main:        Vec<SubroutineName>,
     subroutines: HashMap<SubroutineName, Route>,
 }
 
 impl WithSubroutines {
     fn empty() -> WithSubroutines {
         WithSubroutines {
-            main: vec![],
+            main:        vec![],
             subroutines: HashMap::new(),
         }
     }
@@ -298,7 +301,9 @@ impl WithSubroutines {
         subroutine_names_remaining: &[SubroutineName],
         acc: WithSubroutines,
     ) -> Option<WithSubroutines> {
-        // println!("steps_to_allocate: {}\nsubroutine_names_remaining: {:?}\nacc: {:?}\n\n", Route { steps: Vec::from(steps_to_allocate) } , subroutine_names_remaining, acc);
+        // println!("steps_to_allocate: {}\nsubroutine_names_remaining: {:?}\nacc:
+        // {:?}\n\n", Route { steps: Vec::from(steps_to_allocate) } ,
+        // subroutine_names_remaining, acc);
 
         if steps_to_allocate.is_empty() {
             return Some(acc);
@@ -307,10 +312,10 @@ impl WithSubroutines {
         for (k, v) in &acc.subroutines {
             if steps_to_allocate.starts_with(&v.steps) {
                 return WithSubroutines::extract_subroutines(
-                    &steps_to_allocate[v.steps.len()..],
+                    &steps_to_allocate[v.steps.len() ..],
                     subroutine_names_remaining,
                     WithSubroutines {
-                        main: vec![acc.main, vec![*k]].concat(),
+                        main:        vec![acc.main, vec![*k]].concat(),
                         subroutines: acc.subroutines,
                     },
                 );
@@ -325,8 +330,8 @@ impl WithSubroutines {
             steps_to_allocate.len(),
             20 - subroutine_names_remaining.len() + 1,
         );
-        for n in 3..max_n {
-            let candidate = &steps_to_allocate[0..n];
+        for n in 3 .. max_n {
+            let candidate = &steps_to_allocate[0 .. n];
             let this_name = subroutine_names_remaining[0];
             let mut new_subroutines = acc.subroutines.clone();
             new_subroutines.insert(
@@ -336,10 +341,10 @@ impl WithSubroutines {
                 },
             );
             let result = WithSubroutines::extract_subroutines(
-                &steps_to_allocate[n..],
-                &subroutine_names_remaining[1..],
+                &steps_to_allocate[n ..],
+                &subroutine_names_remaining[1 ..],
                 WithSubroutines {
-                    main: [acc.main.clone(), vec![this_name]].concat(),
+                    main:        [acc.main.clone(), vec![this_name]].concat(),
                     subroutines: new_subroutines,
                 },
             );
@@ -436,7 +441,8 @@ mod tests {
 
         let obtained = WithSubroutines::prepare_for_input(&with_subroutines, &subroutine_names);
 
-        // The test assumes a particular implementation, because multiple valid solutions can exist
+        // The test assumes a particular implementation, because multiple valid
+        // solutions can exist
         assert_eq!(obtained, with_subroutines_expected);
     }
 

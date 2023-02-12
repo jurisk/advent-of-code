@@ -1,9 +1,10 @@
 extern crate core;
 
-use advent_of_code_common::coords2d::Coords2D;
-use pathfinding::prelude::{bfs, dijkstra};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
+
+use advent_of_code_common::coords2d::Coords2D;
+use pathfinding::prelude::{bfs, dijkstra};
 
 const DATA: &str = include_str!("../../resources/18.txt");
 
@@ -61,12 +62,12 @@ impl DoorKeyPairSet {
 
 #[derive(PartialEq, Eq, Debug, Clone, Hash)]
 struct State {
-    positions: Vec<Coords>,
+    positions:     Vec<Coords>,
     keys_obtained: DoorKeyPairSet,
 }
 
 struct Maze {
-    field: Vec<Vec<Square>>,
+    field:     Vec<Vec<Square>>,
     entrances: Vec<Coords>,
 }
 
@@ -89,10 +90,10 @@ impl Maze {
             .map(|r| r.iter().map(|ch| Square::create(*ch)).collect())
             .collect();
 
-        let entrances: Vec<Coords> = (0..chars.len())
+        let entrances: Vec<Coords> = (0 .. chars.len())
             .flat_map(|y| {
                 let r = &chars[y];
-                (0..r.len()).filter_map(move |x| {
+                (0 .. r.len()).filter_map(move |x| {
                     if r[x] == '@' {
                         Some(Coords::new(
                             i32::try_from(x).unwrap(),
@@ -141,12 +142,14 @@ impl Maze {
     }
 
     fn all_coords(&self) -> Vec<Coords> {
-        (0..self.field.len())
+        (0 .. self.field.len())
             .flat_map(|y| {
                 let r = &self.field[y];
-                (0..r.len()).map(move |x| Coords {
-                    x: i32::try_from(x).unwrap(),
-                    y: i32::try_from(y).unwrap(),
+                (0 .. r.len()).map(move |x| {
+                    Coords {
+                        x: i32::try_from(x).unwrap(),
+                        y: i32::try_from(y).unwrap(),
+                    }
                 })
             })
             .collect()
@@ -155,9 +158,9 @@ impl Maze {
 
 struct Graph {
     entrances: Vec<Coords>,
-    vertices: HashMap<Coords, Square>,
+    vertices:  HashMap<Coords, Square>,
     distances: HashMap<(Coords, Coords), usize>,
-    all_keys: DoorKeyPairSet,
+    all_keys:  DoorKeyPairSet,
 }
 
 impl Graph {
@@ -168,9 +171,11 @@ impl Graph {
             .field
             .iter()
             .flat_map(|r| {
-                r.iter().filter_map(|sq| match sq {
-                    Square::Key(ch) => Some(*ch),
-                    _ => None,
+                r.iter().filter_map(|sq| {
+                    match sq {
+                        Square::Key(ch) => Some(*ch),
+                        _ => None,
+                    }
                 })
             })
             .collect();
@@ -184,10 +189,12 @@ impl Graph {
             .all_coords()
             .iter()
             .map(|c| (c, maze.at(*c)))
-            .filter(|(c, sq)| match sq {
-                Square::Wall => false,
-                Square::Empty => entrances.contains(c),
-                Square::Key(_) | Square::Door(_) => true,
+            .filter(|(c, sq)| {
+                match sq {
+                    Square::Wall => false,
+                    Square::Empty => entrances.contains(c),
+                    Square::Key(_) | Square::Door(_) => true,
+                }
             })
             .map(|(c, sq)| (*c, sq))
             .collect();
@@ -221,7 +228,7 @@ impl Graph {
 
     fn start_state(&self) -> State {
         State {
-            positions: self.entrances.clone(),
+            positions:     self.entrances.clone(),
             keys_obtained: DoorKeyPairSet::new(),
         }
     }
@@ -261,7 +268,7 @@ impl Graph {
     }
 
     fn successors(&self, state: &State) -> Vec<(State, usize)> {
-        (0..state.positions.len())
+        (0 .. state.positions.len())
             .flat_map(|position_idx| self.successors_from_position(state, position_idx))
             .collect()
     }
@@ -285,9 +292,9 @@ fn solve(data: &str) -> Option<usize> {
 
 fn hack_line(data: &str, what: &str, idx_at: usize) -> String {
     let mut result: String = String::new();
-    result.push_str(&data[0..idx_at]);
+    result.push_str(&data[0 .. idx_at]);
     result.push_str(what);
-    result.push_str(&data[(idx_at + what.len())..]);
+    result.push_str(&data[(idx_at + what.len()) ..]);
     result
 }
 

@@ -1,5 +1,6 @@
-use itertools::Itertools;
 use std::ops::RangeInclusive;
+
+use itertools::Itertools;
 
 type Number = u32;
 
@@ -43,7 +44,7 @@ fn main() {
     assert!(!is_valid_1(223_450));
     assert!(!is_valid_1(123_789));
 
-    let range: RangeInclusive<Number> = 387_638..=919_123;
+    let range: RangeInclusive<Number> = 387_638 ..= 919_123;
     let part_1 = range.clone().filter(|x| is_valid_1(*x)).count();
     assert_eq!(part_1, 466);
     println!("Part 1: {part_1}");

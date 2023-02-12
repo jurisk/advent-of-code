@@ -1,9 +1,10 @@
+use std::collections::{HashMap, HashSet};
+
 use advent_of_code_common::area2d::Area2D;
 use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
 use recap::Recap;
 use serde::Deserialize;
-use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Deserialize, Copy, Clone)]
 enum Operation {
@@ -24,10 +25,10 @@ type Area = Area2D<u16>;
 )]
 struct Command {
     operation: Operation,
-    from_x: u16,
-    from_y: u16,
-    to_x: u16,
-    to_y: u16,
+    from_x:    u16,
+    from_y:    u16,
+    to_x:      u16,
+    to_y:      u16,
 }
 
 impl Command {
@@ -82,11 +83,14 @@ fn solve_2(commands: &[Command]) -> u32 {
         for point in command.area().points() {
             let old_value = *lights.get(&point).unwrap_or(&0);
             let new_value = match command.operation {
-                // The phrase turn on actually means that you should increase the brightness of those lights by 1.
+                // The phrase turn on actually means that you should increase the brightness of
+                // those lights by 1.
                 Operation::TurnOn => old_value + 1,
-                // The phrase turn off actually means that you should decrease the brightness of those lights by 1, to a minimum of zero.
+                // The phrase turn off actually means that you should decrease the brightness of
+                // those lights by 1, to a minimum of zero.
                 Operation::TurnOff => old_value.saturating_sub(1),
-                // The phrase toggle actually means that you should increase the brightness of those lights by 2.
+                // The phrase toggle actually means that you should increase the brightness of those
+                // lights by 2.
                 Operation::Toggle => old_value + 2,
             };
 
@@ -110,8 +114,9 @@ fn part_2(input: &str) -> Result<u32, Error> {
 const DATA: &str = include_str!("../../resources/06.txt");
 
 fn main() -> Result<(), Error> {
-    // NB - alternative solutions exist which may be more efficient, e.g. go through each pixel
-    // and go through each command for it - this would avoid allocating N x N memory.
+    // NB - alternative solutions exist which may be more efficient, e.g. go through
+    // each pixel and go through each command for it - this would avoid
+    // allocating N x N memory.
 
     let result_1 = part_1(DATA)?;
     println!("Part 1: {result_1}");

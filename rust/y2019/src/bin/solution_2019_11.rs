@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use advent_of_code_2019::intcode::Process;
 use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::direction::Direction;
@@ -7,7 +9,6 @@ use num_derive::FromPrimitive;
 use num_derive::ToPrimitive;
 use num_traits::FromPrimitive;
 use num_traits::ToPrimitive;
-use std::collections::HashMap;
 
 #[repr(u8)]
 #[derive(ToPrimitive, FromPrimitive, Debug)]
@@ -60,9 +61,9 @@ fn board_as_string(board: &Board) -> String {
     let min_y = *y_s.iter().min().unwrap();
     let max_x = *x_s.iter().max().unwrap();
     let max_y = *y_s.iter().max().unwrap();
-    (min_y..=max_y)
+    (min_y ..= max_y)
         .map(|y| {
-            (min_x..=max_x)
+            (min_x ..= max_x)
                 .map(|x| {
                     let square = board.get(&Coords::new(x, y)).unwrap_or(&Square::Black);
                     match square {

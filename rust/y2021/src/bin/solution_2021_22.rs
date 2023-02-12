@@ -1,9 +1,10 @@
+use std::str::FromStr;
+
 use advent_of_code_common::coords3d::Coords3D;
 use advent_of_code_common::cuboid::Cuboid;
 use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
 use memoize::lazy_static::lazy_static;
 use regex::Regex;
-use std::str::FromStr;
 
 const DATA: &str = include_str!("../../resources/22.txt");
 
@@ -11,7 +12,7 @@ const DATA: &str = include_str!("../../resources/22.txt");
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum Instruction {
     Off = 0,
-    On = 1,
+    On  = 1,
 }
 
 impl Instruction {
@@ -51,7 +52,7 @@ fn valid_for_task_1(cuboid: &Cuboid<isize>) -> bool {
 #[derive(Copy, Clone, Debug)]
 struct Step {
     instruction: Instruction,
-    cuboid: Cuboid<isize>,
+    cuboid:      Cuboid<isize>,
 }
 
 impl Step {
@@ -140,7 +141,7 @@ impl Cuboids {
             if let Some(overlap) = existing.cuboid.overlap(&step.cuboid) {
                 more.push(Step {
                     instruction: existing.instruction.reverse(),
-                    cuboid: overlap,
+                    cuboid:      overlap,
                 });
             }
         }
@@ -245,7 +246,12 @@ mod tests {
 
     #[test]
     fn test_solve_1_test_2() {
-        assert_eq!(solve_1("on x=10..12,y=10..12,z=10..12\non x=11..13,y=11..13,z=11..13\noff x=9..11,y=9..11,z=9..11"), Ok(38));
+        assert_eq!(
+            solve_1(
+                "on x=10..12,y=10..12,z=10..12\non x=11..13,y=11..13,z=11..13\noff x=9..11,y=9..11,z=9..11"
+            ),
+            Ok(38)
+        );
     }
 
     #[test]

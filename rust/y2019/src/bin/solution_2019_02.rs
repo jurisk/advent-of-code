@@ -22,8 +22,8 @@ fn main() {
 
     let expected_output = 19_690_720;
 
-    for noun in 0..=99 {
-        for verb in 0..=99 {
+    for noun in 0 ..= 99 {
+        for verb in 0 ..= 99 {
             let output = run_with_modifications(&program, noun, verb);
             if output == expected_output {
                 let answer = 100 * noun + verb;

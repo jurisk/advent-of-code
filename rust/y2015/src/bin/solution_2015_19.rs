@@ -1,10 +1,11 @@
+use std::cmp::max;
+use std::collections::HashSet;
+use std::string::ToString;
+
 use advent_of_code_common::parsing::{
     normalize_newlines, parse_lines_to_vec_passing_parser, parse_str, split_into_two_strings, Error,
 };
 use pathfinding::prelude::astar;
-use std::cmp::max;
-use std::collections::HashSet;
-use std::string::ToString;
 use strum::{Display, EnumIter, EnumString, IntoEnumIterator};
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone, EnumIter, EnumString, Display, Debug)]
@@ -68,7 +69,7 @@ fn successors(replacements: &Replacements, state: &Molecule) -> Vec<Molecule> {
             let mut options: HashSet<Molecule> = HashSet::new();
             for (idx, element) in state.iter().enumerate() {
                 if k == element {
-                    let option = vec![&state[0..idx], v.as_slice(), &state[idx + 1..]].concat();
+                    let option = vec![&state[0 .. idx], v.as_slice(), &state[idx + 1 ..]].concat();
                     options.insert(option);
                 }
             }

@@ -1,11 +1,12 @@
+use std::collections::HashMap;
+use std::str::FromStr;
+
 use advent_of_code_common::parsing::{
     parse_lines_to_hashmap, parse_string_to_nonempty,
     split_into_two_segments_separated_by_double_newline, Error,
 };
 use advent_of_code_common::utils::additive_hashmap_from_vec;
 use nonempty::NonEmpty;
-use std::collections::HashMap;
-use std::str::FromStr;
 
 const DATA: &str = include_str!("../../resources/14.txt");
 
@@ -44,13 +45,13 @@ impl FromStr for SearchPattern {
 
 struct Data {
     starting_polymer: Polymer,
-    templates: HashMap<SearchPattern, Element>,
+    templates:        HashMap<SearchPattern, Element>,
 }
 
 impl Data {
     fn starting_polymer_as_frequency_map(&self) -> HashMap<SearchPattern, usize> {
         let mut result = HashMap::new();
-        for idx in 0..self.starting_polymer.len() - 1 {
+        for idx in 0 .. self.starting_polymer.len() - 1 {
             let a = self.starting_polymer[idx];
             let b = self.starting_polymer[idx + 1];
             let k = SearchPattern { a, b };
@@ -85,7 +86,7 @@ impl Data {
 
     fn element_occurrences_after_n_steps(&self, steps: usize) -> HashMap<Element, usize> {
         let mut frequencies = self.starting_polymer_as_frequency_map();
-        for _ in 0..steps {
+        for _ in 0 .. steps {
             frequencies = self.next_iteration(&frequencies);
         }
 

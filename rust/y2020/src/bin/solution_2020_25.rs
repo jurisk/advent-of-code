@@ -16,7 +16,7 @@ fn determine_loop_size(subject_number: u64, target: u64) -> u64 {
 
 fn do_loops(number: u64, loops: u64) -> u64 {
     let mut current = number;
-    for _ in 1..loops {
+    for _ in 1 .. loops {
         current = transform(current, number);
     }
     current

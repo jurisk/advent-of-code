@@ -1,5 +1,7 @@
 #![feature(map_try_insert)]
 
+use std::collections::HashMap;
+
 use advent_of_code_common::parsing::{normalize_newlines, Error};
 use advent_of_code_common::utils::head_tail;
 use nom::branch::alt;
@@ -10,7 +12,6 @@ use nom::error::ErrorKind;
 use nom::multi::{many0, many1};
 use nom::sequence::{pair, preceded, terminated};
 use nom::{AsChar, IResult, InputTakeAtPosition};
-use std::collections::HashMap;
 
 const DATA: &str = include_str!("../../resources/07.txt");
 
@@ -20,7 +21,7 @@ type N = u32;
 #[derive(Debug)]
 struct CommandWithOutput {
     command: Command,
-    output: Vec<OutputLine>,
+    output:  Vec<OutputLine>,
 }
 
 #[derive(Debug)]
@@ -40,14 +41,14 @@ enum OutputLine {
 #[derive(Debug, Clone)]
 struct Directory {
     directories: HashMap<String, Directory>,
-    files: HashMap<String, N>,
+    files:       HashMap<String, N>,
 }
 
 impl Directory {
     fn empty() -> Directory {
         Directory {
             directories: HashMap::new(),
-            files: HashMap::new(),
+            files:       HashMap::new(),
         }
     }
 
@@ -102,7 +103,7 @@ impl Directory {
 
         Directory {
             directories: new_directories,
-            files: new_files,
+            files:       new_files,
         }
     }
 
@@ -112,19 +113,25 @@ impl Directory {
         command_with_output: &CommandWithOutput,
     ) -> (Directory, Vec<String>) {
         match &command_with_output.command {
-            Command::CdDir(dir) => (
-                self.clone(),
-                vec![working_directory, vec![dir.clone()]].concat(), // append 1 to the end
-            ),
-            Command::CdUp => (
-                self.clone(),
-                working_directory[0..working_directory.len() - 1].to_vec(), // .init
-            ),
+            Command::CdDir(dir) => {
+                (
+                    self.clone(),
+                    vec![working_directory, vec![dir.clone()]].concat(), // append 1 to the end
+                )
+            },
+            Command::CdUp => {
+                (
+                    self.clone(),
+                    working_directory[0 .. working_directory.len() - 1].to_vec(), // .init
+                )
+            },
             Command::CdRoot => (self.clone(), Vec::new()),
-            Command::Ls => (
-                self.add_output_lines(&working_directory, &command_with_output.output),
-                working_directory.clone(),
-            ),
+            Command::Ls => {
+                (
+                    self.add_output_lines(&working_directory, &command_with_output.output),
+                    working_directory.clone(),
+                )
+            },
         }
     }
 }
@@ -164,8 +171,10 @@ fn parse(input: &str) -> Result<Data, Error> {
     }
 
     fn dir(input: &str) -> IResult<&str, OutputLine> {
-        map(preceded(tag("dir "), name), |s| OutputLine::Dir {
-            name: s.to_string(),
+        map(preceded(tag("dir "), name), |s| {
+            OutputLine::Dir {
+                name: s.to_string(),
+            }
         })(input)
     }
 

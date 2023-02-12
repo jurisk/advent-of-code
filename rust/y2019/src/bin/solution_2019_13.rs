@@ -1,16 +1,15 @@
 use advent_of_code_2019::intcode::{parse_machine_code, Process};
-
 use num_derive::FromPrimitive;
 use num_traits::{signum, FromPrimitive};
 
 #[repr(u8)]
 #[derive(PartialEq, Eq, FromPrimitive, Debug)]
 enum Tile {
-    Empty = 0,            // No game object appears in this tile.
-    Wall = 1,             // Walls are indestructible barriers.
-    Block = 2,            // Blocks can be broken by the ball.
+    Empty            = 0, // No game object appears in this tile.
+    Wall             = 1, // Walls are indestructible barriers.
+    Block            = 2, // Blocks can be broken by the ball.
     HorizontalPaddle = 3, // The paddle is indestructible.
-    Ball = 4,             // 4 is a ball tile. The ball moves diagonally and bounces off objects.
+    Ball             = 4, // 4 is a ball tile. The ball moves diagonally and bounces off objects.
 }
 
 fn solve_1() {

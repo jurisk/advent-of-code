@@ -36,8 +36,9 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use advent_of_code_2019::intcode::{parse_machine_code, Index};
+
+    use super::*;
 
     #[test]
     fn test_solve_1() {

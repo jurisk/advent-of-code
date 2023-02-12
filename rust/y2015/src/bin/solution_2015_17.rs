@@ -1,7 +1,6 @@
-use memoize::memoize;
-
 use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
 use advent_of_code_common::utils::head_tail;
+use memoize::memoize;
 
 fn parse(input: &str) -> Result<Vec<u16>, Error> {
     parse_lines_to_vec(input)
@@ -24,7 +23,7 @@ fn select(data: &[u16], selection: u32) -> u16 {
 fn valid_selections(data: &[u16], target: u16) -> Vec<u32> {
     let mut result = vec![];
 
-    for i in 0..(2_u32).pow(u32::try_from(data.len()).unwrap()) {
+    for i in 0 .. (2_u32).pow(u32::try_from(data.len()).unwrap()) {
         if select(data, i) == target {
             result.push(i);
         }
@@ -94,7 +93,7 @@ fn solve_2_int(data: Vec<u16>, target: u16, bottles_remaining: u16) -> usize {
 }
 
 fn solve_2(data: &[u16], target: u16) -> usize {
-    for i in 1..=data.len() {
+    for i in 1 ..= data.len() {
         let result = solve_2_int(data.to_vec(), target, i.try_into().unwrap());
         if result > 0 {
             return result;

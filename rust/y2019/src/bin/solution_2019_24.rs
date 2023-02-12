@@ -1,5 +1,6 @@
-use num_traits::pow;
 use std::collections::{HashMap, HashSet};
+
+use num_traits::pow;
 
 const SIZE: usize = 5;
 
@@ -49,16 +50,18 @@ fn empty_field() -> Field {
 fn next_simple(field: Field) -> Field {
     let mut result: Field = empty_field();
 
-    for x in 0..SIZE {
-        for y in 0..SIZE {
+    for x in 0 .. SIZE {
+        for y in 0 .. SIZE {
             let neighbours = neighbour_count_simple(field, x, y);
 
             result[y][x] = {
                 if field[y][x] {
-                    // A bug dies (becoming an empty space) unless there is exactly one bug adjacent to it
+                    // A bug dies (becoming an empty space) unless there is exactly one bug adjacent
+                    // to it
                     neighbours == 1
                 } else {
-                    // An empty space becomes infested with a bug if exactly one or two bugs are adjacent to it.
+                    // An empty space becomes infested with a bug if exactly one or two bugs are
+                    // adjacent to it.
                     neighbours == 1 || neighbours == 2
                 }
             }
@@ -84,8 +87,8 @@ fn find_loop_simple(field: Field) -> Field {
 #[allow(clippy::needless_range_loop)]
 fn biodiversity(field: Field) -> u128 {
     let mut result: u128 = 0;
-    for x in 0..SIZE {
-        for y in 0..SIZE {
+    for x in 0 .. SIZE {
+        for y in 0 .. SIZE {
             if field[y][x] {
                 result += pow(2, x + y * SIZE);
             }
@@ -107,8 +110,8 @@ fn new_level(data: &HashMap<i32, Field>, level: i32) -> Field {
     let greater: Field = *data.get(&(level + 1)).unwrap_or(&empty_field());
     let mut result: Field = empty_field();
 
-    for x in 0..SIZE {
-        for y in 0..SIZE {
+    for x in 0 .. SIZE {
+        for y in 0 .. SIZE {
             if x == 2 && y == 2 {
                 continue;
             }
@@ -117,10 +120,12 @@ fn new_level(data: &HashMap<i32, Field>, level: i32) -> Field {
 
             result[y][x] = {
                 if current[y][x] {
-                    // A bug dies (becoming an empty space) unless there is exactly one bug adjacent to it
+                    // A bug dies (becoming an empty space) unless there is exactly one bug adjacent
+                    // to it
                     neighbours == 1
                 } else {
-                    // An empty space becomes infested with a bug if exactly one or two bugs are adjacent to it.
+                    // An empty space becomes infested with a bug if exactly one or two bugs are
+                    // adjacent to it.
                     neighbours == 1 || neighbours == 2
                 }
             }
@@ -144,11 +149,11 @@ fn neighbour_count_complex(
 ) -> usize {
     let current_level_neighbours: usize = neighbour_count_simple(current, x, y);
     let from_inner = match (x, y) {
-        (1, 2) => bool_count((0..SIZE).map(|idx| inner[idx][0]).collect()), // L
-        (2, 1) => bool_count((0..SIZE).map(|idx| inner[0][idx]).collect()), // H
-        (3, 2) => bool_count((0..SIZE).map(|idx| inner[idx][4]).collect()), // N
-        (2, 3) => bool_count((0..SIZE).map(|idx| inner[4][idx]).collect()), // R
-        (_, _) => 0,
+        (1, 2) => bool_count((0 .. SIZE).map(|idx| inner[idx][0]).collect()), // L
+        (2, 1) => bool_count((0 .. SIZE).map(|idx| inner[0][idx]).collect()), // H
+        (3, 2) => bool_count((0 .. SIZE).map(|idx| inner[idx][4]).collect()), // N
+        (2, 3) => bool_count((0 .. SIZE).map(|idx| inner[4][idx]).collect()), // R
+        (..) => 0,
     };
 
     let from_1_2 = x == 0 && outer[2][1]; // add 12
@@ -164,7 +169,7 @@ fn next_complex(data: &HashMap<i32, Field>) -> HashMap<i32, Field> {
     let keys: Vec<i32> = data.keys().copied().collect();
     let smallest = keys.iter().min().unwrap();
     let largest = keys.iter().max().unwrap();
-    (*smallest - 1..=*largest + 1)
+    (*smallest - 1 ..= *largest + 1)
         .map(|level| (level, new_level(data, level)))
         .collect()
 }
@@ -172,8 +177,8 @@ fn next_complex(data: &HashMap<i32, Field>) -> HashMap<i32, Field> {
 #[allow(clippy::needless_range_loop)]
 fn count_bugs_complex(field: Field) -> u128 {
     let mut result = 0;
-    for x in 0..SIZE {
-        for y in 0..SIZE {
+    for x in 0 .. SIZE {
+        for y in 0 .. SIZE {
             if !(x == 2 && y == 2) {
                 result += u128::from(field[y][x]);
             }
@@ -184,7 +189,7 @@ fn count_bugs_complex(field: Field) -> u128 {
 
 fn solve_2(data: &str, minutes: u8) -> u128 {
     let mut data: HashMap<i32, Field> = HashMap::from([(0, parse(data))]);
-    for _ in 0..minutes {
+    for _ in 0 .. minutes {
         data = next_complex(&data);
     }
     data.values().map(|f| count_bugs_complex(*f)).sum()

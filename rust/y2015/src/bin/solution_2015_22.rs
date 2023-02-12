@@ -1,7 +1,9 @@
-use crate::Spell::{Drain, MagicMissile, Poison, Recharge, Shield};
-use pathfinding::prelude::dijkstra;
 use std::cmp::max;
+
+use pathfinding::prelude::dijkstra;
 use strum::{EnumIter, IntoEnumIterator};
+
+use crate::Spell::{Drain, MagicMissile, Poison, Recharge, Shield};
 
 type N = u16;
 
@@ -75,21 +77,21 @@ impl Spell {
 
 struct PlayerStats {
     hit_points: N,
-    mana: N,
+    mana:       N,
 }
 
 struct BossStats {
     hit_points: N,
-    damage: N,
+    damage:     N,
 }
 
 #[derive(Eq, PartialEq, Hash, Clone, Copy, Debug)]
 struct State {
-    player_hit_points: N,
-    player_mana: N,
-    boss_hit_points: N,
-    shield_spell_remaining: Option<N>,
-    poison_spell_remaining: Option<N>,
+    player_hit_points:        N,
+    player_mana:              N,
+    boss_hit_points:          N,
+    shield_spell_remaining:   Option<N>,
+    poison_spell_remaining:   Option<N>,
     recharge_spell_remaining: Option<N>,
 }
 
@@ -102,11 +104,11 @@ impl State {
 
     fn from_stats(you: &PlayerStats, boss: &BossStats) -> State {
         State {
-            player_hit_points: you.hit_points,
-            player_mana: you.mana,
-            boss_hit_points: boss.hit_points,
-            shield_spell_remaining: None,
-            poison_spell_remaining: None,
+            player_hit_points:        you.hit_points,
+            player_mana:              you.mana,
+            boss_hit_points:          boss.hit_points,
+            shield_spell_remaining:   None,
+            poison_spell_remaining:   None,
             recharge_spell_remaining: None,
         }
     }
@@ -167,11 +169,11 @@ impl State {
         };
 
         State {
-            player_hit_points: self.player_hit_points + immediate_healing,
-            player_mana: self.player_mana - spell.cost(),
-            boss_hit_points: self.boss_hit_points.saturating_sub(immediate_damage),
-            shield_spell_remaining: new_shield_spell_remaining,
-            poison_spell_remaining: new_poison_spell_remaining,
+            player_hit_points:        self.player_hit_points + immediate_healing,
+            player_mana:              self.player_mana - spell.cost(),
+            boss_hit_points:          self.boss_hit_points.saturating_sub(immediate_damage),
+            shield_spell_remaining:   new_shield_spell_remaining,
+            poison_spell_remaining:   new_poison_spell_remaining,
             recharge_spell_remaining: new_recharge_spell_remaining,
         }
     }
@@ -263,12 +265,12 @@ fn solve(you: &PlayerStats, boss: &BossStats, rules: &GameRules) -> N {
 
 const BOSS: BossStats = BossStats {
     hit_points: 71,
-    damage: 10,
+    damage:     10,
 };
 
 const YOU: PlayerStats = PlayerStats {
     hit_points: 50,
-    mana: 500,
+    mana:       500,
 };
 
 fn solve_1(you: &PlayerStats, boss: &BossStats) -> N {
@@ -306,11 +308,11 @@ mod tests {
     fn test_solve_1_test_1() {
         let you = PlayerStats {
             hit_points: 10,
-            mana: 250,
+            mana:       250,
         };
         let boss = BossStats {
             hit_points: 13,
-            damage: 8,
+            damage:     8,
         };
 
         let rules = GameRules {
@@ -337,11 +339,11 @@ mod tests {
     fn test_solve_1_test_2() {
         let you = PlayerStats {
             hit_points: 10,
-            mana: 250,
+            mana:       250,
         };
         let boss = BossStats {
             hit_points: 14,
-            damage: 8,
+            damage:     8,
         };
 
         assert_eq!(solve_1(&you, &boss), 641);

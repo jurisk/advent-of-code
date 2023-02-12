@@ -62,7 +62,7 @@ struct Game {
 impl Game {
     fn mark_next(self) -> Option<Game> {
         self.remaining_numbers.first().map(|next| {
-            let remaining_numbers = self.remaining_numbers[1..].to_vec();
+            let remaining_numbers = self.remaining_numbers[1 ..].to_vec();
             let marked_numbers = vec![self.marked_numbers, vec![*next]].concat();
             let new_winning = Game::winning_boards(&self.boards, &marked_numbers)
                 .iter()
@@ -82,7 +82,7 @@ impl Game {
     }
 
     fn winning_boards(boards: &[Board], marked_numbers: &[Number]) -> Vec<BoardIndex> {
-        (0..boards.len())
+        (0 .. boards.len())
             .filter(|idx| boards[*idx].is_winning(marked_numbers))
             .collect()
     }
@@ -110,7 +110,7 @@ impl Game {
             .collect();
 
         let boards: Result<Vec<Board>, Error> =
-            blocks[1..].iter().map(|s| Board::parse(s)).collect();
+            blocks[1 ..].iter().map(|s| Board::parse(s)).collect();
 
         Ok(Game {
             remaining_numbers: drawn_numbers?,

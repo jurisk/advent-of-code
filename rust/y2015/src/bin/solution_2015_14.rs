@@ -1,15 +1,16 @@
+use std::cmp::min;
+
 use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
 use recap::Recap;
 use serde::Deserialize;
-use std::cmp::min;
 
 #[derive(Debug, Deserialize, Recap)]
 #[recap(
     regex = r#"^\w+ can fly (?P<speed>\d+) km/s for (?P<fly_for_how_long>\d+) seconds, but then must rest for (?P<rest_for_how_long>\d+) seconds.$"#
 )]
 struct Reindeer {
-    speed: u32,
-    fly_for_how_long: u32,
+    speed:             u32,
+    fly_for_how_long:  u32,
     rest_for_how_long: u32,
 }
 
@@ -41,7 +42,7 @@ fn solve_1(data: &[Reindeer]) -> u32 {
 
 fn solve_2(data: &[Reindeer]) -> u32 {
     let mut points: Vec<u32> = vec![0; data.len()];
-    for time in 1..=SECONDS {
+    for time in 1 ..= SECONDS {
         let distances: Vec<u32> = data.iter().map(|r| r.distance_covered(time)).collect();
         let max_distance = distances.iter().max().unwrap();
         for (idx, distance) in distances.iter().enumerate() {

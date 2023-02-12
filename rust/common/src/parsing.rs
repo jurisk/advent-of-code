@@ -1,10 +1,11 @@
-use itertools::Itertools;
-use nonempty::NonEmpty;
-use pathfinding::matrix::Matrix;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::str::FromStr;
+
+use itertools::Itertools;
+use nonempty::NonEmpty;
+use pathfinding::matrix::Matrix;
 
 pub type Error = String;
 

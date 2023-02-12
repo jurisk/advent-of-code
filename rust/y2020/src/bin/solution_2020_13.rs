@@ -2,15 +2,17 @@ type Number = i64;
 
 struct TestData {
     arrival_timestamp: Number,
-    schedule: Vec<Option<Number>>,
+    schedule:          Vec<Option<Number>>,
 }
 
 fn parse_schedule(input: &str) -> Vec<Option<Number>> {
     input
         .split(',')
-        .map(|str| match str {
-            "x" => None,
-            s => Some(s.parse::<Number>().unwrap()),
+        .map(|str| {
+            match str {
+                "x" => None,
+                s => Some(s.parse::<Number>().unwrap()),
+            }
         })
         .collect()
 }
@@ -59,11 +61,7 @@ fn egcd(a: Number, b: Number) -> (Number, Number, Number) {
 
 fn mod_inv(x: Number, n: Number) -> Option<Number> {
     let (g, x, _) = egcd(x, n);
-    if g == 1 {
-        Some((x % n + n) % n)
-    } else {
-        None
-    }
+    if g == 1 { Some((x % n + n) % n) } else { None }
 }
 
 fn chinese_remainder(residues: &[Number], modulii: &[Number]) -> Option<Number> {

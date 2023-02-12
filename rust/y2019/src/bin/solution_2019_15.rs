@@ -1,8 +1,9 @@
+use std::collections::{HashMap, HashSet, VecDeque};
+
 use advent_of_code_2019::intcode::{Entry, Process};
 use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::direction::Direction;
 use itertools::Itertools;
-use std::collections::{HashMap, HashSet, VecDeque};
 
 fn direction_to_intcode(direction: Direction) -> Entry {
     match direction {
@@ -19,9 +20,9 @@ type Coords = Coords2D<Number>;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 enum Tile {
-    Wall = 0,
+    Wall  = 0,
     Empty = 1,
-    Goal = 2,
+    Goal  = 2,
 }
 
 impl Tile {
@@ -36,17 +37,17 @@ impl Tile {
 }
 
 struct Robot {
-    known_tiles: HashMap<Coords, Tile>,
-    current_position: Coords,
+    known_tiles:       HashMap<Coords, Tile>,
+    current_position:  Coords,
     current_direction: Direction,
 }
 
 impl Robot {
     fn new() -> Robot {
         let mut result = Robot {
-            known_tiles: HashMap::new(),
+            known_tiles:       HashMap::new(),
             //            queue: VecDeque::new(),
-            current_position: Coords::new(0, 0),
+            current_position:  Coords::new(0, 0),
             current_direction: Direction::North,
         };
 
@@ -74,9 +75,9 @@ impl Robot {
         let min_y = *y_s.iter().min().unwrap();
         let max_x = *x_s.iter().max().unwrap();
         let max_y = *y_s.iter().max().unwrap();
-        (min_y..=max_y)
+        (min_y ..= max_y)
             .map(|y| {
-                (min_x..=max_x)
+                (min_x ..= max_x)
                     .map(|x| {
                         let coords = Coords::new(x, y);
                         if coords == self.current_position {

@@ -1,11 +1,12 @@
-use advent_of_code_common::coords2d::Coords2D;
 use std::cmp::{max, Ordering};
+
+use advent_of_code_common::coords2d::Coords2D;
 
 type XY = Coords2D<i32>;
 
 struct Area {
     from: XY,
-    to: XY,
+    to:   XY,
 }
 
 impl Area {
@@ -32,7 +33,7 @@ impl Area {
 
 const DATA: Area = Area {
     from: XY { x: 137, y: -98 },
-    to: XY { x: 171, y: -73 },
+    to:   XY { x: 171, y: -73 },
 };
 
 #[derive(Debug)]
@@ -112,17 +113,17 @@ impl Probe {
 }
 
 fn solve_1(area: &Area) -> i32 {
-    (-100..100)
+    (-100 .. 100)
         .filter_map(|start_y| Probe::will_hit_area_y_with_max_reached(start_y, area))
         .max()
         .unwrap()
 }
 
 fn solve_2(area: &Area) -> usize {
-    let valid_x: Vec<_> = (-1000..1000)
+    let valid_x: Vec<_> = (-1000 .. 1000)
         .filter(|start_x| Probe::will_hit_area_x(*start_x, area))
         .collect();
-    let valid_y: Vec<_> = (-1000..1000)
+    let valid_y: Vec<_> = (-1000 .. 1000)
         .filter(|start_y| Probe::will_hit_area_y_with_max_reached(*start_y, area).is_some())
         .collect();
 
@@ -151,7 +152,7 @@ mod tests {
 
     const TEST_DATA: Area = Area {
         from: XY { x: 20, y: -10 },
-        to: XY { x: 30, y: -5 },
+        to:   XY { x: 30, y: -5 },
     };
 
     #[test]

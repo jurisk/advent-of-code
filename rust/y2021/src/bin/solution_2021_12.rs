@@ -1,8 +1,9 @@
+use std::str::FromStr;
+
 use advent_of_code_common::parsing::{parse_lines_to_nonempty, split_into_two_strings, Error};
 use itertools::Itertools;
 use nonempty::{nonempty, NonEmpty};
 use pathfinding::prelude::bfs_reach;
-use std::str::FromStr;
 
 const DATA: &str = include_str!("../../resources/12.txt");
 
@@ -99,7 +100,8 @@ impl Path {
         }
     }
 
-    // Should visit small caves at most once, and can visit big caves any number of times
+    // Should visit small caves at most once, and can visit big caves any number of
+    // times
     fn small_vertex_is_valid_continuation_1(&self, v: &Vertex) -> bool {
         !self.vertices.contains(v)
     }
@@ -114,8 +116,9 @@ impl Path {
         all_small.len() != unique_small_count
     }
 
-    // Specifically, big caves can be visited any number of times, a single small cave can be
-    // visited at most twice, and the remaining small caves can be visited at most once.
+    // Specifically, big caves can be visited any number of times, a single small
+    // cave can be visited at most twice, and the remaining small caves can be
+    // visited at most once.
     fn small_vertex_is_valid_continuation_2(&self, v: &Vertex) -> bool {
         self.small_vertex_is_valid_continuation_1(v) || !self.is_small_cave_already_visited_twice()
     }

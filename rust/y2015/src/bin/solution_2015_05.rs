@@ -19,12 +19,12 @@ fn pair_appears_twice_without_overlapping(s: &str) -> bool {
     if s.len() < 4 {
         false
     } else {
-        let a = &s[..2];
-        let b = &s[2..];
+        let a = &s[.. 2];
+        let b = &s[2 ..];
         if b.contains(a) {
             true
         } else {
-            pair_appears_twice_without_overlapping(&s[1..])
+            pair_appears_twice_without_overlapping(&s[1 ..])
         }
     }
 }

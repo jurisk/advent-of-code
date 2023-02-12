@@ -1,12 +1,14 @@
 extern crate core;
 
-use crate::Value::{And, Assign, LeftShift, Not, Or, RightShift};
-use crate::WireOrLiteral::{Literal, Wire};
+use std::collections::HashMap;
+use std::str::FromStr;
+
 use advent_of_code_common::parsing::{
     parse_lines_to_vec, parse_str, split_into_two_strings, Error,
 };
-use std::collections::HashMap;
-use std::str::FromStr;
+
+use crate::Value::{And, Assign, LeftShift, Not, Or, RightShift};
+use crate::WireOrLiteral::{Literal, Wire};
 
 #[derive(Clone, Debug)]
 enum WireOrLiteral {
@@ -44,7 +46,7 @@ impl FromStr for Value {
 }
 
 struct Entry {
-    wire: String,
+    wire:  String,
     value: Value,
 }
 
@@ -54,7 +56,7 @@ impl FromStr for Entry {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (a, b) = split_into_two_strings(s, " -> ")?;
         Ok(Entry {
-            wire: b,
+            wire:  b,
             value: a.parse()?,
         })
     }

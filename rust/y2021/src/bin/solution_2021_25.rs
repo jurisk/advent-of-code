@@ -1,16 +1,17 @@
-use crate::Square::{CucumberMovingEast, CucumberMovingSouth, Empty};
 use advent_of_code_common::parsing::{parse_matrix, Error};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use pathfinding::matrix::Matrix;
+
+use crate::Square::{CucumberMovingEast, CucumberMovingSouth, Empty};
 
 const DATA: &str = include_str!("../../resources/25.txt");
 
 #[repr(u8)]
 #[derive(Debug, Eq, PartialEq, Clone, TryFromPrimitive, IntoPrimitive, Copy)]
 enum Square {
-    CucumberMovingEast = b'>',
+    CucumberMovingEast  = b'>',
     CucumberMovingSouth = b'v',
-    Empty = b'.',
+    Empty               = b'.',
 }
 
 type SeaFloor = Matrix<Square>;
@@ -25,8 +26,8 @@ where
 {
     let mut result = Matrix::new(sea_floor.rows, sea_floor.columns, Empty);
 
-    for r in 0..sea_floor.rows {
-        for c in 0..sea_floor.columns {
+    for r in 0 .. sea_floor.rows {
+        for c in 0 .. sea_floor.columns {
             let coords = (r, c);
             let coords_plus_1 = adjust_coord(coords);
             match sea_floor[coords] {
@@ -67,8 +68,8 @@ fn do_step(sea_floor: &SeaFloor) -> SeaFloor {
 
 fn print_sea_floor(step: usize, sea_floor: &SeaFloor) {
     println!("After {step}");
-    for r in 0..sea_floor.rows {
-        let row: String = (0..sea_floor.columns)
+    for r in 0 .. sea_floor.rows {
+        let row: String = (0 .. sea_floor.columns)
             .map(|c| {
                 let as_u8: u8 = sea_floor[(r, c)].into();
                 as_u8 as char

@@ -36,8 +36,8 @@ fn solve_1() {
     println!("Part 1: {result}");
 }
 
-// Avoid situation where we will be immediately forced to jump (!E) however landing will be a hole (!H)
-// (part 1) && !(!E && !H)
+// Avoid situation where we will be immediately forced to jump (!E) however
+// landing will be a hole (!H) (part 1) && !(!E && !H)
 //    ... is the same as ...
 // (part 1) && (E || H)
 const PART_2: [&str; 4] = [

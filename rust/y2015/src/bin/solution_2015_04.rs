@@ -4,7 +4,7 @@ fn solve<F>(secret_key: &str, p: F) -> Option<u32>
 where
     F: Fn(&str) -> bool,
 {
-    (0..u32::MAX).find(|n| {
+    (0 .. u32::MAX).find(|n| {
         let input = format!("{secret_key}{n}");
         let md5 = md5_for_string(&input);
         p(&md5)

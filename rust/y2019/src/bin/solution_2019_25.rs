@@ -1,15 +1,16 @@
-use advent_of_code_2019::intcode::{parse_machine_code, MachineCode, Process};
-use advent_of_code_common::direction::Direction;
-use rand::prelude::SliceRandom;
 use std::collections::HashSet;
 use std::ops::Add;
 
+use advent_of_code_2019::intcode::{parse_machine_code, MachineCode, Process};
+use advent_of_code_common::direction::Direction;
+use rand::prelude::SliceRandom;
+
 #[derive(Debug)]
 struct Output {
-    items: Vec<String>,
-    doors_to: Vec<Direction>,
+    items:        Vec<String>,
+    doors_to:     Vec<Direction>,
     ejected_back: bool,
-    password: Option<String>,
+    password:     Option<String>,
 }
 
 impl Output {
@@ -18,13 +19,14 @@ impl Output {
         let idx = rows.iter().position(|x| x == &header);
         match idx {
             None => vec![],
-            Some(idx) => rows
-                .iter()
-                .skip(idx + 1)
-                .take_while(|x| x.starts_with(ITEM_PREFIX))
-                .map(std::string::ToString::to_string)
-                .map(|x| x[ITEM_PREFIX.len()..].to_string())
-                .collect(),
+            Some(idx) => {
+                rows.iter()
+                    .skip(idx + 1)
+                    .take_while(|x| x.starts_with(ITEM_PREFIX))
+                    .map(std::string::ToString::to_string)
+                    .map(|x| x[ITEM_PREFIX.len() ..].to_string())
+                    .collect()
+            },
         }
     }
 
@@ -35,15 +37,15 @@ impl Output {
         if s.contains("Analysis complete! You may proceed.") {
             let get_in = "get in by typing ";
             let idx = s.find(get_in).unwrap();
-            let chars: String = s[idx + get_in.len()..]
+            let chars: String = s[idx + get_in.len() ..]
                 .chars()
                 .take_while(char::is_ascii_digit)
                 .collect();
             return Output {
-                items: vec![],
-                doors_to: vec![],
+                items:        vec![],
+                doors_to:     vec![],
                 ejected_back: false,
-                password: Some(chars),
+                password:     Some(chars),
             };
         }
 

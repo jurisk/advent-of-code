@@ -9,7 +9,7 @@ fn solve(numbers: &[u64], target: usize) -> u64 {
 
     let mut current: u64 = *numbers.last().unwrap();
 
-    for current_idx in (numbers.len() as u64 - 1)..(target as u64 - 1) {
+    for current_idx in (numbers.len() as u64 - 1) .. (target as u64 - 1) {
         if current_idx % 100_000 == 0 {
             println!(
                 "Processing index {}, size of map is {}",

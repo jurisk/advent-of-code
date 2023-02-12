@@ -1,15 +1,16 @@
+use std::collections::HashMap;
+
 use advent_of_code_common::coords2d::Coords2D;
 use bimap::BiMap;
 use itertools::Itertools;
 use pathfinding::prelude::bfs;
-use std::collections::HashMap;
 
 type CoordsXY = Coords2D<i32>;
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone, Debug)]
 struct CoordsXYL {
-    x: i32,
-    y: i32,
+    x:     i32,
+    y:     i32,
     level: u32,
 }
 
@@ -24,8 +25,8 @@ impl CoordsXYL {
 
     fn outermost(coords: CoordsXY) -> CoordsXYL {
         CoordsXYL {
-            x: coords.x,
-            y: coords.y,
+            x:     coords.x,
+            y:     coords.y,
             level: 0,
         }
     }
@@ -34,9 +35,9 @@ impl CoordsXYL {
 #[derive(Debug)]
 struct Maze {
     open_passages: Vec<Vec<bool>>,
-    start: CoordsXY,
-    end: CoordsXY,
-    portals: BiMap<CoordsXY, CoordsXY>, // left side is outer - right side is inner
+    start:         CoordsXY,
+    end:           CoordsXY,
+    portals:       BiMap<CoordsXY, CoordsXY>, // left side is outer - right side is inner
 }
 
 const PASSAGE: char = '.';
@@ -50,9 +51,9 @@ impl Maze {
         let mut temp_portals: Vec<(Name, CoordsXY)> = Vec::new();
 
         #[allow(clippy::needless_range_loop)]
-        for y in 0..chars.len() {
+        for y in 0 .. chars.len() {
             let r = &chars[y];
-            for x in 0..r.len() - 2 {
+            for x in 0 .. r.len() - 2 {
                 let row = &chars[y];
                 if row[x].is_ascii_uppercase()
                     && row[x + 1].is_ascii_uppercase()
@@ -80,11 +81,11 @@ impl Maze {
             }
         }
 
-        for y in 0..chars.len() - 2 {
+        for y in 0 .. chars.len() - 2 {
             let r_plus_0 = &chars[y];
             let r_plus_1 = &chars[y + 1];
             let r_plus_2 = &chars[y + 2];
-            for x in 2..r_plus_0.len() - 2 {
+            for x in 2 .. r_plus_0.len() - 2 {
                 if r_plus_0[x].is_ascii_uppercase()
                     && r_plus_1[x].is_ascii_uppercase()
                     && r_plus_2[x] == PASSAGE
@@ -129,8 +130,12 @@ impl Maze {
 
         println!("width = {width}, height = {height}");
 
-        let open_passages: Vec<Vec<bool>> = (0..height)
-            .map(|y| (0..width).map(|x| chars[y + 2][x + 2] == PASSAGE).collect())
+        let open_passages: Vec<Vec<bool>> = (0 .. height)
+            .map(|y| {
+                (0 .. width)
+                    .map(|x| chars[y + 2][x + 2] == PASSAGE)
+                    .collect()
+            })
             .collect();
 
         assert_eq!(open_passages.len(), height);

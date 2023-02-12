@@ -1,6 +1,7 @@
+use std::collections::HashMap;
+
 use advent_of_code_common::parsing::Error;
 use itertools::Itertools;
-use std::collections::HashMap;
 
 const DATA: &str = include_str!("../../resources/24.txt");
 
@@ -8,8 +9,8 @@ type N = i64;
 
 #[derive(Debug)]
 struct Subroutine {
-    line_4: N,
-    line_5: N,
+    line_4:  N,
+    line_5:  N,
     line_15: N,
 }
 
@@ -54,19 +55,19 @@ impl Subroutine {
 const C: usize = 14;
 const L: usize = 18;
 
-// Note - This is not "general purpose", but if we needed to, we could have stored all registers in
-// the state.
+// Note - This is not "general purpose", but if we needed to, we could have
+// stored all registers in the state.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 struct State {
     instruction_pointer: usize,
-    z: N,
+    z:                   N,
 }
 
 impl State {
     fn start() -> State {
         State {
             instruction_pointer: 0,
-            z: 0,
+            z:                   0,
         }
     }
 
@@ -96,8 +97,9 @@ impl State {
     }
 }
 
-// Not a general purpose solution, though a general purpose solution could be done in a somewhat
-// similar way, by memoizing all (register_state, instruction_pointer, input_value) combinations.
+// Not a general purpose solution, though a general purpose solution could be
+// done in a somewhat similar way, by memoizing all (register_state,
+// instruction_pointer, input_value) combinations.
 #[allow(clippy::similar_names, clippy::redundant_closure_for_method_calls)]
 fn parse(input: &str) -> Result<Vec<Subroutine>, Error> {
     let lines: Vec<String> = input
@@ -110,7 +112,7 @@ fn parse(input: &str) -> Result<Vec<Subroutine>, Error> {
 
     let chunks: Vec<Vec<String>> = lines.chunks(L).map(|slice| slice.to_vec()).collect();
 
-    for idx in 0..L {
+    for idx in 0 .. L {
         let options: Vec<String> = chunks
             .iter()
             .map(|chunk| chunk[idx].to_string())
@@ -128,8 +130,8 @@ fn parse(input: &str) -> Result<Vec<Subroutine>, Error> {
             .last()
             .ok_or("Failed to split Line 4")?;
         let subroutine = Subroutine {
-            line_4: line_4.parse().unwrap(),
-            line_5: line_5.parse().unwrap(),
+            line_4:  line_4.parse().unwrap(),
+            line_5:  line_5.parse().unwrap(),
             line_15: line_15.parse().unwrap(),
         };
         subroutines.push(subroutine);
@@ -164,11 +166,7 @@ fn best(
 
     let successors = state.successors(program, range);
     if successors.is_empty() {
-        if state.is_success() {
-            Some(0)
-        } else {
-            None
-        }
+        if state.is_success() { Some(0) } else { None }
     } else {
         for (input, new_state) in successors {
             let search = best(program, cached, &new_state, range);

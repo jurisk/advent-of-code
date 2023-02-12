@@ -1,9 +1,11 @@
-use crate::direction::Direction;
-use crate::parsing::{split_into_two_strings, Error};
-use num_traits::{One, Signed, Zero};
 use std::fmt::Debug;
 use std::ops::{Add, Neg, Sub};
 use std::str::FromStr;
+
+use num_traits::{One, Signed, Zero};
+
+use crate::direction::Direction;
+use crate::parsing::{split_into_two_strings, Error};
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
 pub struct Coords2D<T> {

@@ -1,7 +1,9 @@
-use crate::Command::{SetMask, SetMemory};
-use regex::Regex;
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
+
+use regex::Regex;
+
+use crate::Command::{SetMask, SetMemory};
 
 #[macro_use]
 extern crate lazy_static;
@@ -115,16 +117,16 @@ where
 {
     struct Entry {
         remaining_mask: u64,
-        mask_0: u64,
-        mask_1: u64,
+        mask_0:         u64,
+        mask_1:         u64,
     }
 
     let mut queue: VecDeque<Entry> = VecDeque::new();
 
     queue.push_front(Entry {
         remaining_mask: mask,
-        mask_0: 0,
-        mask_1: 0,
+        mask_0:         0,
+        mask_1:         0,
     });
 
     while !queue.is_empty() {
@@ -137,13 +139,13 @@ where
                     let without_least_significant = entry.remaining_mask & !least_significant;
                     queue.push_back(Entry {
                         remaining_mask: without_least_significant,
-                        mask_0: entry.mask_0 | least_significant,
-                        mask_1: entry.mask_1,
+                        mask_0:         entry.mask_0 | least_significant,
+                        mask_1:         entry.mask_1,
                     });
                     queue.push_back(Entry {
                         remaining_mask: without_least_significant,
-                        mask_0: entry.mask_0,
-                        mask_1: entry.mask_1 | least_significant,
+                        mask_0:         entry.mask_0,
+                        mask_1:         entry.mask_1 | least_significant,
                     });
                 } else {
                     // remaining_mask is empty now
@@ -174,14 +176,16 @@ where
     let mut memory: BTreeMap<u64, u64> = BTreeMap::new();
     let mut mask: Mask = Mask::initial();
 
-    commands.iter().for_each(|command| match command {
-        SetMemory { address, value } => {
-            f(&mut memory, mask, *address, *value);
-        },
-        SetMask { mask: new_mask } => {
-            mask = *new_mask;
-        },
-    });
+    for command in commands.iter() {
+        match command {
+            SetMemory { address, value } => {
+                f(&mut memory, mask, *address, *value);
+            },
+            SetMask { mask: new_mask } => {
+                mask = *new_mask;
+            },
+        }
+    }
 
     memory.values().sum()
 }

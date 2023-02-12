@@ -1,5 +1,6 @@
-use advent_of_code_common::coords2d::Coords2D;
 use std::collections::{HashSet, VecDeque};
+
+use advent_of_code_common::coords2d::Coords2D;
 
 type Coords = Coords2D<isize>;
 
@@ -30,9 +31,11 @@ impl HeightMap {
             .iter()
             .enumerate()
             .flat_map(|(a, b)| {
-                b.iter().enumerate().map(move |(c, _)| Coords {
-                    x: c as isize,
-                    y: a as isize,
+                b.iter().enumerate().map(move |(c, _)| {
+                    Coords {
+                        x: c as isize,
+                        y: a as isize,
+                    }
                 })
             })
             .collect()

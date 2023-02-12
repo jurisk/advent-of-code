@@ -30,10 +30,10 @@ fn wrap_risk(risk: usize) -> u8 {
 fn extend_cavern(cavern: &Cavern) -> Cavern {
     const COEF: usize = 5;
     let mut result: Cavern = Matrix::new(cavern.rows * COEF, cavern.columns * COEF, 0);
-    for mr in 0..COEF {
-        for mc in 0..COEF {
-            for r in 0..cavern.rows {
-                for c in 0..cavern.columns {
+    for mr in 0 .. COEF {
+        for mc in 0 .. COEF {
+            for r in 0 .. cavern.rows {
+                for c in 0 .. cavern.columns {
                     result[(r + mr * cavern.rows, c + mc * cavern.columns)] =
                         wrap_risk(cavern[(r, c)] as usize + mr + mc);
                 }

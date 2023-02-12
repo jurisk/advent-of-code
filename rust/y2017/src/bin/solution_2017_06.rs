@@ -7,7 +7,7 @@ fn reallocate(banks: &Vec<usize>) -> Vec<usize> {
     let (chosen_index, _) = banks.iter().find_position(|&x| x == max).unwrap();
     let amount = banks[chosen_index];
     result[chosen_index] = 0;
-    for i in chosen_index + 1..=chosen_index + amount {
+    for i in chosen_index + 1 ..= chosen_index + amount {
         result[i % banks.len()] += 1;
     }
     result

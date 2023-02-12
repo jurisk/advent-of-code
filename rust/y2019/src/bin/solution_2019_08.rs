@@ -7,8 +7,8 @@ type Number = usize;
 #[repr(u8)]
 #[derive(PartialEq, Eq, Clone, FromPrimitive)]
 enum PixelType {
-    Black = 0,
-    White = 1,
+    Black       = 0,
+    White       = 1,
     Transparent = 2,
 }
 
@@ -36,7 +36,7 @@ fn solve_1(data: &str, width: Number, height: Number) -> Number {
 fn solve_2(data: &str, width: Number, height: Number) -> String {
     let layers = parse_layers(data, width, height);
     let size = width * height;
-    let resulting: Vec<PixelType> = (0..size)
+    let resulting: Vec<PixelType> = (0 .. size)
         .map(|pixel_idx| {
             layers
                 .iter()
@@ -49,10 +49,12 @@ fn solve_2(data: &str, width: Number, height: Number) -> String {
         .chunks_exact(width)
         .map(|x| {
             x.iter()
-                .map(|pixel| match pixel {
-                    PixelType::White => '█',
-                    PixelType::Black => ' ',
-                    PixelType::Transparent => '?',
+                .map(|pixel| {
+                    match pixel {
+                        PixelType::White => '█',
+                        PixelType::Black => ' ',
+                        PixelType::Transparent => '?',
+                    }
                 })
                 .join("")
         })

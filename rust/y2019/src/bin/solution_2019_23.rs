@@ -1,7 +1,8 @@
-use advent_of_code_2019::intcode::{parse_machine_code, Entry, MachineCode, Process};
-use advent_of_code_common::coords2d::Coords2D;
 use std::collections::HashMap;
 use std::hash::Hash;
+
+use advent_of_code_2019::intcode::{parse_machine_code, Entry, MachineCode, Process};
+use advent_of_code_common::coords2d::Coords2D;
 
 const NAT_ADDRESS: Entry = 255;
 const COMPUTER_COUNT: ComputerIndex = 50;
@@ -40,7 +41,7 @@ fn machine_code() -> MachineCode {
 type ComputerIndex = usize;
 
 fn create_computers() -> Vec<Process> {
-    (0..COMPUTER_COUNT)
+    (0 .. COMPUTER_COUNT)
         .map(|i| {
             let mut process = Process::new(&machine_code());
             process.provide_input(i as Entry);
@@ -54,7 +55,7 @@ fn send_message_buffers_to_computers(
     buffers: &mut MessageBuffers<usize, XYPair>,
 ) {
     #[allow(clippy::needless_range_loop)]
-    for idx in 0..computers.len() {
+    for idx in 0 .. computers.len() {
         let computer = &mut computers[idx];
 
         let messages: Vec<XYPair> = buffers.pop_messages_for(&idx);
@@ -78,7 +79,7 @@ fn solve_1() {
     loop {
         // get all computers hungry for input or halted
         #[allow(clippy::needless_range_loop)]
-        for idx in 0..COMPUTER_COUNT {
+        for idx in 0 .. COMPUTER_COUNT {
             let computer = &mut computers[idx];
             let halted = computer.run_to_unsatisfied_input();
             if halted {
@@ -92,7 +93,7 @@ fn solve_1() {
         // place messages from computers into message buffers
         #[allow(clippy::needless_range_loop)]
         #[allow(clippy::cast_sign_loss)]
-        for idx in 0..COMPUTER_COUNT {
+        for idx in 0 .. COMPUTER_COUNT {
             let computer = &mut computers[idx];
 
             if computer.output_len() >= 3 {
@@ -126,7 +127,7 @@ fn solve_2() {
     loop {
         // get all computers hungry for input or halted
         #[allow(clippy::needless_range_loop)]
-        for idx in 0..computer_count {
+        for idx in 0 .. computer_count {
             let computer = &mut computers[idx];
             let halted = computer.run_to_unsatisfied_input();
             if halted {
@@ -157,7 +158,7 @@ fn solve_2() {
         // place messages from computers into message buffers
         #[allow(clippy::needless_range_loop)]
         #[allow(clippy::cast_sign_loss)]
-        for idx in 0..computer_count {
+        for idx in 0 .. computer_count {
             let computer = &mut computers[idx];
 
             if computer.output_len() >= 3 {

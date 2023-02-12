@@ -1,6 +1,7 @@
+use std::ops::RangeInclusive;
+
 use advent_of_code_2019::intcode::{parse_machine_code, Entry, MachineCodeRef, Process};
 use itertools::Itertools;
-use std::ops::RangeInclusive;
 
 fn amplifier(program: &MachineCodeRef, phase_setting: u8, input: Entry) -> Entry {
     let mut process = Process::new(program);
@@ -50,11 +51,11 @@ fn solve(
 }
 
 fn part_1(program: &MachineCodeRef) -> Entry {
-    solve(program, 0..=4, signal_1)
+    solve(program, 0 ..= 4, signal_1)
 }
 
 fn part_2(program: &MachineCodeRef) -> Entry {
-    solve(program, 5..=9, signal_2)
+    solve(program, 5 ..= 9, signal_2)
 }
 
 fn main() {

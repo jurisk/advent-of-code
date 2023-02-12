@@ -35,7 +35,7 @@ fn unescape(input: &str) -> String {
                 };
 
                 result.push(ch);
-                result.append(&mut f(&t[idx..])); // Not tail rec
+                result.append(&mut f(&t[idx ..])); // Not tail rec
             },
         }
 
@@ -44,7 +44,7 @@ fn unescape(input: &str) -> String {
 
     assert!(input.starts_with('"'));
     assert!(input.ends_with('"'));
-    let chars: Vec<char> = input[1..input.len() - 1].chars().collect();
+    let chars: Vec<char> = input[1 .. input.len() - 1].chars().collect();
     f(&chars).into_iter().collect()
 }
 

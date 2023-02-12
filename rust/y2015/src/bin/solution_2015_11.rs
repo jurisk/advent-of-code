@@ -42,7 +42,7 @@ fn next_1(vec: &mut Vec<u8>) {
 
 const FORBIDDEN: [char; 3] = ['i', 'o', 'l'];
 fn mapping_1() -> Vec<char> {
-    ('a'..='z')
+    ('a' ..= 'z')
         .filter(|ch| !FORBIDDEN.iter().contains(ch))
         .collect()
 }

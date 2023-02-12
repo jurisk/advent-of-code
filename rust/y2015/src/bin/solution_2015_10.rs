@@ -7,7 +7,7 @@ fn convert(data: &[u8]) -> Vec<u8> {
     let mut idx: usize = 0;
 
     while idx < data.len() {
-        let len = data[idx..].iter().take_while(|&&x| x == data[idx]).count();
+        let len = data[idx ..].iter().take_while(|&&x| x == data[idx]).count();
         let count = u8::try_from(len).unwrap_or_else(|err| {
             panic!("Failed to convert {len} elements from {data:?}: {err:?}")
         });
@@ -23,7 +23,7 @@ fn convert(data: &[u8]) -> Vec<u8> {
 
 fn solve(data: &[u8], n: usize) -> Vec<u8> {
     let mut current: Vec<u8> = data.to_vec();
-    for _ in 0..n {
+    for _ in 0 .. n {
         let next = convert(&current);
         current = next;
     }

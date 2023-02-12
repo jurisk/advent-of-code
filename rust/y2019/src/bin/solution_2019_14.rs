@@ -1,8 +1,9 @@
 #![feature(int_roundings)]
 
-use itertools::Itertools;
 use std::collections::{HashMap, VecDeque};
 use std::fmt::{Debug, Formatter};
+
+use itertools::Itertools;
 
 type Number = u64;
 
@@ -41,9 +42,9 @@ impl Ingredient {
 
 #[derive(PartialEq, Eq, Clone)]
 struct Conversion {
-    pub from: HashMap<Ingredient, Number>,
+    pub from:          HashMap<Ingredient, Number>,
     pub to_ingredient: Ingredient,
-    pub to_quantity: Number,
+    pub to_quantity:   Number,
 }
 
 impl Debug for Conversion {

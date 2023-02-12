@@ -1,10 +1,11 @@
 extern crate core;
 
-use crate::Command::{Cut, DealIntoNewStack, DealWithIncrement};
 use itertools::Itertools;
 use num_bigint::BigInt;
 use num_bigint::ToBigInt;
 use num_traits::{One, ToPrimitive, Zero};
+
+use crate::Command::{Cut, DealIntoNewStack, DealWithIncrement};
 
 const DATA: &str = include_str!("../../resources/22.txt");
 
@@ -21,7 +22,7 @@ impl<T: Copy + Clone + Eq> SimpleDeck<T> {
         F: Fn(usize) -> T,
     {
         SimpleDeck {
-            cards: (0..size).map(create).collect(),
+            cards: (0 .. size).map(create).collect(),
         }
     }
 
@@ -42,22 +43,22 @@ impl<T: Copy + Clone + Eq> SimpleDeck<T> {
             Cut(n) if *n > 0 => {
                 let m = *n as usize;
                 SimpleDeck {
-                    cards: vec![&self.cards[m..], &self.cards[..m]].concat(),
+                    cards: vec![&self.cards[m ..], &self.cards[.. m]].concat(),
                 }
             },
             #[allow(clippy::cast_sign_loss)]
             Cut(n) => {
                 let m = (isize::try_from(self.cards.len()).unwrap() + *n) as usize;
                 SimpleDeck {
-                    cards: vec![&self.cards[m..], &self.cards[..m]].concat(),
+                    cards: vec![&self.cards[m ..], &self.cards[.. m]].concat(),
                 }
             },
             DealWithIncrement(n) => {
                 // This can be improved but it works
                 let len = self.cards.len();
                 let factory = SimpleDeck::new(len, |idx| idx).cards;
-                let index: Vec<_> = (0..len).map(|idx| factory[(idx * n) % len]).collect();
-                let mapping: Vec<_> = (0..len)
+                let index: Vec<_> = (0 .. len).map(|idx| factory[(idx * n) % len]).collect();
+                let mapping: Vec<_> = (0 .. len)
                     .map(|n| index.iter().position(|x| *x == n).unwrap())
                     .collect();
                 SimpleDeck {
@@ -110,16 +111,16 @@ impl Command {
 // Note - this only works for Part 2 numbers as they are all prime
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
 struct PowerDeck {
-    size: BigInt,
-    offset: BigInt,
+    size:      BigInt,
+    offset:    BigInt,
     increment: BigInt,
 }
 
 impl PowerDeck {
     fn new(size: usize) -> PowerDeck {
         PowerDeck {
-            size: size.to_bigint().unwrap(),
-            offset: BigInt::zero(),
+            size:      size.to_bigint().unwrap(),
+            offset:    BigInt::zero(),
             increment: BigInt::one(),
         }
     }
@@ -149,8 +150,8 @@ impl PowerDeck {
     fn apply_command(&self, command: &Command) -> PowerDeck {
         match command {
             DealWithIncrement(n) => {
-                // difference between two adjacent numbers is multiplied by the inverse of the increment.
-                // increment_mul *= inv(q)
+                // difference between two adjacent numbers is multiplied by the inverse of the
+                // increment. increment_mul *= inv(q)
                 let q = n.to_bigint().unwrap();
                 let mul_with = self.inv(&q);
                 let increment = self.increment.clone() * mul_with;
@@ -209,8 +210,8 @@ impl PowerDeck {
         // increment = pow(increment_mul, iterations, cards)
         let increment = self.increment.modpow(&iterations, &self.size);
 
-        // offset = 0 + offset_diff * (1 + increment_mul + increment_mul^2 + ... + increment_mul^iterations)
-        // use geometric series.
+        // offset = 0 + offset_diff * (1 + increment_mul + increment_mul^2 + ... +
+        // increment_mul^iterations) use geometric series.
         // offset = offset_diff * (1 - increment) * inv((1 - increment_mul) % cards)
         let offset =
             self.offset.clone() * (1 - increment.clone()) * self.inv(&(1 - self.increment.clone()));

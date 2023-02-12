@@ -9,9 +9,9 @@ fn parse(input: &str) -> Vec<u32> {
 }
 
 fn count_larger(data: &[u32]) -> usize {
-    data[0..data.len() - 1]
+    data[0 .. data.len() - 1]
         .iter()
-        .zip(&data[1..])
+        .zip(&data[1 ..])
         .filter(|(a, b)| a < b)
         .count()
 }
@@ -23,9 +23,9 @@ fn part_1(input: &str) -> usize {
 
 fn part_2(input: &str) -> usize {
     let data: Vec<_> = parse(input);
-    let a = &data[0..data.len() - 2];
-    let b = &data[1..data.len() - 1];
-    let c = &data[2..];
+    let a = &data[0 .. data.len() - 2];
+    let b = &data[1 .. data.len() - 1];
+    let c = &data[2 ..];
     let sums: Vec<_> = izip!(a, b, c).map(|(x, y, z)| x + y + z).collect();
     count_larger(&sums)
 }

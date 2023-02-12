@@ -1,7 +1,9 @@
+use std::str::FromStr;
+
+use advent_of_code_common::parsing::{parse_lines_to_vec, parse_str, Error};
+
 use crate::Instruction::{Hlf, Inc, Jie, Jio, Jmp, Tpl};
 use crate::Register::{A, B};
-use advent_of_code_common::parsing::{parse_lines_to_vec, parse_str, Error};
-use std::str::FromStr;
 
 #[derive(Copy, Clone, Debug)]
 enum Register {
@@ -56,13 +58,17 @@ impl FromStr for Instruction {
 #[derive(Copy, Clone, Debug)]
 struct State {
     ip: i32,
-    a: u32,
-    b: u32,
+    a:  u32,
+    b:  u32,
 }
 
 impl State {
     fn new() -> Self {
-        State { ip: 0, a: 0, b: 0 }
+        State {
+            ip: 0,
+            a:  0,
+            b:  0,
+        }
     }
 
     fn updated<F>(self, register: Register, f: F) -> Self
@@ -71,11 +77,11 @@ impl State {
     {
         State {
             ip: self.ip + 1,
-            a: match register {
+            a:  match register {
                 A => f(self.a),
                 B => self.a,
             },
-            b: match register {
+            b:  match register {
                 A => self.b,
                 B => f(self.b),
             },
@@ -102,16 +108,24 @@ impl State {
             Tpl(register) => self.updated(register, |n| n * 3),
             Inc(register) => self.updated(register, |n| n + 1),
             Jmp(offset) => self.jump(offset),
-            Jie(register, offset) => self.jump(if self.register(register) % 2 == 0 {
-                offset
-            } else {
-                1
-            }),
-            Jio(register, offset) => self.jump(if self.register(register) == 1 {
-                offset
-            } else {
-                1
-            }),
+            Jie(register, offset) => {
+                self.jump(
+                    if self.register(register) % 2 == 0 {
+                        offset
+                    } else {
+                        1
+                    },
+                )
+            },
+            Jio(register, offset) => {
+                self.jump(
+                    if self.register(register) == 1 {
+                        offset
+                    } else {
+                        1
+                    },
+                )
+            },
         }
     }
 }

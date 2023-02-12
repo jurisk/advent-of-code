@@ -4,7 +4,7 @@ fn solve<F>(input: u32, f: F) -> u32
 where
     F: Fn(u32) -> u32,
 {
-    for i in 1..=u32::MAX {
+    for i in 1 ..= u32::MAX {
         let result = f(i);
 
         if i % 100_000 == 0 {

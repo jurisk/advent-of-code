@@ -1,6 +1,7 @@
-use crate::coords2d::Coords2D;
 use std::cmp::{max, min};
 use std::iter::Step;
+
+use crate::coords2d::Coords2D;
 
 pub struct Area2D<T> {
     min: Coords2D<T>,
@@ -18,11 +19,11 @@ impl<T: Copy + Ord + Step> Area2D<T> {
     }
 
     pub fn points(self) -> Vec<Coords2D<T>> {
-        (self.min.x..=self.max.x)
+        (self.min.x ..= self.max.x)
             .collect::<Vec<_>>()
             .into_iter()
             .flat_map(|x| {
-                (self.min.y..=self.max.y)
+                (self.min.y ..= self.max.y)
                     .collect::<Vec<_>>()
                     .into_iter()
                     .map(move |y| Coords2D::new(x, y))

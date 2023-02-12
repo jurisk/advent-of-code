@@ -1,32 +1,33 @@
+use std::collections::HashSet;
+
 use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
 use pathfinding::prelude::dfs_reach;
 use recap::Recap;
 use serde::Deserialize;
-use std::collections::HashSet;
 
 type Location = String;
 
 #[derive(Debug, Deserialize, Recap, Clone)]
 #[recap(regex = r#"^(?P<from>[A-Za-z]+) to (?P<to>[A-Za-z]+) = (?P<distance>\d+)$"#)]
 struct Route {
-    from: Location,
-    to: Location,
+    from:     Location,
+    to:       Location,
     distance: i32,
 }
 
 impl Route {
     fn reverse_direction(&self) -> Self {
         Route {
-            from: self.to.clone(),
-            to: self.from.clone(),
+            from:     self.to.clone(),
+            to:       self.from.clone(),
             distance: self.distance,
         }
     }
 
     fn reverse_distance(&self) -> Self {
         Route {
-            from: self.from.clone(),
-            to: self.to.clone(),
+            from:     self.from.clone(),
+            to:       self.to.clone(),
             distance: -self.distance,
         }
     }
@@ -61,10 +62,12 @@ fn solve(data: &[Route], prune: bool) -> i32 {
             vec![]
         } else {
             match path.last() {
-                None => locations
-                    .iter()
-                    .map(|location| (vec![location.to_string()], 0))
-                    .collect::<Vec<_>>(),
+                None => {
+                    locations
+                        .iter()
+                        .map(|location| (vec![location.to_string()], 0))
+                        .collect::<Vec<_>>()
+                },
                 Some(last) => {
                     let non_visited_neighbours = edges
                         .iter()

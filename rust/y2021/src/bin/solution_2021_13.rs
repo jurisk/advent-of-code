@@ -1,4 +1,7 @@
-use crate::FoldInstruction::{AlongX, AlongY};
+use std::collections::HashSet;
+use std::fmt::{Display, Formatter};
+use std::str::FromStr;
+
 use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::parsing::{
     parse_lines_to_hashset, parse_lines_to_vec,
@@ -6,9 +9,8 @@ use advent_of_code_common::parsing::{
 };
 use advent_of_code_common::utils::head_tail;
 use itertools::Itertools;
-use std::collections::HashSet;
-use std::fmt::{Display, Formatter};
-use std::str::FromStr;
+
+use crate::FoldInstruction::{AlongX, AlongY};
 
 const DATA: &str = include_str!("../../resources/13.txt");
 
@@ -24,14 +26,18 @@ impl FoldInstruction {
     fn apply_to_coords(self, coords: Coords) -> Coords {
         match self {
             AlongX(x_fold) if coords.x < x_fold => coords,
-            AlongX(x_fold) if coords.x > x_fold => Coords {
-                x: x_fold - (coords.x - x_fold),
-                y: coords.y,
+            AlongX(x_fold) if coords.x > x_fold => {
+                Coords {
+                    x: x_fold - (coords.x - x_fold),
+                    y: coords.y,
+                }
             },
             AlongY(y_fold) if coords.y < y_fold => coords,
-            AlongY(y_fold) if coords.y > y_fold => Coords {
-                x: coords.x,
-                y: y_fold - (coords.y - y_fold),
+            AlongY(y_fold) if coords.y > y_fold => {
+                Coords {
+                    x: coords.x,
+                    y: y_fold - (coords.y - y_fold),
+                }
             },
             _ => panic!("Unexpected {self:?} {self:?}"),
         }
@@ -56,7 +62,7 @@ impl FromStr for FoldInstruction {
 
 #[derive(Clone)]
 struct Manual {
-    dots: HashSet<Coords>,
+    dots:         HashSet<Coords>,
     instructions: Vec<FoldInstruction>,
 }
 
@@ -71,9 +77,11 @@ impl Manual {
         let (head, tail) = head_tail(&self.instructions);
         match head {
             None => self.clone(),
-            Some(head) => Manual {
-                dots: Manual::fold_dots(&self.dots, head),
-                instructions: tail.to_vec(),
+            Some(head) => {
+                Manual {
+                    dots:         Manual::fold_dots(&self.dots, head),
+                    instructions: tail.to_vec(),
+                }
             },
         }
     }
@@ -83,9 +91,9 @@ impl Display for Manual {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let max_x = self.dots.iter().map(|c| c.x).max().unwrap();
         let max_y = self.dots.iter().map(|c| c.y).max().unwrap();
-        let result = (0..=max_y)
+        let result = (0 ..= max_y)
             .map(|y| {
-                (0..=max_x)
+                (0 ..= max_x)
                     .map(|x| {
                         if self.dots.contains(&Coords { x, y }) {
                             '#'

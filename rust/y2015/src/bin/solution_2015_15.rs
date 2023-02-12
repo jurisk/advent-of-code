@@ -1,18 +1,19 @@
+use std::cmp::max;
+
 use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
 use recap::Recap;
 use serde::Deserialize;
-use std::cmp::max;
 
 #[derive(Debug, Deserialize, Recap)]
 #[recap(
     regex = r#"^\w+: capacity (?P<capacity>-?\d+), durability (?P<durability>-?\d+), flavor (?P<flavor>-?\d+), texture (?P<texture>-?\d+), calories (?P<calories>\d+)$"#
 )]
 struct Ingredient {
-    capacity: i32,
+    capacity:   i32,
     durability: i32,
-    flavor: i32,
-    texture: i32,
-    calories: u32,
+    flavor:     i32,
+    texture:    i32,
+    calories:   u32,
 }
 
 type Extractor = dyn Fn(&Ingredient) -> i32;
@@ -64,11 +65,12 @@ fn solve(ingredients: &[Ingredient], max_teaspoons: u32, expected_calories: Opti
 
     let mut best = i32::MIN;
 
-    // This is questionable as we are limited to 4 ingredients but because the amounts can be 0,
-    // it also works for less than 4 (such as 2 which the tests have)
-    for a in 0u32..=max_teaspoons {
-        for b in 0..=(max_teaspoons - a) {
-            for c in 0..=(max_teaspoons - a - b) {
+    // This is questionable as we are limited to 4 ingredients but because the
+    // amounts can be 0, it also works for less than 4 (such as 2 which the
+    // tests have)
+    for a in 0u32 ..= max_teaspoons {
+        for b in 0 ..= (max_teaspoons - a) {
+            for c in 0 ..= (max_teaspoons - a - b) {
                 let d = max_teaspoons - a - b - c;
                 let amounts = vec![a, b, c, d];
 

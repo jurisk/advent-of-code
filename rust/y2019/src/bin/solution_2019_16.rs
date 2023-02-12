@@ -38,7 +38,7 @@ fn solve_1(data: &str, phases: u8) -> String {
 }
 
 fn apply_phases_1(numbers: Vec<u8>, phases: u8) -> Vec<u8> {
-    (0..phases).fold(numbers, |a, phase| {
+    (0 .. phases).fold(numbers, |a, phase| {
         println!("Applying phase {phase}");
         apply_phase_1(&a)
     })
@@ -56,7 +56,7 @@ fn apply_phase_2(numbers: &[u8]) -> Vec<u8> {
 }
 
 fn apply_phases_2(numbers: Vec<u8>, phases: u8) -> Vec<u8> {
-    (0..phases).fold(numbers, |a, phase| {
+    (0 .. phases).fold(numbers, |a, phase| {
         println!("Applying phase {phase}");
         apply_phase_2(&a)
     })
@@ -77,17 +77,17 @@ fn solve_2(data: &str, repeat: usize, phases: u8) -> String {
 
 fn part_1() {
     let data = include_str!("../../resources/16.txt");
-    let result = &solve_1(data, 100)[..8];
+    let result = &solve_1(data, 100)[.. 8];
     println!("Part 1: {result}");
     assert_eq!(result, "68764632");
 }
 
 fn part_2() {
     let data = include_str!("../../resources/16.txt");
-    let message_offset: usize = (data[..7]).parse::<usize>().unwrap();
+    let message_offset: usize = (data[.. 7]).parse::<usize>().unwrap();
     println!("Message offset: {message_offset}");
     let result = solve_2(data, 10000, 100);
-    let message = &result[message_offset..message_offset + 8];
+    let message = &result[message_offset .. message_offset + 8];
     println!("Part 2: {message}");
     assert_eq!(message, "52825021");
 }

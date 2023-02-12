@@ -1,8 +1,9 @@
+use std::slice::Iter;
+
 use advent_of_code_common::parsing::{
     parse_ascii_whitespace_separated_vec, parse_lines_to_vec_passing_parser, Error,
 };
 use itertools::{Chunk, Itertools};
-use std::slice::Iter;
 
 struct Triangle {
     a: u32,

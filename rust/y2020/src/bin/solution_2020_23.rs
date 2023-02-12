@@ -2,7 +2,7 @@ struct Cups {
     // [0] - which cup comes after Cup 1
     // [1] - which cup comes after Cup 2
     // [n-th] - which cup comes after Cup (n+1)
-    links: Vec<usize>,
+    links:    Vec<usize>,
     selected: usize,
 }
 
@@ -13,31 +13,34 @@ impl Cups {
 
     fn iteration(&mut self) {
         let current = self.selected;
-        // The crab picks up the three cups that are immediately clockwise of the current cup.
+        // The crab picks up the three cups that are immediately clockwise of the
+        // current cup.
         let a = self.links[current];
         let b = self.links[a];
         let c = self.links[b];
 
         self.links[current] = self.links[c];
 
-        // The crab selects a destination cup: the cup with a label equal to the current cup's label
-        // minus one.
+        // The crab selects a destination cup: the cup with a label equal to the current
+        // cup's label minus one.
         let mut destination = self.safe_decrement(current);
 
-        // If this would select one of the cups that was just picked up, the crab will keep
-        // subtracting one until it finds a cup that wasn't just picked up. If at any point in this
-        // process the value goes below the lowest value on any cup's label, it wraps around to the
-        // highest value on any cup's label instead.
+        // If this would select one of the cups that was just picked up, the crab will
+        // keep subtracting one until it finds a cup that wasn't just picked up.
+        // If at any point in this process the value goes below the lowest value
+        // on any cup's label, it wraps around to the highest value on any cup's
+        // label instead.
         while destination == a || destination == b || destination == c {
             destination = self.safe_decrement(destination);
         }
 
-        // The crab selects a new current cup: the cup which is immediately clockwise of the current
-        // cup.
+        // The crab selects a new current cup: the cup which is immediately clockwise of
+        // the current cup.
         self.selected = self.links[c];
 
-        // The crab places the cups it just picked up so that they are immediately clockwise of the
-        // destination cup. They keep the same order as when they were picked up.
+        // The crab places the cups it just picked up so that they are immediately
+        // clockwise of the destination cup. They keep the same order as when
+        // they were picked up.
         self.links[c] = self.links[destination];
         self.links[destination] = a;
     }
@@ -50,7 +53,7 @@ impl Cups {
         assert!(length >= string.len());
         let mut links: Vec<usize> = Vec::with_capacity(length);
 
-        for i in 0..length {
+        for i in 0 .. length {
             links.push(i + 1);
         }
 
@@ -59,7 +62,7 @@ impl Cups {
             .map(|ch| ch.to_string().parse::<usize>().unwrap() - 1)
             .collect();
 
-        for i in 0..input.len() - 1 {
+        for i in 0 .. input.len() - 1 {
             let value = input[i];
             let points_to = input[i + 1];
             links[value] = points_to;
@@ -100,7 +103,7 @@ fn answer2(cups: &mut Cups) -> usize {
 }
 
 fn simulate(cups: &mut Cups, iterations: u32) {
-    for _ in 0..iterations {
+    for _ in 0 .. iterations {
         cups.iteration();
     }
 }

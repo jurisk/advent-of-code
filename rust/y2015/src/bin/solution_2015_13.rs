@@ -1,26 +1,27 @@
+use std::collections::HashSet;
+use std::str::FromStr;
+
 use advent_of_code_common::parsing::{parse_lines_to_vec, parse_str, Error};
 use itertools::Itertools;
 use recap::Recap;
 use serde::Deserialize;
-use std::collections::HashSet;
-use std::str::FromStr;
 
 #[derive(Deserialize, Recap)]
 #[recap(
     regex = r#"^(?P<who>\w+) would (?P<do_what>\w+) (?P<how_many>\d+) happiness units by sitting next to (?P<next_to_who>\w+).$"#
 )]
 struct RawProximity {
-    who: String,
-    do_what: String,
-    how_many: i32,
+    who:         String,
+    do_what:     String,
+    how_many:    i32,
     next_to_who: String,
 }
 
 #[derive(Debug, Clone)]
 struct Proximity {
-    who: String,
+    who:             String,
     happiness_delta: i32,
-    next_to_who: String,
+    next_to_who:     String,
 }
 
 impl FromStr for Proximity {
@@ -34,10 +35,12 @@ impl FromStr for Proximity {
             s => Err(format!("Unexpected {s}")),
         };
 
-        coef.map(|coef| Proximity {
-            who: raw.who,
-            happiness_delta: coef * raw.how_many,
-            next_to_who: raw.next_to_who,
+        coef.map(|coef| {
+            Proximity {
+                who:             raw.who,
+                happiness_delta: coef * raw.how_many,
+                next_to_who:     raw.next_to_who,
+            }
         })
     }
 }
@@ -85,14 +88,14 @@ fn solve_2(data: &[Proximity]) -> i32 {
         .flat_map(|n| {
             vec![
                 Proximity {
-                    who: MYSELF.to_string(),
+                    who:             MYSELF.to_string(),
                     happiness_delta: 0,
-                    next_to_who: n.clone(),
+                    next_to_who:     n.clone(),
                 },
                 Proximity {
-                    who: n.clone(),
+                    who:             n.clone(),
                     happiness_delta: 0,
-                    next_to_who: MYSELF.to_string(),
+                    next_to_who:     MYSELF.to_string(),
                 },
             ]
         })

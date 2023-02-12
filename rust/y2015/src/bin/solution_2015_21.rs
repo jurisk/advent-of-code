@@ -1,10 +1,11 @@
-use itertools::Itertools;
 use std::cmp::max;
 use std::ops::Add;
 
+use itertools::Itertools;
+
 #[derive(Clone, Copy)]
 struct Item {
-    cost: u16,
+    cost:   u16,
     damage: u16,
     armour: u16,
 }
@@ -14,7 +15,7 @@ impl Add for Item {
 
     fn add(self, rhs: Self) -> Self::Output {
         Item {
-            cost: self.cost + rhs.cost,
+            cost:   self.cost + rhs.cost,
             damage: self.damage + rhs.damage,
             armour: self.armour + rhs.armour,
         }
@@ -23,35 +24,35 @@ impl Add for Item {
 
 struct Stats {
     hit_points: u16,
-    damage: u16,
-    armour: u16,
-    cost: u16,
+    damage:     u16,
+    armour:     u16,
+    cost:       u16,
 }
 
 // You must buy exactly one weapon; no dual-wielding.
 const WEAPONS: [Item; 5] = [
     Item {
-        cost: 8,
+        cost:   8,
         damage: 4,
         armour: 0,
     },
     Item {
-        cost: 10,
+        cost:   10,
         damage: 5,
         armour: 0,
     },
     Item {
-        cost: 25,
+        cost:   25,
         damage: 6,
         armour: 0,
     },
     Item {
-        cost: 40,
+        cost:   40,
         damage: 7,
         armour: 0,
     },
     Item {
-        cost: 74,
+        cost:   74,
         damage: 8,
         armour: 0,
     },
@@ -60,27 +61,27 @@ const WEAPONS: [Item; 5] = [
 // Armor is optional, but you can't use more than one.
 const ARMOUR: [Item; 5] = [
     Item {
-        cost: 13,
+        cost:   13,
         damage: 0,
         armour: 1,
     },
     Item {
-        cost: 31,
+        cost:   31,
         damage: 0,
         armour: 2,
     },
     Item {
-        cost: 53,
+        cost:   53,
         damage: 0,
         armour: 3,
     },
     Item {
-        cost: 75,
+        cost:   75,
         damage: 0,
         armour: 4,
     },
     Item {
-        cost: 102,
+        cost:   102,
         damage: 0,
         armour: 5,
     },
@@ -89,32 +90,32 @@ const ARMOUR: [Item; 5] = [
 // You can buy 0-2 rings (at most one for each hand).
 const RINGS: [Item; 6] = [
     Item {
-        cost: 25,
+        cost:   25,
         damage: 1,
         armour: 0,
     },
     Item {
-        cost: 50,
+        cost:   50,
         damage: 2,
         armour: 0,
     },
     Item {
-        cost: 100,
+        cost:   100,
         damage: 3,
         armour: 0,
     },
     Item {
-        cost: 20,
+        cost:   20,
         damage: 0,
         armour: 1,
     },
     Item {
-        cost: 40,
+        cost:   40,
         damage: 0,
         armour: 2,
     },
     Item {
-        cost: 80,
+        cost:   80,
         damage: 0,
         armour: 3,
     },
@@ -122,13 +123,14 @@ const RINGS: [Item; 6] = [
 
 const BOSS: Stats = Stats {
     hit_points: 109,
-    damage: 8,
-    armour: 2,
-    cost: 0,
+    damage:     8,
+    armour:     2,
+    cost:       0,
 };
 
 fn wins(player: &Stats, boss: &Stats) -> bool {
-    // Faster implementations exist, as we don't actually have to simulate every round - but this is simpler
+    // Faster implementations exist, as we don't actually have to simulate every
+    // round - but this is simpler
     let mut player_hit_points = player.hit_points;
     let mut boss_hit_points = boss.hit_points;
 
@@ -153,9 +155,9 @@ fn calculate_stats(weapons: &[Item], armour: &[Item], rings: &[Item]) -> Stats {
     let joined = all.into_iter().reduce(|a, b| a + b).unwrap();
     Stats {
         hit_points: 100,
-        damage: joined.damage,
-        armour: joined.armour,
-        cost: joined.cost,
+        damage:     joined.damage,
+        armour:     joined.armour,
+        cost:       joined.cost,
     }
 }
 
@@ -217,16 +219,16 @@ mod tests {
     fn test_wins() {
         let player = Stats {
             hit_points: 8,
-            damage: 5,
-            armour: 5,
-            cost: 0,
+            damage:     5,
+            armour:     5,
+            cost:       0,
         };
 
         let boss = Stats {
             hit_points: 12,
-            damage: 7,
-            armour: 2,
-            cost: 0,
+            damage:     7,
+            armour:     2,
+            cost:       0,
         };
 
         assert!(wins(&player, &boss))

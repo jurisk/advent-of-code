@@ -1,3 +1,6 @@
+use std::str;
+use std::str::FromStr;
+
 use advent_of_code_common::parsing;
 use advent_of_code_common::parsing::parse_lines_to_vec;
 use itertools::Itertools;
@@ -11,8 +14,6 @@ use nom::multi::many0;
 use nom::sequence::delimited;
 use nom::Err;
 use nom::{Finish, IResult};
-use std::str;
-use std::str::FromStr;
 
 #[derive(Debug)]
 enum Element {
@@ -40,8 +41,10 @@ fn super_net(input: &[u8]) -> IResult<&[u8], Element> {
 fn hyper_net(input: &[u8]) -> IResult<&[u8], Element> {
     map(
         delimited(char('['), take_while(|ch| ch != b']'), char(']')),
-        |chars: &[u8]| Element::HyperNet {
-            value: str::from_utf8(chars).unwrap().to_string(),
+        |chars: &[u8]| {
+            Element::HyperNet {
+                value: str::from_utf8(chars).unwrap().to_string(),
+            }
         },
     )(input)
 }
@@ -83,9 +86,11 @@ impl Ipv7Addr {
     fn super_net_sequences(&self) -> Vec<String> {
         self.elements
             .iter()
-            .filter_map(|x| match x {
-                Element::SuperNet { value } => Some(value.to_string()),
-                Element::HyperNet { .. } => None,
+            .filter_map(|x| {
+                match x {
+                    Element::SuperNet { value } => Some(value.to_string()),
+                    Element::HyperNet { .. } => None,
+                }
             })
             .collect()
     }
@@ -93,9 +98,11 @@ impl Ipv7Addr {
     fn hyper_net_sequences(&self) -> Vec<String> {
         self.elements
             .iter()
-            .filter_map(|x| match x {
-                Element::SuperNet { .. } => None,
-                Element::HyperNet { value } => Some(value.to_string()),
+            .filter_map(|x| {
+                match x {
+                    Element::SuperNet { .. } => None,
+                    Element::HyperNet { value } => Some(value.to_string()),
+                }
             })
             .collect()
     }

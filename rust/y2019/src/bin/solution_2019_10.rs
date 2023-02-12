@@ -1,6 +1,7 @@
-use advent_of_code_common::coords2d::Coords2D;
 use std::collections::HashSet;
 use std::f32::consts::PI;
+
+use advent_of_code_common::coords2d::Coords2D;
 
 #[derive(Debug, Eq, PartialEq)]
 enum Cell {
@@ -19,10 +20,12 @@ fn parse(s: &str) -> Vec<Vec<Cell>> {
         .map(|row| {
             row.trim()
                 .chars()
-                .map(|ch| match ch {
-                    '.' => Cell::Empty,
-                    '#' => Cell::Asteroid,
-                    _ => panic!("Unexpected cell: {ch}"),
+                .map(|ch| {
+                    match ch {
+                        '.' => Cell::Empty,
+                        '#' => Cell::Asteroid,
+                        _ => panic!("Unexpected cell: {ch}"),
+                    }
                 })
                 .collect()
         })
@@ -39,7 +42,8 @@ fn asteroid_angle(from: Coords, to: Coords) -> Angle {
     (res * 1_000_000_f64) as Angle
 }
 
-// Note - Using a sorted set (e.g. BTreeSet) would make a lot of operations on these angles better
+// Note - Using a sorted set (e.g. BTreeSet) would make a lot of operations on
+// these angles better
 fn asteroid_angles(from: Coords, asteroid_coordinates: &HashSet<Coords>) -> Vec<Angle> {
     asteroid_coordinates
         .iter()
@@ -59,10 +63,10 @@ fn count_visible(from: Coords, asteroid_coordinates: &HashSet<Coords>) -> usize 
 
 fn asteroid_coordinates(input: &str) -> HashSet<Coords> {
     let data = parse(input);
-    (0..data.len())
+    (0 .. data.len())
         .flat_map(|y| {
             let row = &data[y];
-            (0..row.len()).filter_map(move |x| {
+            (0 .. row.len()).filter_map(move |x| {
                 if row[x] == Cell::Asteroid {
                     Some(Coords {
                         x: i32::try_from(x).unwrap(),
@@ -183,7 +187,7 @@ mod tests {
             best_coords,
             Coords {
                 x: expected_x,
-                y: expected_y
+                y: expected_y,
             }
         );
         assert_eq!(detected, expected_detected);

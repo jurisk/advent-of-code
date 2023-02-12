@@ -1,10 +1,11 @@
+use std::collections::HashMap;
+use std::hash::Hash;
+use std::str::FromStr;
+
 use advent_of_code_common::parsing::{
     parse_lines_to_vec, parse_space_separated_vec, split_into_two_strings, Error,
 };
 use itertools::Itertools;
-use std::collections::HashMap;
-use std::hash::Hash;
-use std::str::FromStr;
 
 const DATA: &str = include_str!("../../resources/08.txt");
 
@@ -40,7 +41,7 @@ impl FromStr for SegmentSet {
 
 #[derive(Debug)]
 struct Entry {
-    ten_patterns: [SegmentSet; 10],
+    ten_patterns:          [SegmentSet; 10],
     output_value_segments: [SegmentSet; 4],
 }
 

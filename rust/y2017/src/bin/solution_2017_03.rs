@@ -1,6 +1,7 @@
+use std::collections::HashMap;
+
 use advent_of_code_common::coords2d::Coords2D;
 use integer_sqrt::IntegerSquareRoot;
-use std::collections::HashMap;
 
 type Coords = Coords2D<i32>;
 
@@ -53,7 +54,7 @@ fn solve_1(n: u32) -> i32 {
 fn solve_2(limit: u32) -> u32 {
     let mut values: HashMap<Coords, u32> = HashMap::new();
     values.insert(Coords2D::origin(), 1);
-    for n in 2..=u32::MAX {
+    for n in 2 ..= u32::MAX {
         let coords = location_1(n);
         let value = coords
             .adjacent8()
@@ -88,10 +89,12 @@ mod tests {
     #[test]
     fn test_check_unique_locations() {
         let mut seen: HashMap<Coords, u32> = HashMap::new();
-        for n in 1..=4096 {
+        for n in 1 ..= 4096 {
             let coords = location_1(n);
             if let Some(already_seen) = seen.get(&coords) {
-                panic!("location({n}) == {coords:?} but it was already selected for location({already_seen})");
+                panic!(
+                    "location({n}) == {coords:?} but it was already selected for location({already_seen})"
+                );
             } else {
                 seen.insert(coords, n);
             }

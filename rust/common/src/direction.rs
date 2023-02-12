@@ -1,17 +1,19 @@
+use std::ops::Neg;
+
+use num_traits::{One, Zero};
+
 use crate::coords2d::Coords2D;
 use crate::direction::Direction::{East, North, South, West};
 use crate::parsing::Error;
 use crate::rotation::Rotation;
-use num_traits::{One, Zero};
-use std::ops::Neg;
 
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 #[repr(u8)]
 pub enum Direction {
     North = b'N',
-    East = b'E',
+    East  = b'E',
     South = b'S',
-    West = b'W',
+    West  = b'W',
 }
 
 impl Direction {

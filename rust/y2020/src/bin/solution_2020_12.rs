@@ -13,8 +13,8 @@ enum Command {
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 struct Location {
-    x: isize,
-    y: isize,
+    x:       isize,
+    y:       isize,
     bearing: isize,
 }
 
@@ -67,10 +67,12 @@ impl Location {
             West(n) => self.with_x(self.x - n),
             Left(n) => self.with_bearing(clamp(self.bearing - n)),
             Right(n) => self.with_bearing(clamp(self.bearing + n)),
-            Forward(n) => Location {
-                x: self.x + delta_x(n, self.bearing),
-                y: self.y + delta_y(n, self.bearing),
-                ..self
+            Forward(n) => {
+                Location {
+                    x: self.x + delta_x(n, self.bearing),
+                    y: self.y + delta_y(n, self.bearing),
+                    ..self
+                }
             },
         }
     }
@@ -82,8 +84,8 @@ impl Location {
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 struct LocationWithWaypoint {
-    ship_x: isize,
-    ship_y: isize,
+    ship_x:     isize,
+    ship_y:     isize,
     waypoint_x: isize,
     waypoint_y: isize,
 }
@@ -123,10 +125,12 @@ impl LocationWithWaypoint {
             West(n) => self.with_waypoint_x(self.waypoint_x - n),
             Left(n) => self.rotate_waypoint(clamp(-n)),
             Right(n) => self.rotate_waypoint(clamp(n)),
-            Forward(n) => LocationWithWaypoint {
-                ship_x: self.ship_x + n * self.waypoint_x,
-                ship_y: self.ship_y + n * self.waypoint_y,
-                ..self
+            Forward(n) => {
+                LocationWithWaypoint {
+                    ship_x: self.ship_x + n * self.waypoint_x,
+                    ship_y: self.ship_y + n * self.waypoint_y,
+                    ..self
+                }
             },
         }
     }
@@ -138,7 +142,7 @@ impl LocationWithWaypoint {
 
 fn parse_line(line: &str) -> Command {
     let first_char: char = line.chars().next().unwrap();
-    let remainder: &str = &line[1..];
+    let remainder: &str = &line[1 ..];
     let number = remainder.parse::<isize>().unwrap();
     match first_char {
         'N' => North(number),
@@ -170,8 +174,8 @@ fn solve2(location: LocationWithWaypoint, commands: &[Command]) -> LocationWithW
 
 fn main() {
     let starting_location = Location {
-        x: 0,
-        y: 0,
+        x:       0,
+        y:       0,
         bearing: 90,
     };
     let test_data = include_str!("../../resources/12-test.txt");
@@ -186,8 +190,8 @@ fn main() {
     println!("{}", solution1.manhattan_distance());
 
     let starting_location = LocationWithWaypoint {
-        ship_x: 0,
-        ship_y: 0,
+        ship_x:     0,
+        ship_y:     0,
         waypoint_x: 10,
         waypoint_y: 1,
     };

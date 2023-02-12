@@ -1,6 +1,7 @@
+use std::collections::{HashMap, VecDeque};
+
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
-use std::collections::{HashMap, VecDeque};
 
 pub type Entry = i128;
 pub type MachineCode = Vec<Entry>;
@@ -12,16 +13,16 @@ pub type Index = i128;
 #[derive(Eq, PartialEq, Debug, FromPrimitive)]
 #[repr(u8)]
 enum OperationCode {
-    Add = 1,
-    Multiply = 2,
-    Input = 3,
-    Output = 4,
-    JumpIfTrue = 5,
-    JumpIfFalse = 6,
-    LessThan = 7,
-    Equals = 8,
+    Add                = 1,
+    Multiply           = 2,
+    Input              = 3,
+    Output             = 4,
+    JumpIfTrue         = 5,
+    JumpIfFalse        = 6,
+    LessThan           = 7,
+    Equals             = 8,
     AdjustRelativeBase = 9,
-    Halt = 99,
+    Halt               = 99,
 }
 
 impl OperationCode {
@@ -33,9 +34,9 @@ impl OperationCode {
 #[derive(Eq, PartialEq, Debug, FromPrimitive)]
 #[repr(u8)]
 enum ParameterMode {
-    Position = 0,
+    Position  = 0,
     Immediate = 1,
-    Relative = 2,
+    Relative  = 2,
 }
 
 impl ParameterMode {
@@ -122,11 +123,11 @@ impl Memory {
 }
 
 pub struct Process {
-    input: Input,
+    input:  Input,
     output: Output,
 
-    memory: Memory,
-    ip: Index,
+    memory:        Memory,
+    ip:            Index,
     relative_base: Index,
 }
 
@@ -134,10 +135,10 @@ impl Process {
     #[must_use]
     pub fn new(program: &MachineCodeRef) -> Process {
         Process {
-            input: VecDeque::new(),
-            output: VecDeque::new(),
-            memory: Memory::from_program(program),
-            ip: 0,
+            input:         VecDeque::new(),
+            output:        VecDeque::new(),
+            memory:        Memory::from_program(program),
+            ip:            0,
             relative_base: 0,
         }
     }
@@ -176,16 +177,20 @@ impl Process {
         let mode_3 = ParameterMode::of(op / 10_000);
 
         match op_code {
-            OperationCode::Add => Operation::Add(
-                self.param(1, &mode_1),
-                self.param(2, &mode_2),
-                self.param(3, &mode_3),
-            ),
-            OperationCode::Multiply => Operation::Multiply(
-                self.param(1, &mode_1),
-                self.param(2, &mode_2),
-                self.param(3, &mode_3),
-            ),
+            OperationCode::Add => {
+                Operation::Add(
+                    self.param(1, &mode_1),
+                    self.param(2, &mode_2),
+                    self.param(3, &mode_3),
+                )
+            },
+            OperationCode::Multiply => {
+                Operation::Multiply(
+                    self.param(1, &mode_1),
+                    self.param(2, &mode_2),
+                    self.param(3, &mode_3),
+                )
+            },
             OperationCode::Input => Operation::Input(self.param(1, &mode_1)),
             OperationCode::Output => Operation::Output(self.param(1, &mode_1)),
             OperationCode::JumpIfTrue => {
@@ -194,16 +199,20 @@ impl Process {
             OperationCode::JumpIfFalse => {
                 Operation::JumpIfFalse(self.param(1, &mode_1), self.param(2, &mode_2))
             },
-            OperationCode::LessThan => Operation::LessThan(
-                self.param(1, &mode_1),
-                self.param(2, &mode_2),
-                self.param(3, &mode_3),
-            ),
-            OperationCode::Equals => Operation::Equals(
-                self.param(1, &mode_1),
-                self.param(2, &mode_2),
-                self.param(3, &mode_3),
-            ),
+            OperationCode::LessThan => {
+                Operation::LessThan(
+                    self.param(1, &mode_1),
+                    self.param(2, &mode_2),
+                    self.param(3, &mode_3),
+                )
+            },
+            OperationCode::Equals => {
+                Operation::Equals(
+                    self.param(1, &mode_1),
+                    self.param(2, &mode_2),
+                    self.param(3, &mode_3),
+                )
+            },
             OperationCode::AdjustRelativeBase => {
                 Operation::AdjustRelativeBase(self.param(1, &mode_1))
             },
@@ -255,31 +264,40 @@ impl Process {
     fn execute_op(&mut self, op: Operation) {
         // println!("{:04}: {:?}", self.ip, op);
         match op {
-            // Opcode 1 adds together numbers read from two positions and stores the result in a third position. The three integers immediately after the opcode tell you these three positions - the first two indicate the positions from which you should read the input values, and the third indicates the position at which the output should be stored.
+            // Opcode 1 adds together numbers read from two positions and stores the result in a
+            // third position. The three integers immediately after the opcode tell you these three
+            // positions - the first two indicate the positions from which you should read the input
+            // values, and the third indicates the position at which the output should be stored.
             Operation::Add(a, b, destination) => {
                 let index = self.resolve_index(&destination);
                 self.write_to_memory(index, self.resolve(&a) + self.resolve(&b));
                 self.adjust_ip(4);
             },
-            // Opcode 2 works exactly like opcode 1, except it multiplies the two inputs instead of adding them. Again, the three integers after the opcode indicate where the inputs and outputs are, not their values.
+            // Opcode 2 works exactly like opcode 1, except it multiplies the two inputs instead of
+            // adding them. Again, the three integers after the opcode indicate where the inputs and
+            // outputs are, not their values.
             Operation::Multiply(a, b, destination) => {
                 let index = self.resolve_index(&destination);
                 self.write_to_memory(index, self.resolve(&a) * self.resolve(&b));
                 self.adjust_ip(4);
             },
-            // Opcode 3 takes a single integer as input and saves it to the position given by its only parameter. For example, the instruction 3,50 would take an input value and store it at address 50.
+            // Opcode 3 takes a single integer as input and saves it to the position given by its
+            // only parameter. For example, the instruction 3,50 would take an input value and store
+            // it at address 50.
             Operation::Input(parameter) => {
                 let value = self.input.pop_front().unwrap();
                 let index = self.resolve_index(&parameter);
                 self.write_to_memory(index, value);
                 self.adjust_ip(2);
             },
-            // Opcode 4 outputs the value of its only parameter. For example, the instruction 4,50 would output the value at address 50.
+            // Opcode 4 outputs the value of its only parameter. For example, the instruction 4,50
+            // would output the value at address 50.
             Operation::Output(parameter) => {
                 self.output.push_back(self.resolve(&parameter));
                 self.adjust_ip(2);
             },
-            // Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
+            // Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the instruction
+            // pointer to the value from the second parameter. Otherwise, it does nothing.
             Operation::JumpIfTrue(a, b) => {
                 if self.resolve(&a) == 0 {
                     self.adjust_ip(3);
@@ -287,7 +305,8 @@ impl Process {
                     self.set_ip(self.resolve(&b) as Index);
                 }
             },
-            // Opcode 6 is jump-if-false: if the first parameter is zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
+            // Opcode 6 is jump-if-false: if the first parameter is zero, it sets the instruction
+            // pointer to the value from the second parameter. Otherwise, it does nothing.
             Operation::JumpIfFalse(a, b) => {
                 if self.resolve(&a) == 0 {
                     self.set_ip(self.resolve(&b) as Index);
@@ -295,13 +314,15 @@ impl Process {
                     self.adjust_ip(3);
                 }
             },
-            // Opcode 7 is less than: if the first parameter is less than the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+            // Opcode 7 is less than: if the first parameter is less than the second parameter, it
+            // stores 1 in the position given by the third parameter. Otherwise, it stores 0.
             Operation::LessThan(a, b, c) => {
                 let value = Entry::from(self.resolve(&a) < self.resolve(&b));
                 self.write_to_memory(self.resolve_index(&c), value);
                 self.adjust_ip(4);
             },
-            // Opcode 8 is equals: if the first parameter is equal to the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+            // Opcode 8 is equals: if the first parameter is equal to the second parameter, it
+            // stores 1 in the position given by the third parameter. Otherwise, it stores 0.
             Operation::Equals(a, b, c) => {
                 let value = Entry::from(self.resolve(&a) == self.resolve(&b));
                 self.write_to_memory(self.resolve_index(&c), value);
@@ -378,7 +399,8 @@ impl Process {
 
     /// # Panics
     ///
-    /// Panics if the output from the `IntCode` program is not displayable as a character
+    /// Panics if the output from the `IntCode` program is not displayable as a
+    /// character
     #[must_use]
     pub fn read_output_as_ascii(&mut self) -> String {
         let result = self
@@ -395,7 +417,8 @@ impl Process {
         self.run_to_condition(|x| x.output_len() >= compare_with)
     }
 
-    /* Returns true if Halt was encountered, false if Output was encountered instead */
+    /* Returns true if Halt was encountered, false if Output was encountered
+     * instead */
     pub fn run_to_halt_or_output(&mut self) -> bool {
         self.run_to_halt_or_output_size(1)
     }
@@ -406,7 +429,7 @@ impl Process {
 
     #[must_use]
     pub fn memory_as_comma_delimited_string(&self, max_index: Index) -> String {
-        (0..max_index)
+        (0 .. max_index)
             .map(|idx| format!("{}", self.read_from_memory(idx)))
             .collect::<Vec<String>>()
             .join(",")

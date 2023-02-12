@@ -1,6 +1,7 @@
-use itertools::Itertools;
 use std::collections::HashMap;
 use std::num::ParseIntError;
+
+use itertools::Itertools;
 
 type Error = String;
 
@@ -33,7 +34,7 @@ fn parse(data: &str) -> Result<FishCount, Error> {
    8 comes from 0
 */
 fn next_day(fishes: &FishCount) -> FishCount {
-    (0..=8)
+    (0 ..= 8)
         .map(|k| {
             let new_v = if k == 6 {
                 fishes.get(&0).unwrap_or(&0) + fishes.get(&7).unwrap_or(&0)
@@ -54,7 +55,7 @@ fn fish_count(fishes: &FishCount) -> usize {
 
 fn solve(data: &str, days: u32) -> Result<usize, Error> {
     let mut fishes = parse(data)?;
-    for idx in 0..days {
+    for idx in 0 .. days {
         println!("{idx} {} {fishes:?}", fish_count(&fishes));
         fishes = next_day(&fishes);
     }

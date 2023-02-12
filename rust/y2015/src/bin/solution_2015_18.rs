@@ -6,10 +6,12 @@ use pathfinding::matrix::Matrix;
 type Data = Matrix<bool>;
 
 fn parse(input: &str) -> Result<Data, Error> {
-    parse_matrix(input, |ch| match ch {
-        '.' => Ok(false),
-        '#' => Ok(true),
-        _ => Err(format!("Unrecognized `{ch}`")),
+    parse_matrix(input, |ch| {
+        match ch {
+            '.' => Ok(false),
+            '#' => Ok(true),
+            _ => Err(format!("Unrecognized `{ch}`")),
+        }
     })
 }
 

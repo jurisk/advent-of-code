@@ -1,15 +1,16 @@
+use std::str::FromStr;
+
 use advent_of_code_common::parsing::{
     parse_matrix, split_into_two_segments_separated_by_double_newline, Error,
 };
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use pathfinding::matrix::Matrix;
-use std::str::FromStr;
 
 #[repr(u8)]
 #[derive(Debug, Eq, PartialEq, Clone, TryFromPrimitive, IntoPrimitive, Copy)]
 enum Pixel {
     Light = b'#',
-    Dark = b'.',
+    Dark  = b'.',
 }
 
 impl Pixel {
@@ -29,7 +30,7 @@ struct ImageEnhancementAlgorithm {
 }
 
 struct Image {
-    pixels: Matrix<Pixel>,
+    pixels:             Matrix<Pixel>,
     surrounding_pixels: Pixel,
 }
 
@@ -74,8 +75,8 @@ impl Image {
     fn enhance(&self, algorithm: &ImageEnhancementAlgorithm) -> Image {
         let mut pixels: Matrix<Pixel> =
             Matrix::new(self.pixels.rows + 2, self.pixels.columns + 2, Pixel::Dark);
-        for r in 0..pixels.rows {
-            for c in 0..pixels.columns {
+        for r in 0 .. pixels.rows {
+            for c in 0 .. pixels.columns {
                 pixels[(r, c)] = self.enhance_pixel(
                     i32::try_from(r).unwrap() - 1,
                     i32::try_from(c).unwrap() - 1,
@@ -114,8 +115,8 @@ impl Data {
             "With surrounding at: {}",
             self.image.surrounding_pixels.as_char()
         );
-        for r in 0..self.image.pixels.rows {
-            let s: String = (0..self.image.pixels.columns)
+        for r in 0 .. self.image.pixels.rows {
+            let s: String = (0 .. self.image.pixels.columns)
                 .map(|c| self.image.pixels[(r, c)].as_char())
                 .collect();
             println!("{s}");
@@ -150,7 +151,7 @@ impl FromStr for Data {
 
 fn solve(input: &str, times: usize) -> Result<usize, Error> {
     let mut data: Data = input.parse()?;
-    for _ in 0..times {
+    for _ in 0 .. times {
         data = data.enhance();
     }
     data.debug_print();

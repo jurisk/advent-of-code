@@ -1,16 +1,17 @@
+use std::collections::HashMap;
+use std::str::FromStr;
+
 use advent_of_code_common::parsing::{parse_lines_to_vec, parse_str, Error};
 use advent_of_code_common::utils::additive_hashmap_from_vec;
 use itertools::Itertools;
 use memoize::lazy_static::lazy_static;
 use regex::Regex;
-use std::collections::HashMap;
-use std::str::FromStr;
 
 #[derive(Debug)]
 struct Room {
     encrypted_name: Vec<String>,
-    id: u32,
-    checksum: String,
+    id:             u32,
+    checksum:       String,
 }
 
 impl FromStr for Room {
@@ -25,11 +26,13 @@ impl FromStr for Room {
         let groups = (captures.get(1), captures.get(2), captures.get(3));
 
         match groups {
-            (Some(a), Some(b), Some(c)) => Ok(Room {
-                encrypted_name: a.as_str().split('-').map(ToString::to_string).collect(),
-                id: parse_str(b.as_str())?,
-                checksum: parse_str(c.as_str())?,
-            }),
+            (Some(a), Some(b), Some(c)) => {
+                Ok(Room {
+                    encrypted_name: a.as_str().split('-').map(ToString::to_string).collect(),
+                    id:             parse_str(b.as_str())?,
+                    checksum:       parse_str(c.as_str())?,
+                })
+            },
             _ => Err(format!("Failed to match {s}")),
         }
     }

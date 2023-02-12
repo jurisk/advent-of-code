@@ -1,5 +1,9 @@
 extern crate core;
 
+use std::collections::HashSet;
+use std::fmt::{Debug, Formatter};
+use std::str::FromStr;
+
 use advent_of_code_common::parsing::{
     normalize_newlines, parse_comma_separated_vec, parse_lines_to_nonempty,
     parse_separated_nonempty, Error,
@@ -7,9 +11,6 @@ use advent_of_code_common::parsing::{
 use nalgebra::{Matrix3, Vector3};
 use nonempty::{nonempty, NonEmpty};
 use num_traits::abs;
-use std::collections::HashSet;
-use std::fmt::{Debug, Formatter};
-use std::str::FromStr;
 
 type N = i32;
 
@@ -47,7 +48,7 @@ static ALL_ROTATIONS: [Rotation3D; 24] = [
 
 #[derive(Clone, Eq, PartialEq, Hash)]
 struct Sensor {
-    id: usize,
+    id:      usize,
     beacons: NonEmpty<Vector3<N>>,
 }
 
@@ -169,8 +170,8 @@ struct Solution {
     pending_sensors: HashSet<Sensor>,
 }
 
-// We could use "fingerprints" for a sensor (e.g. all offsets from the first beacon in the sensor)
-// to find if we have an alignment faster.
+// We could use "fingerprints" for a sensor (e.g. all offsets from the first
+// beacon in the sensor) to find if we have an alignment faster.
 fn aligned_beacon_count(beacons: &NonEmpty<Vector3<N>>, other: &HashSet<Vector3<N>>) -> usize {
     beacons.iter().filter(|b| other.contains(b)).count()
 }
@@ -199,10 +200,12 @@ impl Solution {
         let aligned_beacons: HashSet<Vector3<N>> =
             sensors.sensors.head.beacons.iter().copied().collect();
 
-        let aligned_sensors: NonEmpty<AlignedSensor> = nonempty![sensors
-            .sensors
-            .head
-            .aligned_at(Rotation3D::identity(), &Vector3::zeros())];
+        let aligned_sensors: NonEmpty<AlignedSensor> = nonempty![
+            sensors
+                .sensors
+                .head
+                .aligned_at(Rotation3D::identity(), &Vector3::zeros())
+        ];
 
         let pending_sensors: HashSet<Sensor> = sensors.sensors.tail.clone().into_iter().collect();
 

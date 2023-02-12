@@ -1,3 +1,6 @@
+use std::fmt::{Debug, Formatter};
+use std::str::FromStr;
+
 use advent_of_code_common::parsing::{parse_lines_to_nonempty, Error};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -5,8 +8,6 @@ use nom::character::complete::digit1;
 use nom::combinator::map_res;
 use nom::{Finish, IResult};
 use nonempty::NonEmpty;
-use std::fmt::{Debug, Formatter};
-use std::str::FromStr;
 
 const DATA: &str = include_str!("../../resources/18.txt");
 
@@ -18,7 +19,7 @@ enum SnailfishNumber {
         value: Number,
     },
     Pair {
-        left: Box<SnailfishNumber>,
+        left:  Box<SnailfishNumber>,
         right: Box<SnailfishNumber>,
     },
 }
@@ -30,7 +31,7 @@ impl SnailfishNumber {
 
     fn pair(left: &SnailfishNumber, right: &SnailfishNumber) -> SnailfishNumber {
         SnailfishNumber::Pair {
-            left: Box::new(left.clone()),
+            left:  Box::new(left.clone()),
             right: Box::new(right.clone()),
         }
     }
@@ -79,18 +80,23 @@ fn try_apply_right_carry(
 ) -> (SnailfishNumber, Option<Number>) {
     match carry {
         None => (tree.clone(), None),
-        Some(carry) => match tree {
-            SnailfishNumber::Literal { value } => (SnailfishNumber::literal(value + carry), None),
-            SnailfishNumber::Pair { left, right } => {
-                let (new_left, new_carry) = try_apply_right_carry(left, Some(carry));
-                match new_carry {
-                    None => (SnailfishNumber::pair(&new_left, right), None),
-                    Some(new_carry) => {
-                        let (new_right, new_carry) = try_apply_right_carry(right, Some(new_carry));
-                        (SnailfishNumber::pair(&new_left, &new_right), new_carry)
-                    },
-                }
-            },
+        Some(carry) => {
+            match tree {
+                SnailfishNumber::Literal { value } => {
+                    (SnailfishNumber::literal(value + carry), None)
+                },
+                SnailfishNumber::Pair { left, right } => {
+                    let (new_left, new_carry) = try_apply_right_carry(left, Some(carry));
+                    match new_carry {
+                        None => (SnailfishNumber::pair(&new_left, right), None),
+                        Some(new_carry) => {
+                            let (new_right, new_carry) =
+                                try_apply_right_carry(right, Some(new_carry));
+                            (SnailfishNumber::pair(&new_left, &new_right), new_carry)
+                        },
+                    }
+                },
+            }
         },
     }
 }
@@ -102,18 +108,22 @@ fn try_apply_left_carry(
 ) -> (SnailfishNumber, Option<Number>) {
     match carry {
         None => (tree.clone(), None),
-        Some(carry) => match tree {
-            SnailfishNumber::Literal { value } => (SnailfishNumber::literal(value + carry), None),
-            SnailfishNumber::Pair { left, right } => {
-                let (new_right, new_carry) = try_apply_left_carry(right, Some(carry));
-                match new_carry {
-                    None => (SnailfishNumber::pair(left, &new_right), None),
-                    Some(new_carry) => {
-                        let (new_left, new_carry) = try_apply_left_carry(left, Some(new_carry));
-                        (SnailfishNumber::pair(&new_left, &new_right), new_carry)
-                    },
-                }
-            },
+        Some(carry) => {
+            match tree {
+                SnailfishNumber::Literal { value } => {
+                    (SnailfishNumber::literal(value + carry), None)
+                },
+                SnailfishNumber::Pair { left, right } => {
+                    let (new_right, new_carry) = try_apply_left_carry(right, Some(carry));
+                    match new_carry {
+                        None => (SnailfishNumber::pair(left, &new_right), None),
+                        Some(new_carry) => {
+                            let (new_left, new_carry) = try_apply_left_carry(left, Some(new_carry));
+                            (SnailfishNumber::pair(&new_left, &new_right), new_carry)
+                        },
+                    }
+                },
+            }
         },
     }
 }
@@ -126,10 +136,11 @@ impl SnailfishNumber {
 
     // If any pair is nested inside four pairs, the leftmost such pair explodes.
     //
-    // To explode a pair, the pair's left value is added to the first regular number to the left of
-    // the exploding pair (if any), and the pair's right value is added to the first regular number
-    // to the right of the exploding pair (if any). Exploding pairs will always consist of two
-    // regular numbers. Then, the entire exploding pair is replaced with the regular number 0.
+    // To explode a pair, the pair's left value is added to the first regular number
+    // to the left of the exploding pair (if any), and the pair's right value is
+    // added to the first regular number to the right of the exploding pair (if
+    // any). Exploding pairs will always consist of two regular numbers. Then,
+    // the entire exploding pair is replaced with the regular number 0.
     //
     // Returns Some if "explode" succeeded, None if failed
     #[allow(clippy::collapsible_else_if, clippy::comparison_chain)]
@@ -186,11 +197,13 @@ impl SnailfishNumber {
             .map(|(_, result, _)| result)
     }
 
-    // If any regular number is 10 or greater, the leftmost such regular number splits.
+    // If any regular number is 10 or greater, the leftmost such regular number
+    // splits.
     //
-    // To split a regular number, replace it with a pair; the left element of the pair should be the
-    // regular number divided by two and rounded down, while the right element of the pair should be
-    // the regular number divided by two and rounded up.
+    // To split a regular number, replace it with a pair; the left element of the
+    // pair should be the regular number divided by two and rounded down, while
+    // the right element of the pair should be the regular number divided by two
+    // and rounded up.
     //
     // Returns Some if "split" succeeded, None if failed
     #[allow(clippy::manual_map)]
@@ -281,8 +294,8 @@ fn solve_2(input: &str) -> Result<Number, Error> {
     let list: SnailfishNumberList = input.parse()?;
 
     let mut potential: Vec<Number> = vec![];
-    for i in 0..list.numbers.len() {
-        for j in 0..list.numbers.len() {
+    for i in 0 .. list.numbers.len() {
+        for j in 0 .. list.numbers.len() {
             if i != j {
                 let a = list.numbers[i].clone();
                 let b = list.numbers[j].clone();
@@ -317,13 +330,15 @@ mod tests {
 
     #[test]
     fn test_explode_1() {
-        // the 9 has no regular number to its left, so it is not added to any regular number
+        // the 9 has no regular number to its left, so it is not added to any regular
+        // number
         test_explode("[[[[[9,8],1],2],3],4]", "[[[[0,9],2],3],4]");
     }
 
     #[test]
     fn test_explode_2() {
-        // the 2 has no regular number to its right, and so it is not added to any regular number
+        // the 2 has no regular number to its right, and so it is not added to any
+        // regular number
         test_explode("[7,[6,[5,[4,[3,2]]]]]", "[7,[6,[5,[7,0]]]]");
     }
 
@@ -333,7 +348,8 @@ mod tests {
     }
     #[test]
     fn test_explode_4() {
-        // the pair [3,2] is unaffected because the pair [7,3] is further to the left; [3,2] would explode on the next action
+        // the pair [3,2] is unaffected because the pair [7,3] is further to the left;
+        // [3,2] would explode on the next action
         test_explode(
             "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]",
             "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]",

@@ -21,7 +21,7 @@ where
     let min = *positions.iter().min().ok_or("Failed to get min")?;
     let max = *positions.iter().max().ok_or("Failed to get max")?;
 
-    (min..=max)
+    (min ..= max)
         .map(|q| positions.iter().map(|&x| cost(x, q)).sum())
         .min()
         .ok_or_else(|| "Failed to get min".to_string())

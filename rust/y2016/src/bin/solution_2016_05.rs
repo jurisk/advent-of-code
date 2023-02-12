@@ -6,7 +6,7 @@ fn solve_1(door_id: &str) -> String {
     while result.len() < 8 {
         let s = format!("{door_id}{n}");
         let hash = md5_for_string(&s);
-        if &hash[..5] == "00000" {
+        if &hash[.. 5] == "00000" {
             let picked_char = hash
                 .chars()
                 .nth(5)
@@ -50,8 +50,10 @@ fn solve_2(door_id: &str) -> String {
                     .unwrap_or_else(|| panic!("Result too short: {result}"))
                     == PLACEHOLDER
                 {
-                    result.replace_range(position..=position, &picked_char.to_string());
-                    println!("{result}: Updated character - hash of {s} is {hash}, position char is {position_char}, picked char is {picked_char}");
+                    result.replace_range(position ..= position, &picked_char.to_string());
+                    println!(
+                        "{result}: Updated character - hash of {s} is {hash}, position char is {position_char}, picked char is {picked_char}"
+                    );
                 } else {
                     println!("{result}: Ignoring duplicate update - hash of {s} is {hash}");
                 }

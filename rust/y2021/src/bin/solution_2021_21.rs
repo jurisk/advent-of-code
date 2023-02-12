@@ -1,8 +1,9 @@
-use itertools::Itertools;
-use memoize::memoize;
 use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::fmt::Debug;
+
+use itertools::Itertools;
+use memoize::memoize;
 
 const DATA: (u32, u32) = (3, 7);
 
@@ -52,12 +53,12 @@ impl Player {
 
 #[derive(Clone, Debug)]
 struct Game {
-    die_rolled_times: u32,
-    player_1_points: u32,
-    player_2_points: u32,
+    die_rolled_times:  u32,
+    player_1_points:   u32,
+    player_2_points:   u32,
     player_1_position: u32,
     player_2_position: u32,
-    next_to_move: Player,
+    next_to_move:      Player,
 }
 
 const QUANTUM_WIN_AT: u32 = 21;
@@ -66,12 +67,12 @@ impl Game {
     fn new(starting_positions: (u32, u32)) -> Game {
         let (p1, p2) = starting_positions;
         Game {
-            die_rolled_times: 0,
-            player_1_points: 0,
-            player_2_points: 0,
+            die_rolled_times:  0,
+            player_1_points:   0,
+            player_2_points:   0,
             player_1_position: p1,
             player_2_position: p2,
-            next_to_move: Player::One,
+            next_to_move:      Player::One,
         }
     }
 
@@ -93,9 +94,9 @@ impl Game {
 
     fn three_quantum_dice_roll_frequencies() -> HashMap<u32, usize> {
         let mut result: Vec<u32> = Vec::new();
-        for a in 1..=3 {
-            for b in 1..=3 {
-                for c in 1..=3 {
+        for a in 1 ..= 3 {
+            for b in 1 ..= 3 {
+                for c in 1 ..= 3 {
                     result.push(a + b + c);
                 }
             }

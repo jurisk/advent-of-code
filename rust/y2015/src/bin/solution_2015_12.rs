@@ -10,18 +10,23 @@ fn solve(data: &Value, ignore_objects_with_property: &Option<String>) -> i64 {
     match data {
         Value::Null | Value::Bool(_) | Value::String(_) => 0,
 
-        Value::Number(number) => number
-            .as_i64()
-            .unwrap_or_else(|| panic!("Failed to convert {number} to i64")),
+        Value::Number(number) => {
+            number
+                .as_i64()
+                .unwrap_or_else(|| panic!("Failed to convert {number} to i64"))
+        },
 
-        Value::Array(array) => array
-            .iter()
-            .map(|v| solve(v, ignore_objects_with_property))
-            .sum(),
+        Value::Array(array) => {
+            array
+                .iter()
+                .map(|v| solve(v, ignore_objects_with_property))
+                .sum()
+        },
 
         Value::Object(object) => {
             let ignore = if let Some(ref p) = ignore_objects_with_property {
-                // println!("qq {:?} {} {}", object.values().collect::<Vec<_>>(), p.clone(), object.values().contains(&Value::String(p.clone())));
+                // println!("qq {:?} {} {}", object.values().collect::<Vec<_>>(), p.clone(),
+                // object.values().contains(&Value::String(p.clone())));
                 object.values().contains(&Value::String(p.clone()))
             } else {
                 false

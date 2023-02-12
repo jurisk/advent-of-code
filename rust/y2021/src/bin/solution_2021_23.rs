@@ -1,11 +1,13 @@
-use crate::Amphipod::{A, B, C, D};
-use crate::HallwaySquare::{LL, LR, ML, MM, MR, RL, RR};
+use std::fmt::{Display, Formatter};
+use std::str::FromStr;
+
 use advent_of_code_common::parsing::Error;
 use itertools::Itertools;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use pathfinding::prelude::dijkstra;
-use std::fmt::{Display, Formatter};
-use std::str::FromStr;
+
+use crate::Amphipod::{A, B, C, D};
+use crate::HallwaySquare::{LL, LR, ML, MM, MR, RL, RR};
 
 type Cost = u32;
 type Steps = u8;
@@ -51,10 +53,12 @@ impl Amphipod {
     fn parse_as_option(ch: char) -> Result<Option<Amphipod>, Error> {
         match ch {
             '.' => Ok(None),
-            _ => (ch as u8)
-                .try_into()
-                .map(Some)
-                .map_err(|err| format!("{err:?} when parsing {ch}")),
+            _ => {
+                (ch as u8)
+                    .try_into()
+                    .map(Some)
+                    .map_err(|err| format!("{err:?} when parsing {ch}"))
+            },
         }
     }
 
@@ -69,7 +73,7 @@ impl Amphipod {
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 struct Room<const N: usize> {
     expected_amphipod: Amphipod,
-    amphipods: [Option<Amphipod>; N],
+    amphipods:         [Option<Amphipod>; N],
 }
 
 impl<const N: usize> Room<N> {
@@ -92,9 +96,11 @@ impl<const N: usize> Room<N> {
     }
 
     fn free_of_strangers(&self) -> bool {
-        self.amphipods.iter().all(|x| match x {
-            None => true,
-            Some(q) => *q == self.expected_amphipod,
+        self.amphipods.iter().all(|x| {
+            match x {
+                None => true,
+                Some(q) => *q == self.expected_amphipod,
+            }
         })
     }
 
@@ -163,13 +169,13 @@ impl HallwaySquare {
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash)]
 struct State<const N: usize> {
-    ll: Option<Amphipod>,
-    lr: Option<Amphipod>,
-    ml: Option<Amphipod>,
-    mm: Option<Amphipod>,
-    mr: Option<Amphipod>,
-    rl: Option<Amphipod>,
-    rr: Option<Amphipod>,
+    ll:         Option<Amphipod>,
+    lr:         Option<Amphipod>,
+    ml:         Option<Amphipod>,
+    mm:         Option<Amphipod>,
+    mr:         Option<Amphipod>,
+    rl:         Option<Amphipod>,
+    rr:         Option<Amphipod>,
     room_for_a: Room<N>,
     room_for_b: Room<N>,
     room_for_c: Room<N>,
@@ -179,13 +185,13 @@ struct State<const N: usize> {
 impl<const N: usize> State<N> {
     fn finish() -> State<N> {
         State {
-            ll: None,
-            lr: None,
-            ml: None,
-            mm: None,
-            mr: None,
-            rl: None,
-            rr: None,
+            ll:         None,
+            lr:         None,
+            ml:         None,
+            mm:         None,
+            mr:         None,
+            rl:         None,
+            rr:         None,
             room_for_a: Room::full_of(A),
             room_for_b: Room::full_of(B),
             room_for_c: Room::full_of(C),
@@ -228,21 +234,29 @@ impl<const N: usize> State<N> {
 
     fn update_room(&self, new_room: &Room<N>) -> State<N> {
         match new_room.expected_amphipod {
-            A => State {
-                room_for_a: *new_room,
-                ..*self
+            A => {
+                State {
+                    room_for_a: *new_room,
+                    ..*self
+                }
             },
-            B => State {
-                room_for_b: *new_room,
-                ..*self
+            B => {
+                State {
+                    room_for_b: *new_room,
+                    ..*self
+                }
             },
-            C => State {
-                room_for_c: *new_room,
-                ..*self
+            C => {
+                State {
+                    room_for_c: *new_room,
+                    ..*self
+                }
             },
-            D => State {
-                room_for_d: *new_room,
-                ..*self
+            D => {
+                State {
+                    room_for_d: *new_room,
+                    ..*self
+                }
             },
         }
     }
@@ -272,43 +286,53 @@ impl<const N: usize> State<N> {
         room: Amphipod,
     ) -> (Vec<HallwaySquare>, Steps) {
         match hallway_square {
-            LL => match room {
-                A => (vec![LR], 3),
-                B => (vec![LR, ML], 5),
-                C => (vec![LR, ML, MM], 7),
-                D => (vec![LR, ML, MM, MR], 9),
+            LL => {
+                match room {
+                    A => (vec![LR], 3),
+                    B => (vec![LR, ML], 5),
+                    C => (vec![LR, ML, MM], 7),
+                    D => (vec![LR, ML, MM, MR], 9),
+                }
             },
             LR => {
                 let (path, steps) = Self::path_from_hallway_square_to_room(LL, room);
-                (path[1..].to_vec(), steps - 1)
+                (path[1 ..].to_vec(), steps - 1)
             },
-            ML => match room {
-                A => (vec![], 2),
-                B => (vec![], 2),
-                C => (vec![MM], 4),
-                D => (vec![MM, MR], 6),
+            ML => {
+                match room {
+                    A => (vec![], 2),
+                    B => (vec![], 2),
+                    C => (vec![MM], 4),
+                    D => (vec![MM, MR], 6),
+                }
             },
-            MM => match room {
-                A => (vec![ML], 4),
-                B => (vec![], 2),
-                C => (vec![], 2),
-                D => (vec![MR], 4),
+            MM => {
+                match room {
+                    A => (vec![ML], 4),
+                    B => (vec![], 2),
+                    C => (vec![], 2),
+                    D => (vec![MR], 4),
+                }
             },
-            MR => match room {
-                A => (vec![MM, ML], 6),
-                B => (vec![MM], 4),
-                C => (vec![], 2),
-                D => (vec![], 2),
+            MR => {
+                match room {
+                    A => (vec![MM, ML], 6),
+                    B => (vec![MM], 4),
+                    C => (vec![], 2),
+                    D => (vec![], 2),
+                }
             },
             RL => {
                 let (path, steps) = Self::path_from_hallway_square_to_room(RR, room);
-                (path[1..].to_vec(), steps - 1)
+                (path[1 ..].to_vec(), steps - 1)
             },
-            RR => match room {
-                A => (vec![RL, MR, MM, ML], 9),
-                B => (vec![RL, MR, MM], 7),
-                C => (vec![RL, MR], 5),
-                D => (vec![RL], 3),
+            RR => {
+                match room {
+                    A => (vec![RL, MR, MM, ML], 9),
+                    B => (vec![RL, MR, MM], 7),
+                    C => (vec![RL, MR], 5),
+                    D => (vec![RL], 3),
+                }
             },
         }
     }
@@ -403,7 +427,7 @@ impl<const N: usize> Display for State<N> {
             Amphipod::option_as_char(self.rr)
         )?;
 
-        for idx in 0..N {
+        for idx in 0 .. N {
             writeln!(
                 f,
                 "░░░{}░{}░{}░{}░░░",
@@ -435,20 +459,20 @@ impl<const N: usize> FromStr for State<N> {
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let lines: Vec<&str> = input.lines().collect();
         let hallway: Vec<char> = lines[1].chars().collect();
-        let room_lines: Vec<Vec<char>> = lines[2..(2 + N)]
+        let room_lines: Vec<Vec<char>> = lines[2 .. (2 + N)]
             .iter()
             .map(|q| q.chars().collect())
             .collect();
         assert_eq!(room_lines.len(), N);
 
         Ok(State {
-            ll: Amphipod::parse_as_option(hallway[1])?,
-            lr: Amphipod::parse_as_option(hallway[2])?,
-            ml: Amphipod::parse_as_option(hallway[4])?,
-            mm: Amphipod::parse_as_option(hallway[6])?,
-            mr: Amphipod::parse_as_option(hallway[8])?,
-            rl: Amphipod::parse_as_option(hallway[10])?,
-            rr: Amphipod::parse_as_option(hallway[11])?,
+            ll:         Amphipod::parse_as_option(hallway[1])?,
+            lr:         Amphipod::parse_as_option(hallway[2])?,
+            ml:         Amphipod::parse_as_option(hallway[4])?,
+            mm:         Amphipod::parse_as_option(hallway[6])?,
+            mr:         Amphipod::parse_as_option(hallway[8])?,
+            rl:         Amphipod::parse_as_option(hallway[10])?,
+            rr:         Amphipod::parse_as_option(hallway[11])?,
             room_for_a: create_room_helper(&room_lines, A, 3)?,
             room_for_b: create_room_helper(&room_lines, B, 5)?,
             room_for_c: create_room_helper(&room_lines, C, 7)?,
@@ -480,9 +504,9 @@ fn solve_1(input: &str) -> Result<Cost, Error> {
 fn solve_2(input: &str) -> Result<Cost, Error> {
     let lines: Vec<&str> = input.lines().collect();
     let temp = [
-        &lines[0..3],
+        &lines[0 .. 3],
         ["  #D#C#B#A#", "  #D#B#A#C#"].as_slice(),
-        &lines[3..],
+        &lines[3 ..],
     ]
     .to_vec();
     let adjusted = temp.into_iter().flatten().join("\n");

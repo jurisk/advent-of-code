@@ -1,6 +1,7 @@
-use advent_of_code_common::parsing::{parse_lines_to_hashmap, parse_str, Error};
 use std::collections::HashMap;
 use std::str::FromStr;
+
+use advent_of_code_common::parsing::{parse_lines_to_hashmap, parse_str, Error};
 
 type AuntId = String;
 
@@ -54,7 +55,7 @@ fn parse_sues(input: &str) -> Result<HashMap<AuntId, Info>, Error> {
                 .position(|x| x == ':')
                 .unwrap_or_else(|| panic!("Unexpected format"));
             let (a, b) = s.split_at(split_position);
-            let info: Info = parse_str(&b[2..].replace(", ", "\n"))?;
+            let info: Info = parse_str(&b[2 ..].replace(", ", "\n"))?;
             Ok((a.to_string(), info))
         })
         .collect();

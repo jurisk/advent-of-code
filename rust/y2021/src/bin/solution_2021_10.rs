@@ -1,14 +1,15 @@
-use crate::Character::{ClosingBracket, OpeningBracket};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
+
+use crate::Character::{ClosingBracket, OpeningBracket};
 
 #[repr(u8)]
 #[derive(FromPrimitive, Copy, Clone, Eq, PartialEq)]
 enum OpeningBracketType {
-    Round = b'(',
+    Round  = b'(',
     Square = b'[',
-    Curvy = b'{',
-    Angle = b'<',
+    Curvy  = b'{',
+    Angle  = b'<',
 }
 
 impl OpeningBracketType {
@@ -34,10 +35,10 @@ impl OpeningBracketType {
 #[repr(u8)]
 #[derive(FromPrimitive, Copy, Clone, Eq, PartialEq)]
 enum ClosingBracketType {
-    Round = b')',
+    Round  = b')',
     Square = b']',
-    Curvy = b'}',
-    Angle = b'>',
+    Curvy  = b'}',
+    Angle  = b'>',
 }
 
 impl ClosingBracketType {
@@ -96,19 +97,21 @@ fn parse_line(x: &str) -> ParsingResult {
     let mut stack: Vec<OpeningBracketType> = Vec::new();
     for x in characters {
         match &x {
-            ClosingBracket(closing_bracket) => match stack.pop() {
-                None => {
-                    return ParsingResult::Corrupted {
-                        corrupted_score: closing_bracket.error_score(),
-                    }
-                },
-                Some(opening_bracket) => {
-                    if opening_bracket.matching_closing_bracket() != *closing_bracket {
+            ClosingBracket(closing_bracket) => {
+                match stack.pop() {
+                    None => {
                         return ParsingResult::Corrupted {
                             corrupted_score: closing_bracket.error_score(),
                         };
-                    }
-                },
+                    },
+                    Some(opening_bracket) => {
+                        if opening_bracket.matching_closing_bracket() != *closing_bracket {
+                            return ParsingResult::Corrupted {
+                                corrupted_score: closing_bracket.error_score(),
+                            };
+                        }
+                    },
+                }
             },
             OpeningBracket(opening_bracket) => stack.push(*opening_bracket),
         }
@@ -136,9 +139,11 @@ fn part_1(data: &[ParsingResult]) -> u32 {
 fn part_2(data: &[ParsingResult]) -> u64 {
     let mut completion_scores: Vec<u64> = data
         .iter()
-        .filter(|x| match x {
-            ParsingResult::Incomplete { .. } => true,
-            ParsingResult::Corrupted { .. } | ParsingResult::Valid => false,
+        .filter(|x| {
+            match x {
+                ParsingResult::Incomplete { .. } => true,
+                ParsingResult::Corrupted { .. } | ParsingResult::Valid => false,
+            }
         })
         .map(|x| x.completion_score())
         .collect();

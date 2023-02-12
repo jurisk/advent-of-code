@@ -1,7 +1,9 @@
-use crate::coords3d::Coords3D;
-use num_traits::One;
 use std::cmp::{max, min};
 use std::ops::{Add, Sub};
+
+use num_traits::One;
+
+use crate::coords3d::Coords3D;
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 pub struct Cuboid<T> {

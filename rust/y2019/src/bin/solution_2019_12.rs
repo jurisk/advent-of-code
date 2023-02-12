@@ -1,6 +1,7 @@
+use std::ops::Add;
+
 use num_integer::lcm;
 use num_traits::signum;
-use std::ops::Add;
 
 type Number = i64;
 
@@ -80,9 +81,11 @@ fn do_step(moons: &[Moon]) -> Vec<Moon> {
     moons
         .iter()
         .zip(new_velocities.iter())
-        .map(|(&moon, &new_velocity)| Moon {
-            position: moon.position + new_velocity,
-            velocity: new_velocity,
+        .map(|(&moon, &new_velocity)| {
+            Moon {
+                position: moon.position + new_velocity,
+                velocity: new_velocity,
+            }
         })
         .collect()
 }
@@ -94,7 +97,7 @@ fn create_moons(data: &[Vector3D]) -> Vec<Moon> {
 fn solve_1(data: &[Vector3D], steps: u16) -> Number {
     let mut moons: Vec<Moon> = create_moons(data);
 
-    (1..=steps).for_each(|_| {
+    (1 ..= steps).for_each(|_| {
         moons = do_step(&moons);
     });
 
@@ -111,7 +114,7 @@ fn loop_size(data: &[Vector3D], extract_coordinate: fn(&Vector3D) -> Number) -> 
     let mut moons: Vec<Moon> = create_moons(data);
     let initial_positions: Vec<Number> = data.iter().map(extract_coordinate).collect();
 
-    for i in 1.. {
+    for i in 1 .. {
         moons = do_step(&moons);
         let current_positions: Vec<_> = moons
             .iter()

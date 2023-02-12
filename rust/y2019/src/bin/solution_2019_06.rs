@@ -17,7 +17,7 @@ impl Clone for Object {
 
 #[derive(Debug)]
 struct OrbitalRelationship {
-    what: Object,
+    what:        Object,
     orbits_what: Object,
 }
 
@@ -30,7 +30,7 @@ fn parse_lines(data: &str) -> Vec<OrbitalRelationship> {
             let captures = re.captures(s).unwrap();
             assert_eq!(captures.len(), 3);
             OrbitalRelationship {
-                what: Object {
+                what:        Object {
                     name: captures[2].to_string(),
                 },
                 orbits_what: Object {

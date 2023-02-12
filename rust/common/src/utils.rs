@@ -1,14 +1,15 @@
-use itertools::Itertools;
-use num_traits::Num;
 use std::collections::HashMap;
 use std::hash::Hash;
+
+use itertools::Itertools;
+use num_traits::Num;
 
 #[must_use]
 pub fn head_tail<T>(slice: &[T]) -> (Option<&T>, &[T]) {
     if slice.is_empty() {
         (None, &[])
     } else {
-        (Some(&slice[0]), &slice[1..])
+        (Some(&slice[0]), &slice[1 ..])
     }
 }
 
@@ -27,7 +28,7 @@ pub fn additive_hashmap_from_vec<K: Eq + Hash, V: Num + Copy>(vec: Vec<(K, V)>) 
 pub fn transpose<T: Copy>(lines: &[Vec<T>]) -> Vec<Vec<T>> {
     if let Some(first_line) = lines.get(0) {
         let number_of_digits = first_line.len();
-        (0..number_of_digits)
+        (0 .. number_of_digits)
             .map(|idx| lines.iter().map(|line| line[idx]).collect())
             .collect()
     } else {

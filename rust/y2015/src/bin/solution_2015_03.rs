@@ -1,8 +1,9 @@
+use std::collections::HashSet;
+
 use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::direction::Direction;
 use advent_of_code_common::parsing::Error;
 use itertools::Itertools;
-use std::collections::HashSet;
 
 type Coords = Coords2D<i32>;
 type Data = Vec<Direction>;

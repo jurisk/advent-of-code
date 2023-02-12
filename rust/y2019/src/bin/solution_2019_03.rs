@@ -1,8 +1,10 @@
 #![feature(map_try_insert)]
 
-use crate::Command::{Down, Left, Right, Up};
-use advent_of_code_common::coords2d::Coords2D;
 use std::collections::{HashMap, HashSet};
+
+use advent_of_code_common::coords2d::Coords2D;
+
+use crate::Command::{Down, Left, Right, Up};
 
 type Number = i32;
 
@@ -19,7 +21,7 @@ enum Command {
 fn parse_commands(line: &str) -> Vec<Command> {
     line.split(',')
         .map(|element| {
-            let n = element[1..element.len()].parse::<Number>().unwrap();
+            let n = element[1 .. element.len()].parse::<Number>().unwrap();
 
             match element.chars().next().unwrap() {
                 'U' => Up(n),
@@ -40,7 +42,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
     for command in commands {
         match command {
             Left(n) => {
-                ((current.x - n)..current.x).rev().for_each(|x| {
+                ((current.x - n) .. current.x).rev().for_each(|x| {
                     steps += 1;
                     let _ = result.try_insert(Coords { x, y: current.y }, steps);
                 });
@@ -49,7 +51,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
             },
 
             Right(n) => {
-                ((current.x + 1)..=(current.x + n)).for_each(|x| {
+                ((current.x + 1) ..= (current.x + n)).for_each(|x| {
                     steps += 1;
                     let _ = result.try_insert(Coords { x, y: current.y }, steps);
                 });
@@ -58,7 +60,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
             },
 
             Up(n) => {
-                ((current.y + 1)..=(current.y + n)).for_each(|y| {
+                ((current.y + 1) ..= (current.y + n)).for_each(|y| {
                     steps += 1;
                     let _ = result.try_insert(Coords { x: current.x, y }, steps);
                 });
@@ -67,7 +69,7 @@ fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
             },
 
             Down(n) => {
-                ((current.y - n)..current.y).rev().for_each(|y| {
+                ((current.y - n) .. current.y).rev().for_each(|y| {
                     steps += 1;
                     let _ = result.try_insert(Coords { x: current.x, y }, steps);
                 });
