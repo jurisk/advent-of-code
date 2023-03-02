@@ -4,7 +4,8 @@
   "scripts": {
     "res:build": "rescript",
     "res:clean": "rescript clean",
-    "res:dev": "rescript build -w"
+    "res:dev": "rescript build -w",
+    "2017_08": "node src/Solution_2017_08.bs.js"
   },
   "keywords": [
     "rescript"
