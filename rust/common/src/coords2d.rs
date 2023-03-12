@@ -46,7 +46,7 @@ impl<T: Sub<Output = T>> Sub for Coords2D<T> {
 
 impl<T> Coords2D<T> {
     #[inline]
-    pub fn new(x: T, y: T) -> Coords2D<T> {
+    pub const fn new(x: T, y: T) -> Coords2D<T> {
         Coords2D { x, y }
     }
 }

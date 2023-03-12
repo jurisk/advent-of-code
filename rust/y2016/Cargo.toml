@@ -12,3 +12,4 @@ itertools.workspace = true
 regex.workspace = true
 memoize.workspace = true
 nom.workspace = true
+pathfinding.workspace = true

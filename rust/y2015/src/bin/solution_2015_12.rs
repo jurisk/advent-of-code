@@ -83,12 +83,12 @@ mod tests {
 
     #[test]
     fn test_solve_2_test_1() {
-        assert_eq!(part_2(&r#"[1,{"c":"red","b":2},3]"#), Ok(4));
+        assert_eq!(part_2(r#"[1,{"c":"red","b":2},3]"#), Ok(4));
     }
 
     #[test]
     fn test_solve_2_test_2() {
-        assert_eq!(part_2(&r#"{"d":"red","e":[1,2,3,4],"f":5}"#), Ok(0));
+        assert_eq!(part_2(r#"{"d":"red","e":[1,2,3,4],"f":5}"#), Ok(0));
     }
 
     #[test]

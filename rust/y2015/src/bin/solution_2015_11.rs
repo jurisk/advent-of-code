@@ -146,6 +146,6 @@ mod tests {
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(solve_1(&"hxbxxyzz"), "hxcaabcc");
+        assert_eq!(solve_1("hxbxxyzz"), "hxcaabcc");
     }
 }

@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn test_convert_1() {
-        assert_eq!(convert(&parse(&"111221")), parse("312211"));
+        assert_eq!(convert(&parse("111221")), parse("312211"));
     }
 
     #[test]
