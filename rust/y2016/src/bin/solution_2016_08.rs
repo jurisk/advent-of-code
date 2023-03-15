@@ -77,7 +77,7 @@ impl FromStr for Command {
             let by = parse_str(v[1])?;
             Ok(RotateColumn { x, by })
         } else {
-            Err(format!("Unrecognized {}", s))
+            Err(format!("Unrecognized {s}"))
         }
     }
 }
@@ -97,9 +97,9 @@ fn solve_1(data: &Data, dimensions: &Coords2D<usize>) -> usize {
                 Some(false) => ' ',
                 None => '?',
             };
-            print!("{}", cell)
+            print!("{cell}");
         }
-        println!()
+        println!();
     }
 
     matrix.values().filter(|x| **x).count()
