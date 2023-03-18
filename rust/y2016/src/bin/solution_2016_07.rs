@@ -5,8 +5,7 @@ use advent_of_code_common::parsing;
 use advent_of_code_common::parsing::parse_lines_to_vec;
 use itertools::Itertools;
 use nom::branch::alt;
-use nom::bytes::complete::take_while;
-use nom::character::complete::char;
+use nom::bytes::complete::{is_not, tag};
 use nom::combinator::{complete, map};
 use nom::error::ParseError;
 use nom::error::{Error, ErrorKind};
@@ -26,30 +25,27 @@ struct Ipv7Addr {
     elements: Vec<Element>,
 }
 
-fn super_net(input: &[u8]) -> IResult<&[u8], Element> {
+fn super_net(input: &str) -> IResult<&str, Element> {
     if input.is_empty() {
         Err(Err::Error(Error::from_error_kind(input, ErrorKind::Many0)))
     } else {
-        map(take_while(|ch| ch != b'['), |chars: &[u8]| {
+        map(is_not("["), |chars: &str| {
             Element::SuperNet {
-                value: str::from_utf8(chars).unwrap().to_string(),
+                value: chars.to_string(),
             }
         })(input)
     }
 }
 
-fn hyper_net(input: &[u8]) -> IResult<&[u8], Element> {
-    map(
-        delimited(char('['), take_while(|ch| ch != b']'), char(']')),
-        |chars: &[u8]| {
-            Element::HyperNet {
-                value: str::from_utf8(chars).unwrap().to_string(),
-            }
-        },
-    )(input)
+fn hyper_net(input: &str) -> IResult<&str, Element> {
+    map(delimited(tag("["), is_not("]"), tag("]")), |chars: &str| {
+        Element::HyperNet {
+            value: chars.to_string(),
+        }
+    })(input)
 }
 
-fn element(input: &[u8]) -> IResult<&[u8], Element> {
+fn element(input: &str) -> IResult<&str, Element> {
     alt((hyper_net, super_net))(input)
 }
 
@@ -57,7 +53,7 @@ impl FromStr for Ipv7Addr {
     type Err = parsing::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parsed = complete(many0(element))(s.as_bytes());
+        let parsed = complete(many0(element))(s);
         let (_, result) =
             Finish::finish(parsed).map_err(|err| format!("{err:?} {:?}", err.code))?;
         Ok(Ipv7Addr { elements: result })

@@ -41,46 +41,44 @@ impl Thing {
     }
 }
 
-fn ignored(input: &[u8]) -> IResult<&[u8], Vec<u8>> {
+fn ignored(input: &str) -> IResult<&str, &str> {
     let (input, _) = char('!')(input)?;
     let (input, _) = anychar(input)?;
-    Ok((input, vec![]))
+    Ok((input, ""))
 }
 
-fn garbage_char(input: &[u8]) -> IResult<&[u8], Vec<u8>> {
-    map(is_not("!>"), <[u8]>::to_vec)(input)
+fn garbage_char(input: &str) -> IResult<&str, &str> {
+    is_not("!>")(input)
 }
 
-fn garbage_component(input: &[u8]) -> IResult<&[u8], Vec<u8>> {
+fn garbage_component(input: &str) -> IResult<&str, &str> {
     alt((ignored, garbage_char))(input)
 }
 
-fn garbage(input: &[u8]) -> IResult<&[u8], Thing> {
+fn garbage(input: &str) -> IResult<&str, Thing> {
     map(
         delimited(tag("<"), many0(garbage_component), tag(">")),
-        |s| {
-            let vec: Vec<u8> = s.iter().flatten().copied().collect();
-            let contents = str::from_utf8(&vec).unwrap();
+        |vec| {
             Garbage {
-                contents: contents.to_string(),
+                contents: vec.concat(),
             }
         },
     )(input)
 }
 
-fn group(input: &[u8]) -> IResult<&[u8], Thing> {
+fn group(input: &str) -> IResult<&str, Thing> {
     map(
         delimited(tag("{"), separated_list0(tag(","), thing), tag("}")),
         |things| Group { things },
     )(input)
 }
 
-fn thing(input: &[u8]) -> IResult<&[u8], Thing> {
+fn thing(input: &str) -> IResult<&str, Thing> {
     alt((group, garbage))(input)
 }
 
 fn parse(input: &str) -> Result<Thing, parsing::Error> {
-    let parsed = complete(thing)(input.as_bytes());
+    let parsed = complete(thing)(input);
     let (_, result) = Finish::finish(parsed).map_err(|err| format!("{err:?} {:?}", err.code))?;
     Ok(result)
 }

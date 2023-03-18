@@ -3,8 +3,7 @@ use std::str;
 use advent_of_code_common::parsing;
 use advent_of_code_common::parsing::split_into_two_strings;
 use nom::branch::alt;
-use nom::bytes::complete::take_while;
-use nom::character::complete::char;
+use nom::bytes::complete::{is_not, tag};
 use nom::combinator::{complete, map};
 use nom::error::ParseError;
 use nom::error::{Error, ErrorKind};
@@ -57,39 +56,34 @@ impl WithLength for Element {
     }
 }
 
-fn sequence_element(input: &[u8]) -> IResult<&[u8], Element> {
-    let (more, (count, times)) = map(
-        delimited(char('('), take_while(|ch| ch != b')'), char(')')),
-        |chars: &[u8]| {
-            let s = str::from_utf8(chars).unwrap().to_string();
-            let (a, b) = split_into_two_strings(&s, "x").unwrap();
-            let count: usize = a.parse().unwrap();
-            let times: usize = b.parse().unwrap();
-            (count, times)
-        },
-    )(input)?;
+fn sequence_element(input: &str) -> IResult<&str, Element> {
+    let (more, (count, times)) = map(delimited(tag("("), is_not(")"), tag(")")), |chars: &str| {
+        let s = chars.to_string();
+        let (a, b) = split_into_two_strings(&s, "x").unwrap();
+        let count: usize = a.parse().unwrap();
+        let times: usize = b.parse().unwrap();
+        (count, times)
+    })(input)?;
     let (a, b) = more.split_at(count);
-    let chars = str::from_utf8(a).unwrap().to_string();
+    let chars = a.to_string();
     let result = Element::Sequence { chars, times };
     Ok((b, result))
 }
 
-fn chars_element(input: &[u8]) -> IResult<&[u8], Element> {
+fn chars_element(input: &str) -> IResult<&str, Element> {
     if input.is_empty() {
         Err(Err::Error(Error::from_error_kind(input, ErrorKind::Many0)))
     } else {
-        map(take_while(|ch| ch != b'('), |chars: &[u8]| {
-            Element::Chars(str::from_utf8(chars).unwrap().to_string())
-        })(input)
+        map(is_not("("), |chars: &str| Element::Chars(chars.to_string()))(input)
     }
 }
 
-fn element(input: &[u8]) -> IResult<&[u8], Element> {
+fn element(input: &str) -> IResult<&str, Element> {
     alt((sequence_element, chars_element))(input)
 }
 
 fn parse_1(input: &str) -> Result<Data, parsing::Error> {
-    let parsed = complete(many0(element))(input.as_bytes());
+    let parsed = complete(many0(element))(input);
     let (_, result) = Finish::finish(parsed).map_err(|err| format!("{err:?} {:?}", err.code))?;
     Ok(result)
 }
