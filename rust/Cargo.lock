@@ -38,6 +38,7 @@ dependencies = [
  "advent-of-code-common",
  "integer-sqrt",
  "itertools",
+ "nom",
 ]
 
 [[package]]
