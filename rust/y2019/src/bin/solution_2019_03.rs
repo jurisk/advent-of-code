@@ -34,7 +34,6 @@ fn parse_commands(line: &str) -> Vec<Command> {
         .collect()
 }
 
-#[allow(clippy::let_underscore_untyped)]
 fn visited_with_steps(commands: &[Command]) -> HashMap<Coords, Number> {
     let mut current = Coords::origin();
     let mut result: HashMap<Coords, Number> = HashMap::new();
