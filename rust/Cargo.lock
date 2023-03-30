@@ -29,6 +29,7 @@ dependencies = [
  "nom",
  "pathfinding",
  "regex",
+ "strum",
 ]
 
 [[package]]

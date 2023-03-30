@@ -1,12 +1,13 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use itertools::Itertools;
-use pathfinding::prelude::astar;
+use pathfinding::prelude::dijkstra;
+use strum::{EnumIter, IntoEnumIterator};
 
 use crate::Element::{Curium, Dilithium, Elerium, Plutonium, Ruthenium, Strontium, Thulium};
 use crate::Object::{Generator, Microchip};
 
-#[derive(Eq, PartialEq, Hash, Copy, Clone, Ord, PartialOrd)]
+#[derive(Eq, PartialEq, Hash, Copy, Clone, Ord, PartialOrd, EnumIter, Debug)]
 #[repr(u8)]
 #[allow(dead_code)]
 enum Element {
@@ -21,13 +22,13 @@ enum Element {
     Thulium   = b'T',
 }
 
-#[derive(Eq, PartialEq, Hash, Copy, Clone, Ord, PartialOrd)]
+#[derive(Eq, PartialEq, Hash, Copy, Clone, Ord, PartialOrd, Debug)]
 enum Object {
     Microchip(Element),
     Generator(Element),
 }
 
-#[derive(Eq, PartialEq, Hash, Copy, Clone, Ord, PartialOrd)]
+#[derive(Eq, PartialEq, Hash, Copy, Clone, Ord, PartialOrd, EnumIter, Debug)]
 #[repr(u8)]
 enum Floor {
     F1 = 1,
@@ -41,14 +42,6 @@ impl Floor {
         self == Floor::F4
     }
 
-    fn all() -> Vec<Floor> {
-        vec![Floor::F1, Floor::F2, Floor::F3, Floor::F4]
-    }
-
-    fn non_terminal_floors() -> Vec<Floor> {
-        Floor::all().into_iter().filter(|x| !x.terminal()).collect()
-    }
-
     fn neighbouring_floors(self) -> Vec<Floor> {
         match self {
             Floor::F1 => vec![Floor::F2],
@@ -59,13 +52,54 @@ impl Floor {
     }
 }
 
-#[derive(Eq, PartialEq, Clone, Hash)]
-struct State {
+#[derive(Eq, PartialEq, Clone, Hash, Ord, PartialOrd, Debug)]
+struct Definition {
     elevator_at: Floor,
     floors:      BTreeMap<Floor, BTreeSet<Object>>,
 }
 
-impl State {
+impl Definition {
+    fn find_object(&self, object: Object) -> Option<Floor> {
+        self.floors
+            .iter()
+            .find(|(_floor, objects)| objects.contains(&object))
+            .map(|(floor, _objects)| *floor)
+    }
+
+    fn object_count(&self) -> usize {
+        self.floors.values().map(BTreeSet::len).sum()
+    }
+
+    fn to_state(&self) -> State {
+        let mut pairs: Vec<StatePair> = Vec::new();
+
+        let elements: BTreeSet<Element> = self
+            .floors
+            .values()
+            .flat_map(|x| {
+                x.iter().map(|y| {
+                    match y {
+                        Microchip(z) | Generator(z) => *z,
+                    }
+                })
+            })
+            .collect();
+
+        for element in elements {
+            let generator_at = self.find_object(Generator(element)).unwrap();
+            let microchip_at = self.find_object(Microchip(element)).unwrap();
+            pairs.push(StatePair {
+                generator_at,
+                microchip_at,
+            });
+        }
+
+        let result = State::create(self.elevator_at, pairs);
+
+        assert_eq!(self.object_count(), result.object_count());
+        result
+    }
+
     fn objects_are_safe(objects: &BTreeSet<Object>) -> bool {
         let mut microchips = BTreeSet::new();
         let mut generators = BTreeSet::new();
@@ -96,79 +130,140 @@ impl State {
         self.floors.get(&floor).unwrap_or(&BTreeSet::new()).clone()
     }
 
-    fn is_target(&self) -> bool {
-        self.elevator_at.terminal()
-            && Floor::non_terminal_floors()
-                .into_iter()
-                .all(|x| self.objects_at_floor(x).is_empty())
-    }
-
     fn is_safe(&self) -> bool {
         self.floors
             .iter()
-            .all(|(_floor, objects)| State::objects_are_safe(objects))
+            .all(|(_floor, objects)| Definition::objects_are_safe(objects))
     }
 
-    fn move_objects(&self, objects: &Vec<Object>, target_floor: Floor) -> State {
+    #[must_use]
+    fn add_object(&self, floor: Floor, object: Object) -> Definition {
         let mut new_floors = self.floors.clone();
-        let mut new_at_current_floor = self.objects_at_floor(self.elevator_at);
-        let mut new_at_target_floor = self.objects_at_floor(target_floor);
-        for o in objects {
-            new_at_current_floor.remove(o);
-            new_at_target_floor.insert(*o);
-        }
-        new_floors.insert(self.elevator_at, new_at_current_floor);
-        new_floors.insert(target_floor, new_at_target_floor);
-        State {
-            elevator_at: target_floor,
+        let mut new_set = self.objects_at_floor(floor);
+        new_set.insert(object);
+        new_floors.insert(floor, new_set);
+        Definition {
+            elevator_at: self.elevator_at,
             floors:      new_floors,
         }
     }
 
-    fn candidate_successors(&self) -> Vec<State> {
-        let mut results = Vec::new();
+    #[must_use]
+    fn remove_object(&self, floor: Floor, object: Object) -> Definition {
+        let mut new_floors = self.floors.clone();
+        let mut new_set = self.objects_at_floor(floor);
+        new_set.remove(&object);
+        new_floors.insert(floor, new_set);
+        Definition {
+            elevator_at: self.elevator_at,
+            floors:      new_floors,
+        }
+    }
+
+    #[must_use]
+    fn move_objects(&self, objects: &Vec<Object>, target_floor: Floor) -> Definition {
+        let mut result = Definition {
+            elevator_at: target_floor,
+            floors:      self.floors.clone(),
+        };
+
+        for object in objects {
+            result = result.remove_object(self.elevator_at, *object);
+            result = result.add_object(target_floor, *object);
+        }
+
+        assert_eq!(self.object_count(), result.object_count());
+        result
+    }
+
+    fn candidate_successors(&self) -> BTreeSet<Definition> {
+        let mut results = BTreeSet::new();
         let candidate_objects = self.objects_at_floor(self.elevator_at);
         for target_floor in self.elevator_at.neighbouring_floors() {
             for object in &candidate_objects {
-                results.push(self.move_objects(&vec![*object], target_floor));
+                results.insert(self.move_objects(&vec![*object], target_floor));
             }
 
             for combination in candidate_objects.iter().combinations(2) {
                 let v: Vec<Object> = combination.iter().map(|x| **x).collect();
-                results.push(self.move_objects(&v, target_floor));
+                results.insert(self.move_objects(&v, target_floor));
             }
         }
         results
     }
 
-    fn successors(&self) -> Vec<State> {
+    fn successors(&self) -> BTreeSet<Definition> {
         self.candidate_successors()
             .into_iter()
-            .filter(State::is_safe)
+            .filter(Definition::is_safe)
             .collect()
-    }
-
-    fn heuristic(&self) -> usize {
-        // A pretty useless heuristic as it is not speeding things up
-        self.floors
-            .iter()
-            .map(|(floor, objects)| {
-                let coef = match floor {
-                    Floor::F1 => 3,
-                    Floor::F2 => 2,
-                    Floor::F3 => 1,
-                    Floor::F4 => 0,
-                };
-
-                objects.len() * coef
-            })
-            .sum::<usize>()
-            / 2
     }
 }
 
-fn real_data_1() -> State {
-    State {
+#[derive(Eq, PartialEq, Clone, Hash, Ord, PartialOrd, Debug)]
+struct StatePair {
+    generator_at: Floor,
+    microchip_at: Floor,
+}
+
+#[derive(Eq, PartialEq, Clone, Hash, Ord, PartialOrd, Debug)]
+struct State {
+    elevator_at: Floor,
+    pairs:       Vec<StatePair>,
+}
+
+impl State {
+    fn create(elevator_at: Floor, pairs: Vec<StatePair>) -> Self {
+        State {
+            elevator_at,
+            pairs: pairs.into_iter().sorted().collect(),
+        }
+    }
+
+    fn object_count(&self) -> usize {
+        self.pairs.len() * 2
+    }
+
+    fn to_definition(&self) -> Definition {
+        let elements: Vec<Element> = Element::iter().collect();
+        let floors: BTreeMap<Floor, BTreeSet<Object>> = BTreeMap::new();
+
+        let mut result = Definition {
+            elevator_at: self.elevator_at,
+            floors,
+        };
+
+        for (idx, pair) in self.pairs.iter().enumerate() {
+            let element = elements[idx];
+            result = result.add_object(pair.generator_at, Generator(element));
+            result = result.add_object(pair.microchip_at, Microchip(element));
+        }
+
+        assert_eq!(self.object_count(), result.object_count());
+
+        result
+    }
+
+    fn successors(&self) -> BTreeSet<State> {
+        let definition = self.to_definition();
+        definition
+            .successors()
+            .iter()
+            .map(Definition::to_state)
+            .collect()
+    }
+
+    fn is_target(&self) -> bool {
+        self.elevator_at.terminal()
+            && self
+                .pairs
+                .iter()
+                .all(|pair| pair.generator_at.terminal() && pair.microchip_at.terminal())
+    }
+}
+
+fn real_data_1() -> Definition {
+    Definition {
         elevator_at: Floor::F1,
         floors:      BTreeMap::from([
             (
@@ -196,8 +291,8 @@ fn real_data_1() -> State {
     }
 }
 
-fn real_data_2() -> State {
-    State {
+fn real_data_2() -> Definition {
+    Definition {
         elevator_at: Floor::F1,
         floors:      BTreeMap::from([
             (
@@ -229,16 +324,15 @@ fn real_data_2() -> State {
     }
 }
 
-fn solve(start: &State) -> Option<usize> {
-    let result = astar(
-        start,
+fn solve(start: &Definition) -> Option<usize> {
+    let result = dijkstra(
+        &start.to_state(),
         |x| {
             State::successors(x)
                 .into_iter()
                 .map(|s| (s, 1))
                 .collect::<Vec<_>>()
         },
-        State::heuristic,
         State::is_target,
     );
     result.map(|(_path, len)| len)
@@ -257,8 +351,8 @@ mod tests {
     use super::*;
     use crate::Element::{Hydrogen, Lithium};
 
-    fn test_data() -> State {
-        State {
+    fn test_data() -> Definition {
+        Definition {
             elevator_at: Floor::F1,
             floors:      BTreeMap::from([
                 (
@@ -278,7 +372,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_solve_1_real() {
         assert_eq!(solve(&real_data_1()), Some(37));
     }
