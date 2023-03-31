@@ -11,3 +11,4 @@ advent-of-code-common = { path = "../common" }
 itertools.workspace = true
 integer-sqrt.workspace = true
 nom.workspace = true
+pathfinding.workspace = true
