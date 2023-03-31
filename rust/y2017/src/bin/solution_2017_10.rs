@@ -1,8 +1,6 @@
 use advent_of_code_common::circular::Circular;
 use advent_of_code_common::parsing::parse_str;
 
-const DATA: &str = "34,88,2,222,254,93,150,0,199,255,39,32,137,136,1,167";
-
 fn make_folds(data: &mut Circular<u8>, fold_lengths: &[u8], rounds: usize) {
     let mut current: usize = 0;
     let mut skip_size: usize = 0;
@@ -21,6 +19,8 @@ fn part_1(max_element: u8, fold_lengths: &[u8]) -> u16 {
     make_folds(&mut data, fold_lengths, 1);
     u16::from(data[0]) * u16::from(data[1])
 }
+
+const DATA: &str = "34,88,2,222,254,93,150,0,199,255,39,32,137,136,1,167";
 
 fn part_1_real_data() -> Vec<u8> {
     DATA.split(',').map(|x| parse_str(x).unwrap()).collect()
