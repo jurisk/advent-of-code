@@ -14,14 +14,13 @@ package object math {
     }
 
   @tailrec
-  def gcd(a: Int, b: Int): Int = {
+  def gcd(a: Int, b: Int): Int =
     (abs(a), abs(b)) match {
       case (0, 0) => 0
       case (m, 0) => m
       case (0, n) => n
       case (m, n) => gcd(n, m % n)
     }
-  }
 
   def pow(a: Int, b: Int): Long =
     Math.pow(a, b).toLong

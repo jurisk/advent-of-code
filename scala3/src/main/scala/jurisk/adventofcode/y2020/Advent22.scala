@@ -55,7 +55,6 @@ object Advent22 extends App:
       case (deckA, Nil) => deckA
       case (Nil, deckB) => deckB
       case (headA :: _, headB :: _) => cycle(compare(headA, headB)).simpleGame
-      case (Nil, Nil) => sys.error(s"Unexpected empty decks")
 
   private def readGame(fileName: String): Game =
     val decks: List[Deck] = Source
