@@ -1,22 +1,9 @@
-use advent_of_code_common::circular::Circular;
+use advent_of_code_2017::knot_hash::{knot_hash_as_string, knot_hash_make_folds};
 use advent_of_code_common::parsing::parse_str;
-
-fn make_folds(data: &mut Circular<u8>, fold_lengths: &[u8], rounds: usize) {
-    let mut current: usize = 0;
-    let mut skip_size: usize = 0;
-    for _round in 0 .. rounds {
-        for i in fold_lengths {
-            let skip_length = *i as usize;
-            data.reverse_slice(current, skip_length);
-            current += skip_length + skip_size;
-            skip_size += 1;
-        }
-    }
-}
 
 fn part_1(max_element: u8, fold_lengths: &[u8]) -> u16 {
     let mut data = (0 ..= max_element).collect();
-    make_folds(&mut data, fold_lengths, 1);
+    knot_hash_make_folds(&mut data, fold_lengths, 1);
     u16::from(data[0]) * u16::from(data[1])
 }
 
@@ -26,21 +13,8 @@ fn part_1_real_data() -> Vec<u8> {
     DATA.split(',').map(|x| parse_str(x).unwrap()).collect()
 }
 
-const STANDARD_LENGTH_SUFFIXES: [u8; 5] = [17, 31, 73, 47, 23];
 fn part_2(input: &str) -> String {
-    let fold_lengths: Vec<u8> = vec![input.as_bytes(), &STANDARD_LENGTH_SUFFIXES].concat();
-    let mut data = (0 ..= 255).collect();
-    make_folds(&mut data, &fold_lengths, 64);
-    assert_eq!(data.len(), 256);
-    let dense_hash: Vec<u8> = data
-        .vec
-        .chunks(16)
-        .map(|x| x.iter().copied().reduce(|x, y| x ^ y).unwrap())
-        .collect();
-    assert_eq!(dense_hash.len(), 16);
-    let result: String = dense_hash.iter().map(|x| format!("{x:02x}")).collect();
-    assert_eq!(result.len(), 32);
-    result
+    knot_hash_as_string(input)
 }
 
 fn main() {
