@@ -32,8 +32,8 @@ object Advent14 extends IOApp.Simple {
     x.contains(charNTimes(char, times))
 
   private def validWindow(list: Chunk[String]): Boolean = list.head exists {
-    ch =>
-      hasRepeatedChar(ch, 3) exists { char =>
+    first =>
+      hasRepeatedChar(first, 3) exists { char =>
         list.drop(1).exists(s => hasRepeatedChar(s, char, 5))
       }
   }
