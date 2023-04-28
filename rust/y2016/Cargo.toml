@@ -14,3 +14,5 @@ memoize.workspace = true
 nom.workspace = true
 pathfinding.workspace = true
 strum.workspace = true
+recap.workspace = true
+serde.workspace = true
