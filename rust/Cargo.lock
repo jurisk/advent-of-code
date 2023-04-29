@@ -27,6 +27,7 @@ dependencies = [
  "itertools",
  "memoize",
  "nom",
+ "num_enum",
  "pathfinding",
  "recap",
  "regex",
