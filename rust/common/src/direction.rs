@@ -72,4 +72,14 @@ impl Direction {
             _ => Err(format!("Unrecognized direction caret {ch}")),
         }
     }
+
+    #[must_use]
+    pub fn as_udlr_char(self) -> char {
+        match self {
+            North => 'U',
+            East => 'R',
+            South => 'D',
+            West => 'L',
+        }
+    }
 }
