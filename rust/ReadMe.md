@@ -11,7 +11,7 @@ rustup default nightly
 ```shell
 cargo update
 cargo check --workspace
-cargo install --locked cargo-udeps 
+cargo install --locked cargo-udeps
 cargo +nightly udeps
 cargo install --locked cargo-outdated
 cargo outdated --workspace
