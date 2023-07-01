@@ -1,28 +1,18 @@
-(ns y2017.day-18
+(ns y2017.day18.solution-1
   (:gen-class)
-  (:require [clojure.string :as string]))
-
-(defrecord Value [^Long value])
-
-(defprotocol Numeric
-  (add [this other])
-  (mul [this other])
-  (modulo [this other])
-  (above-zero [this]))
-
-(extend-type Value
-  Numeric
-  (add [this other]
-    (->Value (+ (:value this) (:value other))))
-  (mul [this other]
-    (println "mul" this other)
-    (->Value (* (:value this) (:value other))))
-  (modulo [this other]
-    (->Value (mod (:value this) (:value other))))
-  (above-zero [this]
-    (> (:value this) 0)))
-
-(defrecord Register [^char id])
+  (:require [y2017.day18.domain :refer [->Value add mul modulo above-zero]]
+            [y2017.day18.parser :refer [parse]])
+  (:import [y2017.day18.domain
+            Add
+            Jgz
+            Mod
+            Mul
+            Rcv
+            Register
+            Set
+            Snd
+            Value
+            Numeric]))
 
 (defrecord State [^int instruction-pointer, ^clojure.lang.IPersistentMap registers, ^Value last-note, ^Value result])
 
@@ -39,7 +29,6 @@
     (->State (new-ip state 1) updated-registers (:last-note state) (:result state))))
 
 (defn get-register [^State state, ^Register register]
-  (println "get-register" (:registers state) register (:id register))
   (get (:registers state) (:id register) (->Value 0)))
 
 (defprotocol Command
@@ -53,19 +42,10 @@
   (extract-value [this _state]
     this))
 
-;; Register implements Operand
 (extend-type Register
   Operand
   (extract-value [this state]
     (get-register state this)))
-
-(defrecord Snd [^Register x])
-(defrecord Set [^Register x, y])
-(defrecord Add [^Register x, y])
-(defrecord Mul [^Register x, y])
-(defrecord Mod [^Register x, y])
-(defrecord Rcv [^Register x])
-(defrecord Jgz [^Register x, y])
 
 (extend-type Snd
   Command
@@ -118,58 +98,6 @@
                 (:value (extract-value (:y this) state))
                 1)]
       (->State (new-ip state jmp) (:registers state) (:last-note state) (:result state)))))
-
-(defn parse-value [^String arg]
-  (->Value (Long/parseLong arg)))
-
-(defn parse-register [^String arg]
-  (->Register (first arg)))
-
-(defn parse-arg
-  [^String arg]
-  (if (Character/isLetter (.charAt arg 0))
-    (parse-register arg)
-    (parse-value arg)))
-
-(defmulti parse-command (fn [command-string] (first (clojure.string/split command-string #" "))))
-
-(defmethod parse-command "snd" [command-string]
-  (let [[_ x] (clojure.string/split command-string #" ")]
-    (->Snd (parse-register x))))
-
-(defmethod parse-command "set" [command-string]
-  (let [[_ x y] (clojure.string/split command-string #" ")]
-    (->Set (parse-register x) (parse-arg y))))
-
-(defmethod parse-command "add" [command-string]
-  (let [[_ x y] (clojure.string/split command-string #" ")]
-    (->Add (parse-register x) (parse-arg y))))
-
-(defmethod parse-command "mul" [command-string]
-  (let [[_ x y] (clojure.string/split command-string #" ")]
-    (->Mul (parse-register x) (parse-arg y))))
-
-(defmethod parse-command "mod" [command-string]
-  (let [[_ x y] (clojure.string/split command-string #" ")]
-    (->Mod (parse-register x) (parse-arg y))))
-
-(defmethod parse-command "rcv" [command-string]
-  (let [[_ x] (clojure.string/split command-string #" ")]
-    (->Rcv (parse-register x))))
-
-(defmethod parse-command "jgz" [command-string]
-  (let [[_ x y] (clojure.string/split command-string #" ")]
-    (->Jgz (parse-register x) (parse-arg y))))
-
-(defmethod parse-command :default [_]
-  (throw (Exception. "Unknown command")))
-
-(defn parse [^String file-name]
-  (let [contents (slurp file-name)
-        lines (string/split-lines contents)
-        commands (map parse-command lines)]
-    (doseq [cmd commands] (println cmd))
-    (doall commands)))
 
 (defn solve-1 [commands]
   (loop [state (->State 0 {} nil nil)]
