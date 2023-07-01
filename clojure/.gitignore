@@ -1,0 +1,7 @@
+.lsp/
+.clj-kondo/
+.calva/
+target/
+.lein-failures
+.nrepl-port
+.eastwood
