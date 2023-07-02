@@ -21,10 +21,10 @@
 
 (defrecord Register [^char id])
 
-(defrecord Snd [^Register x])
+(defrecord Snd [x])
 (defrecord Set [^Register x, y])
 (defrecord Add [^Register x, y])
 (defrecord Mul [^Register x, y])
 (defrecord Mod [^Register x, y])
 (defrecord Rcv [^Register x])
-(defrecord Jgz [^Register x, y])
+(defrecord Jgz [x, y])

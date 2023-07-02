@@ -1,6 +1,6 @@
 (ns y2017.day18.parser
   (:require [clojure.string :as str]
-            [y2017.day18.domain :refer :all]))
+            [y2017.day18.domain :refer [->Add ->Jgz ->Mod ->Mul ->Rcv ->Register ->Set ->Snd ->Value]]))
 
 (defn parse-value [^String arg]
   (->Value (Long/parseLong arg)))
@@ -18,7 +18,7 @@
 
 (defmethod parse-command "snd" [command-string]
   (let [[_ x] (str/split command-string #" ")]
-    (->Snd (parse-register x))))
+    (->Snd (parse-arg x))))
 
 (defmethod parse-command "set" [command-string]
   (let [[_ x y] (str/split command-string #" ")]
@@ -42,7 +42,7 @@
 
 (defmethod parse-command "jgz" [command-string]
   (let [[_ x y] (str/split command-string #" ")]
-    (->Jgz (parse-register x) (parse-arg y))))
+    (->Jgz (parse-arg x) (parse-arg y))))
 
 (defmethod parse-command :default [_]
   (throw (Exception. "Unknown command")))

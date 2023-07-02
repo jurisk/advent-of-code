@@ -11,8 +11,7 @@
             Register
             Set
             Snd
-            Value
-            Numeric]))
+            Value]))
 
 (defrecord State [^int instruction-pointer, ^clojure.lang.IPersistentMap registers, ^Value last-note, ^Value result])
 
