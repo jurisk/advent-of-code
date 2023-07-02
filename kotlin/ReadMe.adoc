@@ -1,0 +1,5 @@
+[source,shell]
+----
+./gradlew ktlintCheck
+./gradlew ktlintFormat
+----
