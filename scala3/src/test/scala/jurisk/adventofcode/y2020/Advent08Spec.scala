@@ -4,6 +4,8 @@ import cats.implicits.*
 import jurisk.adventofcode.y2020.Advent08
 import jurisk.adventofcode.y2020.Advent08.{Execution, ExecutionResult}
 
+import scala.util.Properties
+
 object Advent08Spec extends App:
   val tests1 = """
     |nop +0
@@ -17,7 +19,7 @@ object Advent08Spec extends App:
     |acc +6
     |""".stripMargin
   
-  def parse(x: String) = Advent08.parseTestCases(x.split("\n").filter(_.nonEmpty).toList)
+  def parse(x: String) = Advent08.parseTestCases(x.split(Properties.lineSeparator).filter(_.nonEmpty).toList)
   
   val testCases1 = parse(tests1).getOrElse(sys.error("failed"))
   val solved1 = Advent08.solution1(testCases1)

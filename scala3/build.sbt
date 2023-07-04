@@ -6,11 +6,11 @@ lazy val root = project
     scalacOptions ++= Seq(
       "-language:postfixOps",
       "-Ykind-projector",
-      "-source", "3.1"
+      "-source", "3.3"
     ),
-    scalaVersion := "3.2.1",
+    scalaVersion := "3.3.0",
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-effect" % "3.4.8",
-      "org.scalatest" %% "scalatest" % "3.2.15" % Test, // Did not work
+      "org.typelevel" %% "cats-effect" % "3.5.1",
+      "org.scalameta" %% "munit" % "0.7.29" % Test,
     ),
   )

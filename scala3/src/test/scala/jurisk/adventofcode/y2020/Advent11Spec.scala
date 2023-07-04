@@ -3,6 +3,8 @@ package jurisk.adventofcode.y2020
 import cats.implicits.*
 import jurisk.adventofcode.y2020.Advent11.*
 
+import scala.util.Properties
+
 object Advent11Spec extends App:
   val inputA = """
     |L.LL.LL.LL
@@ -17,7 +19,7 @@ object Advent11Spec extends App:
     |L.LLLLL.LL
     |""".stripMargin
   
-  def parse(x: String) = parseTestCases(x.split("\n").filter(_.nonEmpty).toList)
+  def parse(x: String) = parseTestCases(x.split(Properties.lineSeparator).filter(_.nonEmpty).toList)
   
   val testsA = parse(inputA).fold((e) => sys.error(s"$e"), identity)
 

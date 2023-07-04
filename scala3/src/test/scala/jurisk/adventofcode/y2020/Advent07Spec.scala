@@ -3,6 +3,8 @@ package jurisk.adventofcode.y2020
 import cats.implicits.*
 import jurisk.adventofcode.y2020.Advent07
 
+import scala.util.Properties
+
 object Advent07Spec extends App:
   val tests1 = """
     |light red bags contain 1 bright white bag, 2 muted yellow bags.
@@ -15,7 +17,7 @@ object Advent07Spec extends App:
     |faded blue bags contain no other bags.
     |dotted black bags contain no other bags.""".stripMargin
   
-  def parse(x: String) = Advent07.parseTestCases(x.split("\n").filter(_.nonEmpty).toList)
+  def parse(x: String) = Advent07.parseTestCases(x.split(Properties.lineSeparator).filter(_.nonEmpty).toList)
   
   val testCases1 = parse(tests1)
   val solved11 = testCases1 map Advent07.solution1
