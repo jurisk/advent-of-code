@@ -5,6 +5,8 @@ import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.SingleLineAdventApp
 import jurisk.adventofcode.y2020.Advent17.Coordinates.{Coordinates3D, Coordinates4D}
 
+import scala.annotation.targetName
+
 object Advent17 extends SingleLineAdventApp[List[Boolean], Int]:
   sealed trait Coordinates[C <: Coordinates[C]]:
     infix def to(other: C): Seq[C]
@@ -14,7 +16,10 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int]:
     def plusOne: C = this + One
     def minusOne: C = this - One
 
+    @targetName("minus")
     def -(other: C): C = biProject(other, (a, b) => a - b)
+
+    @targetName("plus")
     def +(other: C): C = biProject(other, (a, b) => a + b)
 
     def One: C
@@ -36,7 +41,7 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int]:
           z <- z to other.z
         yield Coordinates3D(x, y, z)
 
-      def One = Coordinates3D(1, 1, 1)
+      def One: Coordinates3D = Coordinates3D(1, 1, 1)
 
       def biProject(other: Coordinates3D, f: (Int, Int) => Int): Coordinates3D =
         Coordinates3D(
@@ -57,7 +62,7 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int]:
           w <- w to other.w
         yield Coordinates4D(x, y, z, w)
 
-      def One = Coordinates4D(1, 1, 1, 1)
+      def One: Coordinates4D = Coordinates4D(1, 1, 1, 1)
       
       def biProject(other: Coordinates4D, f: (Int, Int) => Int): Coordinates4D =
         Coordinates4D(
@@ -68,20 +73,20 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int]:
         )
   
   final case class Grid[C <: Coordinates[C]](data: Map[C, Boolean]):
-    def at(coordinates: C): Boolean = data.get(coordinates).getOrElse(false)
-    def set(coordinates: C, value: Boolean) = copy(data = data + (coordinates -> value))
+    def at(coordinates: C): Boolean = data.getOrElse(coordinates, false)
+    def set(coordinates: C, value: Boolean): Grid[C] = copy(data = data + (coordinates -> value))
       
     def countActive: Int = data.count { case (_, value) => value }
     
     def coordinatesSet: Set[C] = data.keySet
     
-    def lowerCoordinates: C = data.keySet.reduce(_ lower _)
-    def upperCoordinates: C = data.keySet.reduce(_ upper _)
+    private def lowerCoordinates: C = data.keySet.reduce(_ lower _)
+    private def upperCoordinates: C = data.keySet.reduce(_ upper _)
     
-    def neighbourCount(coordinates: C): Int =
+    private def neighbourCount(coordinates: C): Int =
       coordinates.neighbours.count(at)
     
-    def nextValue(coordinates: C): Boolean =
+    private def nextValue(coordinates: C): Boolean =
       val neighboursActive = neighbourCount(coordinates)
 
       (at(coordinates), neighboursActive) match
@@ -95,7 +100,7 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int]:
       
       Grid(newData.toMap)
 
-  object Grid:
+  private object Grid:
     def empty[C <: Coordinates[C]]: Grid[C] = new Grid(Map.empty)
   
   def fileName: String = "17.txt"
@@ -126,7 +131,7 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int]:
       .toList
       .sequence
 
-  def convertInput[C <: Coordinates[C]](data: List[List[Boolean]], fromXY: (Int, Int) => C): Grid[C] =
+  private def convertInput[C <: Coordinates[C]](data: List[List[Boolean]], fromXY: (Int, Int) => C): Grid[C] =
     data.zipWithIndex
       .flatMap { case (y, yIdx) =>
         y.zipWithIndex
