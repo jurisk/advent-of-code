@@ -1,5 +1,6 @@
 [workspace]
 members = ["common", "y2015", "y2016", "y2017", "y2018", "y2019", "y2020", "y2021", "y2022"]
+resolver = "2"
 
 [workspace.package]
 version = "0.1.0"
