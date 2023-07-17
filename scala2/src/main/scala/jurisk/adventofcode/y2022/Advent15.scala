@@ -22,7 +22,7 @@ object Advent15 {
 
     def radius: Int = sensor manhattanDistance closestBeacon
 
-    def intervalWithY(y: Int): Option[InclusiveDiscreteInterval] = {
+    def intervalWithY(y: Int): Option[InclusiveDiscreteInterval[Int]] = {
       val dy    = Math.abs(sensor.y - y)
       val delta = radius - dy
       (delta >= 0) option InclusiveDiscreteInterval(
@@ -55,13 +55,14 @@ object Advent15 {
     y: Int,
     from: Int,
     to: Int,
-  ): NonOverlappingDiscreteIntervalSet =
-    data.foldLeft(NonOverlappingDiscreteIntervalSet.createInclusive(from, to)) {
-      case (acc, e) =>
-        e intervalWithY y match {
-          case Some(interval) => acc.subtract(interval)
-          case None           => acc
-        }
+  ): NonOverlappingDiscreteIntervalSet[Int] =
+    data.foldLeft(
+      NonOverlappingDiscreteIntervalSet.createInclusive[Int](from, to)
+    ) { case (acc, e) =>
+      e intervalWithY y match {
+        case Some(interval) => acc.subtract(interval)
+        case None           => acc
+      }
     }
 
   def part1(data: Parsed, y: Int): Int = {

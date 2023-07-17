@@ -1,66 +1,96 @@
 package jurisk.math
 
-final case class NonOverlappingDiscreteIntervalSet(
-  data: Set[InclusiveDiscreteInterval]
+import jurisk.math.Enumerated.EnumeratedOps
+
+import scala.math.Numeric.Implicits._
+import scala.math.Ordering.Implicits._
+
+final case class NonOverlappingDiscreteIntervalSet[N: Numeric](
+  data: Set[InclusiveDiscreteInterval[N]]
 ) {
   def add(
-    interval: InclusiveDiscreteInterval
-  ): NonOverlappingDiscreteIntervalSet = NonOverlappingDiscreteIntervalSet(
-    data.flatMap(_.add(interval))
-  )
+    interval: InclusiveDiscreteInterval[N]
+  ): NonOverlappingDiscreteIntervalSet[N] =
+    NonOverlappingDiscreteIntervalSet[N](
+      if (data.isEmpty) {
+        Set(interval)
+      } else {
+        data.flatMap(_.add(interval))
+      }
+    )
 
   def subtract(
-    interval: InclusiveDiscreteInterval
-  ): NonOverlappingDiscreteIntervalSet = NonOverlappingDiscreteIntervalSet(
-    data.flatMap(_.subtract(interval))
-  )
+    interval: InclusiveDiscreteInterval[N]
+  ): NonOverlappingDiscreteIntervalSet[N] =
+    NonOverlappingDiscreteIntervalSet[N](
+      data.flatMap(_.subtract(interval))
+    )
 
-  def size: Int = data.map(_.size).sum
+  def minUnsafe: N =
+    data.map(_.from).min
 
-  def values: Set[Int] = data.flatMap(_.values)
+  def size: N = data.toList.map(_.size).sum
+
+  def values: Set[N] = data.flatMap(_.values)
 }
 
 object NonOverlappingDiscreteIntervalSet {
-  def createInclusive(from: Int, to: Int): NonOverlappingDiscreteIntervalSet =
-    NonOverlappingDiscreteIntervalSet(
-      Set(InclusiveDiscreteInterval(from, to))
+  def createInclusive[N: Numeric: Enumerated](
+    from: N,
+    to: N,
+  ): NonOverlappingDiscreteIntervalSet[N] =
+    NonOverlappingDiscreteIntervalSet[N](
+      Set(InclusiveDiscreteInterval[N](from, to))
+    )
+
+  def empty[N: Numeric]: NonOverlappingDiscreteIntervalSet[N] =
+    NonOverlappingDiscreteIntervalSet[N](
+      Set.empty
     )
 }
 
-final case class InclusiveDiscreteInterval(from: Int, to: Int) {
-  def size: Int = to - from + 1
+final case class InclusiveDiscreteInterval[N: Numeric: Enumerated](
+  from: N,
+  to: N,
+) {
+  private val numericN: Numeric[N] = implicitly[Numeric[N]]
+  private val One: N               = numericN.one
 
-  def values: List[Int] = (from to to).toList
+  def size: N = to - from + One
 
-  def add(other: InclusiveDiscreteInterval): Set[InclusiveDiscreteInterval] =
+  def values: List[N] = from to to
+
+  def add(
+    other: InclusiveDiscreteInterval[N]
+  ): Set[InclusiveDiscreteInterval[N]] =
     if (other.from > to || other.to < from) Set(this, other)
     else
       Set(
         InclusiveDiscreteInterval(
-          Math.min(this.from, other.from),
-          Math.max(this.to, other.to),
+          numericN.min(this.from, other.from),
+          numericN.max(this.to, other.to),
         )
       )
 
   def subtract(
-    other: InclusiveDiscreteInterval
-  ): Set[InclusiveDiscreteInterval] =
+    other: InclusiveDiscreteInterval[N]
+  ): Set[InclusiveDiscreteInterval[N]] =
     if (other.from > to || other.to < from) {
       Set(this)
     } else if (other.from <= from && other.to >= to) {
       Set.empty
     } else if (other.from > from && other.to < to) {
       Set(
-        InclusiveDiscreteInterval(from, other.from - 1),
-        InclusiveDiscreteInterval(other.to + 1, to),
+        InclusiveDiscreteInterval[N](from, other.from - One),
+        InclusiveDiscreteInterval[N](other.to + One, to),
       )
     } else if (other.from <= from) { // && other.to < to
       Set(
-        InclusiveDiscreteInterval(other.to + 1, to)
+        InclusiveDiscreteInterval[N](other.to + One, to)
       )
     } else { // other.from > from) && (other.to >= to)
       Set(
-        InclusiveDiscreteInterval(from, other.from - 1)
+        InclusiveDiscreteInterval[N](from, other.from - One)
       )
     }
 }
