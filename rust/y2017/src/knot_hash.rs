@@ -22,7 +22,7 @@ const STANDARD_LENGTH_SUFFIXES: [u8; 5] = [17, 31, 73, 47, 23];
 ///
 /// Should not panic
 pub fn knot_hash_as_u8(input: &str) -> Vec<u8> {
-    let fold_lengths: Vec<u8> = vec![input.as_bytes(), &STANDARD_LENGTH_SUFFIXES].concat();
+    let fold_lengths: Vec<u8> = [input.as_bytes(), &STANDARD_LENGTH_SUFFIXES].concat();
     let mut data = (0 ..= 255).collect();
     knot_hash_make_folds(&mut data, &fold_lengths, 64);
     debug_assert_eq!(data.len(), 256);

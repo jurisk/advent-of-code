@@ -230,7 +230,7 @@ impl Maze {
             .map(|c| CoordsXYL::with_level(*c, from.level))
             .collect();
 
-        vec![a, b, c].concat()
+        [a, b, c].concat()
     }
 }
 

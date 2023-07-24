@@ -170,7 +170,7 @@ impl MailboxState {
     }
 }
 
-fn next_to_process(mailboxes: &mut HashMap<BotId, MailboxState>) -> Option<(BotId, MailboxState)> {
+fn next_to_process(mailboxes: &HashMap<BotId, MailboxState>) -> Option<(BotId, MailboxState)> {
     mailboxes
         .iter()
         .find(|(_bot_id, state)| matches!(state, MailboxState::Two { .. }))
@@ -242,7 +242,7 @@ fn solve(
             println!();
         }
 
-        if let Some((bot_id, state)) = next_to_process(&mut mailboxes) {
+        if let Some((bot_id, state)) = next_to_process(&mailboxes) {
             if DEBUG {
                 println!("Next to process {bot_id:?} {state:?}...");
             }

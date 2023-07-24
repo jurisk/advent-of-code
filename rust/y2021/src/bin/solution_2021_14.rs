@@ -92,7 +92,7 @@ impl Data {
 
         let first: Vec<_> = vec![(self.starting_polymer.head, 1)];
         let other: Vec<_> = frequencies.iter().map(|(k, &v)| (k.b, v)).collect();
-        let joined = vec![first, other].concat();
+        let joined = [first, other].concat();
         additive_hashmap_from_vec(joined)
     }
 }

@@ -176,7 +176,7 @@ where
     let mut memory: BTreeMap<u64, u64> = BTreeMap::new();
     let mut mask: Mask = Mask::initial();
 
-    for command in commands.iter() {
+    for command in commands {
         match command {
             SetMemory { address, value } => {
                 f(&mut memory, mask, *address, *value);

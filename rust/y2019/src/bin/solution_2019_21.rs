@@ -30,7 +30,7 @@ const PART_1: [&str; 6] = [
 ];
 
 fn solve_1() {
-    let result = solve(vec![PART_1.to_vec(), vec!["WALK"]].concat());
+    let result = solve([PART_1.to_vec(), vec!["WALK"]].concat());
 
     assert_eq!(result, 19_357_544);
     println!("Part 1: {result}");

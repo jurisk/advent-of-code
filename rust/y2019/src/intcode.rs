@@ -382,6 +382,9 @@ impl Process {
         }
     }
 
+    /// # Panics
+    ///
+    /// Panics if output is not available.
     pub fn next_output_unsafe(&mut self) -> Entry {
         self.output.pop_front().expect("No output found")
     }
@@ -417,8 +420,8 @@ impl Process {
         self.run_to_condition(|x| x.output_len() >= compare_with)
     }
 
-    /* Returns true if Halt was encountered, false if Output was encountered
-     * instead */
+    // Returns true if Halt was encountered, false if Output was encountered
+    // instead
     pub fn run_to_halt_or_output(&mut self) -> bool {
         self.run_to_halt_or_output_size(1)
     }

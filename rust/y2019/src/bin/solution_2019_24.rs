@@ -33,7 +33,7 @@ fn at(field: &Field, x: i32, y: i32) -> bool {
 }
 
 fn neighbour_count_simple(field: Field, x: usize, y: usize) -> usize {
-    vec![(-1, 0), (1, 0), (0, -1), (0, 1)]
+    [(-1, 0), (1, 0), (0, -1), (0, 1)]
         .iter()
         .filter(|(dx, dy)| {
             let nx = i32::try_from(x).unwrap() + dx;

@@ -151,7 +151,7 @@ fn wins(player: &Stats, boss: &Stats) -> bool {
 }
 
 fn calculate_stats(weapons: &[Item], armour: &[Item], rings: &[Item]) -> Stats {
-    let all: Vec<Item> = vec![weapons, armour, rings].concat();
+    let all: Vec<Item> = [weapons, armour, rings].concat();
     let joined = all.into_iter().reduce(|a, b| a + b).unwrap();
     Stats {
         hit_points: 100,
@@ -180,8 +180,8 @@ fn all_stats() -> Vec<Stats> {
 
     weapons_options
         .into_iter()
-        .cartesian_product(armour_options.into_iter())
-        .cartesian_product(rings_options.into_iter())
+        .cartesian_product(armour_options)
+        .cartesian_product(rings_options)
         .map(|((w, a), r)| calculate_stats(&w, &a, &r))
         .collect()
 }

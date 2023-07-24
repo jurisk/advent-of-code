@@ -408,7 +408,7 @@ impl<const N: usize> State<N> {
             .flat_map(|room| self.room_helper(*room))
             .collect();
 
-        vec![paths_from_hallway_squares, paths_from_rooms].concat()
+        [paths_from_hallway_squares, paths_from_rooms].concat()
     }
 }
 

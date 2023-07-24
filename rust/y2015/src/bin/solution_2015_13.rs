@@ -101,7 +101,7 @@ fn solve_2(data: &[Proximity]) -> i32 {
         })
         .collect();
 
-    let merged = vec![data, &mine].concat();
+    let merged = [data, &mine].concat();
     solve_1(&merged)
 }
 

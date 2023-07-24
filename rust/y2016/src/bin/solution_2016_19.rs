@@ -35,10 +35,9 @@ impl State {
         }
     }
 
-    /* This is not optimal at all and takes a very long time to run for large
-     * inputs, but I used `BTreeMap` for Part 1 and this was the quickest to
-     * write.
-     */
+    // This is not optimal at all and takes a very long time to run for large
+    // inputs, but I used `BTreeMap` for Part 1 and this was the quickest to
+    // write.
     fn opposite(&self, idx: usize) -> usize {
         let add = self.tree.len() / 2 - 1;
         let followers: Vec<_> = self.tree.range(idx + 1 ..).collect();

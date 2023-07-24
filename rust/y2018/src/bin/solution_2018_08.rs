@@ -33,7 +33,7 @@ impl Node {
     }
 }
 
-/** Takes head of the list, or fails */
+/// Takes head of the list, or fails
 fn take_head<T: Clone>(input: &[T]) -> IResult<&[T], T> {
     let (h, t) = head_tail(input);
     match h {

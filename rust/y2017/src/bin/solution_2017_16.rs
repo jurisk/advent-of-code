@@ -56,7 +56,7 @@ impl Move {
         match self {
             Spin(n) => {
                 let m = v.len() - n;
-                let updated = vec![v[m ..].to_vec(), v[.. m].to_vec()].concat();
+                let updated = [v[m ..].to_vec(), v[.. m].to_vec()].concat();
                 *v = updated;
             },
             Exchange(a, b) => {

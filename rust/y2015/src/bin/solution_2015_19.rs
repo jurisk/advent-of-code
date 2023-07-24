@@ -41,7 +41,7 @@ fn parse_molecule(input: &str) -> Result<Molecule, Error> {
         for element in Element::iter() {
             if let Some(remaining) = input.strip_prefix(&element.to_string()) {
                 let tail = parse_molecule(remaining)?;
-                return Ok(vec![vec![element], tail].concat());
+                return Ok([vec![element], tail].concat());
             }
         }
 
@@ -69,7 +69,7 @@ fn successors(replacements: &Replacements, state: &Molecule) -> Vec<Molecule> {
             let mut options: HashSet<Molecule> = HashSet::new();
             for (idx, element) in state.iter().enumerate() {
                 if k == element {
-                    let option = vec![&state[0 .. idx], v.as_slice(), &state[idx + 1 ..]].concat();
+                    let option = [&state[0 .. idx], v.as_slice(), &state[idx + 1 ..]].concat();
                     options.insert(option);
                 }
             }

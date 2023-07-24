@@ -63,14 +63,14 @@ impl Game {
     fn mark_next(self) -> Option<Game> {
         self.remaining_numbers.first().map(|next| {
             let remaining_numbers = self.remaining_numbers[1 ..].to_vec();
-            let marked_numbers = vec![self.marked_numbers, vec![*next]].concat();
+            let marked_numbers = [self.marked_numbers, vec![*next]].concat();
             let new_winning = Game::winning_boards(&self.boards, &marked_numbers)
                 .iter()
                 .filter(|n| !self.winning_boards_in_order_of_winning.contains(&**n))
                 .copied()
                 .collect();
             let winning_boards_in_order_of_winning =
-                vec![self.winning_boards_in_order_of_winning, new_winning].concat();
+                [self.winning_boards_in_order_of_winning, new_winning].concat();
 
             Game {
                 remaining_numbers,

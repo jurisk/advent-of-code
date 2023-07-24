@@ -87,7 +87,7 @@ impl Maze {
                 .filter_map(|d| {
                     let n = state.location.move_in_direction(*d);
                     if self.within_bounds(n) {
-                        let moves = vec![state.moves.clone(), vec![*d]].concat();
+                        let moves = [state.moves.clone(), vec![*d]].concat();
                         let result = State { location: n, moves };
                         Some(result)
                     } else {

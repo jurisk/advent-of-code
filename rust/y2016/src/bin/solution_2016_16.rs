@@ -32,7 +32,7 @@ fn fill_to(data: &[Digit], size: usize) -> Vec<Digit> {
                 }
             })
             .collect();
-        let new = vec![data.to_vec(), vec![Zero], other].concat();
+        let new = [data.to_vec(), vec![Zero], other].concat();
         fill_to(&new, size)
     }
 }

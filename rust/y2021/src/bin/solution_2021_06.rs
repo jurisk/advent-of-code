@@ -22,17 +22,15 @@ fn parse(data: &str) -> Result<FishCount, Error> {
     }
 }
 
-/*
-   0 comes from 1
-   1 comes from 2
-   2 comes from 3
-   3 comes from 4
-   4 comes from 5
-   5 comes from 6
-   6 comes from 7 and 0
-   7 comes from 8
-   8 comes from 0
-*/
+// 0 comes from 1
+// 1 comes from 2
+// 2 comes from 3
+// 3 comes from 4
+// 4 comes from 5
+// 5 comes from 6
+// 6 comes from 7 and 0
+// 7 comes from 8
+// 8 comes from 0
 fn next_day(fishes: &FishCount) -> FishCount {
     (0 ..= 8)
         .map(|k| {

@@ -47,7 +47,7 @@ fn apply_phases_1(numbers: Vec<u8>, phases: u8) -> Vec<u8> {
 fn apply_phase_2(numbers: &[u8]) -> Vec<u8> {
     let mut sum: i32 = numbers.iter().map(|x| i32::from(*x)).sum();
     let mut out: Vec<u8> = Vec::new();
-    for x in numbers.iter() {
+    for x in numbers {
         let res = u8::try_from(sum % 10).unwrap();
         out.push(res);
         sum -= i32::from(*x);

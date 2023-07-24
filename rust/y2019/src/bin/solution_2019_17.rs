@@ -315,7 +315,7 @@ impl WithSubroutines {
                     &steps_to_allocate[v.steps.len() ..],
                     subroutine_names_remaining,
                     WithSubroutines {
-                        main:        vec![acc.main, vec![*k]].concat(),
+                        main:        [acc.main, vec![*k]].concat(),
                         subroutines: acc.subroutines,
                     },
                 );

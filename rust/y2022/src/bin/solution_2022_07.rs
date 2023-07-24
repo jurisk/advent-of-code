@@ -59,7 +59,7 @@ impl Directory {
             .flat_map(Directory::all_directories_including_self)
             .collect();
 
-        vec![vec![self], others].concat()
+        [vec![self], others].concat()
     }
 
     fn total_size(&self) -> N {
@@ -116,7 +116,7 @@ impl Directory {
             Command::CdDir(dir) => {
                 (
                     self.clone(),
-                    vec![working_directory, vec![dir.clone()]].concat(), // append 1 to the end
+                    [working_directory, vec![dir.clone()]].concat(), // append 1 to the end
                 )
             },
             Command::CdUp => {

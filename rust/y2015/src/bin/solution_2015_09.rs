@@ -75,7 +75,7 @@ fn solve(data: &[Route], prune: bool) -> i32 {
                     non_visited_neighbours
                         .map(|r| {
                             (
-                                vec![path.clone(), vec![r.to.clone()]].concat(),
+                                [path.clone(), vec![r.to.clone()]].concat(),
                                 cost + r.distance,
                             )
                         })

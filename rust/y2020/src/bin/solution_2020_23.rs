@@ -83,7 +83,7 @@ impl Cups {
     }
 }
 
-fn answer1(cups: &mut Cups) -> String {
+fn answer1(cups: &Cups) -> String {
     let mut result: Vec<usize> = vec![];
     let mut current = cups.links[0];
     while current != 0 {
@@ -96,7 +96,7 @@ fn answer1(cups: &mut Cups) -> String {
         .collect::<String>();
 }
 
-fn answer2(cups: &mut Cups) -> usize {
+fn answer2(cups: &Cups) -> usize {
     let a = cups.links[0];
     let b = cups.links[a];
     (a + 1) * (b + 1)
@@ -111,26 +111,26 @@ fn simulate(cups: &mut Cups, iterations: u32) {
 fn main() {
     let mut test_cups_short_1 = Cups::short("389125467");
     simulate(&mut test_cups_short_1, 10);
-    assert_eq!(answer1(&mut test_cups_short_1), "92658374");
+    assert_eq!(answer1(&test_cups_short_1), "92658374");
 
     let mut test_cups_short_2 = Cups::short("389125467");
     simulate(&mut test_cups_short_2, 100);
-    assert_eq!(answer1(&mut test_cups_short_2), "67384529");
+    assert_eq!(answer1(&test_cups_short_2), "67384529");
 
     let mut real_cups_short = Cups::short("942387615");
     simulate(&mut real_cups_short, 100);
-    let real_answer_1 = answer1(&mut real_cups_short);
+    let real_answer_1 = answer1(&real_cups_short);
     println!("{real_answer_1}");
     assert_eq!(real_answer_1, "36542897");
 
     let mut test_cups_long = Cups::long("389125467", 1_000_000);
     simulate(&mut test_cups_long, 10_000_000);
-    let answer_test_cups_long = answer2(&mut test_cups_long);
+    let answer_test_cups_long = answer2(&test_cups_long);
     assert_eq!(answer_test_cups_long, 149_245_887_792);
 
     let mut real_cups_long = Cups::long("942387615", 1_000_000);
     simulate(&mut real_cups_long, 10_000_000);
-    let answer_real_cups_long = answer2(&mut real_cups_long);
+    let answer_real_cups_long = answer2(&real_cups_long);
     println!("{answer_real_cups_long}");
     assert_eq!(answer_real_cups_long, 562_136_730_660);
 }

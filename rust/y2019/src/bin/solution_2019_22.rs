@@ -43,14 +43,14 @@ impl<T: Copy + Clone + Eq> SimpleDeck<T> {
             Cut(n) if *n > 0 => {
                 let m = *n as usize;
                 SimpleDeck {
-                    cards: vec![&self.cards[m ..], &self.cards[.. m]].concat(),
+                    cards: [&self.cards[m ..], &self.cards[.. m]].concat(),
                 }
             },
             #[allow(clippy::cast_sign_loss)]
             Cut(n) => {
                 let m = (isize::try_from(self.cards.len()).unwrap() + *n) as usize;
                 SimpleDeck {
-                    cards: vec![&self.cards[m ..], &self.cards[.. m]].concat(),
+                    cards: [&self.cards[m ..], &self.cards[.. m]].concat(),
                 }
             },
             DealWithIncrement(n) => {

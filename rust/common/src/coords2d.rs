@@ -102,7 +102,7 @@ impl<T: Copy + One + Add<Output = T> + Sub<Output = T>> Coords2D<T> {
             },
         ];
 
-        vec![self.adjacent4(), diagonals].concat()
+        [self.adjacent4(), diagonals].concat()
     }
 }
 

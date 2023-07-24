@@ -74,6 +74,7 @@ fn chinese_remainder(residues: &[Number], modulii: &[Number]) -> Option<Number> 
     Some(sum % prod)
 }
 
+#[allow(clippy::cast_possible_wrap)]
 fn solve2(schedule: &[Option<Number>]) -> Number {
     // divisors
     let n: Vec<Number> = flatten_schedule(schedule);
