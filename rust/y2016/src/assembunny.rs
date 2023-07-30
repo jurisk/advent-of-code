@@ -2,34 +2,37 @@ use std::collections::BTreeMap;
 use std::str::FromStr;
 
 use advent_of_code_common::parsing::{parse_lines_to_vec, parse_str, Error};
-use itertools::Either;
 
-use crate::assembunny::Instruction::{
-    CpyRegister, CpyValue, DecRegister, IncRegister, Jump, JumpIfNotZero,
-};
+use crate::assembunny::Instruction::{Cpy, DecRegister, IncRegister, JumpIfNotZero, Tgl};
 
 pub type N = i32;
 
 type RegisterId = char;
 
 #[derive(Debug, Copy, Clone)]
+pub enum RegisterOrValue {
+    Register(RegisterId),
+    Value(N),
+}
+
+#[derive(Debug, Copy, Clone)]
 pub enum Instruction {
-    CpyValue {
-        value: N,
-        to:    RegisterId,
+    Cpy {
+        from: RegisterOrValue,
+        to:   RegisterOrValue,
     },
-    CpyRegister {
-        from: RegisterId,
-        to:   RegisterId,
+    IncRegister {
+        register: RegisterId,
     },
-    IncRegister(RegisterId),
-    DecRegister(RegisterId),
-    Jump {
-        offset: N,
+    DecRegister {
+        register: RegisterId,
     },
     JumpIfNotZero {
-        check_register: RegisterId,
-        offset:         N,
+        check:  RegisterOrValue,
+        offset: RegisterOrValue,
+    },
+    Tgl {
+        offset: RegisterId,
     },
 }
 
@@ -53,50 +56,86 @@ impl State {
         *self.registers.get(&register).unwrap_or(&0)
     }
 
+    fn read_register_or_value(&self, register_or_value: RegisterOrValue) -> N {
+        match register_or_value {
+            RegisterOrValue::Register(register) => self.read_register(register),
+            RegisterOrValue::Value(value) => value,
+        }
+    }
+
     fn increment_ip(&mut self) {
         self.modify_ip(1);
     }
 
-    fn modify_ip(&mut self, offset: N) {
-        let instruction_pointer = usize::try_from(
+    #[must_use]
+    fn ip_plus_offset(&self, offset: N) -> usize {
+        usize::try_from(
             (isize::try_from(self.instruction_pointer).unwrap()) + isize::try_from(offset).unwrap(),
         )
-        .unwrap();
+        .unwrap()
+    }
 
-        self.instruction_pointer = instruction_pointer;
+    fn modify_ip(&mut self, offset: N) {
+        self.instruction_pointer = self.ip_plus_offset(offset);
     }
 
     fn execute_instruction(&mut self, instruction: Instruction) {
         match instruction {
-            CpyValue { value, to } => {
-                self.modify_register(to, |_| value);
+            Cpy { from, to } => {
+                match to {
+                    RegisterOrValue::Register(register) => {
+                        let value = self.read_register_or_value(from);
+                        self.modify_register(register, |_| value);
+                    },
+                    RegisterOrValue::Value(_) => {
+                        // Ignore such useless instructions
+                    },
+                }
+
                 self.increment_ip();
             },
-            CpyRegister { from, to } => {
-                let value = self.read_register(from);
-                self.modify_register(to, |_| value);
+            IncRegister { register } => {
+                self.modify_register(register, |x| x + 1);
                 self.increment_ip();
             },
-            IncRegister(register_id) => {
-                self.modify_register(register_id, |x| x + 1);
+            DecRegister { register } => {
+                self.modify_register(register, |x| x - 1);
                 self.increment_ip();
             },
-            DecRegister(register_id) => {
-                self.modify_register(register_id, |x| x - 1);
-                self.increment_ip();
-            },
-            Jump { offset } => {
-                self.modify_ip(offset);
-            },
-            JumpIfNotZero {
-                check_register,
-                offset,
-            } => {
-                if self.read_register(check_register) == 0 {
+            JumpIfNotZero { check, offset } => {
+                if self.read_register_or_value(check) == 0 {
                     self.increment_ip();
                 } else {
-                    self.execute_instruction(Jump { offset });
+                    let offset = self.read_register_or_value(offset);
+                    self.modify_ip(offset);
                 }
+            },
+            Tgl { offset } => {
+                let offset = self.read_register(offset);
+                let offset = self.ip_plus_offset(offset);
+
+                if let Some(&existing) = self.instructions.get(offset) {
+                    let updated = match existing {
+                        Cpy { from, to } => {
+                            JumpIfNotZero {
+                                check:  from,
+                                offset: to,
+                            }
+                        },
+                        IncRegister { register } => DecRegister { register },
+                        DecRegister { register } => IncRegister { register },
+                        JumpIfNotZero { check, offset } => {
+                            Cpy {
+                                from: check,
+                                to:   offset,
+                            }
+                        },
+                        Tgl { offset } => IncRegister { register: offset },
+                    };
+                    self.instructions[offset] = updated;
+                }
+
+                self.increment_ip();
             },
         }
     }
@@ -106,11 +145,11 @@ impl FromStr for Instruction {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        fn parse_register_or_value(x: &str) -> Result<Either<RegisterId, N>, Error> {
+        fn parse_register_or_value(x: &str) -> Result<RegisterOrValue, Error> {
             let value: Result<N, Error> = parse_str(x);
             match value {
-                Ok(x) => Ok(Either::Right(x)),
-                Err(_) => parse_register(x).map(Either::Left),
+                Ok(x) => Ok(RegisterOrValue::Value(x)),
+                Err(_) => parse_register(x).map(RegisterOrValue::Register),
             }
         }
 
@@ -142,32 +181,28 @@ impl FromStr for Instruction {
                 let y: &str = &nth_elem(&v, 2)?;
                 let from = parse_register_or_value(x)?;
                 let to = parse_register(y)?;
+                let to = RegisterOrValue::Register(to);
 
-                match from {
-                    Either::Left(from) => Ok(CpyRegister { from, to }),
-                    Either::Right(value) => Ok(CpyValue { value, to }),
-                }
+                Ok(Cpy { from, to })
             },
             "inc" => {
-                let register_id = parse_register(x)?;
-                Ok(IncRegister(register_id))
+                let register = parse_register(x)?;
+                Ok(IncRegister { register })
             },
             "dec" => {
-                let register_id = parse_register(x)?;
-                Ok(DecRegister(register_id))
+                let register = parse_register(x)?;
+                Ok(DecRegister { register })
             },
             "jnz" => {
                 let y: &str = &nth_elem(&v, 2)?;
-                let offset = parse_str(y)?;
-                if x == "1" {
-                    Ok(Jump { offset })
-                } else {
-                    let check_register = parse_register(x)?;
-                    Ok(JumpIfNotZero {
-                        check_register,
-                        offset,
-                    })
-                }
+                let check = parse_register_or_value(x)?;
+                let offset = parse_register_or_value(y)?;
+
+                Ok(JumpIfNotZero { check, offset })
+            },
+            "tgl" => {
+                let offset = parse_register(x)?;
+                Ok(Tgl { offset })
             },
             _ => Err(format!("Unrecognized {op} in {s}")),
         }
