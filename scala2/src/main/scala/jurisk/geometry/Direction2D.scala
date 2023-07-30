@@ -34,12 +34,12 @@ object Direction2D {
           sys.error(s"rotate does not support rotating $this by $rotation")
       }
 
-    def asString: String          = neswMapping.rightToLeftUnsafe(this).toString
+    def asString: String          = neswMapping.rightToLeftUnsafe(this)
     override def toString: String = asString
   }
 
   sealed trait DiagonalDirection2D extends Direction2D {
-    def asString: String          = neswMapping.rightToLeftUnsafe(this).toString
+    def asString: String          = neswMapping.rightToLeftUnsafe(this)
     override def toString: String = asString
   }
 

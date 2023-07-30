@@ -10,18 +10,21 @@ class Advent16Spec extends AnyFlatSpec {
   import Operator._
 
   "Solution 16" should "parse D2FE28" in {
-    parseSingle("D2FE28") shouldEqual Right(Literal(6, 2021))
+    parseSingle("D2FE28") shouldEqual Right(Literal(6.toByte, 2021))
   }
 
   it should "parse 38006F45291200" in {
     parseSingle("38006F45291200") shouldEqual Right(
-      LessThan(1, Literal(6, 10), Literal(2, 20))
+      LessThan(1.toByte, Literal(6.toByte, 10), Literal(2.toByte, 20))
     )
   }
 
   it should "parse EE00D40C823060" in {
     parseSingle("EE00D40C823060") shouldEqual Right(
-      Maximum(7, List(Literal(2, 1), Literal(4, 2), Literal(1, 3)))
+      Maximum(
+        7.toByte,
+        List(Literal(2.toByte, 1), Literal(4.toByte, 2), Literal(1.toByte, 3)),
+      )
     )
   }
 
