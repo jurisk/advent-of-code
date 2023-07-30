@@ -1,3 +1,10 @@
+import { assertNever } from "../../util/misc";
+
+export enum Direction {
+  Left,
+  Right,
+}
+
 type SwapPosition = {
   kind: "swapPosition";
   x: number;
@@ -12,7 +19,7 @@ type SwapLetter = {
 
 type RotateSteps = {
   kind: "rotateSteps";
-  direction: "left" | "right";
+  direction: Direction;
   steps: number;
 };
 
@@ -54,12 +61,12 @@ export function applyCommand(input: readonly string[], command: Command): readon
     case "rotateSteps": {
       const steps = command.steps % input.length;
       switch (command.direction) {
-        case "right":
+        case Direction.Right:
           return [...input.slice(-steps), ...input.slice(0, -steps)];
-        case "left":
+        case Direction.Left:
           return [...input.slice(steps), ...input.slice(0, steps)];
         default:
-          throw new Error(`Invalid direction ${command.direction} in rotateSteps command`);
+          return assertNever(command.direction);
       }
     }
 
@@ -68,7 +75,7 @@ export function applyCommand(input: readonly string[], command: Command): readon
       const rotateSteps = 1 + index + (index >= 4 ? 1 : 0);
       return applyCommand(input, {
         kind: "rotateSteps",
-        direction: "right",
+        direction: Direction.Right,
         steps: rotateSteps,
       });
     }
@@ -88,5 +95,8 @@ export function applyCommand(input: readonly string[], command: Command): readon
       moved.splice(command.y, 0, letter);
       return moved;
     }
+
+    default:
+      return assertNever(command);
   }
 }

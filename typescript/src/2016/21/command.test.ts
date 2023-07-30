@@ -1,4 +1,4 @@
-import { Command, applyCommand } from "./command";
+import { Command, Direction, applyCommand } from "./command";
 
 function check(input: string, command: Command, expectedOutput: string) {
   const inputArray = Array.from(input);
@@ -22,7 +22,7 @@ describe("applyCommand & reverseCommand", () => {
   });
 
   test("rotate left", () => {
-    check("abcde", { kind: "rotateSteps", direction: "left", steps: 1 }, "bcdea");
+    check("abcde", { kind: "rotateSteps", direction: Direction.Left, steps: 1 }, "bcdea");
   });
 
   test("move position 1 to 4", () => {

@@ -17,10 +17,11 @@
         "tsc": "^2.0.4"
     },
     "scripts": {
-        "2016-21": "ts-node src/2016/21/app.ts",
+        "2016-21": "ts-node src/2016/21/main.ts",
         "lint": "eslint \"**/*.ts\"",
         "lint:fix": "eslint --fix \"**/*.ts\"",
         "formatter": "prettier --config .prettierrc \"**/*.ts\" --write",
-        "test": "jest"
+        "test": "jest",
+        "check": "npm run formatter && npm run lint && npm run test"
     }
 }

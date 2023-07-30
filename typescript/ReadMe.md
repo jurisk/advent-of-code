@@ -1,6 +1,13 @@
+# Prepare
+
 ```shell
 npm install -g typescript
 npm install -g ts-node
-npx eslint "**/*.ts"
+```
+
+# Run
+
+```shell
+npm run check
 npm run 2016-21
 ```
