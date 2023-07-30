@@ -1,10 +1,12 @@
 use std::collections::BTreeMap;
 use std::str::FromStr;
 
-use advent_of_code_common::parsing::{parse_str, Error, parse_lines_to_vec};
+use advent_of_code_common::parsing::{parse_lines_to_vec, parse_str, Error};
 use itertools::Either;
 
-use crate::assembunny::Instruction::{CpyRegister, CpyValue, DecRegister, IncRegister, Jump, JumpIfNotZero};
+use crate::assembunny::Instruction::{
+    CpyRegister, CpyValue, DecRegister, IncRegister, Jump, JumpIfNotZero,
+};
 
 pub type N = i32;
 
@@ -31,66 +33,69 @@ pub enum Instruction {
     },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct State {
+    pub instructions:        Vec<Instruction>,
     pub instruction_pointer: usize,
     pub registers:           BTreeMap<RegisterId, N>,
 }
 
 impl State {
-    fn modify_register<F>(&self, register: RegisterId, f: F) -> Self
+    fn modify_register<F>(&mut self, register: RegisterId, f: F)
     where
         F: Fn(N) -> N,
     {
-        let current = self.registers.get(&register).unwrap_or(&0);
-        let updated = f(*current);
-        let mut registers = self.registers.clone();
-        registers.insert(register, updated);
-        Self {
-            registers,
-            instruction_pointer: self.instruction_pointer,
-        }
+        let entry = self.registers.entry(register).or_insert(0);
+        *entry = f(*entry);
     }
 
     fn read_register(&self, register: RegisterId) -> N {
         *self.registers.get(&register).unwrap_or(&0)
     }
 
-    fn increment_ip(&self) -> Self {
-        Self {
-            instruction_pointer: self.instruction_pointer + 1,
-            registers:           self.registers.clone(),
-        }
+    fn increment_ip(&mut self) {
+        self.modify_ip(1);
     }
 
-    fn execute_instruction(&self, instruction: Instruction) -> Self {
+    fn modify_ip(&mut self, offset: N) {
+        let instruction_pointer = usize::try_from(
+            (isize::try_from(self.instruction_pointer).unwrap()) + isize::try_from(offset).unwrap(),
+        )
+        .unwrap();
+
+        self.instruction_pointer = instruction_pointer;
+    }
+
+    fn execute_instruction(&mut self, instruction: Instruction) {
         match instruction {
-            CpyValue { value, to } => self.modify_register(to, |_| value).increment_ip(),
-            CpyRegister { from, to } => {
-                self.modify_register(to, |_| self.read_register(from))
-                    .increment_ip()
+            CpyValue { value, to } => {
+                self.modify_register(to, |_| value);
+                self.increment_ip();
             },
-            IncRegister(register_id) => self.modify_register(register_id, |x| x + 1).increment_ip(),
-            DecRegister(register_id) => self.modify_register(register_id, |x| x - 1).increment_ip(),
+            CpyRegister { from, to } => {
+                let value = self.read_register(from);
+                self.modify_register(to, |_| value);
+                self.increment_ip();
+            },
+            IncRegister(register_id) => {
+                self.modify_register(register_id, |x| x + 1);
+                self.increment_ip();
+            },
+            DecRegister(register_id) => {
+                self.modify_register(register_id, |x| x - 1);
+                self.increment_ip();
+            },
             Jump { offset } => {
-                let instruction_pointer = usize::try_from(
-                    (isize::try_from(self.instruction_pointer).unwrap())
-                        + isize::try_from(offset).unwrap(),
-                )
-                .unwrap();
-                Self {
-                    instruction_pointer,
-                    registers: self.registers.clone(),
-                }
+                self.modify_ip(offset);
             },
             JumpIfNotZero {
                 check_register,
                 offset,
             } => {
                 if self.read_register(check_register) == 0 {
-                    self.increment_ip()
+                    self.increment_ip();
                 } else {
-                    self.execute_instruction(Jump { offset })
+                    self.execute_instruction(Jump { offset });
                 }
             },
         }
@@ -172,12 +177,13 @@ impl FromStr for Instruction {
 #[must_use]
 pub fn run_program(instructions: &[Instruction], initial_registers: &[(RegisterId, N)]) -> State {
     let mut state = State {
+        instructions:        Vec::from(instructions),
         instruction_pointer: 0,
         registers:           BTreeMap::from_iter(initial_registers.to_vec()),
     };
 
-    while let Some(instruction) = instructions.get(state.instruction_pointer) {
-        state = state.execute_instruction(*instruction);
+    while let Some(instruction) = state.instructions.get(state.instruction_pointer) {
+        state.execute_instruction(*instruction);
     }
 
     state
@@ -187,4 +193,3 @@ pub fn run_program(instructions: &[Instruction], initial_registers: &[(RegisterI
 pub fn parse_instructions(input: &str) -> Result<Vec<Instruction>, Error> {
     parse_lines_to_vec(input)
 }
-

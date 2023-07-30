@@ -1,4 +1,4 @@
-use advent_of_code_2016::assembunny::{run_program, Instruction, N, parse_instructions};
+use advent_of_code_2016::assembunny::{parse_instructions, run_program, Instruction, N};
 use advent_of_code_common::parsing::Error;
 
 fn solve_1(instructions: &[Instruction]) -> N {
@@ -46,7 +46,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_solve_2_real() {
         assert_eq!(part_2(DATA), Ok(9227647));
     }
