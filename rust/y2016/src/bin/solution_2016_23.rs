@@ -1,8 +1,10 @@
-use advent_of_code_2016::assembunny::{parse_instructions, run_program, Instruction, N};
+use advent_of_code_2016::assembunny::{parse_instructions, Instruction, State, N};
 use advent_of_code_common::parsing::Error;
 
 fn solve(instructions: &[Instruction], eggs: N) -> N {
-    run_program(instructions, &[('a', eggs)]).registers[&'a']
+    State::new(instructions, &[('a', eggs)])
+        .run_to_termination()
+        .registers[&'a']
 }
 
 fn parse_and_solve(input: &str, eggs: N) -> Result<N, Error> {

@@ -1,12 +1,14 @@
-use advent_of_code_2016::assembunny::{parse_instructions, run_program, Instruction, N};
+use advent_of_code_2016::assembunny::{parse_instructions, Instruction, State, N};
 use advent_of_code_common::parsing::Error;
 
 fn solve_1(instructions: &[Instruction]) -> N {
-    run_program(instructions, &[]).registers[&'a']
+    State::new(instructions, &[]).run_to_termination().registers[&'a']
 }
 
 fn solve_2(instructions: &[Instruction]) -> N {
-    run_program(instructions, &[('c', 1)]).registers[&'a']
+    State::new(instructions, &[('c', 1)])
+        .run_to_termination()
+        .registers[&'a']
 }
 
 fn part_1(input: &str) -> Result<N, Error> {

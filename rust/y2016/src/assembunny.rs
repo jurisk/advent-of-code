@@ -1,9 +1,10 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, VecDeque};
 use std::str::FromStr;
 
 use advent_of_code_common::parsing::{parse_lines_to_vec, parse_str, Error};
+use itertools::Either;
 
-use crate::assembunny::Instruction::{Cpy, DecRegister, IncRegister, JumpIfNotZero, Tgl};
+use crate::assembunny::Instruction::{Cpy, DecRegister, IncRegister, JumpIfNotZero, Out, Tgl};
 
 pub type N = i32;
 
@@ -34,6 +35,9 @@ pub enum Instruction {
     Tgl {
         offset: RegisterId,
     },
+    Out {
+        register: RegisterId,
+    },
 }
 
 #[derive(Debug)]
@@ -41,9 +45,20 @@ pub struct State {
     pub instructions:        Vec<Instruction>,
     pub instruction_pointer: usize,
     pub registers:           BTreeMap<RegisterId, N>,
+    pub output:              VecDeque<N>,
 }
 
 impl State {
+    #[must_use]
+    pub fn new(instructions: &[Instruction], initial_registers: &[(RegisterId, N)]) -> Self {
+        Self {
+            instructions:        Vec::from(instructions),
+            instruction_pointer: 0,
+            registers:           BTreeMap::from_iter(initial_registers.to_vec()),
+            output:              VecDeque::new(),
+        }
+    }
+
     fn modify_register<F>(&mut self, register: RegisterId, f: F)
     where
         F: Fn(N) -> N,
@@ -65,6 +80,10 @@ impl State {
 
     fn increment_ip(&mut self) {
         self.modify_ip(1);
+    }
+
+    fn next_instruction(&self) -> Option<&Instruction> {
+        self.instructions.get(self.instruction_pointer)
     }
 
     #[must_use]
@@ -123,7 +142,7 @@ impl State {
                             }
                         },
                         IncRegister { register } => DecRegister { register },
-                        DecRegister { register } => IncRegister { register },
+                        DecRegister { register } | Out { register } => IncRegister { register },
                         JumpIfNotZero { check, offset } => {
                             Cpy {
                                 from: check,
@@ -137,6 +156,39 @@ impl State {
 
                 self.increment_ip();
             },
+            Out { register } => {
+                let value = self.read_register(register);
+                self.output.push_back(value);
+                self.increment_ip();
+            },
+        }
+    }
+
+    #[must_use]
+    pub fn run_to_termination(mut self) -> State {
+        while let Some(instruction) = self.next_instruction() {
+            self.execute_instruction(*instruction);
+        }
+
+        self
+    }
+
+    #[must_use]
+    // Left - matched predicate, Right - terminated normally
+    pub fn run_until_matches_predicate<F>(mut self, predicate: F) -> Either<Self, Self>
+    where
+        F: Fn(&Self) -> bool,
+    {
+        loop {
+            if predicate(&self) {
+                return Either::Left(self);
+            }
+
+            if let Some(instruction) = self.next_instruction() {
+                self.execute_instruction(*instruction);
+            } else {
+                return Either::Right(self);
+            }
         }
     }
 }
@@ -204,24 +256,13 @@ impl FromStr for Instruction {
                 let offset = parse_register(x)?;
                 Ok(Tgl { offset })
             },
+            "out" => {
+                let register = parse_register(x)?;
+                Ok(Out { register })
+            },
             _ => Err(format!("Unrecognized {op} in {s}")),
         }
     }
-}
-
-#[must_use]
-pub fn run_program(instructions: &[Instruction], initial_registers: &[(RegisterId, N)]) -> State {
-    let mut state = State {
-        instructions:        Vec::from(instructions),
-        instruction_pointer: 0,
-        registers:           BTreeMap::from_iter(initial_registers.to_vec()),
-    };
-
-    while let Some(instruction) = state.instructions.get(state.instruction_pointer) {
-        state.execute_instruction(*instruction);
-    }
-
-    state
 }
 
 #[allow(clippy::missing_errors_doc)]
