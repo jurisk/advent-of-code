@@ -1,11 +1,12 @@
 package jurisk.algorithms.pathfinding
 
-import cats.implicits._
 import cats.data.NonEmptyList
+import cats.implicits._
 import jurisk.utils.Bounded
+
+import scala.collection.mutable
 import scala.math.Numeric.Implicits._
 import scala.math.Ordering.Implicits._
-import scala.collection.mutable
 
 object AStar {
 

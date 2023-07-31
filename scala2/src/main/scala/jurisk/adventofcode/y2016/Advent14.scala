@@ -1,8 +1,10 @@
 package jurisk.adventofcode.y2016
 
-import cats.effect.{IO, IOApp}
+import cats.effect.IO
+import cats.effect.IOApp
 import cats.implicits._
-import fs2.{Chunk, Stream}
+import fs2.Chunk
+import fs2.Stream
 import jurisk.cryptography.Hashing
 
 import scala.annotation.tailrec

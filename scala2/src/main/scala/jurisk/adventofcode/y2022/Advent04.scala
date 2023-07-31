@@ -5,7 +5,7 @@ import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent04 {
-  case class Elf(from: Int, to: Int) {
+  final case class Elf(from: Int, to: Int) {
     def fullyContains(other: Elf): Boolean =
       (from <= other.from) && (to >= other.to)
 
@@ -21,7 +21,7 @@ object Advent04 {
     }
   }
 
-  case class Pair(first: Elf, second: Elf) {
+  final case class Pair(first: Elf, second: Elf) {
     def fullyContained: Boolean =
       first.fullyContains(second) || second.fullyContains(first)
 

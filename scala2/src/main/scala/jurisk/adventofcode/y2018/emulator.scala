@@ -142,76 +142,76 @@ case object Instruction {
     instructionName: InstructionName
   ): InstructionFactoryF = AllInstructions(instructionName)
 
-  case class AddR(a: Int, b: Int, c: Int) extends Instruction {
+  final case class AddR(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int =
       registers(a) + registers(b)
   }
 
-  case class AddI(a: Int, b: Int, c: Int) extends Instruction {
+  final case class AddI(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int = registers(a) + b
   }
 
-  case class MulR(a: Int, b: Int, c: Int) extends Instruction {
+  final case class MulR(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int =
       registers(a) * registers(b)
   }
 
-  case class MulI(a: Int, b: Int, c: Int) extends Instruction {
+  final case class MulI(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int = registers(a) * b
   }
 
-  case class BAnR(a: Int, b: Int, c: Int) extends Instruction {
+  final case class BAnR(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int =
       registers(a) & registers(b)
   }
 
-  case class BAnI(a: Int, b: Int, c: Int) extends Instruction {
+  final case class BAnI(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int = registers(a) & b
   }
 
-  case class BOrR(a: Int, b: Int, c: Int) extends Instruction {
+  final case class BOrR(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int =
       registers(a) | registers(b)
   }
 
-  case class BOrI(a: Int, b: Int, c: Int) extends Instruction {
+  final case class BOrI(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int = registers(a) | b
   }
 
-  case class SetR(a: Int, b: Int, c: Int) extends Instruction {
+  final case class SetR(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int = registers(a)
   }
 
-  case class SetI(a: Int, b: Int, c: Int) extends Instruction {
+  final case class SetI(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int = a
   }
 
-  case class GtIR(a: Int, b: Int, c: Int) extends Instruction {
+  final case class GtIR(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int =
       if (a > registers(b)) 1 else 0
   }
 
-  case class GtRI(a: Int, b: Int, c: Int) extends Instruction {
+  final case class GtRI(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int =
       if (registers(a) > b) 1 else 0
   }
 
-  case class GtRR(a: Int, b: Int, c: Int) extends Instruction {
+  final case class GtRR(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int =
       if (registers(a) > registers(b)) 1 else 0
   }
 
-  case class EqIR(a: Int, b: Int, c: Int) extends Instruction {
+  final case class EqIR(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int =
       if (a == registers(b)) 1 else 0
   }
 
-  case class EqRI(a: Int, b: Int, c: Int) extends Instruction {
+  final case class EqRI(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int =
       if (registers(a) == b) 1 else 0
   }
 
-  case class EqRR(a: Int, b: Int, c: Int) extends Instruction {
+  final case class EqRR(a: Int, b: Int, c: Int) extends Instruction {
     override def whatToStoreInC(registers: Registers): Int =
       if (registers(a) == registers(b)) 1 else 0
   }

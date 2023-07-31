@@ -1,12 +1,14 @@
 package jurisk.adventofcode.y2022
 
+import cats.effect.ExitCode
+import cats.effect.IO
+import cats.effect.IOApp
 import cats.effect.kernel.Clock
-import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.std.Console
 import cats.implicits._
 import jurisk.algorithms.pathfinding.Dfs
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import cats.effect.std.Console
 
 object Advent19 extends IOApp {
   type Parsed = List[Blueprint]

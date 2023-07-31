@@ -1,12 +1,16 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
-import jurisk.utils.Memoize.memoize
 import jurisk.algorithms.pathfinding.Pathfinding
+import jurisk.geometry.Area2D
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.CardinalDirection2D
-import jurisk.geometry.{Area2D, Coords2D, Direction2D, Field2D}
-import jurisk.math.{absForWrappingAround, lcm}
+import jurisk.geometry.Field2D
+import jurisk.math.absForWrappingAround
+import jurisk.math.lcm
 import jurisk.utils.FileInput._
+import jurisk.utils.Memoize.memoize
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 

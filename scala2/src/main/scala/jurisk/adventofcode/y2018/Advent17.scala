@@ -1,9 +1,12 @@
 package jurisk.adventofcode.y2018
 
 import cats.implicits._
-import jurisk.adventofcode.y2018.Advent17.Square.{Clay, _}
-import jurisk.adventofcode.y2018.Advent17.State.{consecutiveRanges, isSolid}
-import jurisk.geometry.{Coords2D, Field2D}
+import jurisk.adventofcode.y2018.Advent17.Square.Clay
+import jurisk.adventofcode.y2018.Advent17.Square._
+import jurisk.adventofcode.y2018.Advent17.State.consecutiveRanges
+import jurisk.adventofcode.y2018.Advent17.State.isSolid
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation

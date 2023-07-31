@@ -1,8 +1,8 @@
 package jurisk.geometry
 
-import jurisk.geometry.Rotation._
 import jurisk.collections.BiMap
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
+import jurisk.geometry.Rotation._
 
 sealed trait Direction2D {
   def diff: Coords2D

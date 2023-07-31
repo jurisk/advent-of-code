@@ -1,14 +1,15 @@
 package jurisk.adventofcode.y2018
 
-import jurisk.adventofcode.y2018.Advent22.RegionType.{
-  Impassable,
-  Narrow,
-  Rocky,
-  Wet,
-}
-import jurisk.adventofcode.y2018.Advent22.Tool.{ClimbingGear, Neither, Torch}
+import jurisk.adventofcode.y2018.Advent22.RegionType.Impassable
+import jurisk.adventofcode.y2018.Advent22.RegionType.Narrow
+import jurisk.adventofcode.y2018.Advent22.RegionType.Rocky
+import jurisk.adventofcode.y2018.Advent22.RegionType.Wet
+import jurisk.adventofcode.y2018.Advent22.Tool.ClimbingGear
+import jurisk.adventofcode.y2018.Advent22.Tool.Neither
+import jurisk.adventofcode.y2018.Advent22.Tool.Torch
 import jurisk.algorithms.pathfinding.AStar
-import jurisk.geometry.{Area2D, Coords2D}
+import jurisk.geometry.Area2D
+import jurisk.geometry.Coords2D
 import jurisk.utils.Memoize.memoize
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Utils.IterableOps

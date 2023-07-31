@@ -1,10 +1,14 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
-import jurisk.adventofcode.y2022.Advent22.Square.{Open, Outside}
+import jurisk.adventofcode.y2022.Advent22.Square.Open
+import jurisk.adventofcode.y2022.Advent22.Square.Outside
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
+import jurisk.geometry.Field2D
+import jurisk.geometry.Rotation
 import jurisk.geometry.Rotation.TurnAround
-import jurisk.geometry.{Coords2D, Direction2D, Field2D, Rotation}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Utils.IterableOps
@@ -23,9 +27,9 @@ object Advent22 {
 
   sealed trait Square
   object Square {
-    final case object Outside extends Square
-    final case object Wall    extends Square
-    final case object Open    extends Square
+    case object Outside extends Square
+    case object Wall    extends Square
+    case object Open    extends Square
 
     def parse(ch: Char): Square =
       ch match {

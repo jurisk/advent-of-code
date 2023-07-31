@@ -2,8 +2,10 @@ package jurisk.adventofcode.y2018
 
 import cats.data.NonEmptyList
 import cats.implicits._
-import jurisk.adventofcode.y2018.Advent20.Command.{Branch, Move}
-import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
+import jurisk.adventofcode.y2018.Advent20.Command.Branch
+import jurisk.adventofcode.y2018.Advent20.Command.Move
+import jurisk.algorithms.pathfinding.Bfs
+import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D._
 import jurisk.utils.FileInput._

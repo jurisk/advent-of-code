@@ -2,13 +2,14 @@ package jurisk.adventofcode.y2022
 
 import cats.implicits._
 import jurisk.algorithms.pathfinding.Pathfinding
-import jurisk.geometry.{Coords2D, Field2D}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent12 {
-  case class Task(
+  final case class Task(
     field: Field2D[Elevation],
     start: Coords2D,
     end: Coords2D,

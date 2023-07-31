@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2022
 
-import jurisk.adventofcode.y2022.Advent13.Packet.{Lst, Nmb}
+import jurisk.adventofcode.y2022.Advent13.Packet.Lst
+import jurisk.adventofcode.y2022.Advent13.Packet.Nmb
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import mouse.all._
@@ -36,10 +37,10 @@ object Advent13 {
     implicit val ordering: Ordering[Packet] = (x: Packet, y: Packet) =>
       x compare y
 
-    case class Nmb(value: Int)               extends Packet {
+    final case class Nmb(value: Int)               extends Packet {
       override def toString: String = value.toString
     }
-    case class Lst(containing: List[Packet]) extends Packet {
+    final case class Lst(containing: List[Packet]) extends Packet {
       override def toString: String =
         containing.map(_.toString).mkString("[", ",", "]")
     }

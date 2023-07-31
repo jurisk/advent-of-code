@@ -1,11 +1,11 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
+import jurisk.adventofcode.y2022.Advent21.Expression._
+import jurisk.adventofcode.y2022.Advent21.Operation._
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
-import jurisk.adventofcode.y2022.Advent21.Operation._
-import jurisk.adventofcode.y2022.Advent21.Expression._
 
 import scala.annotation.tailrec
 
@@ -17,7 +17,7 @@ object Advent21 {
   sealed trait Monkey
 
   object Monkey {
-    case class BinaryMonkey(a: Name, operation: Operation, b: Name)
+    final case class BinaryMonkey(a: Name, operation: Operation, b: Name)
         extends Monkey
     final case class Literal(value: Value) extends Monkey
 
@@ -81,7 +81,7 @@ object Advent21 {
       override def evaluate(unknownX: => Value): Value = unknownX
     }
 
-    case class BinaryExpression(
+    final case class BinaryExpression(
       a: Expression,
       operation: Operation,
       b: Expression,
@@ -114,7 +114,7 @@ object Advent21 {
         operation.execute(a.evaluate(unknownX), b.evaluate(unknownX))
     }
 
-    case class Literal(value: Value) extends Expression {
+    final case class Literal(value: Value) extends Expression {
       override def rearrange: Expression = this
       override def display: String       = value.toString
 

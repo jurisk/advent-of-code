@@ -1,10 +1,9 @@
 package jurisk.adventofcode.y2016
 
-import cats.effect.{IO, IOApp}
-import jurisk.math.{
-  InclusiveDiscreteInterval,
-  NonOverlappingDiscreteIntervalSet,
-}
+import cats.effect.IO
+import cats.effect.IOApp
+import jurisk.math.InclusiveDiscreteInterval
+import jurisk.math.NonOverlappingDiscreteIntervalSet
 import jurisk.utils.FileInputIO.readFileLines
 import org.scalatest.matchers.should.Matchers._
 

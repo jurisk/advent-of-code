@@ -15,13 +15,13 @@ object Advent18 {
     def toChar: Char
   }
   object Square       {
-    final case object Open       extends Square {
+    case object Open       extends Square {
       val toChar: Char = '.'
     }
-    final case object Lumberyard extends Square {
+    case object Lumberyard extends Square {
       val toChar: Char = '#'
     }
-    final case object Trees      extends Square {
+    case object Trees      extends Square {
       val toChar: Char = '|'
     }
 

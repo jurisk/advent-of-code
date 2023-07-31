@@ -3,10 +3,11 @@ package jurisk.adventofcode.y2018
 import cats.implicits._
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers._
+
 import scala.collection.mutable.ArrayBuffer
 
 object Advent14 {
-  case class State(
+  final case class State(
     data: ArrayBuffer[Byte], // Mutable!!!
     firstIdx: Int,
     secondIdx: Int,

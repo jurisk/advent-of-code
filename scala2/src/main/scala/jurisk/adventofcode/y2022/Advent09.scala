@@ -1,7 +1,8 @@
 package jurisk.adventofcode.y2022
 
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
 import jurisk.utils.FileInput._
-import jurisk.geometry.{Coords2D, Direction2D}
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
@@ -55,7 +56,7 @@ object Advent09 {
       }
   }
 
-  case class Rope(elems: List[Coords2D]) {
+  final case class Rope(elems: List[Coords2D]) {
     def applyMove(direction: Direction2D): Rope = {
       val newH     = elems.head + direction
       val newElems = Rope.catchUpRope(newH :: elems.tail)

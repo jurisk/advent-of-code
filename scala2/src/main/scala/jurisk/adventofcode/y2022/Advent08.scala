@@ -2,8 +2,9 @@ package jurisk.adventofcode.y2022
 
 import cats.data.NonEmptyList
 import cats.implicits._
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
-import jurisk.geometry.{Coords2D, Field2D}
 import org.scalatest.matchers.should.Matchers._
 
 object Advent08 {

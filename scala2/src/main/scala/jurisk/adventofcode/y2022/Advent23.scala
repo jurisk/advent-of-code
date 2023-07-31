@@ -1,7 +1,9 @@
 package jurisk.adventofcode.y2022
 
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
-import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
 import jurisk.utils.Utils.IterableOps

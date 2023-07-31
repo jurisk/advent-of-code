@@ -1,8 +1,9 @@
 package jurisk.adventofcode.y2018
 
 import cats.implicits._
+import jurisk.geometry.Area2D
+import jurisk.geometry.Coords2D
 import jurisk.utils.FileInput.parseFileLines
-import jurisk.geometry.{Area2D, Coords2D}
 import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 

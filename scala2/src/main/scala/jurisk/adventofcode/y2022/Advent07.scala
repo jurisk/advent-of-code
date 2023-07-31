@@ -1,10 +1,15 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
-import jurisk.adventofcode.y2022.Advent07.Command.{CdDir, CdRoot, CdUp, Ls}
-import jurisk.adventofcode.y2022.Advent07.OutputLine.{Dir, File}
+import jurisk.adventofcode.y2022.Advent07.Command.CdDir
+import jurisk.adventofcode.y2022.Advent07.Command.CdRoot
+import jurisk.adventofcode.y2022.Advent07.Command.CdUp
+import jurisk.adventofcode.y2022.Advent07.Command.Ls
+import jurisk.adventofcode.y2022.Advent07.OutputLine.Dir
+import jurisk.adventofcode.y2022.Advent07.OutputLine.File
 import jurisk.utils.FileInput._
-import jurisk.utils.Parsing.{StringOps, splitIntoSections}
+import jurisk.utils.Parsing.StringOps
+import jurisk.utils.Parsing.splitIntoSections
 import org.scalatest.matchers.should.Matchers._
 
 object Advent07 {
@@ -16,8 +21,8 @@ object Advent07 {
 
   sealed trait OutputLine
   object OutputLine {
-    case class Dir(name: String)              extends OutputLine
-    case class File(name: String, size: Long) extends OutputLine
+    final case class Dir(name: String)              extends OutputLine
+    final case class File(name: String, size: Long) extends OutputLine
   }
 
   final case class Directory(
@@ -50,10 +55,10 @@ object Advent07 {
   sealed trait Command
 
   object Command {
-    case object CdRoot            extends Command
-    case class CdDir(dir: String) extends Command
-    case object CdUp              extends Command
-    case object Ls                extends Command
+    case object CdRoot                  extends Command
+    final case class CdDir(dir: String) extends Command
+    case object CdUp                    extends Command
+    case object Ls                      extends Command
   }
 
   def process(parsed: Parsed): Processed = {

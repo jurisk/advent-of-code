@@ -3,7 +3,9 @@ package jurisk.adventofcode.y2022
 import cats.implicits._
 import jurisk.adventofcode.y2022.Advent17.Square.Empty
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers._
@@ -181,13 +183,13 @@ object Advent17 {
           val ifGoesDown = adjusted.map(_.S)
           if (hitsFieldOrSides(field, ifGoesDown)) {
             if (Debug) {
-              println(s"Rock falls 1 unit, causing it to come to rest")
+              println("Rock falls 1 unit, causing it to come to rest")
               printField(field, adjusted)
             }
             (adjusted, totalJetPatternOffset + 1).asLeft
           } else {
             if (Debug) {
-              println(s"Rock falls 1 unit")
+              println("Rock falls 1 unit")
               printField(field, ifGoesDown)
             }
             ifGoesDown.asRight

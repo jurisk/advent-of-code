@@ -1,9 +1,11 @@
 package jurisk.adventofcode.y2018
 
 import cats.implicits._
-import jurisk.adventofcode.y2018.Advent15.Race.{Elf, Goblin}
+import jurisk.adventofcode.y2018.Advent15.Race.Elf
+import jurisk.adventofcode.y2018.Advent15.Race.Goblin
 import jurisk.algorithms.pathfinding.Pathfinding
-import jurisk.geometry.{Coords2D, Field2D}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation

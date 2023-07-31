@@ -1,8 +1,9 @@
 package jurisk.adventofcode.y2022
 
-import jurisk.utils.Parsing.StringOps
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
-import jurisk.geometry.{Coords2D, Field2D}
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent10 {
@@ -10,8 +11,8 @@ object Advent10 {
 
   sealed trait Op
   object Op {
-    case object Noop                             extends Op
-    case class AddX(cyclesLeft: Int, value: Int) extends Op
+    case object Noop                                   extends Op
+    final case class AddX(cyclesLeft: Int, value: Int) extends Op
 
     def parse(s: String): Op =
       s match {
@@ -24,7 +25,7 @@ object Advent10 {
   def parse(data: String): Parsed =
     data.parseList("\n", Op.parse)
 
-  case class State(x: Int, stack: List[Op]) {
+  final case class State(x: Int, stack: List[Op]) {
     def next: State =
       stack match {
         case Op.Noop :: tail                   =>

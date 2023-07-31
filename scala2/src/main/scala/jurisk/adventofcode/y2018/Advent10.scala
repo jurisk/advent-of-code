@@ -1,8 +1,9 @@
 package jurisk.adventofcode.y2018
 
 import cats.implicits._
+import jurisk.geometry.Coords2D
+import jurisk.geometry.SparseBooleanField
 import jurisk.utils.FileInput._
-import jurisk.geometry.{Coords2D, SparseBooleanField}
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers._

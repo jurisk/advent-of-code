@@ -38,7 +38,7 @@ object Advent16 {
   }
 
   object Packet {
-    case class Literal(versionNumber: VersionNumber, number: Long)
+    final case class Literal(versionNumber: VersionNumber, number: Long)
         extends Packet {
       def allVersionNumbers: Int =
         versionNumber
@@ -77,23 +77,31 @@ object Advent16 {
     }
 
     object Operator {
-      case class Sum(versionNumber: VersionNumber, subPackets: List[Packet])
-          extends Operator {
+      final case class Sum(
+        versionNumber: VersionNumber,
+        subPackets: List[Packet],
+      ) extends Operator {
         def evaluate: Long = subPackets.map(_.evaluate).sum
       }
 
-      case class Product(versionNumber: VersionNumber, subPackets: List[Packet])
-          extends Operator {
+      final case class Product(
+        versionNumber: VersionNumber,
+        subPackets: List[Packet],
+      ) extends Operator {
         def evaluate: Long = subPackets.map(_.evaluate).product
       }
 
-      case class Minimum(versionNumber: VersionNumber, subPackets: List[Packet])
-          extends Operator {
+      final case class Minimum(
+        versionNumber: VersionNumber,
+        subPackets: List[Packet],
+      ) extends Operator {
         def evaluate: Long = subPackets.map(_.evaluate).min
       }
 
-      case class Maximum(versionNumber: VersionNumber, subPackets: List[Packet])
-          extends Operator {
+      final case class Maximum(
+        versionNumber: VersionNumber,
+        subPackets: List[Packet],
+      ) extends Operator {
         def evaluate: Long = subPackets.map(_.evaluate).max
       }
 
@@ -104,18 +112,27 @@ object Advent16 {
         def subPackets: List[Packet] = a :: b :: Nil
       }
 
-      case class GreaterThan(versionNumber: VersionNumber, a: Packet, b: Packet)
-          extends BinaryOperator {
+      final case class GreaterThan(
+        versionNumber: VersionNumber,
+        a: Packet,
+        b: Packet,
+      ) extends BinaryOperator {
         def evaluate: Long = if (a.evaluate > b.evaluate) 1 else 0
       }
 
-      case class LessThan(versionNumber: VersionNumber, a: Packet, b: Packet)
-          extends BinaryOperator {
+      final case class LessThan(
+        versionNumber: VersionNumber,
+        a: Packet,
+        b: Packet,
+      ) extends BinaryOperator {
         def evaluate: Long = if (a.evaluate < b.evaluate) 1 else 0
       }
 
-      case class EqualTo(versionNumber: VersionNumber, a: Packet, b: Packet)
-          extends BinaryOperator {
+      final case class EqualTo(
+        versionNumber: VersionNumber,
+        a: Packet,
+        b: Packet,
+      ) extends BinaryOperator {
         def evaluate: Long = if (a.evaluate == b.evaluate) 1 else 0
       }
 

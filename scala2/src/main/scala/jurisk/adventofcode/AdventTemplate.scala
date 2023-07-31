@@ -1,9 +1,9 @@
 package jurisk.adventofcode
 
 import cats.implicits._
+import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Utils.IterableOps
-import jurisk.utils.FileInput._
 import org.scalatest.matchers.should.Matchers._
 
 object AdventTemplate {
@@ -11,7 +11,7 @@ object AdventTemplate {
 
   sealed trait Command
   object Command {
-    final case object Noop extends Command
+    case object Noop extends Command
     final case class Something(
       values: List[Int]
     ) extends Command

@@ -19,11 +19,11 @@ object Advent05 {
   }
 
   object CraneType {
-    final case object CrateMover9000 extends CraneType {
+    case object CrateMover9000 extends CraneType {
       def liftCrates(crates: List[Crate]): List[Crate] = crates.reverse
     }
 
-    final case object CrateMover9001 extends CraneType {
+    case object CrateMover9001 extends CraneType {
       def liftCrates(crates: List[Crate]): List[Crate] = crates
     }
   }

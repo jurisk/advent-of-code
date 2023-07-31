@@ -1,12 +1,14 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
-import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.adventofcode.y2022.Advent14.Square._
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import org.scalatest.matchers.should.Matchers._
-import jurisk.adventofcode.y2022.Advent14.Square._
 import jurisk.utils.Simulation
+import org.scalatest.matchers.should.Matchers._
 
 import scala.annotation.tailrec
 

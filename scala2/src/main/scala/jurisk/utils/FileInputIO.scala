@@ -1,6 +1,8 @@
 package jurisk.utils
 
-import cats.effect.{IO, Resource}
+import cats.effect.IO
+import cats.effect.Resource
+
 import scala.io.BufferedSource
 import scala.io.Source
 

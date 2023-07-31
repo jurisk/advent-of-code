@@ -1,6 +1,10 @@
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
-ThisBuild / scalaVersion := "2.13.10"
+ThisBuild / scalaVersion := "2.13.11"
+
+ThisBuild / semanticdbEnabled          := true                        // For ScalaFix
+ThisBuild / semanticdbVersion          := scalafixSemanticdb.revision // For ScalaFix
+ThisBuild / scalafixScalaBinaryVersion := scalaBinaryVersion.value    // https://github.com/scalacenter/scalafix/issues/1658
 
 lazy val root = (project in file("."))
   .settings(
@@ -27,4 +31,11 @@ lazy val root = (project in file("."))
     },
   )
 
+ThisBuild / scalafixDependencies ++= List(
+  "org.typelevel"       %% "typelevel-scalafix" % "0.1.6",
+  "com.github.vovapolu" %% "scaluzzi"           % "0.1.23",
+)
+
 addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
+
+addCommandAlias("build", ";scalafmtSbt;scalafmtAll;scalafix;test")

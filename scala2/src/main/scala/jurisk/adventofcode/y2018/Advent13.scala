@@ -1,14 +1,15 @@
 package jurisk.adventofcode.y2018
 
 import cats.implicits._
-import jurisk.geometry.Rotation._
 import jurisk.geometry.Direction2D._
+import jurisk.geometry.Rotation._
 import jurisk.geometry._
 import jurisk.utils.FileInput._
+import jurisk.utils.Simulation
 import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
+
 import scala.annotation.tailrec
-import jurisk.utils.Simulation
 
 object Advent13 {
   type Result2 = String
