@@ -133,3 +133,13 @@ where
         Ok(Coords2D { x, y })
     }
 }
+
+impl<T> Coords2D<T>
+where
+    T: Copy,
+{
+    #[inline]
+    pub const fn as_tuple(&self) -> (T, T) {
+        (self.y, self.x)
+    }
+}
