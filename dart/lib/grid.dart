@@ -28,12 +28,9 @@ class Grid<T> {
         values.map((row) => row.map(function).toList()).toList());
   }
 
-  int count(bool Function(T) predicate) =>
-      map((item) => predicate(item) ? 1 : 0)
-          .values
-          .expand((row) => row)
-          .toList()
-          .sum();
+  int count(bool Function(T) predicate) {
+    return values.expand((row) => row).where(predicate).length;
+  }
 
   bool canBeChoppedUpBy(int n) => width % n == 0 && height % n == 0;
 
@@ -42,22 +39,14 @@ class Grid<T> {
     assert(width % n == 0);
     assert(height % n == 0);
 
-    var rows = List.generate(
-      height ~/ n,
-      (i) => List.generate(
-        width ~/ n,
-        (j) => Grid<T>(
-          n,
-          n,
-          values
-              .sublist(i * n, (i + 1) * n)
-              .map((row) => row.sublist(j * n, (j + 1) * n))
-              .toList(),
-        ),
-      ),
-    );
-
-    return Grid<Grid<T>>.fromValues(rows);
+    return Grid<Grid<T>>.fromValues(values
+        .chunks(n)
+        .map((rowChunk) => List.generate(
+            width ~/ n,
+            (j) => Grid<T>.fromValues(rowChunk
+                .map((row) => row.sublist(j * n, (j + 1) * n))
+                .toList())))
+        .toList());
   }
 
   Grid<T> mirrored() {
