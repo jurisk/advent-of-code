@@ -1,0 +1,14 @@
+name: dart
+description: Advent of Code solutions in Dart
+version: 1.0.0
+repository: https://github.com/jurisk/advent-of-code
+
+environment:
+  sdk: ^3.0.7
+
+dependencies:
+  collection: ^1.18.0
+
+dev_dependencies:
+  lints: ^2.0.0
+  test: ^1.21.0
