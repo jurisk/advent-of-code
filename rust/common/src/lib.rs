@@ -11,6 +11,7 @@ pub mod direction;
 pub mod direction_hex;
 pub mod math;
 pub mod matrices;
+pub mod pairing;
 pub mod parsing;
 pub mod rotation;
 pub mod simulate;

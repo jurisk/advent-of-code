@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::str::FromStr;
@@ -58,6 +58,22 @@ where
 ///
 /// Will return `Err` if parsing fails.
 pub fn parse_lines_to_hashset<T: FromStr + Eq + Hash>(input: &str) -> Result<HashSet<T>, Error>
+where
+    T::Err: Debug,
+{
+    input
+        .lines()
+        .filter(|x| !x.is_empty())
+        .map(|x| parse_str(x.trim()))
+        .collect()
+}
+
+/// # Errors
+///
+/// Will return `Err` if parsing fails.
+pub fn parse_lines_to_btreeset<T: Ord + FromStr + Eq + Hash>(
+    input: &str,
+) -> Result<BTreeSet<T>, Error>
 where
     T::Err: Debug,
 {

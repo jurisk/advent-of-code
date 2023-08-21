@@ -36,7 +36,7 @@ pub fn knot_hash_as_u8(input: &str) -> Vec<u8> {
 }
 
 #[must_use]
-#[allow(clippy::module_name_repetitions)]
+#[allow(clippy::module_name_repetitions, clippy::format_collect)]
 pub fn knot_hash_as_string(input: &str) -> String {
     let dense_hash = knot_hash_as_u8(input);
     let result: String = dense_hash.iter().map(|x| format!("{x:02x}")).collect();
