@@ -6,8 +6,6 @@ use advent_of_code_common::parsing::{
 };
 use pathfinding::prelude::bfs_reach;
 
-const DATA: &str = include_str!("../../resources/24.txt");
-
 type Port = u32;
 type Component = Pairing<Port>;
 
@@ -59,7 +57,7 @@ where
     bfs_reach(start, State::successors)
         .min_by_key(|x| compare_by(x))
         .ok_or("Failed to find".to_string())
-        .map(|x| x.strength(&components))
+        .map(|x| x.strength(components))
 }
 
 fn parse(input: &str) -> Result<BTreeSet<Component>, Error> {
@@ -85,6 +83,8 @@ fn part_2(input: &str) -> Result<u32, Error> {
         (state.remaining.len(), strength(&state.remaining))
     })
 }
+
+const DATA: &str = include_str!("../../resources/24.txt");
 
 fn main() -> Result<(), Error> {
     let result_1 = part_1(DATA)?;

@@ -19,12 +19,20 @@ pub enum Direction {
 impl Direction {
     #[allow(clippy::match_same_arms)]
     #[must_use]
-    pub fn rotate(&self, rotation: Rotation) -> Direction {
+    pub fn rotate(self, rotation: Rotation) -> Direction {
         match (rotation, self) {
+            (Rotation::NoRotation, _) => self,
+
+            (Rotation::TurnAround, North) => South,
+            (Rotation::TurnAround, East) => West,
+            (Rotation::TurnAround, South) => North,
+            (Rotation::TurnAround, West) => East,
+
             (Rotation::Left90, North) => West,
             (Rotation::Left90, East) => North,
             (Rotation::Left90, South) => East,
             (Rotation::Left90, West) => South,
+
             (Rotation::Right90, North) => East,
             (Rotation::Right90, East) => South,
             (Rotation::Right90, South) => West,
