@@ -1,25 +1,21 @@
-use std::collections::HashMap;
 use std::num::ParseIntError;
-
-use itertools::Itertools;
-
-type Error = String;
+use advent_of_code_common::parsing::Error;
 
 const DATA: &str = include_str!("../../resources/06.txt");
 
-type FishState = u8;
-type FishCount = HashMap<FishState, usize>;
+type FishCount = [usize; 9];
 
 fn parse(data: &str) -> Result<FishCount, Error> {
-    let vec: Result<Vec<FishState>, ParseIntError> =
-        data.trim().split(',').map(str::parse).collect();
-    match vec {
-        Ok(vec) => {
-            let result: HashMap<FishState, Vec<&FishState>> = vec.iter().into_group_map_by(|x| **x);
-            Ok(result.iter().map(|(k, v)| (*k, v.len())).collect())
-        },
-        Err(e) => Err(format!("{e}")),
-    }
+    let vec: Result<Vec<usize>, ParseIntError> = data.trim().split(',').map(str::parse).collect();
+
+    vec.map(|vec| {
+        let mut result = FishCount::default();
+        for x in vec {
+            result[x] += 1;
+        }
+        result
+    })
+    .map_err(|e| format!("{e}"))
 }
 
 // 0 comes from 1
@@ -32,23 +28,23 @@ fn parse(data: &str) -> Result<FishCount, Error> {
 // 7 comes from 8
 // 8 comes from 0
 fn next_day(fishes: &FishCount) -> FishCount {
-    (0 ..= 8)
-        .map(|k| {
-            let new_v = if k == 6 {
-                fishes.get(&0).unwrap_or(&0) + fishes.get(&7).unwrap_or(&0)
-            } else if k == 8 {
-                *fishes.get(&0).unwrap_or(&0)
-            } else {
-                *fishes.get(&(k + 1)).unwrap_or(&0)
-            };
+    let mut result = FishCount::default();
 
-            (k, new_v)
-        })
-        .collect()
+    (0 ..= 8).for_each(|k| {
+        let value = match k {
+            6 => fishes[0] + fishes[7],
+            8 => fishes[0],
+            _ => fishes[k + 1],
+        };
+
+        result[k] = value;
+    });
+
+    result
 }
 
 fn fish_count(fishes: &FishCount) -> usize {
-    fishes.values().sum()
+    fishes.iter().sum()
 }
 
 fn solve(data: &str, days: u32) -> Result<usize, Error> {
