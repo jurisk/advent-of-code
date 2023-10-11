@@ -1,4 +1,5 @@
 use std::num::ParseIntError;
+
 use advent_of_code_common::parsing::Error;
 
 const DATA: &str = include_str!("../../resources/06.txt");

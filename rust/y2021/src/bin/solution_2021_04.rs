@@ -32,14 +32,19 @@ impl Board {
     }
 
     fn is_winning(&self, marked_numbers: &[Number]) -> bool {
-        let is_complete = |v: Vec<Number>| v.iter().all(|n| marked_numbers.contains(n));
-        self.data
+        let is_complete = |v: Vec<&Number>| v.iter().all(|n| marked_numbers.contains(n));
+
+        let has_winning_row = self
+            .data
             .row_iter()
-            .any(|r| is_complete(r.iter().copied().collect()))
-            || self
-                .data
-                .column_iter()
-                .any(|c| is_complete(c.iter().copied().collect()))
+            .any(|r| is_complete(r.iter().collect()));
+
+        let has_winning_column = self
+            .data
+            .column_iter()
+            .any(|c| is_complete(c.iter().collect()));
+
+        has_winning_row || has_winning_column
     }
 
     fn unmarked_numbers(&self, marked_numbers: &[Number]) -> Vec<Number> {
