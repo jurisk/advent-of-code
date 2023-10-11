@@ -7,16 +7,19 @@ const DATA: &str = include_str!("../../resources/06.txt");
 type FishCount = [usize; 9];
 
 fn parse(data: &str) -> Result<FishCount, Error> {
-    let vec: Result<Vec<usize>, ParseIntError> = data.trim().split(',').map(str::parse).collect();
+    let vec: Vec<usize> = data
+        .trim()
+        .split(',')
+        .map(str::parse)
+        .collect::<Result<Vec<_>, ParseIntError>>()
+        .map_err(|e| format!("{e}"))?;
 
-    vec.map(|vec| {
-        let mut result = FishCount::default();
-        for x in vec {
-            result[x] += 1;
-        }
-        result
-    })
-    .map_err(|e| format!("{e}"))
+    let mut result = FishCount::default();
+    for x in vec {
+        result[x] += 1;
+    }
+
+    Ok(result)
 }
 
 // 0 comes from 1
