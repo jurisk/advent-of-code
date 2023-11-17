@@ -8,6 +8,7 @@ const DATA: &str = include_str!("../../resources/24.txt");
 type N = i64;
 
 #[derive(Debug)]
+#[allow(clippy::struct_field_names)]
 struct Subroutine {
     line_4:  N,
     line_5:  N,

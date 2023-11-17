@@ -27,7 +27,7 @@ impl FromStr for NodeInformation {
         let get_group = |group: usize| -> Result<String, Error> {
             caps.get(group)
                 .map(|m| m.as_str().to_owned())
-                .ok_or(format!("Could not get capture group {}", group))
+                .ok_or(format!("Could not get capture group {group}"))
         };
 
         let parse_int = |s: &str| -> Result<u16, Error> {

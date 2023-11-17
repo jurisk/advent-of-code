@@ -26,7 +26,7 @@ pub fn additive_hashmap_from_vec<K: Eq + Hash, V: Num + Copy>(vec: Vec<(K, V)>) 
 
 #[must_use]
 pub fn transpose<T: Copy>(lines: &[Vec<T>]) -> Vec<Vec<T>> {
-    if let Some(first_line) = lines.get(0) {
+    if let Some(first_line) = lines.first() {
         let number_of_digits = first_line.len();
         (0 .. number_of_digits)
             .map(|idx| lines.iter().map(|line| line[idx]).collect())
@@ -39,7 +39,7 @@ pub fn transpose<T: Copy>(lines: &[Vec<T>]) -> Vec<Vec<T>> {
 #[must_use]
 pub fn single_result<T>(elements: &[T]) -> Option<&T> {
     if elements.len() == 1 {
-        elements.get(0)
+        elements.first()
     } else {
         None
     }
@@ -55,7 +55,7 @@ pub fn least_frequent<T: Eq + Hash>(elements: &[T]) -> Option<&T> {
         .map(|(k, _)| *k)
         .collect();
     if matching_min_count.len() == 1 {
-        matching_min_count.get(0).copied()
+        matching_min_count.first().copied()
     } else {
         None
     }
@@ -71,7 +71,7 @@ pub fn most_frequent<T: Eq + Hash>(elements: &[T]) -> Option<&T> {
         .map(|(k, _)| *k)
         .collect();
     if matching_max_count.len() == 1 {
-        matching_max_count.get(0).copied()
+        matching_max_count.first().copied()
     } else {
         None
     }

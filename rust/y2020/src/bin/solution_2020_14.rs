@@ -15,6 +15,7 @@ enum Command {
 }
 
 #[derive(Clone, Copy)]
+#[allow(clippy::struct_field_names)]
 struct Mask {
     mask_0: u64,
     mask_1: u64,
