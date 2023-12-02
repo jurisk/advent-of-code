@@ -25,6 +25,7 @@ lazy val root = (project in file("."))
       Set(
         ScalacOptions.warnValueDiscard,
         ScalacOptions.warnUnusedPrivates,
+        ScalacOptions.warnUnusedLocals,
         ScalacOptions.warnNumericWiden,
         ScalacOptions.warnUnusedImports,
         ScalacOptions.warnNonUnitStatement,

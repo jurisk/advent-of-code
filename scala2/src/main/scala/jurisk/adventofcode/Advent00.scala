@@ -6,7 +6,7 @@ import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
-object AdventTemplate {
+object Advent00 {
   type Parsed = List[Command]
 
   sealed trait Command
@@ -33,13 +33,12 @@ object AdventTemplate {
   def part2(data: Parsed): Int =
     data.length
 
-  def main(args: Array[String]): Unit = {
-    val testData = readFileText("2022/00-test.txt")
-    // val testData = """"""
-    val realData = readFileText("2022/00.txt")
+  def parseFile(fileName: String): Parsed =
+    parse(readFileText(fileName))
 
-    val test = parse(testData)
-    val real = parse(realData)
+  def main(args: Array[String]): Unit = {
+    val test = parseFile("2022/00-test.txt")
+    val real = parseFile("2022/00.txt")
 
     part1(test) shouldEqual 12345678
     part1(real) shouldEqual 12345678
