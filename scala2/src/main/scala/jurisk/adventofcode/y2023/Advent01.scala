@@ -60,7 +60,7 @@ object Advent01 {
   }
 
   private[y2023] def parseFile(fileName: String): Parsed =
-    parse(readFileText(fileName))
+    readFileLines(fileName)
 
   def main(args: Array[String]): Unit = {
     val realData: Parsed = parseFile("2023/01.txt")

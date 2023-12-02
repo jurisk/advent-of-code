@@ -37,13 +37,9 @@ object Advent00 {
     parse(readFileText(fileName))
 
   def main(args: Array[String]): Unit = {
-    val test = parseFile("2022/00-test.txt")
-    val real = parseFile("2022/00.txt")
+    val realData: Parsed = parseFile("2023/00.txt")
 
-    part1(test) shouldEqual 12345678
-    part1(real) shouldEqual 12345678
-
-    part2(test) shouldEqual 12345678
-    part2(real) shouldEqual 12345678
+    println(s"Part 1: ${part1(realData)}")
+    println(s"Part 2: ${part2(realData)}")
   }
 }
