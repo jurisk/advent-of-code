@@ -1,8 +1,6 @@
 package jurisk.adventofcode.y2023
 
 import jurisk.utils.FileInput._
-import org.scalatest.matchers.should.Matchers._
-
 import scala.annotation.tailrec
 
 object Advent01 {
@@ -61,19 +59,13 @@ object Advent01 {
     solve(data, stringToDigitList(mappings))
   }
 
+  private[y2023] def parseFile(fileName: String): Parsed =
+    parse(readFileText(fileName))
+
   def main(args: Array[String]): Unit = {
-    val testData1 = readFileText("2023/01-test-1.txt")
-    val testData2 = readFileText("2023/01-test-2.txt")
-    val realData  = readFileText("2023/01.txt")
+    val realData: Parsed = parseFile("2023/01.txt")
 
-    val test1 = parse(testData1)
-    val test2 = parse(testData2)
-    val real  = parse(realData)
-
-    part1(test1) shouldEqual 142
-    part1(real) shouldEqual 54081
-
-    part2(test2) shouldEqual 281
-    part2(real) shouldEqual 54649
+    println(s"Part 1: ${part1(realData)}")
+    println(s"Part 2: ${part2(realData)}")
   }
 }

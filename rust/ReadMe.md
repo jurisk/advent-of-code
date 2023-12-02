@@ -41,6 +41,12 @@ cargo fmt
 cargo build --release
 ```
 
+# Running
+
+```shell
+cargo run --bin solution_<XY>
+```
+
 # Testing
 
 ```shell
