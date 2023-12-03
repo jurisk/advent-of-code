@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2023
 
 import jurisk.algorithms.pathfinding.ConnectedComponents
-import jurisk.geometry.{Coords2D, Field2D}
+import jurisk.geometry.{Coords2D, Direction2D, Field2D}
 import jurisk.utils.FileInput._
 
 object Advent03 {
@@ -41,7 +41,7 @@ object Advent03 {
 
   private def extractNumbers(
     field: Field2D[Square]
-  ): List[(Int, Set[Coords2D])] = {
+  ): Set[(Int, Set[Coords2D])] = {
     def isDigit(square: Square) = square match {
       case Digit(_) => true
       case _        => false
@@ -49,22 +49,29 @@ object Advent03 {
 
     val digitCoords = field.filterCoordsByValue(isDigit)
 
-    ConnectedComponents
+    val islands = ConnectedComponents
       .connectedComponents[Coords2D](
         digitCoords,
-        field.adjacent8Where(_, isDigit),
-      )
-      .map { island =>
-        val number = island.toList
-          .sortBy(_.x)
-          .map { c =>
-            field(c).toChar
+        x => {
+          def helper(d: Direction2D): List[Coords2D] = {
+            val n = x + d
+            if (field.get(n).exists(isDigit)) n :: Nil else Nil
           }
-          .mkString
-          .toInt
-        (number, island)
-      }
-      .toList
+
+          helper(Direction2D.W) ::: helper(Direction2D.E) ::: Nil
+        },
+      )
+
+    islands.map { island =>
+      val number = island.toList
+        .sortBy(_.x)
+        .map { c =>
+          field(c).toChar
+        }
+        .mkString
+        .toInt
+      (number, island)
+    }
   }
 
   def part1(data: Parsed): Int = {
@@ -74,7 +81,7 @@ object Advent03 {
       case _         => false
     }.toSet
 
-    numbers.collect {
+    numbers.toList.collect {
       case (number, coords)
           if (coords.flatMap(
             data.adjacent8
@@ -99,7 +106,7 @@ object Advent03 {
 
         gearNumbers
       }
-      .filter(_.length == 2)
+      .filter(_.size == 2)
       .map(_.product)
       .sum
   }
