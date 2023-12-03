@@ -15,11 +15,13 @@ object Advent00 {
     final case class Something(
       values: List[Int]
     ) extends Command
+    final case class Other(value: String) extends Command
 
     def parse(s: String): Command =
       s match {
         case "noop"            => Noop
         case s"something $rem" => Something(rem.extractInts)
+        case s if s.nonEmpty   => Other(s)
         case _                 => s.failedToParse
       }
   }
@@ -28,16 +30,16 @@ object Advent00 {
     input.parseList("\n", Command.parse)
 
   def part1(data: Parsed): Int =
-    data.length
+    data.length + 1234567
 
   def part2(data: Parsed): Int =
-    data.length
+    data.length + 1234567
 
   def parseFile(fileName: String): Parsed =
     parse(readFileText(fileName))
 
   def main(args: Array[String]): Unit = {
-    val realData: Parsed = parseFile("2023/00.txt")
+    val realData: Parsed = parseFile("2023/02.txt")
 
     println(s"Part 1: ${part1(realData)}")
     println(s"Part 2: ${part2(realData)}")
