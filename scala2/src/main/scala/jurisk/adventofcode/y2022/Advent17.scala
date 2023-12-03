@@ -316,13 +316,13 @@ object Advent17 {
       Bfs.bfsVisitAll[Coords2D](
         Coords2D.of(x, minY - 1),
         c =>
-          if (field(c) == Square.Empty) {
+          if (field.at(c).contains(Square.Empty)) {
             field.adjacent4(c).filter(_.y >= minY - 1)
           } else {
             Nil
           },
         c =>
-          if (field(c) != Square.Empty) {
+          if (!field.at(c).contains(Square.Empty)) {
             frontier.add(c)
           },
       )

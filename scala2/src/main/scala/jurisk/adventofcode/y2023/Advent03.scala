@@ -66,7 +66,7 @@ object Advent03 {
       val number = island.toList
         .sortBy(_.x)
         .map { c =>
-          field(c).toChar
+          field.atUnsafe(c).toChar
         }
         .mkString
         .toInt

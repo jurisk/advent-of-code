@@ -19,7 +19,7 @@ final case class Field2D[T](
     yIndices.toVector map { y =>
       xIndices.toVector map { x =>
         val coords = Coords2D(x, y)
-        f(coords, this(coords))
+        f(coords, atUnsafe(coords))
       }
     }
   }
@@ -43,7 +43,7 @@ final case class Field2D[T](
       .lift(c.y - topLeft.y)
       .flatMap(_.lift(c.x - topLeft.x))
 
-  def apply(c: Coords2D): T =
+  def atUnsafe(c: Coords2D): T =
     at(c) getOrElse sys.error(s"Coords2D $c are invalid")
 
   def updatedAtUnsafe(c: Coords2D, newValue: T): Field2D[T] = {
@@ -107,7 +107,7 @@ final case class Field2D[T](
     yIndices flatMap { y =>
       xIndices map { x =>
         val c = Coords2D(x, y)
-        c -> this(c)
+        c -> atUnsafe(c)
       }
     }
 
@@ -141,8 +141,8 @@ final case class Field2D[T](
     includeDiagonal: Boolean,
   ): Coords2D => List[Coords2D] = { (c: Coords2D) =>
     neighboursFor(c, includeDiagonal = includeDiagonal) filter { n =>
-      val thisSquare  = this(c)
-      val otherSquare = this(n)
+      val thisSquare  = atUnsafe(c)
+      val otherSquare = atUnsafe(n)
       canGoPredicate(thisSquare, otherSquare)
     }
   }
@@ -176,7 +176,7 @@ object Field2D {
   def toDebugRepresentation(field: Field2D[Char]): String = mergeSeqSeqChar(
     field.yIndices map { y =>
       field.xIndices.map { x =>
-        field(Coords2D(x, y))
+        field.atUnsafe(Coords2D(x, y))
       }
     }
   )
