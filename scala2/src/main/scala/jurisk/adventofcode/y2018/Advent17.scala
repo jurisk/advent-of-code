@@ -170,7 +170,7 @@ object Advent17 {
   }
 
   private def printField(name: String, field: Field2D[Square]): Unit =
-    Field2D.printField[Square](name, field, _.toChar)
+    Field2D.printField[Square](name.some, field, _.toChar)
 
   def simulate(field: Field2D[Square]): Field2D[Square] = {
     printField("Before:", field)

@@ -4,7 +4,7 @@ import cats.Functor
 import cats.implicits.toFunctorOps
 
 final case class Field2D[T](
-  data: Vector[Vector[T]],
+  private val data: Vector[Vector[T]],
   topLeft: Coords2D = Coords2D.Zero,
 ) {
   val width: Int  = data.head.length
@@ -46,7 +46,7 @@ final case class Field2D[T](
       .flatMap(_.lift(c.x - topLeft.x))
 
   def apply(c: Coords2D): T =
-    at(c).getOrElse(sys.error(s"Coords2D $c are invalid"))
+    at(c) getOrElse sys.error(s"Coords2D $c are invalid")
 
   def updatedAtUnsafe(c: Coords2D, newValue: T): Field2D[T] = {
     val yIdx = c.y - topLeft.y
@@ -74,11 +74,21 @@ final case class Field2D[T](
   def adjacent4(c: Coords2D): List[Coords2D] =
     neighboursFor(c, includeDiagonal = false)
 
+  def adjacent4Where(c: Coords2D, predicate: T => Boolean): List[Coords2D] =
+    adjacent4(c) filter { n =>
+      get(n) exists predicate
+    }
+
   def adjacent4Values(c: Coords2D): List[T] =
     adjacent4(c).flatMap(at)
 
   def adjacent8(c: Coords2D): List[Coords2D] =
     neighboursFor(c, includeDiagonal = true)
+
+  def adjacent8Where(c: Coords2D, predicate: T => Boolean): List[Coords2D] =
+    adjacent8(c) filter { n =>
+      get(n) exists predicate
+    }
 
   def adjacent8Values(c: Coords2D): List[T] =
     adjacent8(c).flatMap(at)
@@ -108,6 +118,12 @@ final case class Field2D[T](
     Coords2D(x, y)
   }
 
+  def rows: List[Vector[T]] = data.toList
+
+  def columns: List[Vector[T]] = for {
+    columnIdx <- (0 until width).toList
+  } yield column(columnIdx)
+
   def column(x: Int): Vector[T]               = data.map(_(x - topLeft.x))
   def coordsForColumn(x: Int): List[Coords2D] = yIndices.toList map { y =>
     Coords2D(x, y)
@@ -120,7 +136,7 @@ final case class Field2D[T](
   def lastColumnValues: Vector[T]  = column(width - 1)
 
   def count(p: T => Boolean): Int =
-    values.count(p)
+    values count p
 
   def createSuccessorsFunction(
     canGoPredicate: (T, T) => Boolean,
@@ -168,11 +184,11 @@ object Field2D {
   )
 
   def printField[T](
-    intro: String,
+    intro: Option[String],
     field: Field2D[T],
     toChar: T => Char,
   ): Unit = {
-    println(intro)
+    intro foreach println
     val charField      = field.map(toChar)
     val representation = Field2D.toDebugRepresentation(charField)
     println(representation)

@@ -172,7 +172,7 @@ object Advent24 {
 
     val result = charField.updatedAtUnsafe(state.location, 'E')
 
-    Field2D.printField[Char](s"${state.time} time:", result, identity)
+    Field2D.printField[Char](s"${state.time} time:".some, result, identity)
   }
 
   private def solve[T <: State[T]](maze: Maze, startF: Maze => T): Int = {
