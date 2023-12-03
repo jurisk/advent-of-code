@@ -156,7 +156,7 @@ object Advent24 {
 
     val withBlizzards = maze.blizzards.foldLeft(field) { case (acc, b) =>
       val location = maze.blizzardAt(b, state.time)
-      val oldList  = acc.atUnsafe(location)
+      val oldList  = acc.atOrElse(location, Nil)
       val newList  = b.direction :: oldList
       acc.updatedAtUnsafe(location, newList)
     }

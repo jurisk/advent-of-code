@@ -33,7 +33,7 @@ object Advent13 {
     }
 
     def next(board: Field2D[Track]): Cart = {
-      val square = board.atUnsafe(coords)
+      val square = board.atOrElse(coords, Track.Empty)
 
       val newDirection = square match {
         case Track.Intersection =>
@@ -58,7 +58,7 @@ object Advent13 {
             case Direction2D.W => N
             case _             => sys.error(s"Unexpected direction $direction")
           }
-        case _           => sys.error(s"Unexpected situation $square")
+        case Track.Empty => sys.error(s"Unexpected situation $square")
       }
 
       Cart(

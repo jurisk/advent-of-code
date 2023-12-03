@@ -43,7 +43,10 @@ final case class Field2D[T](
       .lift(c.y - topLeft.y)
       .flatMap(_.lift(c.x - topLeft.x))
 
-  def atUnsafe(c: Coords2D): T =
+  def atOrElse(c: Coords2D, default: => T): T =
+    at(c) getOrElse default
+
+  private def atUnsafe(c: Coords2D): T =
     at(c) getOrElse sys.error(s"Coords2D $c are invalid")
 
   def updatedAtUnsafe(c: Coords2D, newValue: T): Field2D[T] = {
