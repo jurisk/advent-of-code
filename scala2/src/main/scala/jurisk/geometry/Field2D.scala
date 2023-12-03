@@ -38,8 +38,6 @@ final case class Field2D[T](
       f(c)
   }
 
-  def get(c: Coords2D): Option[T] = at(c)
-
   def at(c: Coords2D): Option[T] =
     data
       .lift(c.y - topLeft.y)
@@ -76,7 +74,7 @@ final case class Field2D[T](
 
   def adjacent4Where(c: Coords2D, predicate: T => Boolean): List[Coords2D] =
     adjacent4(c) filter { n =>
-      get(n) exists predicate
+      at(n) exists predicate
     }
 
   def adjacent4Values(c: Coords2D): List[T] =
@@ -87,7 +85,7 @@ final case class Field2D[T](
 
   def adjacent8Where(c: Coords2D, predicate: T => Boolean): List[Coords2D] =
     adjacent8(c) filter { n =>
-      get(n) exists predicate
+      at(n) exists predicate
     }
 
   def adjacent8Values(c: Coords2D): List[T] =

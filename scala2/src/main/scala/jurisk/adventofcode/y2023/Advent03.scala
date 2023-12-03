@@ -55,7 +55,7 @@ object Advent03 {
         x => {
           def helper(d: Direction2D): List[Coords2D] = {
             val n = x + d
-            if (field.get(n).exists(isDigit)) n :: Nil else Nil
+            if (field.at(n).exists(isDigit)) n :: Nil else Nil
           }
 
           helper(Direction2D.W) ::: helper(Direction2D.E) ::: Nil

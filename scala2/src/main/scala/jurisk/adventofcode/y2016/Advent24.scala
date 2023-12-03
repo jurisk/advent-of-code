@@ -32,7 +32,7 @@ object Advent24 extends IOApp.Simple {
         setOfTwo: SetOfTwo[LocationCode]
       ): Option[Int] = {
         def isPassable(c: Coords2D): Boolean =
-          field.get(c).exists(_ != Square.Wall)
+          field.at(c).exists(_ != Square.Wall)
 
         def locationOf(locationCode: LocationCode): Coords2D =
           field
