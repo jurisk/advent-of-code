@@ -11,7 +11,7 @@ object Advent00 {
 
   sealed trait Command
   object Command {
-    case object Noop extends Command
+    case object Noop                      extends Command
     final case class Something(
       values: List[Int]
     ) extends Command
