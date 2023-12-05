@@ -79,5 +79,11 @@ object Parsing {
       val RegEx = """([-+]?\d+)""".r
       RegEx.findAllIn(s).map(_.toInt).toList
     }
+
+    def extractLongs: List[Long] = {
+      val RegEx = """([-+]?\d+)""".r
+      RegEx.findAllIn(s).map(_.toLong).toList
+    }
+
   }
 }

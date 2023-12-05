@@ -111,7 +111,7 @@ object Advent15 {
 
         val impossibilityInRow =
           impossibilityIntervalsInRow(data, y, 0, maxCoords)
-        val values             = impossibilityInRow.values
+        val values             = impossibilityInRow.toSet
 
         values
           .map { x =>

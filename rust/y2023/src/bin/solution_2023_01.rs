@@ -30,7 +30,7 @@ fn to_digits(mut s: &str, dictionary: &HashMap<String, N>) -> Vec<N> {
     let mut results = vec![];
 
     while !s.is_empty() {
-        // https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm would be more efficient
+        // https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm would be relevant if the dictionary was larger
         if let Some((_, &n)) = dictionary.iter().find(|&(key, _)| s.starts_with(key)) {
             results.push(n);
         }

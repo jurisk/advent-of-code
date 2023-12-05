@@ -5,7 +5,7 @@ import org.scalatest.matchers.should.Matchers._
 import Advent02._
 
 class Advent02Spec extends AnyFlatSpec {
-  "Advent00" should "test part 1" in {
+  "Advent02" should "test part 1" in {
     part1(parseFile("2023/02-test.txt")) shouldEqual 8
   }
 
