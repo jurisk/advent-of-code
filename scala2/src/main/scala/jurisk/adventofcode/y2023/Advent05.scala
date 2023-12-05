@@ -164,7 +164,7 @@ object Advent05 extends IOApp.Simple {
     for {
       _       <- IO.println(s"Total to process: $total")
       results <- seedRanges.zipWithIndex
-                   .traverse { case (seedRange, idx) => // TODO: parTraverse
+                   .parTraverse { case (seedRange, idx) =>
                      IO.println(
                        s"Processing seed range $idx: $seedRange..."
                      ) *> minForSeedRange(seedRange)
