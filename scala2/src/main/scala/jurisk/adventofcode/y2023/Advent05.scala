@@ -1,9 +1,11 @@
 package jurisk.adventofcode.y2023
 
+import cats.effect.{IO, IOApp}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+import cats.implicits._
 
-object Advent05 {
+object Advent05 extends IOApp.Simple {
   final case class Input(
     seedInput: List[Long],
     conversionMaps: List[ConversionMap],
@@ -73,8 +75,8 @@ object Advent05 {
     }
   }
 
-  def solve(data: Input, seedRanges: List[Seq[Long]]): Long = {
-    def minForSeedRange(seedRange: Seq[Long]): Long = {
+  def solve(data: Input, seedRanges: List[Seq[Long]]): IO[Long] = {
+    def minForSeedRange(seedRange: Seq[Long]): IO[Long] = IO {
       var processed = 0L
       var result    = Long.MaxValue
 
@@ -98,19 +100,22 @@ object Advent05 {
     val total = seedRanges.map(_.length.toLong).sum
     println(s"Total to process: $total")
 
-    seedRanges.zipWithIndex.map { case (seedRange, idx) =>
-      println(s"Processing seed range $idx: $seedRange")
-      minForSeedRange(seedRange)
-    }.min
+    seedRanges.zipWithIndex
+      .parTraverse { case (seedRange, idx) =>
+        IO.println(
+          s"Processing seed range $idx: $seedRange..."
+        ) *> minForSeedRange(seedRange)
+      }
+      .map(_.min)
   }
 
-  def part1(data: Input): Long = {
+  def part1(data: Input): IO[Long] = {
     val seeds = data.seedInput.map(x => x :: Nil)
 
     solve(data, seeds)
   }
 
-  def part2(data: Input): Long = {
+  def part2(data: Input): IO[Long] = {
     val seeds = {
       assert(data.seedInput.length % 2 == 0, "Odd count of input for seeds!")
       data.seedInput
@@ -128,10 +133,12 @@ object Advent05 {
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
 
-  def main(args: Array[String]): Unit = {
-    val realData: Input = parseFile("2023/05.txt")
+  override def run: IO[Unit] = for {
+    realData <- IO(parseFile("2023/05.txt"))
 
-    println(s"Part 1: ${part1(realData)}")
-    println(s"Part 2: ${part2(realData)}")
-  }
+    result1 <- part1(realData)
+    _       <- IO.println(s"Part 1: $result1")
+    result2 <- part2(realData)
+    _       <- IO.println(s"Part 2: $result2")
+  } yield ()
 }
