@@ -1,4 +1,4 @@
-package jurisk.utils
+package jurisk.math
 
 import jurisk.math.InclusiveDiscreteInterval
 import org.scalatest.matchers.should.Matchers._
@@ -102,5 +102,25 @@ class InclusiveDiscreteIntervalSpec extends AnyFlatSpec {
       Set(
         InclusiveDiscreteInterval(11, 30)
       )
+  }
+
+  // TODO: Fix this
+  it should "add touching" ignore {
+    InclusiveDiscreteInterval(5, 8) add InclusiveDiscreteInterval(
+      2,
+      4,
+    ) shouldEqual Set(InclusiveDiscreteInterval(2, 8))
+  }
+
+  // TODO: Fix this
+  it should "be able to insert interval in the gap" ignore {
+    val set    = NonOverlappingDiscreteIntervalSet.createInclusive(
+      2,
+      5,
+    ) add InclusiveDiscreteInterval(9, 11)
+    val result = set add InclusiveDiscreteInterval(6, 8)
+    result shouldEqual NonOverlappingDiscreteIntervalSet(
+      Set(InclusiveDiscreteInterval(2, 11))
+    )
   }
 }

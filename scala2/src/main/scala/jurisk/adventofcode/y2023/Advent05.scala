@@ -4,6 +4,7 @@ import cats.effect.{IO, IOApp}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import cats.implicits._
+import jurisk.math.InclusiveDiscreteInterval
 
 object Advent05 extends IOApp.Simple {
   final case class Input(
@@ -19,12 +20,12 @@ object Advent05 extends IOApp.Simple {
   final case class ConversionMap(
     from: String,
     to: String,
-    ranges: List[Range],
+    converters: List[Converter],
   ) {
     def convert(n: Long): Long =
-      ranges.find(_.matches(n)) match {
-        case Some(range) => range.convert(n)
-        case None        => n
+      converters.find(_.matches(n)) match {
+        case Some(converter) => converter.convert(n)
+        case None            => n
       }
   }
 
@@ -39,7 +40,7 @@ object Advent05 extends IOApp.Simple {
             case _                    => h.failedToParse
           }
 
-          val ranges = t map Range.parse
+          val ranges = t map Converter.parse
 
           ConversionMap(from, to, ranges)
 
@@ -48,7 +49,7 @@ object Advent05 extends IOApp.Simple {
     }
   }
 
-  final case class Range(
+  final case class Converter(
     destinationStart: Long,
     sourceStart: Long,
     length: Long,
@@ -60,10 +61,10 @@ object Advent05 extends IOApp.Simple {
     def convert(n: Long): Long    = n + diff
   }
 
-  private object Range {
-    def parse(input: String): Range = {
+  private object Converter {
+    def parse(input: String): Converter = {
       val List(a, b, c) = input.extractLongs
-      Range(a, b, c)
+      Converter(a, b, c)
     }
   }
 
@@ -75,14 +76,19 @@ object Advent05 extends IOApp.Simple {
     }
   }
 
-  def solve(data: Input, seedRanges: List[Seq[Long]]): IO[Long] = {
-    def minForSeedRange(seedRange: Seq[Long]): IO[Long] = IO {
-      seedRange.foldLeft(Long.MaxValue) { case (acc, seed) =>
-        acc min data.seedToLocation(seed)
+  def solve(
+    data: Input,
+    seedRanges: List[InclusiveDiscreteInterval[Long]],
+  ): IO[Long] = {
+    def minForSeedRange(seedRange: InclusiveDiscreteInterval[Long]): IO[Long] =
+      IO {
+        (seedRange.from to seedRange.to).foldLeft(Long.MaxValue) {
+          case (acc, seed) =>
+            acc min data.seedToLocation(seed)
+        }
       }
-    }
 
-    val total = seedRanges.map(_.length.toLong).sum
+    val total = seedRanges.map(_.size).sum
 
     for {
       _       <- IO.println(s"Total to process: $total")
@@ -96,7 +102,7 @@ object Advent05 extends IOApp.Simple {
   }
 
   def part1(data: Input): IO[Long] = {
-    val seeds = data.seedInput.map(x => x :: Nil)
+    val seeds = data.seedInput.map(x => InclusiveDiscreteInterval(x, x))
 
     solve(data, seeds)
   }
@@ -108,7 +114,7 @@ object Advent05 extends IOApp.Simple {
         .grouped(2)
         .map { x =>
           val List(from, len) = x
-          from until (from + len)
+          InclusiveDiscreteInterval(from, from + len - 1)
         }
         .toList
     }

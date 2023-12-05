@@ -31,7 +31,7 @@ final case class NonOverlappingDiscreteIntervalSet[N: Numeric](
 
   def size: N = data.toList.map(_.size).sum
 
-  def values: Set[N] = data.flatMap(_.values)
+  def toSet: Set[N] = data.flatMap(_.toList)
 }
 
 object NonOverlappingDiscreteIntervalSet {
@@ -58,7 +58,7 @@ final case class InclusiveDiscreteInterval[N: Numeric: Enumerated](
 
   def size: N = to - from + One
 
-  def values: List[N] = from to to
+  def toList: List[N] = from to to
 
   def add(
     other: InclusiveDiscreteInterval[N]

@@ -6,7 +6,7 @@ import cats.effect.testing.scalatest.AsyncIOSpec
 import org.scalatest.flatspec.AsyncFlatSpec
 
 class Advent05Spec extends AsyncFlatSpec with AsyncIOSpec {
-  "Advent00" should "test part 1" in {
+  "Advent05" should "test part 1" in {
     part1(parseFile("2023/05-test.txt")).asserting(_ shouldEqual 35L)
   }
 
@@ -18,7 +18,7 @@ class Advent05Spec extends AsyncFlatSpec with AsyncIOSpec {
     part2(parseFile("2023/05-test.txt")).asserting(_ shouldEqual 46L)
   }
 
-  it should "real part 2" ignore {
+  it should "real part 2" in {
     part2(parseFile("2023/05.txt")).asserting(_ shouldEqual 15290096L)
   }
 }
