@@ -74,17 +74,13 @@ object Advent05 {
     }
   }
 
-  def solve(data: Input, seeds: List[Seq[Long]]): Long = {
-    val total = seeds.map(_.length.toLong).sum
-    println(s"Total to process: $total")
-
-    var processed = 0L
-
-    seeds.map { seed =>
+  def solve(data: Input, seedRanges: List[Seq[Long]]): Long = {
+    def minForSeedRange(seedRange: Seq[Long]): Long = {
+      var processed = 0L
       var result = Long.MaxValue
 
-      seed foreach { n =>
-        val r = data.seedToLocation(n)
+      seedRange foreach { seed =>
+        val r = data.seedToLocation(seed)
         processed += 1
 
         if (r < result) {
@@ -98,6 +94,15 @@ object Advent05 {
       }
 
       result
+    }
+
+
+    val total = seedRanges.map(_.length.toLong).sum
+    println(s"Total to process: $total")
+
+    seedRanges.zipWithIndex.map { case (seedRange, idx) =>
+      println(s"Processing seed range $idx: $seedRange")
+      minForSeedRange(seedRange)
     }.min
   }
 
