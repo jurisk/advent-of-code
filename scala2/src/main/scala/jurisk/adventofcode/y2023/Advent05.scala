@@ -32,18 +32,15 @@ object Advent05 extends IOApp.Simple {
     def potentialIntervals(
       intervalSet: NonOverlappingDiscreteIntervalSet[Long]
     ): NonOverlappingDiscreteIntervalSet[Long] = {
-      var convertedAll = NonOverlappingDiscreteIntervalSet.empty[Long]
-      var coveredAll   = NonOverlappingDiscreteIntervalSet.empty[Long]
-
-      converters.foreach { converter =>
-        val conversionResult = converter.potentialIntervals(intervalSet)
-
-        convertedAll = convertedAll union conversionResult.converted
-        coveredAll = coveredAll union conversionResult.covered
+      val results = converters.foldLeft(ConversionResult.empty) {
+        case (acc, converter) =>
+          acc union converter.potentialIntervals(intervalSet)
       }
 
-      val straightThrough = intervalSet subtract coveredAll
-      straightThrough union convertedAll
+      // The converters did not pick up some intervals, they stay as they were
+      val straightThrough = intervalSet subtract results.covered
+
+      straightThrough union results.converted
     }
   }
 
@@ -72,8 +69,6 @@ object Advent05 extends IOApp.Simple {
     covered: NonOverlappingDiscreteIntervalSet[Long],
     converted: NonOverlappingDiscreteIntervalSet[Long],
   ) {
-    assert(covered.size == converted.size)
-
     def union(other: ConversionResult): ConversionResult =
       ConversionResult(
         uncovered = uncovered union other.uncovered,
