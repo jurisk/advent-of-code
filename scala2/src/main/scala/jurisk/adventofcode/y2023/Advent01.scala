@@ -19,6 +19,7 @@ object Advent01 {
           f(remaining.tail, (digitChar - '0') :: acc)
 
         case Some(nonDigitChar @ _) =>
+          // https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm would be more efficient
           val digitFromLetters = mappings
             .find { case (mapping, _) =>
               remaining startsWith mapping
