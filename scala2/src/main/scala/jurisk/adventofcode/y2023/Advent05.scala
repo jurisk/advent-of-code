@@ -82,6 +82,14 @@ object Advent05 extends IOApp.Simple {
       )
   }
 
+  object ConversionResult {
+    def empty: ConversionResult = ConversionResult(
+      NonOverlappingDiscreteIntervalSet.empty[Long],
+      NonOverlappingDiscreteIntervalSet.empty[Long],
+      NonOverlappingDiscreteIntervalSet.empty[Long],
+    )
+  }
+
   final case class Converter(
     destinationStart: Long,
     sourceStart: Long,
@@ -97,39 +105,38 @@ object Advent05 extends IOApp.Simple {
 
     def potentialIntervals(
       intervalSet: NonOverlappingDiscreteIntervalSet[Long]
-    ): ConversionResult = {
-      var acc = ConversionResult(
-        NonOverlappingDiscreteIntervalSet.empty[Long],
-        NonOverlappingDiscreteIntervalSet.empty[Long],
-        NonOverlappingDiscreteIntervalSet.empty[Long],
-      )
-
-      intervalSet.data foreach { interval =>
-        tryConvert(interval) foreach { conversionResult =>
-          acc = acc union conversionResult
-        }
+    ): ConversionResult =
+      intervalSet.data.foldLeft(ConversionResult.empty) {
+        case (acc, interval) =>
+          acc union tryConvert(interval)
       }
-
-      acc
-    }
 
     private def tryConvert(
       interval: InclusiveDiscreteInterval[Long]
-    ): Option[ConversionResult] = {
-      val toConvert = interval intersect sourceInterval
+    ): ConversionResult = {
+      val relevant = interval intersect sourceInterval
 
-      val converted = toConvert.map { covered =>
-        val uncovered = interval subtract covered
-        val converted =
-          InclusiveDiscreteInterval(convert(covered.from), convert(covered.to))
-        ConversionResult(
-          uncovered = uncovered,
-          covered = NonOverlappingDiscreteIntervalSet(Set(covered)),
-          converted = NonOverlappingDiscreteIntervalSet(Set(converted)),
-        )
+      relevant match {
+        case Some(covered) =>
+          val uncovered = interval subtract covered
+          val converted =
+            InclusiveDiscreteInterval(
+              convert(covered.from),
+              convert(covered.to),
+            )
+          ConversionResult(
+            uncovered = uncovered,
+            covered = NonOverlappingDiscreteIntervalSet(Set(covered)),
+            converted = NonOverlappingDiscreteIntervalSet(Set(converted)),
+          )
+        case None          =>
+          ConversionResult(
+            uncovered = NonOverlappingDiscreteIntervalSet(Set(interval)),
+            covered = NonOverlappingDiscreteIntervalSet.empty[Long],
+            converted = NonOverlappingDiscreteIntervalSet.empty[Long],
+          )
+
       }
-
-      converted
     }
   }
 
