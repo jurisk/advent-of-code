@@ -3,64 +3,15 @@ package jurisk.adventofcode.y2023
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
-import scala.collection.immutable.NumericRange
-
 object Advent05 {
-  val Seed        = "seed"
-  val Soil        = "soil"
-  val Fertilizer  = "fertilizer"
-  val Water       = "water"
-  val Light       = "light"
-  val Temperature = "temperature"
-  val Humidity    = "humidity"
-  val Location    = "location"
-
-  val Order =
-    Seed :: Soil :: Fertilizer :: Water :: Light :: Temperature :: Humidity :: Location :: Nil
-
   final case class Input(
     seedInput: List[Long],
     conversionMaps: List[ConversionMap],
   ) {
-    def seedsPart1: List[Long]                         = seedInput
-    def seedsPart2: List[NumericRange.Exclusive[Long]] = {
-      assert(seedInput.length % 2 == 0)
-
-      println(seedInput.grouped(2).map(_(1)).sum)
-
-      seedInput.grouped(2).toList.map { x =>
-        val List(from, len) = x
-        from until (from + len)
+    def seedToLocation(seed: Long): Long =
+      conversionMaps.foldLeft(seed) { case (current, map) =>
+        map convert current
       }
-    }
-
-    def seedToLocation(seed: Long): Long = {
-
-      var current = seed
-      conversionMaps foreach { map =>
-        current = map.convert(current)
-      }
-      current
-    }
-
-    def seedToLocationOld(seed: Long): Long = {
-      val pairs: List[(String, String)] = Order.init zip Order.tail
-
-      var current = seed
-      pairs foreach { case (from, to) =>
-        val newCurrent = convertOld(current, from, to)
-//        println(s"Converting $current using $from to $to: got $newCurrent")
-        current = newCurrent
-      }
-
-      current
-    }
-
-    def convertOld(n: Long, from: String, to: String): Long = {
-      val conversionMap =
-        conversionMaps.filter(m => m.from == from && m.to == to).head
-      conversionMap.convert(n)
-    }
   }
 
   final case class ConversionMap(
@@ -69,13 +20,15 @@ object Advent05 {
     ranges: List[Range],
   ) {
     def convert(n: Long): Long =
-      ranges.find(range => range.matches(n)) match {
-        case Some(range) => range.convert(n)
-        case _           => n
+      ranges.filter(_.matches(n)) match {
+        case range :: Nil => range.convert(n)
+        case Nil          => n
+        case _            => sys.error(s"Found too many ranges that match $n")
       }
   }
 
-  object ConversionMap {
+  private object ConversionMap {
+    // Note - the conversion maps must be in the right order in the input!
     def parse(input: String): ConversionMap = {
       val lines = input.split("\n").toList
       lines match {
@@ -85,10 +38,11 @@ object Advent05 {
             case _                    => h.failedToParse
           }
 
-          val ranges = t.map(Range.parse)
+          val ranges = t map Range.parse
 
           ConversionMap(from, to, ranges)
-        case _      => input.failedToParse
+
+        case _ => input.failedToParse
       }
     }
   }
@@ -98,14 +52,14 @@ object Advent05 {
     sourceStart: Long,
     length: Long,
   ) {
-    def matches(n: Long): Boolean =
-      (n >= sourceStart) && (n < sourceStart + length)
+    private val source = sourceStart until sourceStart + length
+    private val diff   = destinationStart - sourceStart
 
-    def convert(n: Long): Long =
-      n + (destinationStart - sourceStart)
+    def matches(n: Long): Boolean = source contains n
+    def convert(n: Long): Long    = n + diff
   }
 
-  object Range {
+  private object Range {
     def parse(input: String): Range = {
       val List(a, b, c) = input.extractLongs
       Range(a, b, c)
@@ -115,30 +69,24 @@ object Advent05 {
   def parse(input: String): Input = {
     val sections = input.split("\n\n").toList
     sections match {
-      case h :: t =>
-        val seeds          = h.extractLongs
-        val conversionMaps = t.map(ConversionMap.parse)
-
-        Input(
-          seeds,
-          conversionMaps,
-        )
-
-      case _ => input.failedToParse
+      case h :: t => Input(h.extractLongs, t map ConversionMap.parse)
+      case _      => input.failedToParse
     }
   }
 
-  def part1(data: Input): Long =
-    data.seedsPart1.map(x => data.seedToLocation(x)).min
+  def solve(data: Input, seeds: List[Seq[Long]]): Long = {
+    val total = seeds.map(_.length.toLong).sum
+    println(s"Total to process: $total")
 
-  def part2(data: Input): Long = {
-    var result    = Long.MaxValue
     var processed = 0L
 
-    data.seedsPart2.foreach { x =>
-      x.foreach { n =>
+    seeds.map { seed =>
+      var result = Long.MaxValue
+
+      seed foreach { n =>
         val r = data.seedToLocation(n)
         processed += 1
+
         if (r < result) {
           println(s"Found $r at $processed")
           result = result.min(r)
@@ -147,11 +95,31 @@ object Advent05 {
         if (processed % 10_000_000 == 0) {
           println(processed)
         }
-
       }
+
+      result
+    }.min
+  }
+
+  def part1(data: Input): Long = {
+    val seeds = data.seedInput.map(x => x :: Nil)
+
+    solve(data, seeds)
+  }
+
+  def part2(data: Input): Long = {
+    val seeds = {
+      assert(data.seedInput.length % 2 == 0, "Odd count of input for seeds!")
+      data.seedInput
+        .grouped(2)
+        .map { x =>
+          val List(from, len) = x
+          from until (from + len)
+        }
+        .toList
     }
 
-    result
+    solve(data, seeds)
   }
 
   def parseFile(fileName: String): Input =
