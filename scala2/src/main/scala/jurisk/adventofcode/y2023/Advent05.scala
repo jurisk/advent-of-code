@@ -4,17 +4,24 @@ import cats.effect.{IO, IOApp}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import cats.implicits._
-import jurisk.math.InclusiveDiscreteInterval
+import jurisk.math.{
+  InclusiveDiscreteInterval,
+  NonOverlappingDiscreteIntervalSet,
+}
 
 object Advent05 extends IOApp.Simple {
   final case class Input(
     seedInput: List[Long],
     conversionMaps: List[ConversionMap],
   ) {
-    def seedToLocation(seed: Long): Long =
-      conversionMaps.foldLeft(seed) { case (current, map) =>
-        map convert current
+    def seedToLocationPotentialIntervals(
+      interval: InclusiveDiscreteInterval[Long]
+    ): NonOverlappingDiscreteIntervalSet[Long] = {
+      val startSet = NonOverlappingDiscreteIntervalSet(Set(interval))
+      conversionMaps.foldLeft(startSet) { case (current, map) =>
+        map potentialIntervals current
       }
+    }
   }
 
   final case class ConversionMap(
@@ -22,11 +29,22 @@ object Advent05 extends IOApp.Simple {
     to: String,
     converters: List[Converter],
   ) {
-    def convert(n: Long): Long =
-      converters.find(_.matches(n)) match {
-        case Some(converter) => converter.convert(n)
-        case None            => n
+    def potentialIntervals(
+      intervalSet: NonOverlappingDiscreteIntervalSet[Long]
+    ): NonOverlappingDiscreteIntervalSet[Long] = {
+      var convertedAll = NonOverlappingDiscreteIntervalSet.empty[Long]
+      var coveredAll   = NonOverlappingDiscreteIntervalSet.empty[Long]
+
+      converters.foreach { converter =>
+        val conversionResult = converter.potentialIntervals(intervalSet)
+
+        convertedAll = convertedAll union conversionResult.converted
+        coveredAll = coveredAll union conversionResult.covered
       }
+
+      val straightThrough = intervalSet subtract coveredAll
+      straightThrough union convertedAll
+    }
   }
 
   private object ConversionMap {
@@ -49,16 +67,70 @@ object Advent05 extends IOApp.Simple {
     }
   }
 
+  final case class ConversionResult(
+    uncovered: NonOverlappingDiscreteIntervalSet[Long],
+    covered: NonOverlappingDiscreteIntervalSet[Long],
+    converted: NonOverlappingDiscreteIntervalSet[Long],
+  ) {
+    assert(covered.size == converted.size)
+
+    def union(other: ConversionResult): ConversionResult =
+      ConversionResult(
+        uncovered = uncovered union other.uncovered,
+        covered = covered union other.covered,
+        converted = converted union other.converted,
+      )
+  }
+
   final case class Converter(
     destinationStart: Long,
     sourceStart: Long,
     length: Long,
   ) {
-    private val diff = destinationStart - sourceStart
+    override def toString: String = s"$sourceInterval -> $diff"
 
-    def matches(n: Long): Boolean =
-      (n >= sourceStart) && (n < sourceStart + length)
-    def convert(n: Long): Long    = n + diff
+    private val diff           = destinationStart - sourceStart
+    private val sourceInterval =
+      InclusiveDiscreteInterval(sourceStart, sourceStart + length - 1)
+
+    private def convert(n: Long): Long = n + diff
+
+    def potentialIntervals(
+      intervalSet: NonOverlappingDiscreteIntervalSet[Long]
+    ): ConversionResult = {
+      var acc = ConversionResult(
+        NonOverlappingDiscreteIntervalSet.empty[Long],
+        NonOverlappingDiscreteIntervalSet.empty[Long],
+        NonOverlappingDiscreteIntervalSet.empty[Long],
+      )
+
+      intervalSet.data foreach { interval =>
+        tryConvert(interval) foreach { conversionResult =>
+          acc = acc union conversionResult
+        }
+      }
+
+      acc
+    }
+
+    private def tryConvert(
+      interval: InclusiveDiscreteInterval[Long]
+    ): Option[ConversionResult] = {
+      val toConvert = interval intersect sourceInterval
+
+      val converted = toConvert.map { covered =>
+        val uncovered = interval subtract covered
+        val converted =
+          InclusiveDiscreteInterval(convert(covered.from), convert(covered.to))
+        ConversionResult(
+          uncovered = uncovered,
+          covered = NonOverlappingDiscreteIntervalSet(Set(covered)),
+          converted = NonOverlappingDiscreteIntervalSet(Set(converted)),
+        )
+      }
+
+      converted
+    }
   }
 
   private object Converter {
@@ -82,10 +154,9 @@ object Advent05 extends IOApp.Simple {
   ): IO[Long] = {
     def minForSeedRange(seedRange: InclusiveDiscreteInterval[Long]): IO[Long] =
       IO {
-        (seedRange.from to seedRange.to).foldLeft(Long.MaxValue) {
-          case (acc, seed) =>
-            acc min data.seedToLocation(seed)
-        }
+        data
+          .seedToLocationPotentialIntervals(seedRange)
+          .minOption getOrElse Long.MaxValue
       }
 
     val total = seedRanges.map(_.size).sum
@@ -93,7 +164,7 @@ object Advent05 extends IOApp.Simple {
     for {
       _       <- IO.println(s"Total to process: $total")
       results <- seedRanges.zipWithIndex
-                   .parTraverse { case (seedRange, idx) =>
+                   .traverse { case (seedRange, idx) => // TODO: parTraverse
                      IO.println(
                        s"Processing seed range $idx: $seedRange..."
                      ) *> minForSeedRange(seedRange)
