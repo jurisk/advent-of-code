@@ -20,10 +20,9 @@ object Advent05 {
     ranges: List[Range],
   ) {
     def convert(n: Long): Long =
-      ranges.filter(_.matches(n)) match {
-        case range :: Nil => range.convert(n)
-        case Nil          => n
-        case _            => sys.error(s"Found too many ranges that match $n")
+      ranges.find(_.matches(n)) match {
+        case Some(range) => range.convert(n)
+        case None        => n
       }
   }
 
@@ -52,10 +51,10 @@ object Advent05 {
     sourceStart: Long,
     length: Long,
   ) {
-    private val source = sourceStart until sourceStart + length
-    private val diff   = destinationStart - sourceStart
+    private val diff = destinationStart - sourceStart
 
-    def matches(n: Long): Boolean = source contains n
+    def matches(n: Long): Boolean =
+      (n >= sourceStart) && (n < sourceStart + length)
     def convert(n: Long): Long    = n + diff
   }
 
@@ -77,7 +76,7 @@ object Advent05 {
   def solve(data: Input, seedRanges: List[Seq[Long]]): Long = {
     def minForSeedRange(seedRange: Seq[Long]): Long = {
       var processed = 0L
-      var result = Long.MaxValue
+      var result    = Long.MaxValue
 
       seedRange foreach { seed =>
         val r = data.seedToLocation(seed)
@@ -95,7 +94,6 @@ object Advent05 {
 
       result
     }
-
 
     val total = seedRanges.map(_.length.toLong).sum
     println(s"Total to process: $total")
