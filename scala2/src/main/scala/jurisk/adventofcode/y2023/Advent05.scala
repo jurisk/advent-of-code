@@ -77,36 +77,22 @@ object Advent05 extends IOApp.Simple {
 
   def solve(data: Input, seedRanges: List[Seq[Long]]): IO[Long] = {
     def minForSeedRange(seedRange: Seq[Long]): IO[Long] = IO {
-      var processed = 0L
-      var result    = Long.MaxValue
-
-      seedRange foreach { seed =>
-        val r = data.seedToLocation(seed)
-        processed += 1
-
-        if (r < result) {
-          println(s"Found $r at $processed")
-          result = result.min(r)
-        }
-
-        if (processed % 10_000_000 == 0) {
-          println(processed)
-        }
+      seedRange.foldLeft(Long.MaxValue) { case (acc, seed) =>
+        acc min data.seedToLocation(seed)
       }
-
-      result
     }
 
     val total = seedRanges.map(_.length.toLong).sum
-    println(s"Total to process: $total")
 
-    seedRanges.zipWithIndex
-      .parTraverse { case (seedRange, idx) =>
-        IO.println(
-          s"Processing seed range $idx: $seedRange..."
-        ) *> minForSeedRange(seedRange)
-      }
-      .map(_.min)
+    for {
+      _       <- IO.println(s"Total to process: $total")
+      results <- seedRanges.zipWithIndex
+                   .parTraverse { case (seedRange, idx) =>
+                     IO.println(
+                       s"Processing seed range $idx: $seedRange..."
+                     ) *> minForSeedRange(seedRange)
+                   }
+    } yield results.min
   }
 
   def part1(data: Input): IO[Long] = {
