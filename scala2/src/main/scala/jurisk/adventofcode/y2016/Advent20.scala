@@ -2,33 +2,33 @@ package jurisk.adventofcode.y2016
 
 import cats.effect.IO
 import cats.effect.IOApp
-import jurisk.math.InclusiveDiscreteInterval
-import jurisk.math.NonOverlappingDiscreteIntervalSet
+import jurisk.math.DiscreteInterval
+import jurisk.math.DiscreteIntervalSet
 import jurisk.utils.FileInputIO.readFileLines
 import org.scalatest.matchers.should.Matchers._
 
 object Advent20 extends IOApp.Simple {
   private def parseLines(
     lines: List[String]
-  ): List[InclusiveDiscreteInterval[Long]] =
+  ): List[DiscreteInterval[Long]] =
     lines map {
-      case s"$a-$b" => InclusiveDiscreteInterval(a.toLong, b.toLong)
+      case s"$a-$b" => DiscreteInterval(a.toLong, b.toLong)
       case s        => sys.error(s"Failed to parse $s")
     }
 
   private def solve(
     lines: List[String]
-  ): NonOverlappingDiscreteIntervalSet[Long] = {
+  ): DiscreteIntervalSet[Long] = {
     val data = parseLines(lines)
     val min  = data.map(_.from).min
     val max  = data.map(_.from).max
-    data.foldLeft(NonOverlappingDiscreteIntervalSet.createInclusive(min, max))(
+    data.foldLeft(DiscreteIntervalSet.fromInclusiveInterval(min, max))(
       _ subtract _
     )
   }
 
   private def part1(lines: List[String]): Long =
-    solve(lines).minUnsafe
+    solve(lines).minOption.getOrElse(sys.error("Failed to solve"))
 
   private def part2(lines: List[String]): Long =
     solve(lines).size

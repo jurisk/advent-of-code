@@ -4,10 +4,7 @@ import cats.effect.{IO, IOApp}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import cats.implicits._
-import jurisk.math.{
-  InclusiveDiscreteInterval,
-  NonOverlappingDiscreteIntervalSet,
-}
+import jurisk.math.{DiscreteInterval, DiscreteIntervalSet}
 
 object Advent05 extends IOApp.Simple {
   final case class Input(
@@ -15,9 +12,10 @@ object Advent05 extends IOApp.Simple {
     conversionMaps: List[ConversionMap],
   ) {
     def seedToLocationPotentialIntervals(
-      interval: InclusiveDiscreteInterval[Long]
-    ): NonOverlappingDiscreteIntervalSet[Long] = {
-      val startSet = NonOverlappingDiscreteIntervalSet(Set(interval))
+      interval: DiscreteInterval[Long]
+    ): DiscreteIntervalSet[Long] = {
+      val startSet = DiscreteIntervalSet(Set(interval))
+
       conversionMaps.foldLeft(startSet) { case (current, map) =>
         map potentialIntervals current
       }
@@ -30,8 +28,8 @@ object Advent05 extends IOApp.Simple {
     converters: List[Converter],
   ) {
     def potentialIntervals(
-      intervalSet: NonOverlappingDiscreteIntervalSet[Long]
-    ): NonOverlappingDiscreteIntervalSet[Long] = {
+      intervalSet: DiscreteIntervalSet[Long]
+    ): DiscreteIntervalSet[Long] = {
       val results = converters.foldLeft(ConversionResult.empty) {
         case (acc, converter) =>
           acc union converter.potentialIntervals(intervalSet)
@@ -65,9 +63,9 @@ object Advent05 extends IOApp.Simple {
   }
 
   final case class ConversionResult(
-    uncovered: NonOverlappingDiscreteIntervalSet[Long],
-    covered: NonOverlappingDiscreteIntervalSet[Long],
-    converted: NonOverlappingDiscreteIntervalSet[Long],
+    uncovered: DiscreteIntervalSet[Long],
+    covered: DiscreteIntervalSet[Long],
+    converted: DiscreteIntervalSet[Long],
   ) {
     def union(other: ConversionResult): ConversionResult =
       ConversionResult(
@@ -79,9 +77,9 @@ object Advent05 extends IOApp.Simple {
 
   object ConversionResult {
     def empty: ConversionResult = ConversionResult(
-      NonOverlappingDiscreteIntervalSet.empty[Long],
-      NonOverlappingDiscreteIntervalSet.empty[Long],
-      NonOverlappingDiscreteIntervalSet.empty[Long],
+      DiscreteIntervalSet.empty[Long],
+      DiscreteIntervalSet.empty[Long],
+      DiscreteIntervalSet.empty[Long],
     )
   }
 
@@ -94,20 +92,20 @@ object Advent05 extends IOApp.Simple {
 
     private val diff           = destinationStart - sourceStart
     private val sourceInterval =
-      InclusiveDiscreteInterval(sourceStart, sourceStart + length - 1)
+      DiscreteInterval(sourceStart, sourceStart + length - 1)
 
     private def convert(n: Long): Long = n + diff
 
     def potentialIntervals(
-      intervalSet: NonOverlappingDiscreteIntervalSet[Long]
+      intervalSet: DiscreteIntervalSet[Long]
     ): ConversionResult =
-      intervalSet.data.foldLeft(ConversionResult.empty) {
+      intervalSet.intervals.foldLeft(ConversionResult.empty) {
         case (acc, interval) =>
           acc union tryConvert(interval)
       }
 
     private def tryConvert(
-      interval: InclusiveDiscreteInterval[Long]
+      interval: DiscreteInterval[Long]
     ): ConversionResult = {
       val relevant = interval intersect sourceInterval
 
@@ -115,20 +113,20 @@ object Advent05 extends IOApp.Simple {
         case Some(covered) =>
           val uncovered = interval subtract covered
           val converted =
-            InclusiveDiscreteInterval(
+            DiscreteInterval(
               convert(covered.from),
               convert(covered.to),
             )
           ConversionResult(
             uncovered = uncovered,
-            covered = NonOverlappingDiscreteIntervalSet(Set(covered)),
-            converted = NonOverlappingDiscreteIntervalSet(Set(converted)),
+            covered = DiscreteIntervalSet(Set(covered)),
+            converted = DiscreteIntervalSet(Set(converted)),
           )
         case None          =>
           ConversionResult(
-            uncovered = NonOverlappingDiscreteIntervalSet(Set(interval)),
-            covered = NonOverlappingDiscreteIntervalSet.empty[Long],
-            converted = NonOverlappingDiscreteIntervalSet.empty[Long],
+            uncovered = DiscreteIntervalSet(Set(interval)),
+            covered = DiscreteIntervalSet.empty[Long],
+            converted = DiscreteIntervalSet.empty[Long],
           )
 
       }
@@ -152,9 +150,9 @@ object Advent05 extends IOApp.Simple {
 
   def solve(
     data: Input,
-    seedRanges: List[InclusiveDiscreteInterval[Long]],
+    seedRanges: List[DiscreteInterval[Long]],
   ): IO[Long] = {
-    def minForSeedRange(seedRange: InclusiveDiscreteInterval[Long]): IO[Long] =
+    def minForSeedRange(seedRange: DiscreteInterval[Long]): IO[Long] =
       IO {
         data
           .seedToLocationPotentialIntervals(seedRange)
@@ -175,7 +173,7 @@ object Advent05 extends IOApp.Simple {
   }
 
   def part1(data: Input): IO[Long] = {
-    val seeds = data.seedInput.map(x => InclusiveDiscreteInterval(x, x))
+    val seeds = data.seedInput.map(x => DiscreteInterval(x, x))
 
     solve(data, seeds)
   }
@@ -187,7 +185,7 @@ object Advent05 extends IOApp.Simple {
         .grouped(2)
         .map { x =>
           val List(from, len) = x
-          InclusiveDiscreteInterval(from, from + len - 1)
+          DiscreteInterval(from, from + len - 1)
         }
         .toList
     }

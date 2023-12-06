@@ -2,8 +2,8 @@ package jurisk.adventofcode.y2022
 
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Field2D
-import jurisk.math.InclusiveDiscreteInterval
-import jurisk.math.NonOverlappingDiscreteIntervalSet
+import jurisk.math.DiscreteInterval
+import jurisk.math.DiscreteIntervalSet
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import mouse.all._
@@ -21,10 +21,10 @@ object Advent15 {
 
     def radius: Int = sensor manhattanDistance closestBeacon
 
-    def intervalWithY(y: Int): Option[InclusiveDiscreteInterval[Int]] = {
+    def intervalWithY(y: Int): Option[DiscreteInterval[Int]] = {
       val dy    = Math.abs(sensor.y - y)
       val delta = radius - dy
-      (delta >= 0) option InclusiveDiscreteInterval(
+      (delta >= 0) option DiscreteInterval(
         sensor.x - delta,
         sensor.x + delta,
       )
@@ -54,9 +54,9 @@ object Advent15 {
     y: Int,
     from: Int,
     to: Int,
-  ): NonOverlappingDiscreteIntervalSet[Int] =
+  ): DiscreteIntervalSet[Int] =
     data.foldLeft(
-      NonOverlappingDiscreteIntervalSet.createInclusive[Int](from, to)
+      DiscreteIntervalSet.fromInclusiveInterval[Int](from, to)
     ) { case (acc, e) =>
       e intervalWithY y match {
         case Some(interval) => acc.subtract(interval)
@@ -111,7 +111,7 @@ object Advent15 {
 
         val impossibilityInRow =
           impossibilityIntervalsInRow(data, y, 0, maxCoords)
-        val values             = impossibilityInRow.toSet
+        val values             = impossibilityInRow.valuesSet
 
         values
           .map { x =>
@@ -134,12 +134,12 @@ object Advent15 {
   def main(args: Array[String]): Unit = {
     Entry(Coords2D.of(8, 7), Coords2D.of(2, 10))
       .intervalWithY(10) shouldEqual Some(
-      InclusiveDiscreteInterval(2, 14)
+      DiscreteInterval(2, 14)
     )
 
     Entry(Coords2D.of(8, 7), Coords2D.of(2, 10))
       .intervalWithY(7) shouldEqual Some(
-      InclusiveDiscreteInterval(-1, 17)
+      DiscreteInterval(-1, 17)
     )
 
     Entry(Coords2D.of(8, 7), Coords2D.of(2, 10))
