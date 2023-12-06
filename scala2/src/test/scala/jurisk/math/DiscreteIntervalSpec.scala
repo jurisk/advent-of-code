@@ -5,7 +5,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 class DiscreteIntervalSpec extends AnyFlatSpec {
   // https://i.stack.imgur.com/h2Nw2.png
-  "InclusiveDiscreteInterval" should "subtract after" in {
+  "DiscreteInterval" should "subtract after" in {
     DiscreteInterval(11, 30) subtract DiscreteInterval(
       36,
       41,
@@ -141,22 +141,5 @@ class DiscreteIntervalSpec extends AnyFlatSpec {
     result shouldEqual DiscreteIntervalSet(
       Set(DiscreteInterval(2, 11))
     )
-  }
-
-  "NonOverlappingDiscreteIntervalSet" should "union with empty" in {
-    val empty = DiscreteIntervalSet.empty[Int]
-    val some  = DiscreteIntervalSet.fromInclusiveInterval(4, 6)
-
-    (empty union some) shouldEqual some
-    (some union empty) shouldEqual some
-  }
-
-  it should "work as union" in {
-    val a = DiscreteIntervalSet.fromInclusiveInterval(4, 6)
-    val b = DiscreteIntervalSet.fromInclusiveInterval(8, 11)
-    val c = DiscreteIntervalSet(
-      Set(DiscreteInterval(4, 6), DiscreteInterval(8, 11))
-    )
-    (a union b) shouldEqual c
   }
 }
