@@ -7,7 +7,7 @@ import jurisk.utils.Utils.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent00 {
-  type Parsed = List[Command]
+  type Input = List[Command]
 
   sealed trait Command
   object Command {
@@ -26,20 +26,20 @@ object Advent00 {
       }
   }
 
-  def parse(input: String): Parsed =
+  def parse(input: String): Input =
     input.parseList("\n", Command.parse)
 
-  def part1(data: Parsed): Int =
+  def part1(data: Input): Int =
     data.length + 1234567
 
-  def part2(data: Parsed): Int =
+  def part2(data: Input): Int =
     data.length + 1234567
 
-  def parseFile(fileName: String): Parsed =
+  def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
 
   def main(args: Array[String]): Unit = {
-    val realData: Parsed = parseFile("2023/02.txt")
+    val realData: Input = parseFile("2023/02.txt")
 
     println(s"Part 1: ${part1(realData)}")
     println(s"Part 2: ${part2(realData)}")

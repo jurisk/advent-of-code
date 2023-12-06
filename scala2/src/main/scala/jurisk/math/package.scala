@@ -24,4 +24,26 @@ package object math {
 
   def pow(a: Int, b: Int): Long =
     Math.pow(a, b).toLong
+
+  def countLongsBetweenExclusive(low: Double, high: Double): Long = {
+    def floorExclusive(x: Double): Long = {
+      val result = x.floor
+      if (result == x) {
+        result.toLong - 1
+      } else {
+        result.toLong
+      }
+    }
+
+    def ceilExclusive(x: Double): Long = {
+      val result = x.ceil
+      if (result == x) {
+        result.toLong + 1
+      } else {
+        result.toLong
+      }
+    }
+
+    floorExclusive(high) - ceilExclusive(low) + 1
+  }
 }
