@@ -55,6 +55,12 @@ final case class DiscreteIntervalSet[N: Numeric](
 
 object DiscreteIntervalSet {
   def apply[N: Numeric](
+    head: DiscreteInterval[N],
+    tail: DiscreteInterval[N]*
+  ): DiscreteIntervalSet[N] =
+    DiscreteIntervalSet[N](head +: tail)
+
+  private def apply[N: Numeric](
     input: Seq[DiscreteInterval[N]]
   ): DiscreteIntervalSet[N] =
     input.foldLeft(DiscreteIntervalSet.empty[N]) { case (acc, x) =>
