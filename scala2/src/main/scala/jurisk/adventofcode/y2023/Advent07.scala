@@ -4,25 +4,61 @@ import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 import cats.implicits._
-import scala.annotation.tailrec
+import Ordering.Implicits.seqOrdering
 
 object Advent07 {
   type Input = List[HandWithBid]
 
-  sealed trait PokerGame
+  sealed trait PokerGame {
+    def handValue(hand: Hand): Value
+  }
 
   object PokerGame {
-    final case object Camel1 extends PokerGame
-    final case object Camel2 extends PokerGame
+    final case object Camel1 extends PokerGame {
+      override def handValue(hand: Hand): Value =
+        Value(Value.determineKind(hand.ranks), hand.ranks)
+    }
+
+    final case object Camel2 extends PokerGame {
+      override def handValue(hand: Hand): Value = {
+        val ranks = hand.ranks.map { r =>
+          if (r == Rank.parse('J')) Rank.Wildcard else r
+        }
+
+        def expandWildcards(
+          ranks: List[Rank]
+        ): List[List[Rank]] =
+          ranks match {
+            case h :: t if h == Rank.Wildcard =>
+              Rank.NonWildCardRanks flatMap { r =>
+                expandWildcards(t) map { x => r :: x }
+              }
+
+            case h :: t => expandWildcards(t) map { x => h :: x }
+            case Nil    => Nil :: Nil
+          }
+
+        val options   = expandWildcards(ranks)
+        val bestValue = options
+          .map(Value.determineKind)
+          .max
+
+        Value(bestValue, ranks)
+      }
+    }
   }
 
-  final case class Rank(value: Char) {
-    def strength: Int = Rank.Ordered.indexOf(this)
-  }
+  final case class Rank(value: Char, strength: Int)
 
   object Rank {
-    val Ordered: List[Rank]          = "*23456789TJQKA".toList.map(Rank(_))
-    val Wildcard: Rank               = Rank('*')
+    implicit val ordering: Ordering[Rank] = Ordering.by(_.strength)
+
+    val Ordered: List[Rank] = "*23456789TJQKA".toList.zipWithIndex.map {
+      case (ch, idx) =>
+        Rank(ch, idx)
+    }
+
+    val Wildcard: Rank               = Rank.parse('*')
     val NonWildCardRanks: List[Rank] =
       Rank.Ordered.filterNot(_ == Rank.Wildcard)
 
@@ -39,35 +75,14 @@ object Advent07 {
       Hand((x map Rank.parse).toList)
   }
 
-  final case class Value(kind: ValueKind, originalRankList: List[Rank])
+  final case class Value(kind: ValueKind, ranks: List[Rank])
 
   object Value {
-    implicit private val rankOrdering: Ordering[Rank] = (x: Rank, y: Rank) =>
-      Ordering[Int].compare(x.strength, y.strength)
+    def orderingForGame(pokerGame: PokerGame): Ordering[Hand] =
+      Ordering.by(pokerGame.handValue)
 
-    @tailrec
-    private def compareRankLists(x: List[Rank], y: List[Rank]): Int = {
-      require(x.length === y.length)
-      if (x.isEmpty) 0
-      else {
-        val result = Ordering[Rank].compare(x.head, y.head)
-        if (result != 0) result else compareRankLists(x.tail, y.tail)
-      }
-    }
-
-    implicit private def rankListOrdering: Ordering[List[Rank]] =
-      (x: List[Rank], y: List[Rank]) => compareRankLists(x, y)
-
-    def orderingForGame(
-      pokerGame: PokerGame
-    ): Ordering[Hand] = (x: Hand, y: Hand) =>
-      ordering.compare(
-        Value(pokerGame, x),
-        Value(pokerGame, y),
-      )
-
-    private def determineKind(cards: List[Rank]): ValueKind = {
-      require(cards.size === 5, s"Only 5 card evaluations allowed: $cards")
+    def determineKind(cards: List[Rank]): ValueKind = {
+      require(cards.size === 5, s"Only 5 card evaluations are allowed: $cards")
 
       val rankList: List[(Rank, Int)] = cards
         .groupBy(identity)
@@ -99,61 +114,16 @@ object Advent07 {
       )
     }
 
-    implicit val ordering: Ordering[Value] = (x: Value, y: Value) => {
-      val result = Ordering[Int].compare(x.kind.strength, y.kind.strength)
-
-      if (result === 0) {
-        Ordering[List[Rank]].compare(
-          x.originalRankList,
-          y.originalRankList,
-        )
-      } else {
-        result // major decides
-      }
-    }
-
-    def apply(pokerGame: PokerGame, hand: Hand): Value =
-      pokerGame match {
-        case PokerGame.Camel1 =>
-          Value(Value.determineKind(hand.ranks), hand.ranks)
-
-        case PokerGame.Camel2 =>
-          val ranks = hand.ranks.map { r =>
-            if (r == Rank('J')) Rank.Wildcard else r
-          }
-
-          def expandWildcards(
-            hand: List[Rank]
-          ): List[List[Rank]] = {
-            def f(
-              cards: List[Rank]
-            ): List[List[Rank]] =
-              cards match {
-                case h :: t if h == Rank.Wildcard =>
-                  Rank.NonWildCardRanks flatMap { r =>
-                    f(t) map { x => r :: x }
-                  }
-
-                case h :: t => f(t) map { x => h :: x }
-                case Nil    => Nil :: Nil
-              }
-
-            f(hand)
-          }
-
-          val options   = expandWildcards(ranks)
-          val bestValue = options
-            .map(Value.determineKind)
-            .max((x: ValueKind, y: ValueKind) => x.strength.compare(y.strength))
-
-          Value(bestValue, ranks)
-      }
-
+    implicit val ordering: Ordering[Value] = Ordering.by[Value, ValueKind](
+      _.kind
+    ) orElse Ordering.by[Value, List[Rank]](_.ranks)
   }
 
   sealed abstract class ValueKind(val strength: Int)
 
   object ValueKind {
+    implicit val ordering: Ordering[ValueKind] = Ordering.by(_.strength)
+
     final case object HighCard     extends ValueKind(0)
     final case object Pair         extends ValueKind(1)
     final case object TwoPairs     extends ValueKind(2)

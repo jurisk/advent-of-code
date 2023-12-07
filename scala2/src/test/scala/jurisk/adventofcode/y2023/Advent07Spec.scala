@@ -5,10 +5,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 
 class Advent07Spec extends AnyFlatSpec {
-  private def parseValue(game: PokerGame, ranks: String): Value = {
-    val hand = Hand.parse(ranks)
-    Value(game, hand)
-  }
+  private def parseValue(game: PokerGame, ranks: String): Value =
+    game.handValue(Hand.parse(ranks))
 
   "Camel 1" should "compare 33332 and 2AAAA" in {
     val a = parseValue(PokerGame.Camel1, "33332")
