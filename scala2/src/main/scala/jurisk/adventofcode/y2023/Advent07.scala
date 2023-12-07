@@ -16,35 +16,27 @@ object Advent07 {
   object PokerGame {
     final case object Camel1 extends PokerGame {
       override def handValue(hand: Hand): Value =
-        Value(Value.determineKind(hand.ranks), hand.ranks)
+        Value(ValueKind.fromRanks(hand.ranks), hand.ranks)
     }
 
     final case object Camel2 extends PokerGame {
       override def handValue(hand: Hand): Value = {
-        val ranks = hand.ranks.map { r =>
+        val ranks = hand.ranks map { r =>
           if (r == Rank.parse('J')) Rank.Wildcard else r
         }
 
-        // We could do something faster instead, but this works
-        def expandWildcards(
-          ranks: List[Rank]
-        ): List[List[Rank]] =
-          ranks match {
-            case h :: t if h == Rank.Wildcard =>
-              Rank.NonWildCardRanks flatMap { r =>
-                expandWildcards(t) map { x => r :: x }
-              }
+        val wildcards              = ranks.count(_ == Rank.Wildcard)
+        val withoutWildcards       = ranks.filterNot(_ == Rank.Wildcard)
+        val withoutWildcardsCounts = Rank.rankCounts(withoutWildcards)
 
-            case h :: t => expandWildcards(t) map { x => h :: x }
-            case Nil    => Nil :: Nil
-          }
+        val withWildcardsCounts = withoutWildcardsCounts match {
+          case h :: t => (h + wildcards) :: t
+          case Nil    => wildcards :: Nil
+        }
 
-        val options   = expandWildcards(ranks)
-        val bestValue = options
-          .map(Value.determineKind)
-          .max
+        val kind = ValueKind.fromCounts(withWildcardsCounts)
 
-        Value(bestValue, ranks)
+        Value(kind, ranks)
       }
     }
   }
@@ -59,14 +51,21 @@ object Advent07 {
         Rank(ch, idx)
     }
 
-    val Wildcard: Rank               = Rank.parse('*')
-    val NonWildCardRanks: List[Rank] =
-      Rank.Ordered.filterNot(_ == Rank.Wildcard)
+    val Wildcard: Rank = Rank.parse('*')
 
     def parse(x: Char): Rank =
       Ordered
         .find(_.value === x)
         .getOrElse(sys.error(s"Failed to parse Rank $x"))
+
+    def rankCounts(ranks: List[Rank]): List[Int] =
+      ranks
+        .groupBy(identity)
+        .map { case (_, v) =>
+          v.length
+        }
+        .toList
+        .sorted(Ordering[Int].reverse)
   }
 
   final case class Hand(ranks: List[Rank])
@@ -81,33 +80,6 @@ object Advent07 {
   object Value {
     def orderingForGame(pokerGame: PokerGame): Ordering[Hand] =
       Ordering.by(pokerGame.handValue)
-
-    def determineKind(ranks: List[Rank]): ValueKind = {
-      require(ranks.size === 5, s"Only 5 card evaluations are allowed: $ranks")
-
-      val counts = ranks
-        .groupBy(identity)
-        .map { case (_, v) =>
-          v.length
-        }
-        .toList
-        .sorted(Ordering[Int].reverse)
-
-      val mapping = Map(
-        (5 :: Nil)                     -> ValueKind.FiveOfAKind,
-        (4 :: 1 :: Nil)                -> ValueKind.FourOfAKind,
-        (3 :: 2 :: Nil)                -> ValueKind.FullHouse,
-        (3 :: 1 :: 1 :: Nil)           -> ValueKind.ThreeOfAKind,
-        (2 :: 2 :: 1 :: Nil)           -> ValueKind.TwoPairs,
-        (2 :: 1 :: 1 :: 1 :: Nil)      -> ValueKind.Pair,
-        (1 :: 1 :: 1 :: 1 :: 1 :: Nil) -> ValueKind.HighCard,
-      )
-
-      mapping.getOrElse(
-        counts,
-        sys.error(s"Unrecognized rank counts $counts for $ranks"),
-      )
-    }
 
     implicit val ordering: Ordering[Value] =
       Ordering.by[Value, ValueKind](_.kind) orElse Ordering.by(_.ranks)
@@ -125,6 +97,29 @@ object Advent07 {
     final case object FullHouse    extends ValueKind(4)
     final case object FourOfAKind  extends ValueKind(5)
     final case object FiveOfAKind  extends ValueKind(6)
+
+    private val Mapping = Map(
+      (5 :: Nil)                     -> ValueKind.FiveOfAKind,
+      (4 :: 1 :: Nil)                -> ValueKind.FourOfAKind,
+      (3 :: 2 :: Nil)                -> ValueKind.FullHouse,
+      (3 :: 1 :: 1 :: Nil)           -> ValueKind.ThreeOfAKind,
+      (2 :: 2 :: 1 :: Nil)           -> ValueKind.TwoPairs,
+      (2 :: 1 :: 1 :: 1 :: Nil)      -> ValueKind.Pair,
+      (1 :: 1 :: 1 :: 1 :: 1 :: Nil) -> ValueKind.HighCard,
+    )
+
+    def fromCounts(counts: List[Int]): ValueKind =
+      Mapping.getOrElse(
+        counts,
+        sys.error(s"Unrecognized rank counts $counts"),
+      )
+
+    def fromRanks(ranks: List[Rank]): ValueKind = {
+      require(ranks.size === 5, s"Only 5 card evaluations are allowed: $ranks")
+
+      val counts = Rank.rankCounts(ranks)
+      fromCounts(counts)
+    }
   }
 
   final case class HandWithBid(
