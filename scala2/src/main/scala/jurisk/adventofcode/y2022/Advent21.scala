@@ -33,7 +33,7 @@ object Advent21 {
   }
 
   def parse(data: String): Parsed =
-    data.parseList("\n", Monkey.parse)
+    data.parseLines(Monkey.parse)
 
   sealed trait Operation {
     def execute(a: Value, b: Value): Value

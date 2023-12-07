@@ -189,7 +189,7 @@ object Advent19 extends IOApp {
   }
 
   def parse(data: String): Parsed =
-    data.parseList("\n", Blueprint.parse)
+    data.parseLines(Blueprint.parse)
 
   def part1(data: Parsed): IO[Int] = for {
     _       <- Console[IO].println(s"Blueprint count: ${data.length}")

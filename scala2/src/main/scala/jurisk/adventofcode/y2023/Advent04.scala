@@ -30,7 +30,7 @@ object Advent04 {
   }
 
   def parse(input: String): Parsed =
-    input.parseList("\n", Card.parse)
+    input.parseLines(Card.parse)
 
   def part1(cards: Parsed): Int = {
     def part1Worth(card: Card): Int =

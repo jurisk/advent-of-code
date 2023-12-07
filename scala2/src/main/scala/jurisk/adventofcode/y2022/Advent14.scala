@@ -83,7 +83,7 @@ object Advent14 {
   }
 
   def parse(data: String): Parsed =
-    data.parseList("\n", Path.parse)
+    data.parseLines(Path.parse)
 
   private def printField(field: Field2D[Square]): Unit = {
     val display = field.map {

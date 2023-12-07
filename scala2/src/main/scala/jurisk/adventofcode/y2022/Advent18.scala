@@ -11,7 +11,7 @@ object Advent18 {
     cube.adjacent6.count(n => !cubes.contains(n))
 
   def parse(data: String): Set[Coords3D] =
-    data.parseList("\n", Coords3D.parse).toSet
+    data.parseLines(Coords3D.parse).toSet
 
   def part1(points: Set[Coords3D]): Int =
     points.toList.map(sidesFree(_, points)).sum

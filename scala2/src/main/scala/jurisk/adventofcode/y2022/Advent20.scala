@@ -8,7 +8,7 @@ object Advent20 {
   type Index = Int
 
   def parse(data: String): Vector[Long] =
-    data.parseList("\n", _.toLong).toVector
+    data.parseLines(_.toLong).toVector
 
   private def moveNumber(
     vector: Vector[Index],
