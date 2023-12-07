@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
-import jurisk.adventofcode.y2023.Advent07.PokerGame
+import jurisk.adventofcode.y2023.Advent07.{Hand, PokerGame}
 
 import scala.annotation.tailrec
 

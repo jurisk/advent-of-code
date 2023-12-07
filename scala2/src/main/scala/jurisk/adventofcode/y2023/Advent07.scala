@@ -13,6 +13,13 @@ object Advent07 {
     final case object Camel2 extends PokerGame
   }
 
+  final case class Hand(ranks: List[Rank])
+
+  object Hand {
+    def parse(x: String): Hand =
+      Hand((x map Rank.parse).toList)
+  }
+
   final case class HandWithBid(
     hand: Hand,
     bid: Int,
