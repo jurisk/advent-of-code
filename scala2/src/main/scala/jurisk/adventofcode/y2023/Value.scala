@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
-import jurisk.adventofcode.y2023.Advent07.{Hand, PokerGame}
+import jurisk.adventofcode.y2023.Advent07.{Hand, PokerGame, Rank}
 
 import scala.annotation.tailrec
 
@@ -109,8 +109,15 @@ object Value {
         Value(hand.ranks)
 
       case PokerGame.Camel2 =>
-        def expandWildCards(hand: Hand, wildCard: Rank): List[Hand] = {
-          val nonWildCardRanks = Rank.ordered.filterNot(_ == wildCard)
+        val ranks = hand.ranks.map { r =>
+          if (r == Rank('J')) Rank.Wildcard else r
+        }
+
+        def expandWildCards(
+          hand: List[Rank],
+          wildCard: Rank,
+        ): List[List[Rank]] = {
+          val nonWildCardRanks = Rank.Ordered.filterNot(_ == wildCard)
 
           def f(
             cards: List[Rank]
@@ -125,22 +132,13 @@ object Value {
               case Nil    => Nil :: Nil
             }
 
-          val results = f(hand.ranks)
-          results.map(Hand(_))
+          f(hand)
         }
 
-        val options: List[Hand] = expandWildCards(hand, Rank.Jack)
-        val bestValue           = options
-          .map(x => Value(x.ranks))
+        val options   = expandWildCards(ranks, Rank.Wildcard)
+        val bestValue = options
+          .map(Value(_))
           .max((x: Value, y: Value) => x.major.compare(y.major))
-
-        val ranks = hand.ranks.map { r =>
-          if (r == Rank.Jack) {
-            Rank.Worst
-          } else {
-            r
-          }
-        }
 
         bestValue match {
           case x: HighCard     => x.copy(originalRankList = ranks)

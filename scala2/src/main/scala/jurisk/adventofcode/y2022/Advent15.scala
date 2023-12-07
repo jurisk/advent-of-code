@@ -44,7 +44,7 @@ object Advent15 {
   }
 
   def parse(data: String): Parsed =
-    data.parseList("\n", Entry.parse)
+    data.parseLines(Entry.parse)
 
   private def impossibleToHaveBeacon(data: Parsed, c: Coords2D): Boolean =
     data.exists(_.impossibleToHaveBeacon(c))

@@ -27,7 +27,7 @@ object Advent00 {
   }
 
   def parse(input: String): Input =
-    input.parseList("\n", Command.parse)
+    input.parseLines(Command.parse)
 
   def part1(data: Input): Int =
     data.length + 1234567

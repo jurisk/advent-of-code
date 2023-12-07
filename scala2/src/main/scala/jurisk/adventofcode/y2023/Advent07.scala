@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2023
 
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+import cats.implicits._
 
 object Advent07 {
   type Input = List[HandWithBid]
@@ -11,6 +12,20 @@ object Advent07 {
   object PokerGame {
     final case object Camel1 extends PokerGame
     final case object Camel2 extends PokerGame
+  }
+
+  final case class Rank(value: Char) {
+    def strength: Int = Rank.Ordered.indexOf(this)
+  }
+
+  object Rank {
+    val Wildcard: Rank      = Rank('*')
+    val Ordered: List[Rank] = "*23456789TJQKA".toList.map(Rank(_))
+
+    def parse(x: Char): Rank =
+      Ordered
+        .find(_.value === x)
+        .getOrElse(sys.error(s"Failed to parse Rank $x"))
   }
 
   final case class Hand(ranks: List[Rank])
@@ -38,7 +53,7 @@ object Advent07 {
   }
 
   def parse(input: String): Input =
-    input.parseList("\n", HandWithBid.parse)
+    input.parseLines(HandWithBid.parse)
 
   def solve(data: Input, game: PokerGame): Int = {
     implicit val ordering: Ordering[Hand] =

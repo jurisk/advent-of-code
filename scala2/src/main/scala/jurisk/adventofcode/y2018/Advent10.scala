@@ -27,7 +27,7 @@ object Advent10 {
   }
 
   def parse(data: String): Parsed =
-    data.parseList("\n", PointWithVelocity.parse)
+    data.parseLines(PointWithVelocity.parse)
 
   def solve(data: Parsed, limit: Int): Result1 = {
     val field = data.toSet

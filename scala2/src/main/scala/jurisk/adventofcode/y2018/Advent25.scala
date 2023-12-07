@@ -9,7 +9,7 @@ object Advent25 {
   type Parsed = List[Coords4D]
 
   def parse(data: String): Parsed =
-    data.parseList("\n", Coords4D.parse)
+    data.parseLines(Coords4D.parse)
 
   private def belongsTo(
     point: Coords4D,

@@ -23,7 +23,7 @@ object Advent10 {
   }
 
   def parse(data: String): Parsed =
-    data.parseList("\n", Op.parse)
+    data.parseLines(Op.parse)
 
   final case class State(x: Int, stack: List[Op]) {
     def next: State =

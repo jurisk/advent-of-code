@@ -75,6 +75,10 @@ object Parsing {
     ): List[T] =
       s.split(separator).toList.map(parser)
 
+    def parseLines[T](
+      parser: String => T
+    ): List[T] = parseList("\n", parser)
+
     def extractInts: List[Int] = {
       val RegEx = """([-+]?\d+)""".r
       RegEx.findAllIn(s).map(_.toInt).toList

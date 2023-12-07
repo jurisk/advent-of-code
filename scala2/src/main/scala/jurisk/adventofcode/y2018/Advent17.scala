@@ -154,7 +154,7 @@ object Advent17 {
   private val SpringOfWater: Coords2D = Coords2D.of(500, 0)
 
   def parse(data: String): Field2D[Square] = {
-    val points = data.parseList("\n", parsePoints).flatten
+    val points = data.parseLines(parsePoints).flatten
 
     val boundingBox = Coords2D
       .boundingBoxInclusive(SpringOfWater :: points)

@@ -62,7 +62,7 @@ object Advent02 {
   }
 
   def parse(input: String): Parsed =
-    input.parseList("\n", Game.parse)
+    input.parseLines(Game.parse)
 
   def part1(data: Parsed): Int = {
     val bag = Cubes(12, 13, 14)

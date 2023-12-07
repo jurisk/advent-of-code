@@ -56,7 +56,7 @@ object Advent25 {
   }
 
   def parse(input: String): Parsed =
-    input.parseList("\n", SnafuNumber.parse)
+    input.parseLines(SnafuNumber.parse)
 
   def solve(data: Parsed): SnafuNumber =
     SnafuNumber.fromDecimal(data.map(_.toDecimal).sum)

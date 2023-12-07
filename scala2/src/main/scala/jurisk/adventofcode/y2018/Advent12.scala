@@ -83,7 +83,7 @@ object Advent12 {
 
   def parse(data: String): Parsed = {
     val (a, b) = data.splitPairUnsafe("\n\n");
-    (State.parse(a), b.parseList("\n", parsePattern).toMap)
+    (State.parse(a), b.parseLines(parsePattern).toMap)
   }
 
   def solve(data: Parsed, iterations: Long): Long = {
