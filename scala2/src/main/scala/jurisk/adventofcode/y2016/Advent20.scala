@@ -22,7 +22,7 @@ object Advent20 extends IOApp.Simple {
     val data = parseLines(lines)
     val min  = data.map(_.from).min
     val max  = data.map(_.from).max
-    data.foldLeft(DiscreteIntervalSet.fromInclusiveInterval(min, max))(
+    data.foldLeft(DiscreteIntervalSet.fromInterval(min, max))(
       _ subtract _
     )
   }

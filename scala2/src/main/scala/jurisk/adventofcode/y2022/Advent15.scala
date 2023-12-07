@@ -56,7 +56,7 @@ object Advent15 {
     to: Int,
   ): DiscreteIntervalSet[Int] =
     data.foldLeft(
-      DiscreteIntervalSet.fromInclusiveInterval[Int](from, to)
+      DiscreteIntervalSet.fromInterval[Int](from, to)
     ) { case (acc, e) =>
       e intervalWithY y match {
         case Some(interval) => acc.subtract(interval)

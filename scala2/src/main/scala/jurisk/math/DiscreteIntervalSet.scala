@@ -1,16 +1,11 @@
 package jurisk.math
 
 import cats.implicits._
-import jurisk.math.Enumerated.EnumeratedOps
-
-import scala.math.Numeric.Implicits._
 import scala.math.Ordering.Implicits._
 
 final case class DiscreteIntervalSet[N: Numeric](
-  private val set: Set[DiscreteInterval[N]]
+  intervals: Vector[DiscreteInterval[N]]
 ) {
-  def intervals: Seq[DiscreteInterval[N]] = set.toSeq
-
   def union(
     other: DiscreteIntervalSet[N]
   ): DiscreteIntervalSet[N] =
@@ -20,15 +15,35 @@ final case class DiscreteIntervalSet[N: Numeric](
 
   def add(
     interval: DiscreteInterval[N]
-  ): DiscreteIntervalSet[N] =
-    if (isEmpty) {
-      new DiscreteIntervalSet[N](Set(interval))
-    } else {
-      // TODO: This is not really correct, see https://github.com/jurisk/leetcode/blob/master/rust/src/solution/p0057_insert_interval.rs
-      new DiscreteIntervalSet[N](
-        intervals.flatMap(x => (x union interval).intervals).toSet
-      )
+  ): DiscreteIntervalSet[N] = {
+    var results                           = Vector.empty[DiscreteInterval[N]]
+    var open: Option[DiscreteInterval[N]] = interval.some
+
+    intervals foreach { interval =>
+      open match {
+        case Some(open_interval) =>
+          val union = (interval union open_interval).intervals
+          if (union.length == 1) { // overlaps or touches
+            open = union.headOption
+          } else {
+            if (open_interval.from < interval.from) {
+              results = results :+ open_interval
+              open = None
+            }
+
+            results = results :+ interval
+          }
+        case None                =>
+          results = results :+ interval
+      }
     }
+
+    open foreach { open =>
+      results = results :+ open
+    }
+
+    new DiscreteIntervalSet[N](results)
+  }
 
   def subtract(
     interval: DiscreteInterval[N]
@@ -44,8 +59,8 @@ final case class DiscreteIntervalSet[N: Numeric](
       acc subtract x
     }
 
-  def size: N          = intervals.toList.map(_.size).sum
-  def isEmpty: Boolean = set.isEmpty
+  def size: N          = intervals.map(_.size).sum
+  def isEmpty: Boolean = intervals.isEmpty
 
   def valuesSet: Set[N] = intervals.flatMap(_.toList).toSet
 
@@ -54,6 +69,10 @@ final case class DiscreteIntervalSet[N: Numeric](
 }
 
 object DiscreteIntervalSet {
+  def continuous[N: Numeric](
+    interval: DiscreteInterval[N]
+  ): DiscreteIntervalSet[N] = new DiscreteIntervalSet[N](Vector(interval))
+
   def apply[N: Numeric](
     head: DiscreteInterval[N],
     tail: DiscreteInterval[N]*
@@ -67,14 +86,12 @@ object DiscreteIntervalSet {
       acc add x
     }
 
-  def fromInclusiveInterval[N: Numeric: Enumerated](
+  def fromInterval[N: Numeric: Enumerated](
     from: N,
     to: N,
   ): DiscreteIntervalSet[N] =
-    DiscreteIntervalSet[N](
-      Set(DiscreteInterval[N](from, to))
-    )
+    DiscreteIntervalSet.continuous[N](DiscreteInterval[N](from, to))
 
   def empty[N: Numeric]: DiscreteIntervalSet[N] =
-    new DiscreteIntervalSet[N](Set.empty)
+    new DiscreteIntervalSet[N](Vector.empty)
 }

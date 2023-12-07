@@ -14,7 +14,7 @@ object Advent05 extends IOApp.Simple {
     def seedToLocationPotentialIntervals(
       interval: DiscreteInterval[Long]
     ): DiscreteIntervalSet[Long] = {
-      val startSet = DiscreteIntervalSet(Set(interval))
+      val startSet = DiscreteIntervalSet.continuous(interval)
 
       conversionMaps.foldLeft(startSet) { case (current, map) =>
         map potentialIntervals current
@@ -119,12 +119,12 @@ object Advent05 extends IOApp.Simple {
             )
           ConversionResult(
             uncovered = uncovered,
-            covered = DiscreteIntervalSet(Set(covered)),
-            converted = DiscreteIntervalSet(Set(converted)),
+            covered = DiscreteIntervalSet.continuous(covered),
+            converted = DiscreteIntervalSet.continuous(converted),
           )
         case None          =>
           ConversionResult(
-            uncovered = DiscreteIntervalSet(Set(interval)),
+            uncovered = DiscreteIntervalSet.continuous(interval),
             covered = DiscreteIntervalSet.empty[Long],
             converted = DiscreteIntervalSet.empty[Long],
           )

@@ -26,15 +26,17 @@ final case class DiscreteInterval[N: Numeric: Enumerated](
   def union(
     other: DiscreteInterval[N]
   ): DiscreteIntervalSet[N] =
-    if (other.from > to + One || other.to < from - One)
-      new DiscreteIntervalSet(Set(this, other))
+    if (other.from > to + One) // Not touching, fully separate: other ... to
+      new DiscreteIntervalSet(Vector(this, other))
+    else if (
+      other.to < from - One
+    )                          // Not touching, fully separate: to ... other
+      new DiscreteIntervalSet(Vector(other, this))
     else
-      new DiscreteIntervalSet(
-        Set(
-          DiscreteInterval(
-            numericN.min(this.from, other.from),
-            numericN.max(this.to, other.to),
-          )
+      DiscreteIntervalSet.continuous(
+        DiscreteInterval(
+          numericN.min(this.from, other.from),
+          numericN.max(this.to, other.to),
         )
       )
 
@@ -48,26 +50,23 @@ final case class DiscreteInterval[N: Numeric: Enumerated](
 
   def subtract(
     other: DiscreteInterval[N]
-  ): DiscreteIntervalSet[N] = {
-    val set = if (other.from > to || other.to < from) {
-      Set(this)
+  ): DiscreteIntervalSet[N] =
+    if (other.from > to || other.to < from) {
+      DiscreteIntervalSet(this)
     } else if (other.from <= from && other.to >= to) {
-      Set.empty[DiscreteInterval[N]]
+      DiscreteIntervalSet.empty[N]
     } else if (other.from > from && other.to < to) {
-      Set(
+      DiscreteIntervalSet(
         DiscreteInterval[N](from, other.from - One),
         DiscreteInterval[N](other.to + One, to),
       )
     } else if (other.from <= from) { // && other.to < to
-      Set(
+      DiscreteIntervalSet.continuous(
         DiscreteInterval[N](other.to + One, to)
       )
     } else { // other.from > from) && (other.to >= to)
-      Set(
+      DiscreteIntervalSet.continuous(
         DiscreteInterval[N](from, other.from - One)
       )
     }
-
-    new DiscreteIntervalSet(set)
-  }
 }

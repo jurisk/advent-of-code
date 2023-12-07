@@ -9,8 +9,8 @@ class DiscreteIntervalSpec extends AnyFlatSpec {
     DiscreteInterval(11, 30) subtract DiscreteInterval(
       36,
       41,
-    ) shouldEqual DiscreteIntervalSet(
-      Set(DiscreteInterval(11, 30))
+    ) shouldEqual DiscreteIntervalSet.continuous(
+      DiscreteInterval(11, 30)
     )
   }
 
@@ -18,8 +18,8 @@ class DiscreteIntervalSpec extends AnyFlatSpec {
     DiscreteInterval(11, 30) subtract DiscreteInterval(
       5,
       20,
-    ) shouldEqual DiscreteIntervalSet(
-      Set(DiscreteInterval(21, 30))
+    ) shouldEqual DiscreteIntervalSet.continuous(
+      DiscreteInterval(21, 30)
     )
   }
 
@@ -28,7 +28,7 @@ class DiscreteIntervalSpec extends AnyFlatSpec {
       30,
       33,
     ) shouldEqual DiscreteIntervalSet(
-      Set(DiscreteInterval(11, 29))
+      DiscreteInterval(11, 29)
     )
   }
 
@@ -44,7 +44,7 @@ class DiscreteIntervalSpec extends AnyFlatSpec {
       3,
       8,
     ) shouldEqual DiscreteIntervalSet(
-      Set(DiscreteInterval(11, 30))
+      DiscreteInterval(11, 30)
     )
   }
 
@@ -53,10 +53,8 @@ class DiscreteIntervalSpec extends AnyFlatSpec {
       18,
       27,
     ) shouldEqual DiscreteIntervalSet(
-      Set(
-        DiscreteInterval(11, 17),
-        DiscreteInterval(28, 30),
-      )
+      DiscreteInterval(11, 17),
+      DiscreteInterval(28, 30),
     )
   }
 
@@ -65,10 +63,8 @@ class DiscreteIntervalSpec extends AnyFlatSpec {
       36,
       41,
     ) shouldEqual DiscreteIntervalSet(
-      Set(
-        DiscreteInterval(11, 30),
-        DiscreteInterval(36, 41),
-      )
+      DiscreteInterval(11, 30),
+      DiscreteInterval(36, 41),
     )
   }
 
@@ -77,7 +73,7 @@ class DiscreteIntervalSpec extends AnyFlatSpec {
       5,
       20,
     ) shouldEqual
-      DiscreteIntervalSet(Set(DiscreteInterval(5, 30)))
+      DiscreteIntervalSet(DiscreteInterval(5, 30))
   }
 
   it should "add backoverlap" in {
@@ -85,7 +81,7 @@ class DiscreteIntervalSpec extends AnyFlatSpec {
       30,
       33,
     ) shouldEqual DiscreteIntervalSet(
-      Set(DiscreteInterval(11, 33))
+      DiscreteInterval(11, 33)
     )
   }
 
@@ -94,21 +90,17 @@ class DiscreteIntervalSpec extends AnyFlatSpec {
       8,
       35,
     ) shouldEqual DiscreteIntervalSet(
-      Set(DiscreteInterval(8, 35))
+      DiscreteInterval(8, 35)
     )
   }
 
   it should "add before" in {
-    DiscreteInterval(11, 30) union DiscreteInterval(
-      3,
-      8,
-    ) shouldEqual
-      DiscreteIntervalSet(
-        Set(
-          DiscreteInterval(3, 8),
-          DiscreteInterval(11, 30),
-        )
-      )
+    val obtained = DiscreteInterval(11, 30) union DiscreteInterval(3, 8)
+    val expected = DiscreteIntervalSet(
+      DiscreteInterval(3, 8),
+      DiscreteInterval(11, 30),
+    )
+    obtained shouldEqual expected
   }
 
   it should "add enclosed" in {
@@ -117,9 +109,7 @@ class DiscreteIntervalSpec extends AnyFlatSpec {
       27,
     ) shouldEqual
       DiscreteIntervalSet(
-        Set(
-          DiscreteInterval(11, 30)
-        )
+        DiscreteInterval(11, 30)
       )
   }
 
@@ -128,18 +118,7 @@ class DiscreteIntervalSpec extends AnyFlatSpec {
       2,
       4,
     ) shouldEqual DiscreteIntervalSet(
-      Set(DiscreteInterval(2, 8))
-    )
-  }
-
-  it should "be able to insert interval in the gap" ignore {
-    val set    = DiscreteIntervalSet.fromInclusiveInterval(
-      2,
-      5,
-    ) add DiscreteInterval(9, 11)
-    val result = set add DiscreteInterval(6, 8)
-    result shouldEqual DiscreteIntervalSet(
-      Set(DiscreteInterval(2, 11))
+      DiscreteInterval(2, 8)
     )
   }
 }
