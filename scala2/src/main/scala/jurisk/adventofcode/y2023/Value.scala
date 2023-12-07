@@ -5,9 +5,9 @@ import jurisk.adventofcode.y2023.Advent07.{Hand, PokerGame, Rank}
 
 import scala.annotation.tailrec
 
-sealed abstract class Value(val major: Int) {
-  def originalRankList: List[Rank]
-}
+final case class Value(kind: ValueKind, originalRankList: List[Rank])
+
+sealed abstract class ValueKind(val strength: Int)
 
 object Value {
   implicit private val rankOrdering: Ordering[Rank] = (x: Rank, y: Rank) =>
@@ -34,10 +34,8 @@ object Value {
       Value(pokerGame, y),
     )
 
-  def apply(cards: List[Rank]): Value = {
+  private def determineKind(cards: List[Rank]): ValueKind = {
     require(cards.size === 5, s"Only 5 card evaluations allowed: $cards")
-
-    val originalRankList = cards
 
     val rankList: List[(Rank, Int)] = cards
       .groupBy(identity)
@@ -50,48 +48,30 @@ object Value {
       }
       .reverse
 
-    val uniqueRanks: List[Rank] = rankList
-      .map { case (k, _) => k }
-
     val rankCounts: List[Int] = rankList
       .map { case (_, v) => v }
 
-    assert(uniqueRanks.length === rankCounts.length)
-
     if (rankCounts === 5 :: Nil) {
-      FiveOfAKind(uniqueRanks.head, originalRankList)
+      FiveOfAKind
     } else if (rankCounts === 4 :: 1 :: Nil) {
-      FourOfAKind(uniqueRanks.head, uniqueRanks(1), originalRankList)
+      FourOfAKind
     } else if (rankCounts === 3 :: 2 :: Nil) {
-      FullHouse(uniqueRanks.head, uniqueRanks(1), originalRankList)
+      FullHouse
     } else if (rankCounts === 3 :: 1 :: 1 :: Nil) {
-      ThreeOfAKind(
-        uniqueRanks.head,
-        uniqueRanks.filterNot(_ == uniqueRanks.head).toSet,
-        originalRankList,
-      )
+      ThreeOfAKind
     } else if (rankCounts === 2 :: 2 :: 1 :: Nil) {
-      TwoPairs(
-        uniqueRanks.head,
-        uniqueRanks(1),
-        uniqueRanks(2),
-        originalRankList,
-      )
+      TwoPairs
     } else if (rankCounts === 2 :: 1 :: 1 :: 1 :: Nil) {
-      Pair(
-        uniqueRanks.head,
-        uniqueRanks.filterNot(_ == uniqueRanks.head).toSet,
-        originalRankList,
-      )
+      Pair
     } else if (rankCounts === 1 :: 1 :: 1 :: 1 :: 1 :: Nil) {
-      HighCard(uniqueRanks.toSet, originalRankList)
+      HighCard
     } else {
       sys.error(s"Unrecognized value $cards")
     }
   }
 
   implicit val ordering: Ordering[Value] = (x: Value, y: Value) => {
-    val result = Ordering[Int].compare(x.major, y.major)
+    val result = Ordering[Int].compare(x.kind.strength, y.kind.strength)
 
     if (result === 0) {
       Ordering[List[Rank]].compare(
@@ -106,25 +86,22 @@ object Value {
   def apply(pokerGame: PokerGame, hand: Hand): Value =
     pokerGame match {
       case PokerGame.Camel1 =>
-        Value(hand.ranks)
+        Value(Value.determineKind(hand.ranks), hand.ranks)
 
       case PokerGame.Camel2 =>
         val ranks = hand.ranks.map { r =>
           if (r == Rank('J')) Rank.Wildcard else r
         }
 
-        def expandWildCards(
-          hand: List[Rank],
-          wildCard: Rank,
+        def expandWildcards(
+          hand: List[Rank]
         ): List[List[Rank]] = {
-          val nonWildCardRanks = Rank.Ordered.filterNot(_ == wildCard)
-
           def f(
             cards: List[Rank]
           ): List[List[Rank]] =
             cards match {
-              case h :: t if h == wildCard =>
-                nonWildCardRanks flatMap { r =>
+              case h :: t if h == Rank.Wildcard =>
+                Rank.NonWildCardRanks flatMap { r =>
                   f(t) map { x => r :: x }
                 }
 
@@ -135,56 +112,19 @@ object Value {
           f(hand)
         }
 
-        val options   = expandWildCards(ranks, Rank.Wildcard)
+        val options   = expandWildcards(ranks)
         val bestValue = options
-          .map(Value(_))
-          .max((x: Value, y: Value) => x.major.compare(y.major))
+          .map(Value.determineKind)
+          .max((x: ValueKind, y: ValueKind) => x.strength.compare(y.strength))
 
-        bestValue match {
-          case x: HighCard     => x.copy(originalRankList = ranks)
-          case x: Pair         => x.copy(originalRankList = ranks)
-          case x: TwoPairs     => x.copy(originalRankList = ranks)
-          case x: ThreeOfAKind => x.copy(originalRankList = ranks)
-          case x: FullHouse    => x.copy(originalRankList = ranks)
-          case x: FourOfAKind  => x.copy(originalRankList = ranks)
-          case x: FiveOfAKind  => x.copy(originalRankList = ranks)
-        }
+        Value(bestValue, ranks)
     }
 
-  case class HighCard(ranks: Set[Rank], originalRankList: List[Rank])
-      extends Value(0) {}
-
-  case class Pair(two: Rank, others: Set[Rank], originalRankList: List[Rank])
-      extends Value(1) {}
-
-  case class TwoPairs(
-    twoHigh: Rank,
-    twoLow: Rank,
-    remaining: Rank,
-    originalRankList: List[Rank],
-  ) extends Value(2) {
-    override def toString: String =
-      s"Two pairs, $twoHigh and $twoLow, kicker $remaining"
-  }
-
-  case class ThreeOfAKind(
-    three: Rank,
-    others: Set[Rank],
-    originalRankList: List[Rank],
-  ) extends Value(3) {}
-
-  case class FullHouse(three: Rank, two: Rank, originalRankList: List[Rank])
-      extends Value(6) {
-    override def toString: String = s"Full-House of $three and $two"
-  }
-
-  case class FourOfAKind(four: Rank, one: Rank, originalRankList: List[Rank])
-      extends Value(7) {
-    override def toString: String = s"Four of a kind of $four, kicker $one"
-  }
-
-  case class FiveOfAKind(five: Rank, originalRankList: List[Rank])
-      extends Value(9) {
-    override def toString: String = s"Five of a kind of $five"
-  }
+  final case object HighCard     extends ValueKind(0)
+  final case object Pair         extends ValueKind(1)
+  final case object TwoPairs     extends ValueKind(2)
+  final case object ThreeOfAKind extends ValueKind(3)
+  final case object FullHouse    extends ValueKind(4)
+  final case object FourOfAKind  extends ValueKind(5)
+  final case object FiveOfAKind  extends ValueKind(6)
 }

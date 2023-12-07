@@ -19,8 +19,10 @@ object Advent07 {
   }
 
   object Rank {
-    val Wildcard: Rank      = Rank('*')
-    val Ordered: List[Rank] = "*23456789TJQKA".toList.map(Rank(_))
+    val Ordered: List[Rank]          = "*23456789TJQKA".toList.map(Rank(_))
+    val Wildcard: Rank               = Rank('*')
+    val NonWildCardRanks: List[Rank] =
+      Rank.Ordered.filterNot(_ == Rank.Wildcard)
 
     def parse(x: Char): Rank =
       Ordered
