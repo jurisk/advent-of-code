@@ -25,6 +25,7 @@ object Advent07 {
           if (r == Rank.parse('J')) Rank.Wildcard else r
         }
 
+        // We could do something faster instead, but this works
         def expandWildcards(
           ranks: List[Rank]
         ): List[List[Rank]] =
@@ -81,22 +82,16 @@ object Advent07 {
     def orderingForGame(pokerGame: PokerGame): Ordering[Hand] =
       Ordering.by(pokerGame.handValue)
 
-    def determineKind(cards: List[Rank]): ValueKind = {
-      require(cards.size === 5, s"Only 5 card evaluations are allowed: $cards")
+    def determineKind(ranks: List[Rank]): ValueKind = {
+      require(ranks.size === 5, s"Only 5 card evaluations are allowed: $ranks")
 
-      val rankList: List[(Rank, Int)] = cards
+      val counts = ranks
         .groupBy(identity)
+        .map { case (_, v) =>
+          v.length
+        }
         .toList
-        .map { case (k, v) =>
-          (k, v.size)
-        }
-        .sortBy { case (k, v) =>
-          (v, k.strength)
-        }
-        .reverse
-
-      val rankCounts: List[Int] = rankList
-        .map { case (_, v) => v }
+        .sorted(Ordering[Int].reverse)
 
       val mapping = Map(
         (5 :: Nil)                     -> ValueKind.FiveOfAKind,
@@ -109,14 +104,13 @@ object Advent07 {
       )
 
       mapping.getOrElse(
-        rankCounts,
-        sys.error(s"Unrecognized rank counts $rankCounts for $cards"),
+        counts,
+        sys.error(s"Unrecognized rank counts $counts for $ranks"),
       )
     }
 
-    implicit val ordering: Ordering[Value] = Ordering.by[Value, ValueKind](
-      _.kind
-    ) orElse Ordering.by[Value, List[Rank]](_.ranks)
+    implicit val ordering: Ordering[Value] =
+      Ordering.by[Value, ValueKind](_.kind) orElse Ordering.by(_.ranks)
   }
 
   sealed abstract class ValueKind(val strength: Int)

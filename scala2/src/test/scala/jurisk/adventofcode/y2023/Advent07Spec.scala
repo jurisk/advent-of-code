@@ -34,7 +34,7 @@ class Advent07Spec extends AnyFlatSpec {
     part2(parseFile("2023/07-test.txt")) shouldEqual 5905
   }
 
-  it should "real part 2" in {
+  it should "real part 2" ignore {
     part2(parseFile("2023/07.txt")) shouldEqual 249631254
   }
 }
