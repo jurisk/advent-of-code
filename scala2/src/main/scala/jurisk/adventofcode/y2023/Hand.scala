@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2023
 
-case class Hand(cards: List[Rank]) {
-  override def toString: String = cards.map(_.toString).mkString
+case class Hand(ranks: List[Rank]) {
+  override def toString: String = ranks.map(_.toString).mkString
 }
 
 object Hand {

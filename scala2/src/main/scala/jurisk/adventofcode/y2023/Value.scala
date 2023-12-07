@@ -1,11 +1,11 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
+import jurisk.adventofcode.y2023.Advent07.PokerGame
 
 import scala.annotation.tailrec
 
 sealed abstract class Value(val major: Int) {
-  def rankList: List[Rank]
   def originalRankList: List[Rank]
 }
 
@@ -106,43 +106,35 @@ object Value {
   def apply(pokerGame: PokerGame, hand: Hand): Value =
     pokerGame match {
       case PokerGame.Camel1 =>
-        Value(hand.cards)
+        Value(hand.ranks)
 
       case PokerGame.Camel2 =>
-        def f(
-          cards: List[Rank],
-          wildCard: Rank,
-          ranks: List[Rank],
-        ): List[List[Rank]] =
-          cards match {
-            case h :: t if h == wildCard =>
-              ranks flatMap { r =>
-                f(t, wildCard, ranks).map { x =>
-                  r :: x
-                }
-              }
-
-            case h :: t =>
-              f(t, wildCard, ranks).map { x =>
-                h :: x
-              }
-            case Nil    => Nil :: Nil
-          }
-
         def expandWildCards(hand: Hand, wildCard: Rank): List[Hand] = {
-          val ranks   = Rank.ordered.filterNot(_ == wildCard)
-          val results = f(hand.cards, wildCard, ranks)
-          results.map { x =>
-            Hand(x)
-          }
+          val nonWildCardRanks = Rank.ordered.filterNot(_ == wildCard)
+
+          def f(
+            cards: List[Rank]
+          ): List[List[Rank]] =
+            cards match {
+              case h :: t if h == wildCard =>
+                nonWildCardRanks flatMap { r =>
+                  f(t) map { x => r :: x }
+                }
+
+              case h :: t => f(t) map { x => h :: x }
+              case Nil    => Nil :: Nil
+            }
+
+          val results = f(hand.ranks)
+          results.map(Hand(_))
         }
 
         val options: List[Hand] = expandWildCards(hand, Rank.Jack)
         val bestValue           = options
-          .map(x => Value(x.cards))
+          .map(x => Value(x.ranks))
           .max((x: Value, y: Value) => x.major.compare(y.major))
 
-        val ranks = hand.cards.map { r =>
+        val ranks = hand.ranks.map { r =>
           if (r == Rank.Jack) {
             Rank.Worst
           } else {
@@ -161,20 +153,11 @@ object Value {
         }
     }
 
-  private def kickers(x: Set[Rank]): String =
-    "kickers " + x.toList.sorted.reverse.map(_.toString).mkString("-")
-
   case class HighCard(ranks: Set[Rank], originalRankList: List[Rank])
-      extends Value(0) {
-    override def rankList: List[Rank] = ranks.toList.sorted.reverse
-    override def toString: String     = s"High Card, ${kickers(ranks)}"
-  }
+      extends Value(0) {}
 
   case class Pair(two: Rank, others: Set[Rank], originalRankList: List[Rank])
-      extends Value(1) {
-    override def rankList: List[Rank] = two :: others.toList.sorted.reverse
-    override def toString: String     = s"Pair of $two, ${kickers(others)}"
-  }
+      extends Value(1) {}
 
   case class TwoPairs(
     twoHigh: Rank,
@@ -182,8 +165,7 @@ object Value {
     remaining: Rank,
     originalRankList: List[Rank],
   ) extends Value(2) {
-    override def rankList: List[Rank] = twoHigh :: twoLow :: remaining :: Nil
-    override def toString: String     =
+    override def toString: String =
       s"Two pairs, $twoHigh and $twoLow, kicker $remaining"
   }
 
@@ -191,29 +173,20 @@ object Value {
     three: Rank,
     others: Set[Rank],
     originalRankList: List[Rank],
-  ) extends Value(3) {
-    override def rankList: List[Rank] = three :: others.toList.sorted.reverse
-    override def toString: String     =
-      s"Three of a Kind of $three, ${kickers(others)}"
-  }
+  ) extends Value(3) {}
 
   case class FullHouse(three: Rank, two: Rank, originalRankList: List[Rank])
       extends Value(6) {
-    override def rankList: List[Rank] = three :: two :: Nil
-    override def toString: String     = s"Full-House of $three and $two"
+    override def toString: String = s"Full-House of $three and $two"
   }
 
   case class FourOfAKind(four: Rank, one: Rank, originalRankList: List[Rank])
       extends Value(7) {
-    override def rankList: List[Rank] = four :: one :: Nil
-    override def toString: String     = s"Four of a kind of $four, kicker $one"
+    override def toString: String = s"Four of a kind of $four, kicker $one"
   }
 
   case class FiveOfAKind(five: Rank, originalRankList: List[Rank])
       extends Value(9) {
-    override def rankList: List[Rank] = five :: Nil
-
     override def toString: String = s"Five of a kind of $five"
   }
-
 }

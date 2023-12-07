@@ -2,10 +2,16 @@ package jurisk.adventofcode.y2023
 
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import jurisk.utils.Utils.IterableOps
 
 object Advent07 {
   type Input = List[HandWithBid]
+
+  sealed trait PokerGame
+
+  object PokerGame {
+    final case object Camel1 extends PokerGame
+    final case object Camel2 extends PokerGame
+  }
 
   final case class HandWithBid(
     hand: Hand,
@@ -31,17 +37,13 @@ object Advent07 {
     implicit val ordering: Ordering[Hand] =
       Value.orderingForGame(game)
 
-    val results: List[Hand] = {
-      val hands = data.toSet.map((x: HandWithBid) => x.hand)
-      Sort
-        .consideringEqualValues(hands)
-        .map(x => x.singleElementUnsafe)
-    }
-
-    results.zipWithIndex.map { case (x, idx) =>
-      val found = data.find(_.hand == x).get
-      found.bid * (idx + 1)
-    }.sum
+    data
+      .sortBy(_.hand)
+      .zipWithIndex
+      .map { case (x, idx) =>
+        x.bid * (idx + 1)
+      }
+      .sum
   }
 
   def part1(data: Input): Int = solve(data, PokerGame.Camel1)
