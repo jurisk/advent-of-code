@@ -10,23 +10,6 @@ sealed abstract class Value(val major: Int) {
 }
 
 object Value {
-  private def isFlush(cards: Set[Card]): Boolean = cards.map(_.suit).size === 1
-
-  private def isStraight(cards: Set[Card]): Option[Rank] = {
-    val ranks = cards.toList.map(_.rank)
-    import Rank._
-    if (ranks.toSet === Set(Ace, Two, Three, Four, Five)) { // so-called "wheel" straight
-      Five.some                                             // is considered five-high
-    } else {
-      val intValues = ranks.map(_.strength).sorted
-      val result    = (intValues.init zip intValues.tail) forall { case (a, b) =>
-        a + 1 === b
-      }
-      if (result) ranks.maxBy(_.strength).some
-      else none
-    }
-  }
-
   implicit private val rankOrdering: Ordering[Rank] = (x: Rank, y: Rank) =>
     Ordering[Int].compare(x.strength, y.strength)
 
@@ -43,21 +26,21 @@ object Value {
   implicit private def rankListOrdering: Ordering[List[Rank]] =
     (x: List[Rank], y: List[Rank]) => compareRankLists(x, y)
 
-  def orderingForBoard(
-    pokerGame: PokerGame,
+  def orderingForGame(
+    pokerGame: PokerGame
   ): Ordering[Hand] = (x: Hand, y: Hand) =>
     ordering.compare(
       Value(pokerGame, x),
       Value(pokerGame, y),
     )
 
-  def apply(cards: List[Card]): Value = {
+  def apply(cards: List[Rank]): Value = {
     require(cards.size === 5, s"Only 5 card evaluations allowed: $cards")
 
-    val originalRankList = cards.map(_.rank)
+    val originalRankList = cards
 
     val rankList: List[(Rank, Int)] = cards
-      .groupBy(_.rank)
+      .groupBy(identity)
       .toList
       .map { case (k, v) =>
         (k, v.size)
@@ -75,22 +58,12 @@ object Value {
 
     assert(uniqueRanks.length === rankCounts.length)
 
-//    val straight = isStraight(cards)
-
-//    if (isFlush(cards) && straight.isDefined) {
-//      StraightFlush(straight.getOrElse(sys.error("Shouldn't ever happen")))
-//    } else
-
     if (rankCounts === 5 :: Nil) {
       FiveOfAKind(uniqueRanks.head, originalRankList)
     } else if (rankCounts === 4 :: 1 :: Nil) {
       FourOfAKind(uniqueRanks.head, uniqueRanks(1), originalRankList)
     } else if (rankCounts === 3 :: 2 :: Nil) {
       FullHouse(uniqueRanks.head, uniqueRanks(1), originalRankList)
-//    } else if (isFlush(cards)) {
-//      Flush(uniqueRanks.toSet)
-//    } else if (straight.isDefined) {
-//      Straight(straight.getOrElse(sys.error("Shouldn't ever happen")))
     } else if (rankCounts === 3 :: 1 :: 1 :: Nil) {
       ThreeOfAKind(
         uniqueRanks.head,
@@ -117,22 +90,6 @@ object Value {
     }
   }
 
-  private def allNCardSubsets(N: Int, cards: Set[Card]): List[Set[Card]] = {
-    def f(list: List[Card]): List[Set[Card]] =
-      if (list.length < N) {
-        sys.error(s"This should not be happening: $N $cards")
-      } else if (list.length === N) {
-        list.toSet :: Nil
-      } else {
-        list flatMap { x =>
-          val without = list.filterNot(_ == x)
-          f(without)
-        }
-      }
-
-    f(cards.toList)
-  }
-
   implicit val ordering: Ordering[Value] = (x: Value, y: Value) => {
     val result = Ordering[Int].compare(x.major, y.major)
 
@@ -140,8 +97,7 @@ object Value {
       Ordering[List[Rank]].compare(
         x.originalRankList,
         y.originalRankList,
-      ) // Note - this assumes reverse ordering obtained from .rankList
-//      Ordering[List[Rank]].compare(x.rankList, y.rankList) // Note - this assumes reverse ordering obtained from .rankList
+      )
     } else {
       result // major decides
     }
@@ -152,8 +108,12 @@ object Value {
       case PokerGame.Camel1 =>
         Value(hand.cards)
 
-      case PokerGame.Camel2 => {
-        def f(cards: List[Rank], wildCard: Rank, ranks: List[Rank]): List[List[Rank]] = {
+      case PokerGame.Camel2 =>
+        def f(
+          cards: List[Rank],
+          wildCard: Rank,
+          ranks: List[Rank],
+        ): List[List[Rank]] =
           cards match {
             case h :: t if h == wildCard =>
               ranks flatMap { r =>
@@ -166,25 +126,23 @@ object Value {
               f(t, wildCard, ranks).map { x =>
                 h :: x
               }
-            case Nil => Nil :: Nil
+            case Nil    => Nil :: Nil
           }
-        }
 
         def expandWildCards(hand: Hand, wildCard: Rank): List[Hand] = {
-          val ranks = Rank.ordered.filterNot(_ == wildCard)
-          val results = f(hand.cards.map(_.rank), wildCard, ranks)
-//          println(s"Expand $hand => $results")
+          val ranks   = Rank.ordered.filterNot(_ == wildCard)
+          val results = f(hand.cards, wildCard, ranks)
           results.map { x =>
-            Hand(x.map(r => Card(r, Suit.Spades)))
+            Hand(x)
           }
         }
 
         val options: List[Hand] = expandWildCards(hand, Rank.Jack)
-        val bestValue = options.map(x => Value(x.cards)).max(new Ordering[Value] {
-          override def compare(x: Value, y: Value): Int = x.major.compare(y.major)
-        })
+        val bestValue           = options
+          .map(x => Value(x.cards))
+          .max((x: Value, y: Value) => x.major.compare(y.major))
 
-        val ranks = hand.cards.map(_.rank).map { r =>
+        val ranks = hand.cards.map { r =>
           if (r == Rank.Jack) {
             Rank.Worst
           } else {
@@ -193,15 +151,14 @@ object Value {
         }
 
         bestValue match {
-          case x: HighCard => x.copy(originalRankList = ranks)
-          case x: Pair => x.copy(originalRankList = ranks)
-          case x: TwoPairs => x.copy(originalRankList = ranks)
+          case x: HighCard     => x.copy(originalRankList = ranks)
+          case x: Pair         => x.copy(originalRankList = ranks)
+          case x: TwoPairs     => x.copy(originalRankList = ranks)
           case x: ThreeOfAKind => x.copy(originalRankList = ranks)
-          case x: FullHouse => x.copy(originalRankList = ranks)
-          case x: FourOfAKind => x.copy(originalRankList = ranks)
-          case x: FiveOfAKind => x.copy(originalRankList = ranks)
+          case x: FullHouse    => x.copy(originalRankList = ranks)
+          case x: FourOfAKind  => x.copy(originalRankList = ranks)
+          case x: FiveOfAKind  => x.copy(originalRankList = ranks)
         }
-      }
     }
 
   private def kickers(x: Set[Rank]): String =
@@ -240,16 +197,6 @@ object Value {
       s"Three of a Kind of $three, ${kickers(others)}"
   }
 
-//  case class Straight(highest: Rank) extends Value(4) {
-//    override def rankList: List[Rank] = highest :: Nil
-//    override def toString: String = s"Straight starting with $highest"
-//  }
-//
-//  case class Flush(ranks: Set[Rank]) extends Value(5) {
-//    override def rankList: List[Rank] = ranks.toList.sorted.reverse
-//    override def toString: String = s"Flush, ${kickers(ranks)}"
-//  }
-
   case class FullHouse(three: Rank, two: Rank, originalRankList: List[Rank])
       extends Value(6) {
     override def rankList: List[Rank] = three :: two :: Nil
@@ -261,11 +208,6 @@ object Value {
     override def rankList: List[Rank] = four :: one :: Nil
     override def toString: String     = s"Four of a kind of $four, kicker $one"
   }
-
-//  case class StraightFlush(highest: Rank) extends Value(8) {
-//    override def rankList: List[Rank] = highest :: Nil
-//    override def toString: String = s"Straight Flush starting with $highest"
-//  }
 
   case class FiveOfAKind(five: Rank, originalRankList: List[Rank])
       extends Value(9) {
