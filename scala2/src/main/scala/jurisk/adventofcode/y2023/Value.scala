@@ -2,12 +2,11 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits._
 import jurisk.adventofcode.y2023.Advent07.{Hand, PokerGame, Rank}
+import jurisk.adventofcode.y2023.Value.ValueKind
 
 import scala.annotation.tailrec
 
 final case class Value(kind: ValueKind, originalRankList: List[Rank])
-
-sealed abstract class ValueKind(val strength: Int)
 
 object Value {
   implicit private val rankOrdering: Ordering[Rank] = (x: Rank, y: Rank) =>
@@ -51,23 +50,20 @@ object Value {
     val rankCounts: List[Int] = rankList
       .map { case (_, v) => v }
 
-    if (rankCounts === 5 :: Nil) {
-      FiveOfAKind
-    } else if (rankCounts === 4 :: 1 :: Nil) {
-      FourOfAKind
-    } else if (rankCounts === 3 :: 2 :: Nil) {
-      FullHouse
-    } else if (rankCounts === 3 :: 1 :: 1 :: Nil) {
-      ThreeOfAKind
-    } else if (rankCounts === 2 :: 2 :: 1 :: Nil) {
-      TwoPairs
-    } else if (rankCounts === 2 :: 1 :: 1 :: 1 :: Nil) {
-      Pair
-    } else if (rankCounts === 1 :: 1 :: 1 :: 1 :: 1 :: Nil) {
-      HighCard
-    } else {
-      sys.error(s"Unrecognized value $cards")
-    }
+    val mapping = Map(
+      (5 :: Nil)                     -> ValueKind.FiveOfAKind,
+      (4 :: 1 :: Nil)                -> ValueKind.FourOfAKind,
+      (3 :: 2 :: Nil)                -> ValueKind.FullHouse,
+      (3 :: 1 :: 1 :: Nil)           -> ValueKind.ThreeOfAKind,
+      (2 :: 2 :: 1 :: Nil)           -> ValueKind.TwoPairs,
+      (2 :: 1 :: 1 :: 1 :: Nil)      -> ValueKind.Pair,
+      (1 :: 1 :: 1 :: 1 :: 1 :: Nil) -> ValueKind.HighCard,
+    )
+
+    mapping.getOrElse(
+      rankCounts,
+      sys.error(s"Unrecognized rank counts $rankCounts for $cards"),
+    )
   }
 
   implicit val ordering: Ordering[Value] = (x: Value, y: Value) => {
@@ -120,11 +116,16 @@ object Value {
         Value(bestValue, ranks)
     }
 
-  final case object HighCard     extends ValueKind(0)
-  final case object Pair         extends ValueKind(1)
-  final case object TwoPairs     extends ValueKind(2)
-  final case object ThreeOfAKind extends ValueKind(3)
-  final case object FullHouse    extends ValueKind(4)
-  final case object FourOfAKind  extends ValueKind(5)
-  final case object FiveOfAKind  extends ValueKind(6)
+  sealed abstract class ValueKind(val strength: Int)
+
+  object ValueKind {
+    final case object HighCard     extends ValueKind(0)
+    final case object Pair         extends ValueKind(1)
+    final case object TwoPairs     extends ValueKind(2)
+    final case object ThreeOfAKind extends ValueKind(3)
+    final case object FullHouse    extends ValueKind(4)
+    final case object FourOfAKind  extends ValueKind(5)
+    final case object FiveOfAKind  extends ValueKind(6)
+  }
+
 }
