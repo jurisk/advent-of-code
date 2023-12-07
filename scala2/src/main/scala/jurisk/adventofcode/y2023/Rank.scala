@@ -8,6 +8,10 @@ sealed abstract class Rank private (val value: Char) {
 }
 
 object Rank {
+  val Worst: Rank = new Rank('*') {
+    override val strength: Int = -1
+  }
+
   case object Two   extends Rank('2')
   case object Three extends Rank('3')
   case object Four  extends Rank('4')

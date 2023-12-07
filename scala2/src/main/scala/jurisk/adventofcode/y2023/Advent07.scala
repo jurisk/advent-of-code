@@ -16,7 +16,7 @@ object Advent07 {
       s match {
         case s"$hand $bid" =>
           HandWithBid(
-            Hand.parse(PokerGame.Camel, hand),
+            Hand.parse(hand),
             bid.toInt,
           )
         case _             => s.failedToParse
@@ -28,17 +28,16 @@ object Advent07 {
 
   def solve(
     pokerGame: PokerGame,
-    board: Option[Board],
     hands: Set[Hand],
   ): List[Set[Hand]] = {
     implicit val ordering: Ordering[Hand] =
-      Value.orderingForBoard(pokerGame, board)
+      Value.orderingForBoard(pokerGame)
     Sort.consideringEqualValues(hands)
   }
 
-  def part1(data: Input): Int = {
+  def solveqq(data: Input, game: PokerGame): Int = {
     val results: List[Hand] =
-      solve(PokerGame.Camel, None, data.toSet.map((x: HandWithBid) => x.hand))
+      solve(game, data.toSet.map((x: HandWithBid) => x.hand))
         .map(x => x.toList.head)
 
     results.zipWithIndex.map { case (x, idx) =>
@@ -47,8 +46,8 @@ object Advent07 {
     }.sum
   }
 
-  def part2(data: Input): Int =
-    data.length + 1234567
+  def part1(data: Input): Int = solveqq(data, PokerGame.Camel1)
+  def part2(data: Input): Int = solveqq(data, PokerGame.Camel2)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))

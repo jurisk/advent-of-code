@@ -2,6 +2,8 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits._
 
+import scala.annotation.tailrec
+
 sealed abstract class Value(val major: Int) {
   def rankList: List[Rank]
   def originalRankList: List[Rank]
@@ -28,25 +30,25 @@ object Value {
   implicit private val rankOrdering: Ordering[Rank] = (x: Rank, y: Rank) =>
     Ordering[Int].compare(x.strength, y.strength)
 
-  private def qq(x: List[Rank], y: List[Rank]): Int = {
+  @tailrec
+  private def compareRankLists(x: List[Rank], y: List[Rank]): Int = {
     require(x.length === y.length)
     if (x.isEmpty) 0
     else {
       val result = Ordering[Rank].compare(x.head, y.head)
-      if (result != 0) result else qq(x.tail, y.tail)
+      if (result != 0) result else compareRankLists(x.tail, y.tail)
     }
   }
 
   implicit private def rankListOrdering: Ordering[List[Rank]] =
-    (x: List[Rank], y: List[Rank]) => qq(x, y)
+    (x: List[Rank], y: List[Rank]) => compareRankLists(x, y)
 
   def orderingForBoard(
     pokerGame: PokerGame,
-    board: Option[Board],
   ): Ordering[Hand] = (x: Hand, y: Hand) =>
     ordering.compare(
-      Value(pokerGame, x, board),
-      Value(pokerGame, y, board),
+      Value(pokerGame, x),
+      Value(pokerGame, y),
     )
 
   def apply(cards: List[Card]): Value = {
@@ -145,24 +147,61 @@ object Value {
     }
   }
 
-  def apply(pokerGame: PokerGame, hand: Hand, board: Option[Board]): Value =
+  def apply(pokerGame: PokerGame, hand: Hand): Value =
     pokerGame match {
-      /*      case PokerGame.TexasHoldem =>
-        allNCardSubsets(5, hand.cards.toSet ++ board.map(_.cards).getOrElse(Nil))
-
-      case PokerGame.OmahaHoldem =>
-        for {
-          a <- allNCardSubsets(2, hand.cards.toSet)
-          b <- allNCardSubsets(3, board.map(_.cards).getOrElse(Nil).toSet)
-        } yield a ++ b
-
-      case PokerGame.FiveCardDraw =>
-        hand.cards.toSet :: Nil
-       */
-      case PokerGame.Camel =>
+      case PokerGame.Camel1 =>
         Value(hand.cards)
 
-      case _ => sys.error(s"asdf $board")
+      case PokerGame.Camel2 => {
+        def f(cards: List[Rank], wildCard: Rank, ranks: List[Rank]): List[List[Rank]] = {
+          cards match {
+            case h :: t if h == wildCard =>
+              ranks flatMap { r =>
+                f(t, wildCard, ranks).map { x =>
+                  r :: x
+                }
+              }
+
+            case h :: t =>
+              f(t, wildCard, ranks).map { x =>
+                h :: x
+              }
+            case Nil => Nil :: Nil
+          }
+        }
+
+        def expandWildCards(hand: Hand, wildCard: Rank): List[Hand] = {
+          val ranks = Rank.ordered.filterNot(_ == wildCard)
+          val results = f(hand.cards.map(_.rank), wildCard, ranks)
+//          println(s"Expand $hand => $results")
+          results.map { x =>
+            Hand(x.map(r => Card(r, Suit.Spades)))
+          }
+        }
+
+        val options: List[Hand] = expandWildCards(hand, Rank.Jack)
+        val bestValue = options.map(x => Value(x.cards)).max(new Ordering[Value] {
+          override def compare(x: Value, y: Value): Int = x.major.compare(y.major)
+        })
+
+        val ranks = hand.cards.map(_.rank).map { r =>
+          if (r == Rank.Jack) {
+            Rank.Worst
+          } else {
+            r
+          }
+        }
+
+        bestValue match {
+          case x: HighCard => x.copy(originalRankList = ranks)
+          case x: Pair => x.copy(originalRankList = ranks)
+          case x: TwoPairs => x.copy(originalRankList = ranks)
+          case x: ThreeOfAKind => x.copy(originalRankList = ranks)
+          case x: FullHouse => x.copy(originalRankList = ranks)
+          case x: FourOfAKind => x.copy(originalRankList = ranks)
+          case x: FiveOfAKind => x.copy(originalRankList = ranks)
+        }
+      }
     }
 
   private def kickers(x: Set[Rank]): String =

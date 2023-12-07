@@ -9,14 +9,10 @@ case class Hand(cards: List[Card]) {
 object Hand {
   def apply(cards: Card*): Hand = new Hand(List(cards: _*))
 
-  def parse(pokerGame: PokerGame, x: String): Hand = {
+  def parse(x: String): Hand = {
     val cards = Card.parseSequence(x)
-    require(cards.size === pokerGame.cardsPerHand)
     Hand(cards)
   }
-
-  def parse(pokerGame: PokerGame, x: Seq[String]): List[Hand] =
-    x.toList.map { y: String => parse(pokerGame, y) }
 
   def sortHands(set: Set[Hand]): List[Hand] = set.toList.sortBy(_.toString)
 
