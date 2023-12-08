@@ -35,16 +35,15 @@ object Advent08 {
   }
 
   final case class Input(
-    instructions: List[Instruction],
+    instructions: IndexedSeq[Instruction],
     mapping: Map[Node, Mapping],
   )
 
   def parse(input: String): Input = {
-    val List(a, b)   = input.split("\n\n").toList
-    val instructions = a.map(Instruction.parse).toList
+    val List(List(instructionLine), mappingLines)   = readLineGroups(input)
+    val instructions = instructionLine.map(Instruction.parse)
 
-    val lines: List[String] = b.split("\n").toList
-    val mappings            = lines
+    val mappings            = mappingLines
       .map {
         case s"$from = ($left, $right)" => Mapping(from, left, right)
         case line                       => line.failedToParse
