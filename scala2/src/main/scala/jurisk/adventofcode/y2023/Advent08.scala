@@ -7,8 +7,8 @@ import jurisk.utils.Simulation
 
 object Advent08 {
   sealed trait LeftRight
-  object Left  extends LeftRight
-  object Right extends LeftRight
+  object LRLeft  extends LeftRight
+  object LRRight extends LeftRight
 
   type Node = String
 
@@ -26,8 +26,8 @@ object Advent08 {
   def parse(input: String): Input = {
     val List(a, b)   = input.split("\n\n").toList
     val instructions = a.toList.map {
-      case 'L' => Left
-      case 'R' => Right
+      case 'L' => LRLeft
+      case 'R' => LRRight
       case _   => sys.error("asdf")
     }
 
@@ -58,8 +58,8 @@ object Advent08 {
             game.instructions((counter % game.instructions.length).toInt)
           val here = game.mapping(state)
           val qq   = next match {
-            case Left  => here.left
-            case Right => here.right
+            case LRLeft  => here.left
+            case LRRight => here.right
           }
           qq.asRight
 
@@ -72,28 +72,38 @@ object Advent08 {
   def part2(game: Input): Int = {
     val startNodes = game.mapping.keySet.filter(_.last == 'A')
 
-    val result = Simulation.runWithIterationCount(startNodes) {
-      case (state, counter) =>
+    val result = Simulation.detectLoop((startNodes, 0)) {
+      case ((state, nextIdx), counter) =>
+        if (counter % 1_000_000 == 0) {
+          println(s"$state $nextIdx $counter")
+        }
+
         if (state.forall(_.last == 'Z')) {
           counter.asLeft
         } else {
           val next =
-            game.instructions((counter % game.instructions.length).toInt)
+            game.instructions(nextIdx)
 
           val nextState = state map { curr =>
             val here = game.mapping(curr)
             next match {
-              case Left  => here.left
-              case Right => here.right
+              case LRLeft  => here.left
+              case LRRight => here.right
             }
           }
 
-          nextState.asRight
+          val followingIdx = (nextIdx + 1) % game.instructions.length
+          (nextState, followingIdx).asRight
 
         }
     }
 
-    result.toInt
+    println(result)
+
+    result match {
+      case Left(q) => q.toInt
+      case Right((a, b)) => (a + b).toInt
+    }
   }
 
   def parseFile(fileName: String): Input =
