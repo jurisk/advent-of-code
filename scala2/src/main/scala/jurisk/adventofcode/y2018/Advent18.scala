@@ -5,7 +5,7 @@ import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
-import jurisk.utils.Utils.IterableOps
+import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent18 {

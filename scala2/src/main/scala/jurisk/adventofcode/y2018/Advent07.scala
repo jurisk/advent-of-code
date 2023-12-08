@@ -2,7 +2,7 @@ package jurisk.adventofcode.y2018
 
 import cats.implicits._
 import jurisk.utils.FileInput.parseFileLines
-import jurisk.utils.Utils.IterableOps
+import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 import scala.annotation.tailrec

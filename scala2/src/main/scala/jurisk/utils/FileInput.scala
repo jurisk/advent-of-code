@@ -1,6 +1,6 @@
 package jurisk.utils
 
-import jurisk.utils.Utils.IterableOps
+import jurisk.utils.CollectionOps.IterableOps
 
 import scala.io.Source
 import scala.util.Using

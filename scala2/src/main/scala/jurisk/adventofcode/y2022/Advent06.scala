@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2022
 
 import jurisk.utils.FileInput.readSingleFileLine
-import jurisk.utils.Utils.IterableOps
+import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent06 {

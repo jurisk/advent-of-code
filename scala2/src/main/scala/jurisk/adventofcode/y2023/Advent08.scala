@@ -5,6 +5,7 @@ import jurisk.math.lcmMany
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
+import jurisk.utils.CollectionOps.IndexedSeqOps
 
 object Advent08 {
   sealed trait Instruction
@@ -20,7 +21,7 @@ object Advent08 {
       }
   }
 
-  private type NodeId = Int
+  private type NodeId   = Int
   private type NodeName = String
 
   final case class Mapping(
@@ -36,14 +37,16 @@ object Advent08 {
   }
 
   final case class Input(
-    instructions: IndexedSeq[Instruction],
-    mappings: IndexedSeq[Mapping],
+    private val instructions: IndexedSeq[Instruction],
+    private val mappings: IndexedSeq[Mapping],
   ) {
-    def instructionAtStep(step: Long): Instruction = instructions(
-      (step % instructions.length).toInt
-    )
+    def instructionAtStep(step: Long): Instruction =
+      instructions.atIndexWithWraparound(step)
 
-    def findNodesByNameFilter(predicate: NodeName => Boolean): IndexedSeq[NodeId] = mappings.indices.filter(index => predicate(mapping(index).name))
+    def findNodesByNameFilter(
+      predicate: NodeName => Boolean
+    ): IndexedSeq[NodeId] =
+      mappings.indices.filter(index => predicate(mapping(index).name))
 
     def findNodeByName(name: NodeName): NodeId = {
       val result = mappings.indexWhere(_.name === name)
@@ -61,15 +64,17 @@ object Advent08 {
     val List(List(instructionLine), mappingLines) = input
     val instructions                              = instructionLine.map(Instruction.parse)
 
-    val mappingTuples: IndexedSeq[(NodeName, NodeName, NodeName)] = mappingLines
-      .toIndexedSeq
-      .map {
-        case s"$from = ($left, $right)" => (from, left, right)
-        case line                       => line.failedToParse
-      }
+    val mappingTuples: IndexedSeq[(NodeName, NodeName, NodeName)] =
+      mappingLines.toIndexedSeq
+        .map {
+          case s"$from = ($left, $right)" => (from, left, right)
+          case line                       => line.failedToParse
+        }
 
     val mappings = mappingTuples map { case (from, left, right) =>
-      def idx(name: NodeName): NodeId = mappingTuples.indexWhere {case (from, _, _) => from == name }
+      def idx(name: NodeName): NodeId = mappingTuples.indexWhere {
+        case (from, _, _) => from == name
+      }
 
       Mapping(
         name = from,
@@ -90,28 +95,22 @@ object Advent08 {
     isTerminal: NodeId => Boolean,
   ): Long =
     Simulation.runWithIterationCount(start) { case (node, counter) =>
-      if (isTerminal(node)) {
-        counter.asLeft
-      } else {
-        val next      = game.instructionAtStep(counter)
-        val nextState = game.mapping(node).move(next)
-        nextState.asRight
-      }
+      if (isTerminal(node)) counter.asLeft
+      else game.mapping(node).move(game.instructionAtStep(counter)).asRight
     }
 
   def part1(game: Input): Long = {
-    val start = game.findNodeByName("AAA")
+    val start  = game.findNodeByName("AAA")
     val finish = game.findNodeByName("ZZZ")
 
     loopAt(game, start, _ == finish)
   }
 
   def part2(game: Input): Long = {
-    val startNodes = game.findNodesByNameFilter(_.last === 'A')
-    val finishNodes = game.findNodesByNameFilter(_.last === 'Z')
+    val starts   = game.findNodesByNameFilter(_.last === 'A')
+    val finishes = game.findNodesByNameFilter(_.last === 'Z')
 
-    val individualResults = startNodes.map(loopAt(game, _, finishNodes.contains))
-
+    val individualResults = starts.map(loopAt(game, _, finishes.contains))
     lcmMany(individualResults)
   }
 

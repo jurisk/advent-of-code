@@ -4,7 +4,7 @@ import cats.implicits._
 import jurisk.geometry.Coords2D
 import jurisk.utils.FileInput.parseFileLines
 import jurisk.utils.Parsing.StringOps
-import jurisk.utils.Utils.IterableOps
+import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent06 {
