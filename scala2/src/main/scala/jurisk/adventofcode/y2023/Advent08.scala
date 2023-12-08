@@ -20,10 +20,11 @@ object Advent08 {
       }
   }
 
-  type NodeId = String
+  private type NodeId = Int
+  private type NodeName = String
 
   final case class Mapping(
-    from: NodeId,
+    name: NodeName,
     left: NodeId,
     right: NodeId,
   ) {
@@ -36,30 +37,50 @@ object Advent08 {
 
   final case class Input(
     instructions: IndexedSeq[Instruction],
-    mapping: Map[NodeId, Mapping],
+    mappings: IndexedSeq[Mapping],
   ) {
     def instructionAtStep(step: Long): Instruction = instructions(
       (step % instructions.length).toInt
     )
+
+    def findNodesByNameFilter(predicate: NodeName => Boolean): IndexedSeq[NodeId] = mappings.indices.filter(index => predicate(mapping(index).name))
+
+    def findNodeByName(name: NodeName): NodeId = {
+      val result = mappings.indexWhere(_.name === name)
+      if (result === -1) {
+        sys.error(s"Did not find node $name")
+      } else {
+        result
+      }
+    }
+
+    def mapping(nodeId: NodeId): Mapping = mappings(nodeId)
   }
 
   def parse(input: List[List[String]]): Input = {
     val List(List(instructionLine), mappingLines) = input
     val instructions                              = instructionLine.map(Instruction.parse)
 
-    val mappings = mappingLines
+    val mappingTuples: IndexedSeq[(NodeName, NodeName, NodeName)] = mappingLines
+      .toIndexedSeq
       .map {
-        case s"$from = ($left, $right)" => Mapping(from, left, right)
+        case s"$from = ($left, $right)" => (from, left, right)
         case line                       => line.failedToParse
       }
-      .map { x =>
-        x.from -> x
-      }
-      .toMap
+
+    val mappings = mappingTuples map { case (from, left, right) =>
+      def idx(name: NodeName): NodeId = mappingTuples.indexWhere {case (from, _, _) => from == name }
+
+      Mapping(
+        name = from,
+        left = idx(left),
+        right = idx(right),
+      )
+    }
 
     Input(
       instructions = instructions,
-      mapping = mappings,
+      mappings = mappings,
     )
   }
 
@@ -78,15 +99,18 @@ object Advent08 {
       }
     }
 
-  def part1(game: Input): Long =
-    loopAt(game, "AAA", _ == "ZZZ")
+  def part1(game: Input): Long = {
+    val start = game.findNodeByName("AAA")
+    val finish = game.findNodeByName("ZZZ")
+
+    loopAt(game, start, _ == finish)
+  }
 
   def part2(game: Input): Long = {
-    val startNodes = game.mapping.keys.filter(_.last == 'A')
+    val startNodes = game.findNodesByNameFilter(_.last === 'A')
+    val finishNodes = game.findNodesByNameFilter(_.last === 'Z')
 
-    val individualResults = startNodes map { node =>
-      loopAt(game, node, _.last == 'Z')
-    }
+    val individualResults = startNodes.map(loopAt(game, _, finishNodes.contains))
 
     lcmMany(individualResults)
   }
