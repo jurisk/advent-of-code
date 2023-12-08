@@ -20,14 +20,14 @@ object Advent08 {
       }
   }
 
-  type Node = String
+  type NodeId = String
 
   final case class Mapping(
-    from: Node,
-    left: Node,
-    right: Node,
+    from: NodeId,
+    left: NodeId,
+    right: NodeId,
   ) {
-    def move(instruction: Instruction): Node =
+    def move(instruction: Instruction): NodeId =
       instruction match {
         case Instruction.Left  => left
         case Instruction.Right => right
@@ -36,8 +36,12 @@ object Advent08 {
 
   final case class Input(
     instructions: IndexedSeq[Instruction],
-    mapping: Map[Node, Mapping],
-  )
+    mapping: Map[NodeId, Mapping],
+  ) {
+    def instructionAtStep(step: Long): Instruction = instructions(
+      (step % instructions.length).toInt
+    )
+  }
 
   def parse(input: List[List[String]]): Input = {
     val List(List(instructionLine), mappingLines) = input
@@ -61,26 +65,18 @@ object Advent08 {
 
   private def loopAt(
     game: Input,
-    start: Node,
-    isTerminal: Node => Boolean,
-  ): Long = {
-    val result = Simulation.detectLoop((start, 0)) {
-      case ((state, nextIdx), counter) =>
-        if (isTerminal(state)) {
-          counter.asLeft
-        } else {
-          val next         = game.instructions(nextIdx)
-          val nextState    = game.mapping(state).move(next)
-          val followingIdx = (nextIdx + 1) % game.instructions.length
-          (nextState, followingIdx).asRight
-        }
+    start: NodeId,
+    isTerminal: NodeId => Boolean,
+  ): Long =
+    Simulation.runWithIterationCount(start) { case (node, counter) =>
+      if (isTerminal(node)) {
+        counter.asLeft
+      } else {
+        val next      = game.instructionAtStep(counter)
+        val nextState = game.mapping(node).move(next)
+        nextState.asRight
+      }
     }
-
-    result match {
-      case Left(value)  => value
-      case Right(value) => sys.error(s"$value")
-    }
-  }
 
   def part1(game: Input): Long =
     loopAt(game, "AAA", _ == "ZZZ")
