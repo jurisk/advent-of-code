@@ -72,38 +72,43 @@ object Advent08 {
   def part2(game: Input): Int = {
     val startNodes = game.mapping.keySet.filter(_.last == 'A')
 
-    val result = Simulation.detectLoop((startNodes, 0)) {
-      case ((state, nextIdx), counter) =>
-        if (counter % 1_000_000 == 0) {
-          println(s"$state $nextIdx $counter")
-        }
-
-        if (state.forall(_.last == 'Z')) {
-          counter.asLeft
-        } else {
-          val next =
-            game.instructions(nextIdx)
-
-          val nextState = state map { curr =>
-            val here = game.mapping(curr)
-            next match {
-              case LRLeft  => here.left
-              case LRRight => here.right
-            }
+    val test = startNodes map { node =>
+      val result = Simulation.detectLoop((node, 0)) {
+        case ((state, nextIdx), counter) =>
+          if (counter % 1_000_000 == 0) {
+            println(s"$state $nextIdx $counter")
           }
 
-          val followingIdx = (nextIdx + 1) % game.instructions.length
-          (nextState, followingIdx).asRight
+          if (state.last == 'Z') {
+            counter.asLeft
+          } else {
+            val next =
+              game.instructions(nextIdx)
 
-        }
+            val here = game.mapping(state)
+            val nextState =
+              next match {
+                case LRLeft  => here.left
+                case LRRight => here.right
+              }
+
+            val followingIdx = (nextIdx + 1) % game.instructions.length
+            (nextState, followingIdx).asRight
+
+          }
+      }
+
+      result match {
+        case Left(value) => value
+        case Right(value) => sys.error(s"$value")
+      }
     }
 
-    println(result)
+    println(test)
 
-    result match {
-      case Left(q) => q.toInt
-      case Right((a, b)) => (a + b).toInt
-    }
+    // TODO: LCM calculator
+
+    0
   }
 
   def parseFile(fileName: String): Input =

@@ -18,6 +18,6 @@ class Advent08Spec extends AnyFlatSpec {
   }
 
   it should "real part 2" in {
-    part2(parseFile("2023/08.txt")) shouldEqual -1
+    part2(parseFile("2023/08.txt")) shouldEqual 15690466351717L
   }
 }
