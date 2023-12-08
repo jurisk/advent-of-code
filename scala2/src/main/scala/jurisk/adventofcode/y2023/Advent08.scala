@@ -12,13 +12,12 @@ object Advent08 {
     case object Left  extends Instruction
     case object Right extends Instruction
 
-    def parse(ch: Char): Instruction = {
+    def parse(ch: Char): Instruction =
       ch match {
         case 'L' => Instruction.Left
         case 'R' => Instruction.Right
-        case _ => ch.toString.failedToParse
+        case _   => ch.toString.failedToParse
       }
-    }
   }
 
   type Node = String
@@ -28,17 +27,16 @@ object Advent08 {
     left: Node,
     right: Node,
   ) {
-    def move(instruction: Instruction): Node = {
+    def move(instruction: Instruction): Node =
       instruction match {
         case Instruction.Left  => left
         case Instruction.Right => right
       }
-    }
   }
 
   final case class Input(
-                          instructions: List[Instruction],
-                          mapping: Map[Node, Mapping],
+    instructions: List[Instruction],
+    mapping: Map[Node, Mapping],
   )
 
   def parse(input: String): Input = {
@@ -86,8 +84,8 @@ object Advent08 {
           if (state.last == 'Z') {
             counter.asLeft
           } else {
-            val next = game.instructions(nextIdx)
-            val nextState = game.mapping(state).move(next)
+            val next         = game.instructions(nextIdx)
+            val nextState    = game.mapping(state).move(next)
             val followingIdx = (nextIdx + 1) % game.instructions.length
             (nextState, followingIdx).asRight
 
@@ -95,7 +93,7 @@ object Advent08 {
       }
 
       result match {
-        case Left(value) => value
+        case Left(value)  => value
         case Right(value) => sys.error(s"$value")
       }
     }

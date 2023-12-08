@@ -13,11 +13,10 @@ package object math {
       case (m, n)          => m * n / gcd(a, b)
     }
 
-  def lcmMany(numbers: Seq[Long]): Long = {
+  def lcmMany(numbers: Seq[Long]): Long =
     numbers.foldLeft(1L) { (a, b) =>
       (a / gcd(a, b)) * b
     }
-  }
 
   @tailrec
   def gcd(a: Long, b: Long): Long =
