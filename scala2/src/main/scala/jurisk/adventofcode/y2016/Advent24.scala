@@ -12,7 +12,7 @@ import jurisk.geometry.Coords2D
 import jurisk.geometry.Field2D
 import jurisk.geometry.Field2D.parseFromLines
 import jurisk.utils.FileInputIO.readFileLines
-import jurisk.utils.Utils.IterableOps
+import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent24 extends IOApp.Simple {

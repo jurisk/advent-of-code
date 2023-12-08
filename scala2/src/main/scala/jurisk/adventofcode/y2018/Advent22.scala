@@ -12,7 +12,7 @@ import jurisk.geometry.Area2D
 import jurisk.geometry.Coords2D
 import jurisk.utils.Memoize.memoize
 import jurisk.utils.Parsing.StringOps
-import jurisk.utils.Utils.IterableOps
+import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent22 {

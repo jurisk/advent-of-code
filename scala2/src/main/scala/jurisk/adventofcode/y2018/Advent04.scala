@@ -4,7 +4,7 @@ import cats.implicits._
 import jurisk.adventofcode.y2018.Advent04.Entry.BeginsShift
 import jurisk.utils.FileInput.parseFileLines
 import jurisk.utils.Parsing.splitIntoSections
-import jurisk.utils.Utils.IterableOps
+import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 import java.time.Duration

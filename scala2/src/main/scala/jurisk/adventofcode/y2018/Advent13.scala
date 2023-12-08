@@ -6,7 +6,7 @@ import jurisk.geometry.Rotation._
 import jurisk.geometry._
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
-import jurisk.utils.Utils.IterableOps
+import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 import scala.annotation.tailrec

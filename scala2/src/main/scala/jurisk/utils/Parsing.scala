@@ -2,7 +2,7 @@ package jurisk.utils
 
 import cats.implicits._
 import jurisk.geometry.Coords2D
-import jurisk.utils.Utils.IterableOps
+import jurisk.utils.CollectionOps.IterableOps
 
 import scala.annotation.tailrec
 
