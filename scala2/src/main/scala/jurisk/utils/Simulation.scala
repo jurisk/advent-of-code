@@ -6,7 +6,7 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 
 object Simulation {
-  type Counter =
+  private type Counter =
     Long // We were doing `Counter : Numeric` at one point, but it was a hassle on the caller side
 
   def runNIterations[State](state: State, iterations: Counter)(
@@ -97,6 +97,13 @@ object Simulation {
     }
   }
 
+  /** If loop exists before reaching final state, returns
+    * Right(previous_iteration, this_iteration) where states are identical in
+    * both of these iterations.
+    *
+    * If final state is reached before finding a loop, returns Left(result),
+    * where result is the result returned by `f`.
+    */
   def detectLoop[State, Result](initial: State)(
     f: (State, Counter) => Either[Result, State]
   ): Either[Result, (Counter, Counter)] = {

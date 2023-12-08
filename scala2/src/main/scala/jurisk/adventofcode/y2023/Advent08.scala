@@ -39,11 +39,11 @@ object Advent08 {
     mapping: Map[Node, Mapping],
   )
 
-  def parse(input: String): Input = {
-    val List(List(instructionLine), mappingLines)   = readLineGroups(input)
-    val instructions = instructionLine.map(Instruction.parse)
+  def parse(input: List[List[String]]): Input = {
+    val List(List(instructionLine), mappingLines) = input
+    val instructions                              = instructionLine.map(Instruction.parse)
 
-    val mappings            = mappingLines
+    val mappings = mappingLines
       .map {
         case s"$from = ($left, $right)" => Mapping(from, left, right)
         case line                       => line.failedToParse
@@ -59,49 +59,44 @@ object Advent08 {
     )
   }
 
-  def part1(game: Input): Long = {
-    val result = Simulation.runWithIterationCount("AAA") {
-      case (state, counter) =>
-        if (state == "ZZZ") {
+  private def loopAt(
+    game: Input,
+    start: Node,
+    isTerminal: Node => Boolean,
+  ): Long = {
+    val result = Simulation.detectLoop((start, 0)) {
+      case ((state, nextIdx), counter) =>
+        if (isTerminal(state)) {
           counter.asLeft
         } else {
-          val next =
-            game.instructions((counter % game.instructions.length).toInt)
-          game.mapping(state).move(next).asRight
+          val next         = game.instructions(nextIdx)
+          val nextState    = game.mapping(state).move(next)
+          val followingIdx = (nextIdx + 1) % game.instructions.length
+          (nextState, followingIdx).asRight
         }
     }
 
-    result.toInt
+    result match {
+      case Left(value)  => value
+      case Right(value) => sys.error(s"$value")
+    }
   }
 
+  def part1(game: Input): Long =
+    loopAt(game, "AAA", _ == "ZZZ")
+
   def part2(game: Input): Long = {
-    val startNodes = game.mapping.keys.filter(_.last == 'A').toList
+    val startNodes = game.mapping.keys.filter(_.last == 'A')
 
-    val loops = startNodes map { node =>
-      val result = Simulation.detectLoop((node, 0)) {
-        case ((state, nextIdx), counter) =>
-          if (state.last == 'Z') {
-            counter.asLeft
-          } else {
-            val next         = game.instructions(nextIdx)
-            val nextState    = game.mapping(state).move(next)
-            val followingIdx = (nextIdx + 1) % game.instructions.length
-            (nextState, followingIdx).asRight
-
-          }
-      }
-
-      result match {
-        case Left(value)  => value
-        case Right(value) => sys.error(s"$value")
-      }
+    val individualResults = startNodes map { node =>
+      loopAt(game, node, _.last == 'Z')
     }
 
-    lcmMany(loops)
+    lcmMany(individualResults)
   }
 
   def parseFile(fileName: String): Input =
-    parse(readFileText(fileName))
+    parse(readLineGroups(fileName))
 
   def main(args: Array[String]): Unit = {
     val realData: Input = parseFile("2023/08.txt")

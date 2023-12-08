@@ -17,7 +17,7 @@ package object math {
     }
   }
 
-  def lcmMany[N: Integral](numbers: Seq[N]): N = {
+  def lcmMany[N: Integral](numbers: Iterable[N]): N = {
     val One = implicitly[Integral[N]].one
 
     numbers.foldLeft(One) { (a, b) =>
