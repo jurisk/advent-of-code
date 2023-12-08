@@ -7,14 +7,20 @@ package object math {
   def absForWrappingAround(x: Int, y: Int): Int =
     ((x % y) + y) % y
 
-  def lcm(a: Int, b: Int): Int =
+  def lcm(a: Long, b: Long): Long =
     (abs(a), abs(b)) match {
       case (0, _) | (_, 0) => 0
       case (m, n)          => m * n / gcd(a, b)
     }
 
+  def lcmMany(numbers: Seq[Long]): Long = {
+    numbers.foldLeft(1L) { (a, b) =>
+      (a / gcd(a, b)) * b
+    }
+  }
+
   @tailrec
-  def gcd(a: Int, b: Int): Int =
+  def gcd(a: Long, b: Long): Long =
     (abs(a), abs(b)) match {
       case (0, 0) => 0
       case (m, 0) => m

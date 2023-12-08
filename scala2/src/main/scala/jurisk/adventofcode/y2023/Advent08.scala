@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
+import jurisk.math.lcmMany
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
@@ -48,7 +49,7 @@ object Advent08 {
     )
   }
 
-  def part1(game: Input): Int = {
+  def part1(game: Input): Long = {
     val result = Simulation.runWithIterationCount("AAA") {
       case (state, counter) =>
         if (state == "ZZZ") {
@@ -69,7 +70,7 @@ object Advent08 {
     result.toInt
   }
 
-  def part2(game: Input): Int = {
+  def part2(game: Input): Long = {
     val startNodes = game.mapping.keySet.filter(_.last == 'A')
 
     val test = startNodes map { node =>
@@ -104,11 +105,7 @@ object Advent08 {
       }
     }
 
-    println(test)
-
-    // TODO: LCM calculator
-
-    0
+    lcmMany(test.toList)
   }
 
   def parseFile(fileName: String): Input =
