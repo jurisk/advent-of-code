@@ -7,9 +7,19 @@ import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
 
 object Advent08 {
-  sealed trait LeftRight
-  object LRLeft  extends LeftRight
-  object LRRight extends LeftRight
+  sealed trait Instruction
+  object Instruction {
+    case object Left  extends Instruction
+    case object Right extends Instruction
+
+    def parse(ch: Char): Instruction = {
+      ch match {
+        case 'L' => Instruction.Left
+        case 'R' => Instruction.Right
+        case _ => ch.toString.failedToParse
+      }
+    }
+  }
 
   type Node = String
 
@@ -17,20 +27,23 @@ object Advent08 {
     from: Node,
     left: Node,
     right: Node,
-  )
+  ) {
+    def move(instruction: Instruction): Node = {
+      instruction match {
+        case Instruction.Left  => left
+        case Instruction.Right => right
+      }
+    }
+  }
 
   final case class Input(
-    instructions: List[LeftRight],
-    mapping: Map[Node, Mapping],
+                          instructions: List[Instruction],
+                          mapping: Map[Node, Mapping],
   )
 
   def parse(input: String): Input = {
     val List(a, b)   = input.split("\n\n").toList
-    val instructions = a.toList.map {
-      case 'L' => LRLeft
-      case 'R' => LRRight
-      case _   => sys.error("asdf")
-    }
+    val instructions = a.map(Instruction.parse).toList
 
     val lines: List[String] = b.split("\n").toList
     val mappings            = lines
@@ -57,13 +70,7 @@ object Advent08 {
         } else {
           val next =
             game.instructions((counter % game.instructions.length).toInt)
-          val here = game.mapping(state)
-          val qq   = next match {
-            case LRLeft  => here.left
-            case LRRight => here.right
-          }
-          qq.asRight
-
+          game.mapping(state).move(next).asRight
         }
     }
 
@@ -71,28 +78,16 @@ object Advent08 {
   }
 
   def part2(game: Input): Long = {
-    val startNodes = game.mapping.keySet.filter(_.last == 'A')
+    val startNodes = game.mapping.keys.filter(_.last == 'A').toList
 
-    val test = startNodes map { node =>
+    val loops = startNodes map { node =>
       val result = Simulation.detectLoop((node, 0)) {
         case ((state, nextIdx), counter) =>
-          if (counter % 1_000_000 == 0) {
-            println(s"$state $nextIdx $counter")
-          }
-
           if (state.last == 'Z') {
             counter.asLeft
           } else {
-            val next =
-              game.instructions(nextIdx)
-
-            val here = game.mapping(state)
-            val nextState =
-              next match {
-                case LRLeft  => here.left
-                case LRRight => here.right
-              }
-
+            val next = game.instructions(nextIdx)
+            val nextState = game.mapping(state).move(next)
             val followingIdx = (nextIdx + 1) % game.instructions.length
             (nextState, followingIdx).asRight
 
@@ -105,7 +100,7 @@ object Advent08 {
       }
     }
 
-    lcmMany(test.toList)
+    lcmMany(loops)
   }
 
   def parseFile(fileName: String): Input =
