@@ -34,7 +34,7 @@ object Advent24 {
         }
     }
 
-    private val cycleTime: Int = lcm(area.width - 2, area.height - 2).toInt
+    private val cycleTime: Int = lcm(area.width - 2, area.height - 2)
 
     def nextTimeWrapping(time: Int): Int = (time + 1) % cycleTime
 
