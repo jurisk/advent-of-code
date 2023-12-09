@@ -31,7 +31,7 @@ fn calculateDifferences(list: []const i64) []const i64 {
 
 fn reverseList(list: []const i64) []const i64 {
     var reversed = ArrayList(i64).init(std.heap.page_allocator);
-    // defer reversed.deinit();
+    defer reversed.deinit();
 
     var i: usize = list.len;
     while (i > 0) {
@@ -39,7 +39,7 @@ fn reverseList(list: []const i64) []const i64 {
         reversed.append(list[i]) catch unreachable;
     }
 
-    return reversed.items;
+    return reversed.toOwnedSlice() catch unreachable;
 }
 
 fn extrapolatedValue(list: []const i64) i64 {
