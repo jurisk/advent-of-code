@@ -31,14 +31,10 @@ object CollectionOps {
       seq.forall(_ === value)
   }
 
-  implicit class IntegralIterableOps[N: Integral](seq: Iterable[N]) {
-    def differencesUnsafe: Iterable[N] =
-      if (seq.isEmpty) {
-        sys.error("No differences possible for empty sequence")
-      } else {
-        (seq.init zip seq.tail) map { case (a, b) =>
-          b - a
-        }
+  implicit class IntegralSeqOps[N: Integral](seq: Seq[N]) {
+    def differences: Seq[N] =
+      seq.sliding2 map { case (a, b) =>
+        b - a
       }
   }
 

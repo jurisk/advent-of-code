@@ -1,6 +1,6 @@
 package jurisk.adventofcode.y2023
 
-import jurisk.utils.CollectionOps.{EqIterableOps, IntegralIterableOps}
+import jurisk.utils.CollectionOps.{EqIterableOps, IntegralSeqOps}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -8,9 +8,8 @@ object Advent09 {
   type N     = Long
   type Input = List[List[N]]
 
-  private def extrapolatedValue(list: Iterable[N]): N =
-    if (list.allEqual(0)) 0
-    else list.last + extrapolatedValue(list.differencesUnsafe)
+  private def extrapolatedValue(list: Seq[N]): N =
+    if (list.allEqual(0)) 0 else list.last + extrapolatedValue(list.differences)
 
   def part1(input: Input): N = input.map(extrapolatedValue).sum
   def part2(input: Input): N = part1(input.map(_.reverse))
