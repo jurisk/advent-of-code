@@ -4,9 +4,11 @@ import jurisk.utils.CollectionOps.{EqIterableOps, IntegralSeqOps}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
+import scala.collection.immutable.ArraySeq
+
 object Advent09 {
   type N     = Long
-  type Input = List[List[N]]
+  type Input = List[ArraySeq[N]]
 
   private def extrapolatedValue(list: Seq[N]): N =
     if (list.allEqual(0)) 0 else list.last + extrapolatedValue(list.differences)
@@ -14,7 +16,7 @@ object Advent09 {
   def part1(input: Input): N = input.map(extrapolatedValue).sum
   def part2(input: Input): N = part1(input.map(_.reverse))
 
-  def parse(input: String): Input = input.parseLines(_.extractLongList)
+  def parse(input: String): Input = input.parseLines(_.extractLongArraySeq)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
