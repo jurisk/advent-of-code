@@ -5,6 +5,7 @@ const utils = @import("utils.zig");
 const reverseList = utils.reverseList;
 const allEqual = utils.allEqual;
 const calculateDifferences = utils.calculateDifferences;
+const Allocator = std.mem.Allocator;
 
 const data = struct {
     const example = @embedFile("advent_2023_09_test.txt");
@@ -12,7 +13,7 @@ const data = struct {
 };
 
 fn extrapolatedValue(list: []const i64) i64 {
-    if (allEqual(i64, list, 0)) {
+    if (mem.allEqual(i64, list, 0)) {
         return 0;
     } else {
         const differences = calculateDifferences(&std.heap.page_allocator, list);
@@ -58,8 +59,8 @@ fn parseIntArray(line: []const u8) []const i64 {
     return numbers.toOwnedSlice() catch unreachable;
 }
 
-fn parse(input: []const u8) ![][]const i64 {
-    var lines = ArrayList([]const i64).init(std.heap.page_allocator);
+fn parse(allocator: Allocator, input: []const u8) ![][]const i64 {
+    var lines = ArrayList([]const i64).init(allocator);
     defer lines.deinit();
 
     const delimiters = [2]u8{ '\n', '\r' };
@@ -72,13 +73,13 @@ fn parse(input: []const u8) ![][]const i64 {
     return lines.toOwnedSlice();
 }
 
-fn solve(input: []const u8, f: *const fn ([][]const i64) i64) !i64 {
-    const parsed = try parse(input);
+fn solve(allocator: Allocator, input: []const u8, f: *const fn ([][]const i64) i64) !i64 {
+    const parsed = try parse(allocator, input);
     return f(parsed);
 }
 
 fn check(input: []const u8, f: *const fn ([][]const i64) i64, expected: i64) !void {
-    const result = try solve(input, f);
+    const result = try solve(std.testing.allocator, input, f);
     try std.testing.expectEqual(@as(i64, expected), result);
 }
 
@@ -99,9 +100,9 @@ test "part 2 real" {
 }
 
 pub fn main() !void {
-    const result1 = try solve(data.real, part1);
+    const result1 = try solve(std.heap.page_allocator, data.real, part1);
     std.debug.print("Part 1: {d}\n", .{result1});
 
-    const result2 = try solve(data.real, part2);
+    const result2 = try solve(std.heap.page_allocator, data.real, part2);
     std.debug.print("Part 2: {d}\n", .{result2});
 }
