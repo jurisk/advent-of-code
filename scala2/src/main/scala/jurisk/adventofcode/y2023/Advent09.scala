@@ -8,25 +8,14 @@ object Advent09 {
   type N     = Long
   type Input = List[List[N]]
 
-  private def extrapolatedValue(
-    direction: (Iterable[N], N) => N
-  )(list: Iterable[N]): N =
+  private def extrapolatedValue(list: Iterable[N]): N =
     if (list.allEqual(0)) 0
-    else direction(list, extrapolatedValue(direction)(list.differencesUnsafe))
+    else list.last + extrapolatedValue(list.differencesUnsafe)
 
-  def solve(direction: (Iterable[N], N) => N): Input => N =
-    _.map(extrapolatedValue(direction)).sum
+  def part1(input: Input): N = input.map(extrapolatedValue).sum
+  def part2(input: Input): N = part1(input.map(_.reverse))
 
-  val part1: Input => N = solve { case (thisLevel, extrapolatedValue) =>
-    thisLevel.last + extrapolatedValue
-  }
-
-  val part2: Input => N = solve { case (thisLevel, extrapolatedValue) =>
-    thisLevel.head - extrapolatedValue
-  }
-
-  val parse: String => Input =
-    _.parseLines(_.extractLongs)
+  def parse(input: String): Input = input.parseLines(_.extractLongs)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
