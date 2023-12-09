@@ -17,14 +17,20 @@ fn extrapolatedValue(list: []const i64) i64 {
         return 0;
     } else {
         const differences = calculateDifferences(&std.heap.page_allocator, list);
-        defer std.heap.page_allocator.free(differences);
-        return list[list.len - 1] + extrapolatedValue(differences);
+        const result = list[list.len - 1] + extrapolatedValue(differences);
+        std.heap.page_allocator.free(differences);
+        return result;
     }
 }
 
-fn part1(input: [][]const i64) i64 {
-    defer std.heap.page_allocator.free(input);
+fn freeInputArray(allocator: Allocator, input: [][]const i64) void {
+    for (input) |slice| {
+        allocator.free(slice);
+    }
+    allocator.free(input);
+}
 
+fn part1(input: [][]const i64) i64 {
     var sum: i64 = 0;
     for (input) |list| {
         sum += extrapolatedValue(list);
@@ -33,12 +39,11 @@ fn part1(input: [][]const i64) i64 {
 }
 
 fn part2(input: [][]const i64) i64 {
-    defer std.heap.page_allocator.free(input);
-
     var sum: i64 = 0;
     for (input) |list| {
         const reversed = reverseList(i64, list);
         sum += extrapolatedValue(reversed);
+        std.heap.page_allocator.free(reversed);
     }
     return sum;
 }
@@ -75,7 +80,9 @@ fn parse(allocator: Allocator, input: []const u8) ![][]const i64 {
 
 fn solve(allocator: Allocator, input: []const u8, f: *const fn ([][]const i64) i64) !i64 {
     const parsed = try parse(allocator, input);
-    return f(parsed);
+    const result = f(parsed);
+    allocator.free(parsed);
+    return result;
 }
 
 fn check(input: []const u8, f: *const fn ([][]const i64) i64, expected: i64) !void {
