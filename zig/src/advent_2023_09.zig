@@ -4,30 +4,18 @@ const mem = std.mem;
 const utils = @import("utils.zig");
 const reverseList = utils.reverseList;
 const allEqual = utils.allEqual;
+const calculateDifferences = utils.calculateDifferences;
 
 const data = struct {
     const example = @embedFile("advent_2023_09_test.txt");
     const real = @embedFile("advent_2023_09_real.txt");
 };
 
-fn calculateDifferences(list: []const i64) []const i64 {
-    var differences = ArrayList(i64).init(std.heap.page_allocator);
-    defer differences.deinit();
-
-    if (list.len > 1) {
-        for (list[1..], 0..) |item, i| {
-            differences.append(item - list[i]) catch unreachable;
-        }
-    }
-
-    return differences.toOwnedSlice() catch unreachable;
-}
-
 fn extrapolatedValue(list: []const i64) i64 {
     if (allEqual(i64, list, 0)) {
         return 0;
     } else {
-        const differences = calculateDifferences(list);
+        const differences = calculateDifferences(&std.heap.page_allocator, list);
         defer std.heap.page_allocator.free(differences);
         return list[list.len - 1] + extrapolatedValue(differences);
     }
