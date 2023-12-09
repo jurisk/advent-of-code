@@ -18,7 +18,7 @@ fn allEqual(list: []const i64, value: i64) bool {
 
 fn calculateDifferences(list: []const i64) []const i64 {
     var differences = ArrayList(i64).init(std.heap.page_allocator);
-    // defer differences.deinit();
+    defer differences.deinit();
 
     if (list.len > 1) {
         for (list[1..], 0..) |item, i| {
@@ -26,7 +26,7 @@ fn calculateDifferences(list: []const i64) []const i64 {
         }
     }
 
-    return differences.items;
+    return differences.toOwnedSlice() catch unreachable;
 }
 
 fn reverseList(list: []const i64) []const i64 {
