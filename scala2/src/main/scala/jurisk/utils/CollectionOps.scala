@@ -1,5 +1,8 @@
 package jurisk.utils
 
+import cats.Eq
+import cats.implicits._
+
 import scala.math.Integral.Implicits.infixIntegralOps
 
 object CollectionOps {
@@ -21,6 +24,22 @@ object CollectionOps {
     def twoElementsUnsafe: (T, T) =
       if (seq.size == 2) (seq.head, seq.tail.head)
       else sys.error(s"Expected two elements, but got $seq")
+  }
+
+  implicit class EqIterableOps[T: Eq](seq: Iterable[T]) {
+    def allEqual(value: T): Boolean =
+      seq.forall(_ === value)
+  }
+
+  implicit class IntegralIterableOps[N: Integral](seq: Iterable[N]) {
+    def differencesUnsafe: Iterable[N] =
+      if (seq.isEmpty) {
+        sys.error("No differences possible for empty sequence")
+      } else {
+        (seq.init zip seq.tail) map { case (a, b) =>
+          b - a
+        }
+      }
   }
 
   implicit class IndexedSeqOps[T](seq: IndexedSeq[T]) {
