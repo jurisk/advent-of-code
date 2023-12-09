@@ -13,3 +13,12 @@ pub fn reverseList(comptime T: type, list: []const T) []const i64 {
 
     return reversed.toOwnedSlice() catch unreachable;
 }
+
+pub fn allEqual(comptime T: type, list: []const T, value: T) bool {
+    for (list) |item| {
+        if (item != value) {
+            return false;
+        }
+    }
+    return true;
+}

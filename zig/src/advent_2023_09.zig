@@ -3,20 +3,12 @@ const ArrayList = std.ArrayList;
 const mem = std.mem;
 const utils = @import("utils.zig");
 const reverseList = utils.reverseList;
+const allEqual = utils.allEqual;
 
 const data = struct {
     const example = @embedFile("advent_2023_09_test.txt");
     const real = @embedFile("advent_2023_09_real.txt");
 };
-
-fn allEqual(list: []const i64, value: i64) bool {
-    for (list) |item| {
-        if (item != value) {
-            return false;
-        }
-    }
-    return true;
-}
 
 fn calculateDifferences(list: []const i64) []const i64 {
     var differences = ArrayList(i64).init(std.heap.page_allocator);
@@ -32,7 +24,7 @@ fn calculateDifferences(list: []const i64) []const i64 {
 }
 
 fn extrapolatedValue(list: []const i64) i64 {
-    if (allEqual(list, 0)) {
+    if (allEqual(i64, list, 0)) {
         return 0;
     } else {
         const differences = calculateDifferences(list);
@@ -42,6 +34,8 @@ fn extrapolatedValue(list: []const i64) i64 {
 }
 
 fn part1(input: [][]const i64) i64 {
+    defer std.heap.page_allocator.free(input);
+
     var sum: i64 = 0;
     for (input) |list| {
         sum += extrapolatedValue(list);
@@ -50,6 +44,8 @@ fn part1(input: [][]const i64) i64 {
 }
 
 fn part2(input: [][]const i64) i64 {
+    defer std.heap.page_allocator.free(input);
+
     var sum: i64 = 0;
     for (input) |list| {
         const reversed = reverseList(i64, list);
@@ -90,7 +86,6 @@ fn parse(input: []const u8) ![][]const i64 {
 
 fn solve(input: []const u8, f: *const fn ([][]const i64) i64) !i64 {
     const parsed = try parse(input);
-    defer std.heap.page_allocator.free(parsed);
     return f(parsed);
 }
 
