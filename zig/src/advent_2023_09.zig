@@ -77,24 +77,25 @@ fn solve(input: []const u8, f: *const fn ([][]const i64) i64) !i64 {
     return f(parsed);
 }
 
+fn check(input: []const u8, f: *const fn ([][]const i64) i64, expected: i64) !void {
+    const result = try solve(input, f);
+    try std.testing.expectEqual(@as(i64, expected), result);
+}
+
 test "part 1 example" {
-    const result = try solve(data.example, part1);
-    try std.testing.expectEqual(@as(i64, 114), result);
+    try check(data.example, part1, 114);
 }
 
 test "part 1 real" {
-    const result = try solve(data.real, part1);
-    try std.testing.expectEqual(@as(i64, 1684566095), result);
+    try check(data.real, part1, 1684566095);
 }
 
 test "part 2 example" {
-    const result = try solve(data.example, part2);
-    try std.testing.expectEqual(@as(i64, 2), result);
+    try check(data.example, part2, 2);
 }
 
 test "part 2 real" {
-    const result = try solve(data.real, part2);
-    try std.testing.expectEqual(@as(i64, 1136), result);
+    try check(data.real, part2, 1136);
 }
 
 pub fn main() !void {
