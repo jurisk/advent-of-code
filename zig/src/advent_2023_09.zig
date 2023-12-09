@@ -47,6 +47,7 @@ fn extrapolatedValue(list: []const i64) i64 {
         return 0;
     } else {
         const differences = calculateDifferences(list);
+        defer std.heap.page_allocator.free(differences);
         return list[list.len - 1] + extrapolatedValue(differences);
     }
 }
@@ -68,8 +69,9 @@ fn part2(input: [][]const i64) i64 {
     return sum;
 }
 
-fn parseIntArray(line: []const u8) !ArrayList(i64) {
+fn parseIntArray(line: []const u8) []const i64 {
     var numbers = ArrayList(i64).init(std.heap.page_allocator);
+    defer numbers.deinit();
 
     var it = mem.tokenizeAny(u8, line, " ");
     while (it.next()) |token| {
@@ -77,10 +79,10 @@ fn parseIntArray(line: []const u8) !ArrayList(i64) {
             std.debug.print("Failed to parse '{s}': {}\n", .{ token, err });
             unreachable;
         };
-        try numbers.append(num);
+        numbers.append(num) catch unreachable;
     }
 
-    return numbers;
+    return numbers.toOwnedSlice() catch unreachable;
 }
 
 fn parse(input: []const u8) ![][]const i64 {
@@ -90,9 +92,8 @@ fn parse(input: []const u8) ![][]const i64 {
     const delimiters = [2]u8{ '\n', '\r' };
     var it = mem.tokenizeAny(u8, input, &delimiters);
     while (it.next()) |line| {
-        const nums = try parseIntArray(line);
-        // defer nums.deinit();
-        try lines.append(nums.items);
+        const nums = parseIntArray(line);
+        try lines.append(nums);
     }
 
     return lines.toOwnedSlice();
@@ -100,6 +101,7 @@ fn parse(input: []const u8) ![][]const i64 {
 
 fn solve(input: []const u8, f: *const fn ([][]const i64) i64) !i64 {
     const parsed = try parse(input);
+    defer std.heap.page_allocator.free(parsed);
     return f(parsed);
 }
 
