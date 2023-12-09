@@ -1,6 +1,8 @@
 const std = @import("std");
 const ArrayList = std.ArrayList;
 const mem = std.mem;
+const utils = @import("utils.zig");
+const reverseList = utils.reverseList;
 
 const data = struct {
     const example = @embedFile("advent_2023_09_test.txt");
@@ -29,19 +31,6 @@ fn calculateDifferences(list: []const i64) []const i64 {
     return differences.toOwnedSlice() catch unreachable;
 }
 
-fn reverseList(list: []const i64) []const i64 {
-    var reversed = ArrayList(i64).init(std.heap.page_allocator);
-    defer reversed.deinit();
-
-    var i: usize = list.len;
-    while (i > 0) {
-        i -= 1;
-        reversed.append(list[i]) catch unreachable;
-    }
-
-    return reversed.toOwnedSlice() catch unreachable;
-}
-
 fn extrapolatedValue(list: []const i64) i64 {
     if (allEqual(list, 0)) {
         return 0;
@@ -63,7 +52,7 @@ fn part1(input: [][]const i64) i64 {
 fn part2(input: [][]const i64) i64 {
     var sum: i64 = 0;
     for (input) |list| {
-        const reversed = reverseList(list);
+        const reversed = reverseList(i64, list);
         sum += extrapolatedValue(reversed);
     }
     return sum;
