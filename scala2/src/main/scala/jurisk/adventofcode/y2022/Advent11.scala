@@ -34,7 +34,7 @@ object Advent11 {
     val Array(m, si, o, t, iT, iF) = s.split("\n")
 
     val logic = MonkeyLogic(
-      index = m.extractInts.singleElementUnsafe,
+      index = m.extractIntList.singleElementUnsafe,
       operation = o match {
         case "  Operation: new = old * old" =>
           old => old * old
@@ -47,12 +47,12 @@ object Advent11 {
 
         case _ => sys.error(s"Did not recognize $o")
       },
-      testIsDivisibleBy = t.extractInts.singleElementUnsafe,
-      ifTrueThrowTo = iT.extractInts.singleElementUnsafe,
-      ifFalseThrowTo = iF.extractInts.singleElementUnsafe,
+      testIsDivisibleBy = t.extractIntList.singleElementUnsafe,
+      ifTrueThrowTo = iT.extractIntList.singleElementUnsafe,
+      ifFalseThrowTo = iF.extractIntList.singleElementUnsafe,
     )
 
-    val itemStates = si.extractInts.map(_.toLong) map { x =>
+    val itemStates = si.extractIntList.map(_.toLong) map { x =>
       ItemState(
         logic.index,
         x,

@@ -20,7 +20,7 @@ object Advent00 {
     def parse(s: String): Command =
       s match {
         case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractInts)
+        case s"something $rem" => Something(rem.extractIntList)
         case s if s.nonEmpty   => Other(s)
         case _                 => s.failedToParse
       }

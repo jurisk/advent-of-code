@@ -21,7 +21,7 @@ object Advent10 {
 
   object PointWithVelocity {
     def parse(s: String): PointWithVelocity = {
-      val List(a, b, c, d) = s.extractInts
+      val List(a, b, c, d) = s.extractIntList
       PointWithVelocity(Coords2D.of(a, b), Coords2D.of(c, d))
     }
   }

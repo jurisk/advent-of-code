@@ -22,8 +22,8 @@ object Advent04 {
         case s"Card$id: $winning | $youHave" =>
           Card(
             id.trim.toInt,
-            winning.extractInts.toSet,
-            youHave.extractInts.toSet,
+            winning.extractIntList.toSet,
+            youHave.extractIntList.toSet,
           )
         case _                               => s.failedToParse
       }

@@ -135,7 +135,7 @@ object Advent05 extends IOApp.Simple {
 
   private object Converter {
     def parse(input: String): Converter = {
-      val List(a, b, c) = input.extractLongs
+      val List(a, b, c) = input.extractLongList
       Converter(a, b, c)
     }
   }
@@ -143,7 +143,7 @@ object Advent05 extends IOApp.Simple {
   def parse(input: String): Input = {
     val sections = input.split("\n\n").toList
     sections match {
-      case h :: t => Input(h.extractLongs, t map ConversionMap.parse)
+      case h :: t => Input(h.extractLongList, t map ConversionMap.parse)
       case _      => input.failedToParse
     }
   }

@@ -15,7 +15,7 @@ object Advent09 {
   def part1(input: Input): N = input.map(extrapolatedValue).sum
   def part2(input: Input): N = part1(input.map(_.reverse))
 
-  def parse(input: String): Input = input.parseLines(_.extractLongs)
+  def parse(input: String): Input = input.parseLines(_.extractLongList)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))

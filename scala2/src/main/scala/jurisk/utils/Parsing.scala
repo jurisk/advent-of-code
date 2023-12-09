@@ -5,6 +5,8 @@ import jurisk.geometry.Coords2D
 import jurisk.utils.CollectionOps.IterableOps
 
 import scala.annotation.tailrec
+import scala.collection.immutable.ArraySeq
+import scala.util.matching.Regex
 
 object Parsing {
 
@@ -79,15 +81,21 @@ object Parsing {
       parser: String => T
     ): List[T] = parseList("\n", parser)
 
-    def extractInts: List[Int] = {
+    private def extractDigitStrings: Regex.MatchIterator = {
       val RegEx = """([-+]?\d+)""".r
-      RegEx.findAllIn(s).map(_.toInt).toList
+      RegEx.findAllIn(s)
     }
 
-    def extractLongs: List[Long] = {
-      val RegEx = """([-+]?\d+)""".r
-      RegEx.findAllIn(s).map(_.toLong).toList
-    }
+    def extractInts: Iterator[Int]   = extractDigitStrings.map(_.toInt)
+    def extractLongs: Iterator[Long] = extractDigitStrings.map(_.toLong)
 
+    def extractIntList: List[Int]   = extractInts.toList
+    def extractLongList: List[Long] = extractLongs.toList
+
+    def extractIntVector: Vector[Int]   = extractInts.toVector
+    def extractLongVector: Vector[Long] = extractLongs.toVector
+
+    def extractIntArraySeq: ArraySeq[Int]   = ArraySeq.from(extractInts)
+    def extractLongArraySeq: ArraySeq[Long] = ArraySeq.from(extractLongs)
   }
 }
