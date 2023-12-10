@@ -19,13 +19,11 @@ import jurisk.geometry.Direction2D.{
   W,
 }
 import jurisk.geometry.Field2D.toDebugRepresentation
-import jurisk.utils.Parsing.StringOps
 
 object Advent10 {
   final case class Input(
     animalAt: Coords2D,
     field: Field2D[Pipe],
-    animalStartDirection: CardinalDirection2D,
   ) {
     def at(coords: Coords2D): Pipe =
       field.atOrElse(coords, Pipe.Empty)
@@ -35,7 +33,6 @@ object Advent10 {
     def parse(
       s: String,
       animalReplace: Char,
-      animalStartDirection: CardinalDirection2D,
     ): Input = {
       val chars: Field2D[Char] = Field2D.parseFromString(s, identity)
 
@@ -54,16 +51,15 @@ object Advent10 {
         },
       )
 
-      Input(animalAt, field, animalStartDirection)
+      Input(animalAt, field)
     }
   }
 
   def parse(
     input: String,
     animalReplace: Char,
-    animalStartDirection: CardinalDirection2D,
   ): Input =
-    Input.parse(input, animalReplace, animalStartDirection)
+    Input.parse(input, animalReplace)
 
   def part1(data: Input): Int =
     Dijkstra
@@ -76,7 +72,8 @@ object Advent10 {
       }
       .max
 
-  def part2(data: Input): Int = {
+  // TODO: remove `animalStartDirection`
+  def part2(data: Input, animalStartDirection: CardinalDirection2D): Int = {
     val trackCoords = Dijkstra
       .dijkstraAll(
         data.animalAt,
@@ -141,7 +138,7 @@ object Advent10 {
 
     val start = CoordsWithDirection(
       coords = data.animalAt,
-      direction = data.animalStartDirection,
+      direction = animalStartDirection,
     )
 
     val trackCoordsWithAnimalDirection =
@@ -183,14 +180,13 @@ object Advent10 {
   def parseFile(
     fileName: String,
     animalReplace: Char,
-    animalStartDirection: CardinalDirection2D,
   ): Input =
-    parse(readFileText(fileName), animalReplace, animalStartDirection)
+    parse(readFileText(fileName), animalReplace)
 
   def main(args: Array[String]): Unit = {
-    val realData: Input = parseFile("2023/10.txt", '7', Direction2D.W)
+    val realData: Input = parseFile("2023/10.txt", '7')
 
     println(s"Part 1: ${part1(realData)}")
-    println(s"Part 2: ${part2(realData)}")
+    println(s"Part 2: ${part2(realData, S)}")
   }
 }
