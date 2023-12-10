@@ -41,7 +41,7 @@ class PathfindingSpec extends AnyFlatSpec {
       (x: Int) =>
         if (x > 1000) Nil else List(2, 3, 5, 7).map(n => (x * n, dist(n))),
     )
-    result.size shouldEqual 277
+    result.size shouldEqual 278
     val testCase = List(2, 2, 3, 5, 7, 7)
     result(testCase.product)._2 shouldEqual testCase.map(dist).sum
   }

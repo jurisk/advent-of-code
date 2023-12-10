@@ -16,19 +16,22 @@ object Dijkstra {
     * @param successors
     *   List of successors for a given node, along with the cost of moving from
     *   the given node to this successor.
+    * @param returnStart
+    *   Whether to return `start` node in the results
     * @tparam N
     *   Node type.
     * @tparam C
     *   Cost type.
     * @return
-    *   A map where every reachable node (not including `start`) is associated
-    *   with the optimal parent node and a cost from the start node.
+    *   A map where every reachable node is associated with the optimal parent
+    *   node and a cost from the start node.
     */
   // https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm#Pseudocode
   //  1  function Dijkstra(Graph, source):
   def dijkstraAll[N, C: Numeric: Bounded](
     start: N,
     successors: N => List[(N, C)],
+    returnStart: Boolean = true,
   ): Map[N, (N, C)] = {
     val Zero     = implicitly[Numeric[C]].zero
     val MaxValue = implicitly[Bounded[C]].maxValue
@@ -77,9 +80,16 @@ object Dijkstra {
       }
     }
 
-    dist.remove(start) // Not returning start
+    // This flag was added because the callers sometimes expected to find `start` in the list of results
+    if (!returnStart) {
+      dist.remove(start)
+    }
+
     dist.map { case (n, c) =>
-      val parent = prev(n)
+      val parent = prev.getOrElse(
+        n,
+        start,
+      ) // Note - parent of `start` will be `start`, if returned
       (n, (parent, c))
     }.toMap
   }
