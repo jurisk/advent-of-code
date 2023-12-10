@@ -26,40 +26,48 @@ object Advent10 {
     field: Field2D[Pipe],
   ) {
     def at(coords: Coords2D): Pipe =
-      field.atOrElse(coords, Pipe.Empty)
+      field.atOrElse(coords, Empty)
   }
 
   object Input {
-    def parse(
-      s: String,
-      animalReplace: Char,
-    ): Input = {
+    def parse(s: String): Input = {
       val chars: Field2D[Char] = Field2D.parseFromString(s, identity)
 
       val animalAt = chars.filterCoordsByValue(_ == 'S').singleResultUnsafe
 
       val field: Field2D[Pipe] = Field2D.parseFromString(
-        s.replace('S', animalReplace),
+        s,
         {
-          case '|' => Pipe.N_S
-          case '-' => Pipe.E_W
-          case 'L' => Pipe.N_E
-          case 'J' => Pipe.N_W
-          case '7' => Pipe.S_W
-          case 'F' => Pipe.S_E
-          case '.' => Pipe.Empty
+          case '|' => N_S
+          case '-' => E_W
+          case 'L' => N_E
+          case 'J' => N_W
+          case '7' => S_W
+          case 'F' => S_E
+          case '.' => Empty
+          case 'S' => Empty
         },
       )
 
-      Input(animalAt, field)
+      val animalPipe = Pipe.All
+        .filterNot(_ == Empty)
+        .filter { candidate =>
+          candidate.connections.forall { direction =>
+            field
+              .atOrElse(animalAt + direction, Empty)
+              .connections
+              .contains(direction.invert)
+          }
+        }
+        .singleElementUnsafe
+
+      val updatedField = field.updatedAtUnsafe(animalAt, animalPipe)
+
+      Input(animalAt, updatedField)
     }
   }
 
-  def parse(
-    input: String,
-    animalReplace: Char,
-  ): Input =
-    Input.parse(input, animalReplace)
+  def parse(input: String): Input = Input.parse(input)
 
   def part1(data: Input): Int =
     Dijkstra
@@ -177,14 +185,11 @@ object Advent10 {
     floodFilled.size
   }
 
-  def parseFile(
-    fileName: String,
-    animalReplace: Char,
-  ): Input =
-    parse(readFileText(fileName), animalReplace)
+  def parseFile(fileName: String): Input =
+    parse(readFileText(fileName))
 
   def main(args: Array[String]): Unit = {
-    val realData: Input = parseFile("2023/10.txt", '7')
+    val realData: Input = parseFile("2023/10.txt")
 
     println(s"Part 1: ${part1(realData)}")
     println(s"Part 2: ${part2(realData, S)}")
