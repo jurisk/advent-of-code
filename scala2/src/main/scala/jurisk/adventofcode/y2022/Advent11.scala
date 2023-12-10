@@ -45,7 +45,7 @@ object Advent11 {
         case s"  Operation: new = old + $n" =>
           old => old + n.toInt
 
-        case _ => sys.error(s"Did not recognize $o")
+        case _ => o.failedToParse
       },
       testIsDivisibleBy = t.extractIntList.singleElementUnsafe,
       ifTrueThrowTo = iT.extractIntList.singleElementUnsafe,

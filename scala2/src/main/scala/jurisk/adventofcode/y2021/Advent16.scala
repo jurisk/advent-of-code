@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2021
 
 import cats.implicits._
 import jurisk.utils.FileInput.readSingleFileLine
+import jurisk.utils.Parsing.StringOps
 
 import scala.util.Try
 
@@ -185,7 +186,7 @@ object Advent16 {
 
     private def parseHex(ch: Char): Either[Error, Int] =
       Try(Integer.parseInt(s"$ch", 16)).toEither.leftMap(e =>
-        s"Failed to parse $ch: $e"
+        s"$ch $e".failedToParse
       )
 
     private def hexCharToBinaryList(ch: Char): Either[Error, Bits] = for {

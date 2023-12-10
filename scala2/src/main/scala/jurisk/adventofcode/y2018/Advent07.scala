@@ -3,6 +3,7 @@ package jurisk.adventofcode.y2018
 import cats.implicits._
 import jurisk.utils.FileInput.parseFileLines
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 import scala.annotation.tailrec
@@ -27,7 +28,7 @@ object Advent07 {
             Step(second.toList.singleElementUnsafe),
             Step(first.toList.singleElementUnsafe),
           )
-        case _                    => sys.error(s"Failed to parse $s")
+        case _                    => s.failedToParse
       }
   }
 

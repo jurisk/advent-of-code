@@ -1,6 +1,7 @@
 package jurisk.geometry
 
 import cats.implicits._
+import jurisk.utils.Parsing.StringOps
 
 final case class Coords2D(x: Int, y: Int) {
   def +(other: Coords2D): Coords2D =
@@ -85,9 +86,7 @@ object Coords2D {
         Coords2D.of(x, a.y)
       }
 
-    } else {
-      sys.error(
-        s"Expected $a and $b to have same x or y coordinates, but they do not"
-      )
-    }
+    } else
+      s"Expected $a and $b to have same x or y coordinates, but they do not".fail
+
 }

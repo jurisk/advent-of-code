@@ -18,7 +18,7 @@ object Advent10 {
       s match {
         case "noop"     => Noop
         case s"addx $n" => AddX(2, n.toInt)
-        case _          => sys.error(s"Failed to parse $s")
+        case _          => s.failedToParse
       }
   }
 

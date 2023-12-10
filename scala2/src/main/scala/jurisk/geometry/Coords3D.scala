@@ -1,6 +1,7 @@
 package jurisk.geometry
 
 import cats.implicits._
+import jurisk.utils.Parsing.StringOps
 
 final case class Coords3D(x: Int, y: Int, z: Int) {
   def adjacent6: List[Coords3D] = List(
@@ -32,7 +33,7 @@ object Coords3D {
   def parse(s: String): Coords3D =
     s match {
       case s"$x,$y,$z" => Coords3D(x.trim.toInt, y.trim.toInt, z.trim.toInt)
-      case _           => sys.error(s"Failed to parse Coords3D '$s'")
+      case _           => s.failedToParse("Coords3D")
     }
 
   def boundingBoxInclusive(points: Iterable[Coords3D]): Area3D = {

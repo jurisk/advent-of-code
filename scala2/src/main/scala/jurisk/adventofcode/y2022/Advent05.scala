@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2022
 
 import jurisk.utils.FileInput.readLineGroups
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.SortedMap
@@ -39,7 +40,7 @@ object Advent05 {
           Command(amount.toInt, fromStack.toInt, toStack.toInt)
 
         case _ =>
-          sys.error(s"Failed to match $s")
+          s.failedToParse
       }
   }
 
@@ -65,7 +66,7 @@ object Advent05 {
         }
 
       case _ =>
-        sys.error(s"Invalid input $input")
+        input.toString.failedToParse
     }
 
   def readFileAndParse(fileName: String): Input = {

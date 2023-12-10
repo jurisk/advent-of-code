@@ -5,6 +5,7 @@ import Advent15._
 import jurisk.adventofcode.y2018.Advent15.Race.Elf
 import jurisk.geometry.Coords2D
 import jurisk.utils.FileInput.readFileText
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 class Advent15Spec extends AnyFlatSpec {
@@ -44,7 +45,7 @@ class Advent15Spec extends AnyFlatSpec {
     test1After24RoundsExpected.debugPrint()
 
     val test1After24RoundsObtained =
-      test1After23Rounds.nextRound.getOrElse(sys.error("Failed"))
+      test1After23Rounds.nextRound.getOrElse("Failed".fail)
     println("Test 1 After 24 rounds obtained:")
     test1After24RoundsObtained.debugPrint()
 

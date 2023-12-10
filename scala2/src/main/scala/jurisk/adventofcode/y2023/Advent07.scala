@@ -2,8 +2,9 @@ package jurisk.adventofcode.y2023
 
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-
 import cats.implicits._
+import jurisk.utils.CollectionOps.IterableOps
+
 import Ordering.Implicits.seqOrdering
 
 object Advent07 {
@@ -56,15 +57,10 @@ object Advent07 {
     def parse(x: Char): Rank =
       Ordered
         .find(_.value === x)
-        .getOrElse(sys.error(s"Failed to parse Rank $x"))
+        .getOrElse(x.toString.failedToParse("Rank"))
 
     def rankCounts(ranks: List[Rank]): List[Int] =
-      ranks
-        .groupBy(identity)
-        .map { case (_, v) =>
-          v.length
-        }
-        .toList
+      ranks.counts.values.toList
         .sorted(Ordering[Int].reverse)
   }
 
@@ -111,7 +107,7 @@ object Advent07 {
     def fromCounts(counts: List[Int]): ValueKind =
       Mapping.getOrElse(
         counts,
-        sys.error(s"Unrecognized rank counts $counts"),
+        s"Unrecognized rank counts $counts".fail,
       )
 
     def fromRanks(ranks: List[Rank]): ValueKind = {

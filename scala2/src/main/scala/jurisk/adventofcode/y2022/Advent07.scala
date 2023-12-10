@@ -137,9 +137,7 @@ object Advent07 {
 
     result match {
       case Left(error)  =>
-        sys.error(
-          s"Error $error at '${error.input.getOrElse("").drop(error.failedAtOffset)}'"
-        )
+        s"Error $error at '${error.input.getOrElse("").drop(error.failedAtOffset)}'".fail
       case Right(value) => value
     }
   }
@@ -162,7 +160,7 @@ object Advent07 {
             case "/"  => CdRoot
             case _    => CdDir(dir)
           }
-        case _                           => sys.error(s)
+        case _                           => s.fail
       }
 
     def parseOutputLine(s: String): OutputLine = {

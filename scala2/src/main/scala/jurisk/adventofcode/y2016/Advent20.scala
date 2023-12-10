@@ -5,6 +5,7 @@ import cats.effect.IOApp
 import jurisk.math.DiscreteInterval
 import jurisk.math.DiscreteIntervalSet
 import jurisk.utils.FileInputIO.readFileLines
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent20 extends IOApp.Simple {
@@ -13,7 +14,7 @@ object Advent20 extends IOApp.Simple {
   ): List[DiscreteInterval[Long]] =
     lines map {
       case s"$a-$b" => DiscreteInterval(a.toLong, b.toLong)
-      case s        => sys.error(s"Failed to parse $s")
+      case s        => s.failedToParse
     }
 
   private def solve(
@@ -28,7 +29,7 @@ object Advent20 extends IOApp.Simple {
   }
 
   private def part1(lines: List[String]): Long =
-    solve(lines).minOption.getOrElse(sys.error("Failed to solve"))
+    solve(lines).minOption.getOrElse("Failed to solve".fail)
 
   private def part2(lines: List[String]): Long =
     solve(lines).size

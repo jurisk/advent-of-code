@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2022
 
 import jurisk.adventofcode.y2022.Advent02.Outcome._
 import jurisk.utils.FileInput.parseFileLines
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent02 {
@@ -43,7 +44,7 @@ object Advent02 {
         case "A" | "X" => Rock
         case "B" | "Y" => Paper
         case "C" | "Z" => Scissors
-        case _         => sys.error(s"Unrecognized selection $s")
+        case _         => s"Unrecognized selection $s".fail
       }
   }
 
@@ -70,7 +71,7 @@ object Advent02 {
         case "X" => Loss
         case "Y" => Draw
         case "Z" => Win
-        case _   => sys.error(s"Unrecognized outcome $s")
+        case _   => s"Unrecognized outcome $s".fail
       }
   }
 

@@ -7,6 +7,7 @@ import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
+import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers._
 
@@ -406,9 +407,7 @@ object Advent17 {
       }
     }
 
-    sys.error(
-      s"part2 doesn't actually calculate exact results, the approx result was $acc"
-    )
+    s"part2 doesn't actually calculate exact results, the approx result was $acc".fail
   }
 
   def main(args: Array[String]): Unit = {

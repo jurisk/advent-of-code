@@ -32,7 +32,7 @@ object Advent09 {
           case 0 => a
           case 1 => b
           case 2 => (a + b) / 2
-          case _ => sys.error(s"Unexpectedly large distance: $a $b")
+          case _ => s"Unexpectedly large distance: $a $b".fail
         }
 
       val md                   = h.manhattanDistance(t)

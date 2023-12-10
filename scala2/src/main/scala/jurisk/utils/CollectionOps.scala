@@ -2,6 +2,7 @@ package jurisk.utils
 
 import cats.Eq
 import cats.implicits._
+import jurisk.utils.Parsing.StringOps
 
 import scala.math.Integral.Implicits.infixIntegralOps
 
@@ -14,16 +15,14 @@ object CollectionOps {
     def singleElementUnsafe: T =
       if (seq.size == 1) seq.head
       else
-        sys.error(
-          s"Expected a single element, but got ${seq.toList.mkString("(", ", ", ")")}"
-        )
+        s"Expected a single element, but got ${seq.toList.mkString("(", ", ", ")")}".fail
 
     // We just keep mistyping this so much, we may as well add it :shrug:
     def singleResultUnsafe: T = singleElementUnsafe
 
     def twoElementsUnsafe: (T, T) =
       if (seq.size == 2) (seq.head, seq.tail.head)
-      else sys.error(s"Expected two elements, but got $seq")
+      else s"Expected two elements, but got $seq".fail
   }
 
   implicit class EqIterableOps[T: Eq](seq: Iterable[T]) {

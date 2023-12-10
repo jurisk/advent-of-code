@@ -208,7 +208,7 @@ object Advent22 {
       sanityCheck._2.rotate(TurnAround) shouldEqual direction
 
       field.atOrElse(nextCoords, Square.Outside) match {
-        case Square.Outside => sys.error("Should not happen")
+        case Square.Outside => "Should not happen".fail
         case Square.Wall    => this
         case Square.Open    =>
           copy(position = nextCoords, direction = nextDirection)

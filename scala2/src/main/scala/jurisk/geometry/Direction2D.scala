@@ -3,6 +3,7 @@ package jurisk.geometry
 import jurisk.collections.BiMap
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
 import jurisk.geometry.Rotation._
+import jurisk.utils.Parsing.StringOps
 
 sealed trait Direction2D {
   def diff: Coords2D
@@ -30,8 +31,7 @@ object Direction2D {
         case (Right90, E)    => S
         case (Right90, S)    => W
         case (Right90, W)    => N
-        case _               =>
-          sys.error(s"rotate does not support rotating $this by $rotation")
+        case _               => s"rotate does not support rotating $this by $rotation".fail
       }
 
     def asString: String          = neswMapping.rightToLeftUnsafe(this)
@@ -105,7 +105,7 @@ object Direction2D {
 
   def parseUDLR(s: String): CardinalDirection2D = s.toList match {
     case ch :: Nil => udlrMapping.leftToRightUnsafe(ch)
-    case _         => sys.error(s"Unrecognized cardinal direction: $s")
+    case _         => s.failedToParse("CardinalDirection2D")
   }
 
   private val caretMapping: BiMap[Char, CardinalDirection2D] = BiMap(

@@ -13,6 +13,7 @@ import jurisk.geometry.Field2D
 import jurisk.geometry.Field2D.parseFromLines
 import jurisk.utils.FileInputIO.readFileLines
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent24 extends IOApp.Simple {
@@ -94,7 +95,7 @@ object Advent24 extends IOApp.Simple {
         case '.'            => Square.Empty
         case '#'            => Square.Wall
         case x if x.isDigit => Square.Location(LocationCode(x - '0'))
-        case _              => sys.error(s"Failed to parse $ch")
+        case _              => ch.toString.failedToParse
       }
   }
 

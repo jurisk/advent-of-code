@@ -38,7 +38,7 @@ object Advent08 {
 
           (nodes, remm)
 
-        case _ => sys.error(s"Failed to parse $data")
+        case _ => data.toString.failedToParse
       }
     }
 

@@ -160,7 +160,7 @@ object Advent21 {
     val rootCommand    = allCommands(Root)
     val (rootA, rootB) = rootCommand match {
       case c: Monkey.BinaryMonkey => (c.a, c.b)
-      case _                      => sys.error(s"Unexpectedly $rootCommand is not a binary command")
+      case _                      => s"Unexpectedly $rootCommand is not a binary command".fail
     }
 
     val commands: Map[Name, Monkey] = allCommands - Root

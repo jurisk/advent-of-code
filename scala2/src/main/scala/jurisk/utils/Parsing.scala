@@ -34,7 +34,11 @@ object Parsing {
   implicit class StringOps(s: String) {
     def fail: Nothing = sys.error(s)
 
-    def failedToParse: Nothing = s"Failed to parse `$s`".fail
+    def failedToParse(what: String): Nothing =
+      s"$s as `$what`".failedToParse
+
+    def failedToParse: Nothing =
+      s"Failed to parse `$s`".fail
 
     def removePrefix(prefix: String): Option[String] =
       if (s.startsWith(prefix)) {
@@ -45,7 +49,7 @@ object Parsing {
 
     def removePrefixUnsafe(prefix: String): String =
       removePrefix(prefix).getOrElse(
-        sys.error(s"Expected '$s' to start with '$prefix' but it did not")
+        s"Expected '$s' to start with '$prefix' but it did not".fail
       )
 
     def parseCoords2D: Coords2D = {
@@ -91,10 +95,9 @@ object Parsing {
       parser: String => T
     ): List[T] = parseList("\n\n", parser)
 
-    private def extractDigitStrings: Regex.MatchIterator = {
-      val RegEx = """([-+]?\d+)""".r
-      RegEx.findAllIn(s)
-    }
+    private val DigitStringsRegex                        = """([-+]?\d+)""".r
+    private def extractDigitStrings: Regex.MatchIterator =
+      DigitStringsRegex.findAllIn(s)
 
     def extractInts: Iterator[Int]   = extractDigitStrings.map(_.toInt)
     def extractLongs: Iterator[Long] = extractDigitStrings.map(_.toLong)

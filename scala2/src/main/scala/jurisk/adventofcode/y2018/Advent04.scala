@@ -3,7 +3,7 @@ package jurisk.adventofcode.y2018
 import cats.implicits._
 import jurisk.adventofcode.y2018.Advent04.Entry.BeginsShift
 import jurisk.utils.FileInput.parseFileLines
-import jurisk.utils.Parsing.splitIntoSectionsUsingMarker
+import jurisk.utils.Parsing.{StringOps, splitIntoSectionsUsingMarker}
 import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
@@ -69,9 +69,9 @@ object Advent04 {
             case "falls asleep"  => FallsAsleep(timestamp)
             case "wakes up"      => WakesUp(timestamp)
             case RegEx2(guardId) => BeginsShift(guardId.toInt, timestamp)
-            case _               => sys.error(s"Failed to parse $s")
+            case _               => s.failedToParse
           }
-        case _                                             => sys.error(s"Failed to parse $s")
+        case _                                             => s.failedToParse
       }
   }
 
@@ -120,7 +120,7 @@ object Advent04 {
           .grouped(2)
           .map(group => SleepInterval(group.head.timestamp, group(1).timestamp))
           .toList
-      case list                            => sys.error(s"Unexpected $list")
+      case list                            => s"Unexpected $list".fail
     }
 
     info.groupMapReduce { case (k, _) => k } { case (_, v) => v } {

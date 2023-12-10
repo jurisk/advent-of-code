@@ -2,6 +2,7 @@ package jurisk.geometry
 
 import cats.Functor
 import cats.implicits.toFunctorOps
+import jurisk.utils.Parsing.StringOps
 
 final case class Field2D[T](
   private val data: Vector[Vector[T]],
@@ -47,7 +48,7 @@ final case class Field2D[T](
     at(c) getOrElse default
 
   private def atUnsafe(c: Coords2D): T =
-    at(c) getOrElse sys.error(s"Coords2D $c are invalid")
+    at(c) getOrElse s"Coords2D $c are invalid".fail
 
   def updatedAtUnsafe(c: Coords2D, newValue: T): Field2D[T] = {
     val yIdx = c.y - topLeft.y

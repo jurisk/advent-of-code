@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2022
 
 import jurisk.utils.FileInput.parseFileLines
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent03 {
@@ -15,7 +16,7 @@ object Advent03 {
       val value = ch match {
         case ch if ch >= 'a' && ch <= 'z' => ch - 'a' + 1
         case ch if ch >= 'A' && ch <= 'Z' => ch - 'A' + 27
-        case _                            => sys.error(s"Unrecognized char: $ch")
+        case _                            => ch.toString.failedToParse
       }
 
       Item(ch, value)

@@ -5,6 +5,7 @@ import jurisk.geometry.Area2D
 import jurisk.geometry.Coords2D
 import jurisk.utils.FileInput.parseFileLines
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent03 {
@@ -25,7 +26,7 @@ object Advent03 {
               height.toInt,
             ),
           )
-        case _                                   => sys.error(s"Failed to parse $s")
+        case _                                   => s.failedToParse
       }
   }
 

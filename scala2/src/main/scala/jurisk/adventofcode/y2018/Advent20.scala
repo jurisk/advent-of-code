@@ -9,6 +9,7 @@ import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D._
 import jurisk.utils.FileInput._
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.mutable
@@ -77,9 +78,7 @@ object Advent20 {
 
     rootParser.parseAll(input) match {
       case Left(error)  =>
-        sys.error(
-          s"Error $error at '${error.input.getOrElse("").drop(error.failedAtOffset)}'"
-        )
+        s"Error $error at '${error.input.getOrElse("").drop(error.failedAtOffset)}'".fail
       case Right(value) => value
     }
   }

@@ -7,6 +7,7 @@ import jurisk.geometry._
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 import scala.annotation.tailrec
@@ -48,7 +49,7 @@ object Advent13 {
             case Direction2D.E => N
             case Direction2D.N => E
             case Direction2D.W => S
-            case _             => sys.error(s"Unexpected direction $direction")
+            case _             => s"Unexpected direction $direction".fail
           }
         case Track.NW_SE =>
           direction match {
@@ -56,9 +57,9 @@ object Advent13 {
             case Direction2D.E => S
             case Direction2D.N => W
             case Direction2D.W => N
-            case _             => sys.error(s"Unexpected direction $direction")
+            case _             => s"Unexpected direction $direction".fail
           }
-        case Track.Empty => sys.error(s"Unexpected situation $square")
+        case Track.Empty => s"Unexpected situation $square".fail
       }
 
       Cart(
@@ -136,7 +137,7 @@ object Advent13 {
     private def endOfTurnProcessing(
       acc: Set[Cart]
     ): Either[Coords2D, Set[Cart]] = acc.size match {
-      case 0 => sys.error("We should not lose all carts")
+      case 0 => "We should not lose all carts".fail
       case 1 => acc.singleElementUnsafe.coords.asLeft
       case _ => acc.asRight
     }
@@ -198,7 +199,7 @@ object Advent13 {
       case '+'             => Track.Intersection
       case '\\'            => Track.NW_SE
       case '/'             => Track.SW_NE
-      case ch              => sys.error(s"Unrecognized '$ch'")
+      case ch              => ch.toString.failedToParse
     }
 
     State(processingStrategy, board, carts)

@@ -51,7 +51,7 @@ object Advent08 {
     def findNodeByName(name: NodeName): NodeId = {
       val result = mappings.indexWhere(_.name === name)
       if (result === -1) {
-        sys.error(s"Did not find node $name")
+        s"Did not find node $name".fail
       } else {
         result
       }

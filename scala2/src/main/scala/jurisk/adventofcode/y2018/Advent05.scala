@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2018
 
 import cats.implicits._
 import jurisk.utils.FileInput.parseSingleFileLine
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent05 {
@@ -23,7 +24,7 @@ object Advent05 {
 
     def parse(x: Char): Elem =
       if (x.isLetter) Elem(x)
-      else sys.error(s"Failed to recognize: $x")
+      else s"Failed to recognize: $x".fail
   }
 
   def readFileAndParse(fileName: String): Polymer =

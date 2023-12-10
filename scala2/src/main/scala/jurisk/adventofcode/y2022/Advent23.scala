@@ -7,6 +7,7 @@ import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.immutable.ArraySeq
@@ -96,7 +97,7 @@ object Advent23 {
       {
         case '#' => true
         case '.' => false
-        case ch  => sys.error(s"$ch")
+        case ch  => ch.toString.failedToParse
       },
     )
 

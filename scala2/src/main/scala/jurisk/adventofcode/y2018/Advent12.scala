@@ -62,7 +62,7 @@ object Advent12 {
     s.toList.map {
       case '#' => true
       case '.' => false
-      case ch  => sys.error(s"Unrecognized $ch")
+      case ch  => ch.toString.failedToParse
     }
 
   object State {

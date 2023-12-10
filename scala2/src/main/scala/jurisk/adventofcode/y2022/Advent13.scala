@@ -63,7 +63,7 @@ object Advent13 {
       }
 
       packetParser.parseAll(s) match {
-        case Left(value)  => sys.error(value.toString())
+        case Left(value)  => value.toString().fail
         case Right(value) => value
       }
     }
