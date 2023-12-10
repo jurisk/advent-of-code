@@ -28,24 +28,15 @@ object Advent10 {
     def at(coords: Coords2D): Pipe =
       field.atOrElse(coords, Pipe.Empty)
 
-    def successors(coords: Coords2D): List[Coords2D] = {
-      val fromDirection: Map[CardinalDirection2D, Set[Pipe]] = Map(
-        Direction2D.S -> Set(N_S, S_E, S_W),
-        Direction2D.N -> Set(N_S, N_E, N_W),
-        Direction2D.W -> Set(E_W, N_W, S_W),
-        Direction2D.E -> Set(E_W, S_E, N_E),
-      )
-
-      def check(direction: CardinalDirection2D): List[Coords2D] =
-        Some(coords + direction)
-          .filter(other =>
-            fromDirection(direction.rotate(Rotation.TurnAround))
-              .contains(at(other))
-          )
-          .toList
-
-      at(coords).connections.flatMap(check).toList
-    }
+    def successors(coords: Coords2D): List[Coords2D] =
+      at(coords).connections
+        .filter { direction =>
+          at(coords + direction).connections.contains(direction.invert)
+        }
+        .map { direction =>
+          coords + direction
+        }
+        .toList
   }
 
   sealed trait Pipe {
@@ -58,19 +49,23 @@ object Advent10 {
       override def symbol: Char                          = ' '
       override def connections: Set[CardinalDirection2D] = Set.empty
     }
-    case object N_S   extends Pipe {
+
+    case object N_S extends Pipe {
       override def symbol: Char                          = '┃'
       override def connections: Set[CardinalDirection2D] = Set(N, S)
     }
-    case object E_W   extends Pipe {
+
+    case object E_W extends Pipe {
       override def symbol: Char                          = '━'
       override def connections: Set[CardinalDirection2D] = Set(E, W)
     }
-    case object N_E   extends Pipe {
+
+    case object N_E extends Pipe {
       override def symbol: Char                          = '┗'
       override def connections: Set[CardinalDirection2D] = Set(N, E)
     }
-    case object N_W   extends Pipe {
+
+    case object N_W extends Pipe {
       override def symbol: Char                          = '┛'
       override def connections: Set[CardinalDirection2D] = Set(N, W)
     }
@@ -84,7 +79,6 @@ object Advent10 {
       override def symbol: Char                          = '┏'
       override def connections: Set[CardinalDirection2D] = Set(S, E)
     }
-
   }
 
   object Input {

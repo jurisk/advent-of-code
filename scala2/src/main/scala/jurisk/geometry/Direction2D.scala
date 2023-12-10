@@ -16,6 +16,8 @@ object Direction2D {
 
     def toCaret: Char = caretMapping.rightToLeftUnsafe(this)
 
+    def invert: CardinalDirection2D = rotate(Rotation.TurnAround)
+
     def rotate(rotation: Rotation): CardinalDirection2D =
       (rotation, this) match {
         case (NoRotation, _) => this
