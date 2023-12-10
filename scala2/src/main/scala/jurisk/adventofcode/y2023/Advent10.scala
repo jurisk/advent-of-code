@@ -19,6 +19,7 @@ import jurisk.geometry.Direction2D.{
   W,
 }
 import jurisk.geometry.Field2D.toDebugRepresentation
+import jurisk.utils.Parsing.StringOps
 
 object Advent10 {
   final case class Input(
@@ -95,39 +96,22 @@ object Advent10 {
         val nextCoords = coords + direction
         val nextSquare = data.at(nextCoords)
 
-        val nextDirection = nextSquare match {
-          case Pipe.Empty => ???
-          case Pipe.N_S   => direction
-          case Pipe.E_W   => direction
-          case Pipe.N_E   =>
-            direction match {
-              case Direction2D.N => ???
-              case Direction2D.S => E
-              case Direction2D.W => N
-              case Direction2D.E => ???
-            }
-          case Pipe.N_W   =>
-            direction match {
-              case Direction2D.N => ???
-              case Direction2D.S => W
-              case Direction2D.W => ???
-              case Direction2D.E => N
-            }
-          case Pipe.S_W   =>
-            direction match {
-              case Direction2D.N => W
-              case Direction2D.S => ???
-              case Direction2D.W => ???
-              case Direction2D.E => S
-            }
-          case Pipe.S_E   =>
-            direction match {
-              case Direction2D.N => E
-              case Direction2D.S => ???
-              case Direction2D.W => S
-              case Direction2D.E => ???
-            }
+        val rotation = (nextSquare, direction) match {
+          case (Pipe.Empty, _) => "Expected to be on track".fail
+          case (Pipe.N_S, _)   => Rotation.NoRotation
+          case (Pipe.E_W, _)   => Rotation.NoRotation
+          case (Pipe.N_E, S)   => Rotation.Left90
+          case (Pipe.N_E, W)   => Rotation.Right90
+          case (Pipe.S_E, N)   => Rotation.Right90
+          case (Pipe.S_E, W)   => Rotation.Left90
+          case (Pipe.S_W, N)   => Rotation.Left90
+          case (Pipe.S_W, E)   => Rotation.Right90
+          case (Pipe.N_W, S)   => Rotation.Right90
+          case (Pipe.N_W, E)   => Rotation.Left90
+          case (_, _)          => "Unexpected".fail
         }
+
+        val nextDirection = direction.rotate(rotation)
 
         CoordsWithDirection(
           coords = nextCoords,
