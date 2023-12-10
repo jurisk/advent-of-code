@@ -75,10 +75,6 @@ object Advent10 {
       )
       .keySet
 
-    val onlyTrack = data.field.mapByCoordsWithValues { case (c, v) =>
-      if (trackCoords.contains(c)) v else Empty
-    }
-
     val start = CoordsWithDirection(
       coords = data.animalAt,
       direction = animalStartDirection,
@@ -90,26 +86,11 @@ object Advent10 {
         x => x.nextOnTrack(data.field) :: Nil,
       )
 
-    val trackCarets = onlyTrack
-      .mapByCoordsWithValues { case (c, _) =>
-        trackCoordsWithAnimalDirection.find(_.coords == c) match {
-          case Some(value) => value.direction.toCaret
-          case None        => ' '
-        }
-      }
-
     val rightCoords = trackCoordsWithAnimalDirection
       .flatMap(x => x.coordsToTheRight(data.field).toSet)
       .toSet
       .diff(trackCoords)
 
-    val seeds: Field2D[Char] = trackCarets.mapByCoordsWithValues {
-      case (c, v) => if (rightCoords.contains(c)) '█' else v
-    }
-
-    println(toDebugRepresentation(seeds))
-
-    // TODO: extract floodFill as an algorithm
     val floodFilled = rightCoords.flatMap { c =>
       Bfs.bfsReachable[Coords2D](
         c,
