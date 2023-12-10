@@ -4,7 +4,8 @@ import jurisk.geometry.{Coords2D, Direction2D, Field2D, Rotation}
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import cats.implicits._
-import jurisk.adventofcode.y2023.Advent10.Pipe._
+import jurisk.adventofcode.y2023.pipe.Pipe._
+import jurisk.adventofcode.y2023.pipe.Pipe
 import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
 import jurisk.geometry.Direction2D.{
   CardinalDirection2D,
@@ -27,58 +28,6 @@ object Advent10 {
   ) {
     def at(coords: Coords2D): Pipe =
       field.atOrElse(coords, Pipe.Empty)
-
-    def connectedNeighbours(coords: Coords2D): List[Coords2D] =
-      at(coords).connections
-        .filter { direction =>
-          at(coords + direction).connections.contains(direction.invert)
-        }
-        .map { direction =>
-          coords + direction
-        }
-        .toList
-  }
-
-  sealed trait Pipe {
-    def symbol: Char
-    def connections: Set[CardinalDirection2D]
-  }
-
-  case object Pipe {
-    case object Empty extends Pipe {
-      override def symbol: Char                          = ' '
-      override def connections: Set[CardinalDirection2D] = Set.empty
-    }
-
-    case object N_S extends Pipe {
-      override def symbol: Char                          = '┃'
-      override def connections: Set[CardinalDirection2D] = Set(N, S)
-    }
-
-    case object E_W extends Pipe {
-      override def symbol: Char                          = '━'
-      override def connections: Set[CardinalDirection2D] = Set(E, W)
-    }
-
-    case object N_E extends Pipe {
-      override def symbol: Char                          = '┗'
-      override def connections: Set[CardinalDirection2D] = Set(N, E)
-    }
-
-    case object N_W extends Pipe {
-      override def symbol: Char                          = '┛'
-      override def connections: Set[CardinalDirection2D] = Set(N, W)
-    }
-
-    case object S_W extends Pipe {
-      override def symbol: Char                          = '┓'
-      override def connections: Set[CardinalDirection2D] = Set(S, W)
-    }
-
-    case object S_E extends Pipe {
-      override def symbol: Char                          = '┏'
-      override def connections: Set[CardinalDirection2D] = Set(S, E)
-    }
   }
 
   object Input {
@@ -119,7 +68,7 @@ object Advent10 {
     Dijkstra
       .dijkstraAll(
         data.animalAt,
-        (c: Coords2D) => data.connectedNeighbours(c).map(x => (x, 1)),
+        (c: Coords2D) => connectedNeighbours(data.field, c).map(x => (x, 1)),
       )
       .map { case (coord @ _, (parent @ _, distance)) =>
         distance
@@ -130,7 +79,7 @@ object Advent10 {
     val trackCoords = Dijkstra
       .dijkstraAll(
         data.animalAt,
-        (c: Coords2D) => data.connectedNeighbours(c).map(x => (x, 1)),
+        (c: Coords2D) => connectedNeighbours(data.field, c).map(x => (x, 1)),
       )
       .keySet
 
@@ -138,7 +87,6 @@ object Advent10 {
       if (trackCoords.contains(c)) v else Empty
     }
 
-    // TODO: Merge with 2018-13 Cart
     final case class CoordsWithDirection(
       coords: Coords2D,
       direction: CardinalDirection2D,

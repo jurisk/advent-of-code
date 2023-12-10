@@ -1,0 +1,64 @@
+package jurisk.adventofcode.y2023.pipe
+
+import jurisk.geometry.Direction2D.{CardinalDirection2D, E, N, S, W}
+import jurisk.geometry.{Coords2D, Field2D}
+
+sealed trait Pipe {
+  def symbol: Char
+  def connections: Set[CardinalDirection2D]
+}
+
+case object Pipe {
+  def connectedNeighbours(
+    field: Field2D[Pipe],
+    coords: Coords2D,
+  ): List[Coords2D] =
+    field
+      .atOrElse(coords, Empty)
+      .connections
+      .filter { direction =>
+        field
+          .atOrElse(coords + direction, Empty)
+          .connections
+          .contains(direction.invert)
+      }
+      .map { direction =>
+        coords + direction
+      }
+      .toList
+
+  case object Empty extends Pipe {
+    override def symbol: Char                          = '░'
+    override def connections: Set[CardinalDirection2D] = Set.empty
+  }
+
+  case object N_S extends Pipe {
+    override def symbol: Char                          = '┃'
+    override def connections: Set[CardinalDirection2D] = Set(N, S)
+  }
+
+  case object E_W extends Pipe {
+    override def symbol: Char                          = '━'
+    override def connections: Set[CardinalDirection2D] = Set(E, W)
+  }
+
+  case object N_E extends Pipe {
+    override def symbol: Char                          = '┗'
+    override def connections: Set[CardinalDirection2D] = Set(N, E)
+  }
+
+  case object N_W extends Pipe {
+    override def symbol: Char                          = '┛'
+    override def connections: Set[CardinalDirection2D] = Set(N, W)
+  }
+
+  case object S_W extends Pipe {
+    override def symbol: Char                          = '┓'
+    override def connections: Set[CardinalDirection2D] = Set(S, W)
+  }
+
+  case object S_E extends Pipe {
+    override def symbol: Char                          = '┏'
+    override def connections: Set[CardinalDirection2D] = Set(S, E)
+  }
+}
