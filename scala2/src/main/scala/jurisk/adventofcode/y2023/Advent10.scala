@@ -5,7 +5,6 @@ import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import cats.implicits._
-import jurisk.adventofcode.y2023.Advent10.Square
 import jurisk.adventofcode.y2023.Advent10.Square._
 import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
 import jurisk.geometry.Direction2D.{
@@ -22,28 +21,11 @@ import jurisk.geometry.Direction2D.{
 import jurisk.geometry.Field2D.toDebugRepresentation
 
 object Advent10 {
-  def canGo(from: Square, to: Square, direction: CardinalDirection2D): Boolean =
-    from.connections.contains(direction) && to.connections.contains(
-      direction.rotate(Rotation.TurnAround)
-    )
-
   final case class Input(
     animalAt: Coords2D,
     field: Field2D[Square],
     animalStartDirection: CardinalDirection2D,
   ) {
-//    def animalStartDirection: CardinalDirection2D = {
-//      at(animalAt) match {
-//        case Square.Empty => "asdf".fail
-//        case Square.N_S => N
-//        case Square.E_W => E
-//        case Square.NE => N
-//        case Square.NW => W
-//        case Square.SW => S
-//        case Square.SE => E
-//      }
-//    }
-//
     def at(coords: Coords2D): Square =
       field.atOrElse(coords, Square.Empty)
 
@@ -73,6 +55,7 @@ object Advent10 {
     }
   }
 
+  // TODO: Merge with 2018-13 Track
   sealed trait Square {
     def symbol: Char
     def connections: List[CardinalDirection2D]
@@ -146,42 +129,31 @@ object Advent10 {
   ): Input =
     Input.parse(input, animalReplace, animalStartDirection)
 
-  def part1(data: Input): Int = {
-    val qq = Dijkstra
+  def part1(data: Input): Int =
+    Dijkstra
       .dijkstraAll(
         data.animalAt,
         (c: Coords2D) => data.successors(c).map(x => (x, 1)),
       )
-
-    val gugu = data.field.map(_.symbol)
-    println(toDebugRepresentation(gugu))
-
-    val deb = gugu.mapByCoordsWithValues { case (c, _) =>
-      qq.get(c) match {
-        case Some((_, n)) => n.toString.last
-        case None         => '.'
+      .map { case (coord @ _, (parent @ _, distance)) =>
+        distance
       }
-    }
-
-    println(toDebugRepresentation(deb))
-
-    qq.values
-      .map(_._2)
       .max
-  }
 
   def part2(data: Input): Int = {
-    val qq = Dijkstra
+    val trackCoords = Dijkstra
       .dijkstraAll(
         data.animalAt,
         (c: Coords2D) => data.successors(c).map(x => (x, 1)),
       )
+      .keySet
 
     val onlyTrack = data.field.mapByCoordsWithValues { case (c, v) =>
+      // TODO: This check can be removed, Dijkstra should return it
       if (c == data.animalAt) {
         v
       } else {
-        if (qq.contains(c)) {
+        if (trackCoords.contains(c)) {
           v
         } else {
           Empty
@@ -189,6 +161,7 @@ object Advent10 {
       }
     }
 
+    // TODO: Merge with 2018-13 Cart
     final case class CoordsWithDirection(
       coords: Coords2D,
       direction: CardinalDirection2D,
@@ -198,7 +171,7 @@ object Advent10 {
         val nextSquare = data.at(nextCoords)
 
         val nextDirection = nextSquare match {
-          case Square.Empty => "asdf".fail
+          case Square.Empty => ???
           case Square.N_S   => direction
           case Square.E_W   => direction
           case Square.N_E   =>
@@ -238,7 +211,7 @@ object Advent10 {
       }
 
       def coordsToTheRight: List[Coords2D] = {
-        val dd: List[Direction2D] = data.at(coords) match {
+        val directions: List[Direction2D] = data.at(coords) match {
           case Square.Empty => Nil
           case Square.N_S   => direction.rotate(Rotation.Right90) :: Nil
           case Square.E_W   => direction.rotate(Rotation.Right90) :: Nil
@@ -272,7 +245,7 @@ object Advent10 {
             }
         }
 
-        dd.map(x => coords + x)
+        directions.map(x => coords + x)
       }
     }
 
@@ -291,29 +264,11 @@ object Advent10 {
           case None        => ' '
         }
       }
-//
-//    val nnn = CoordsWithDirection(
-//      Coords2D(13, 3),
-//      Direction2D.N
-//    ).coordsToTheRight
-//    println(nnn.map(data.at))
-//
-//    val qqq = trackCarets
-//      .updatedAtUnsafe(Coords2D(13, 3), '◯')
-//      .updatedAtUnsafe(Coords2D(13, 4), 'x')
-//      .updatedAtUnsafe(Coords2D(14, 4), 'x')
-//      .updatedAtUnsafe(Coords2D(14, 3), 'x')
-
-//    println(toDebugRepresentation(qqq))
 
     val rightCoords = trackCoordsWithAnimalDirection
       .flatMap(x => x.coordsToTheRight.toSet)
       .toSet
       .filter(x => onlyTrack.at(x).contains(Empty))
-
-//    trackCoordsWithAnimalDirection foreach { x =>
-//      println(s"$x => ${x.coordsToTheRight}") // .filter(x => data.at(x) == Empty)
-//    }
 
     val seeds: Field2D[Char] = trackCarets.mapByCoordsWithValues {
       case (c, v) =>
@@ -326,33 +281,18 @@ object Advent10 {
 
     println(toDebugRepresentation(seeds))
 
+    // TODO: extract floodFill as an algorithm
     val floodFilled = rightCoords.flatMap { c =>
-      Bfs.bfsReachable[Coords2D](c, x => onlyTrack.neighboursFor(x, includeDiagonal = false).filter(n => onlyTrack.atOrElse(n, Empty) == Empty))
-    } ++ rightCoords
-
-//    val insides: Field2D[Char] = trackCarets.mapByCoordsWithValues {
-//      case (c, v) =>
-//        if (floodFilled.contains(c)) {
-//          '█'
-//        } else {
-//          v
-//        }
-//    }
-//
-//    println(toDebugRepresentation(insides))
+      Bfs.bfsReachable[Coords2D](
+        c,
+        x =>
+          onlyTrack
+            .neighboursFor(x, includeDiagonal = false)
+            .filter(n => onlyTrack.atOrElse(n, Empty) == Empty),
+      )
+    }
 
     floodFilled.size
-
-//
-//
-//    var sum = 0
-//    onlyTrack.rows.foreach { row =>
-//      val res = insideCells(row)
-//      println(s"$res -> $row")
-//      sum += res
-//    }
-//
-//    sum
   }
 
   def parseFile(

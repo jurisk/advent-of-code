@@ -10,7 +10,7 @@ class Advent10Spec extends AnyFlatSpec {
     part1(parseFile("2023/10-test-1.txt", 'F', E)) shouldEqual 4
   }
 
-  "Advent10" should "test part 1 2" in {
+  it should "test part 1 2" in {
     part1(parseFile("2023/10-test-2.txt", 'F', E)) shouldEqual 8
   }
 
