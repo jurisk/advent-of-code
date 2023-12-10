@@ -35,31 +35,27 @@ object Advent10 {
 
       val animalAt = chars.filterCoordsByValue(_ == 'S').singleResultUnsafe
 
-      val field: Field2D[Pipe] = Field2D.parseFromString(
-        s,
-        {
-          case '|' => N_S
-          case '-' => E_W
-          case 'L' => N_E
-          case 'J' => N_W
-          case '7' => S_W
-          case 'F' => S_E
-          case '.' => Empty
-          case 'S' => Empty
-        },
+      val mapping = Map(
+        '|' -> N_S,
+        '-' -> E_W,
+        'L' -> N_E,
+        'J' -> N_W,
+        '7' -> S_W,
+        'F' -> S_E,
+        '.' -> Empty,
+        'S' -> Empty,
       )
 
-      val animalPipe = Pipe.All
-        .filterNot(_ == Empty)
-        .filter { candidate =>
-          candidate.connections.forall { direction =>
-            field
-              .atOrElse(animalAt + direction, Empty)
-              .connections
-              .contains(direction.invert)
-          }
+      val field: Field2D[Pipe] = Field2D.parseFromString(s, mapping.apply)
+
+      val animalPipe = Pipe.NonEmpty.filter { candidate =>
+        candidate.connections.forall { direction =>
+          field
+            .atOrElse(animalAt + direction, Empty)
+            .connections
+            .contains(direction.invert)
         }
-        .singleElementUnsafe
+      }.singleElementUnsafe
 
       val updatedField = field.updatedAtUnsafe(animalAt, animalPipe)
 
@@ -163,7 +159,7 @@ object Advent10 {
     val rightCoords = trackCoordsWithAnimalDirection
       .flatMap(x => x.coordsToTheRight.toSet)
       .toSet
-      .filter(x => onlyTrack.at(x).contains(Empty))
+      .diff(trackCoords)
 
     val seeds: Field2D[Char] = trackCarets.mapByCoordsWithValues {
       case (c, v) => if (rightCoords.contains(c)) '█' else v
@@ -175,10 +171,7 @@ object Advent10 {
     val floodFilled = rightCoords.flatMap { c =>
       Bfs.bfsReachable[Coords2D](
         c,
-        x =>
-          onlyTrack
-            .neighboursFor(x, includeDiagonal = false)
-            .filter(n => onlyTrack.at(n).contains(Empty)),
+        x => data.field.adjacent4(x).toSet.diff(trackCoords).toList,
       )
     }
 

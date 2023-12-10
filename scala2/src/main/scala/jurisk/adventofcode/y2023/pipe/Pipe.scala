@@ -27,7 +27,8 @@ case object Pipe {
       }
       .toList
 
-  val All: List[Pipe] = Empty :: N_S :: E_W :: N_E :: N_W :: S_W :: S_E :: Nil
+  val NonEmpty: List[Pipe] = N_S :: E_W :: N_E :: N_W :: S_W :: S_E :: Nil
+  val All: List[Pipe]      = Empty :: NonEmpty
 
   case object Empty extends Pipe {
     override def symbol: Char                          = '░'
