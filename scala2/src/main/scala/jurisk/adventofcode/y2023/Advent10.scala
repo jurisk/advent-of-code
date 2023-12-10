@@ -3,7 +3,6 @@ package jurisk.adventofcode.y2023
 import jurisk.geometry.{Coords2D, Direction2D, Field2D, Rotation}
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
-import jurisk.utils.Parsing.StringOps
 import cats.implicits._
 import jurisk.adventofcode.y2023.Advent10.Square._
 import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
@@ -55,7 +54,6 @@ object Advent10 {
     }
   }
 
-  // TODO: Merge with 2018-13 Track
   sealed trait Square {
     def symbol: Char
     def connections: List[CardinalDirection2D]
@@ -149,16 +147,7 @@ object Advent10 {
       .keySet
 
     val onlyTrack = data.field.mapByCoordsWithValues { case (c, v) =>
-      // TODO: This check can be removed, Dijkstra should return it
-      if (c == data.animalAt) {
-        v
-      } else {
-        if (trackCoords.contains(c)) {
-          v
-        } else {
-          Empty
-        }
-      }
+      if (trackCoords.contains(c)) v else Empty
     }
 
     // TODO: Merge with 2018-13 Cart
