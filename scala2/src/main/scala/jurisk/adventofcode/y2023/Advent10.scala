@@ -1,24 +1,14 @@
 package jurisk.adventofcode.y2023
 
-import jurisk.geometry.{Coords2D, Direction2D, Field2D, Rotation}
-import jurisk.utils.CollectionOps.IterableOps
-import jurisk.utils.FileInput._
 import cats.implicits._
 import jurisk.adventofcode.y2023.pipe.Pipe._
-import jurisk.adventofcode.y2023.pipe.Pipe
+import jurisk.adventofcode.y2023.pipe.{CoordsWithDirection, Pipe}
 import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
-import jurisk.geometry.Direction2D.{
-  CardinalDirection2D,
-  E,
-  N,
-  NE,
-  NW,
-  S,
-  SE,
-  SW,
-  W,
-}
+import jurisk.geometry.Direction2D.{CardinalDirection2D, S}
 import jurisk.geometry.Field2D.toDebugRepresentation
+import jurisk.geometry.{Coords2D, Field2D}
+import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.FileInput._
 
 object Advent10 {
   final case class Input(
@@ -89,64 +79,16 @@ object Advent10 {
       if (trackCoords.contains(c)) v else Empty
     }
 
-    final case class CoordsWithDirection(
-      coords: Coords2D,
-      direction: CardinalDirection2D,
-    ) {
-      def nextOnTrack: CoordsWithDirection = {
-        val nextCoords = coords + direction
-        val nextSquare = data.at(nextCoords)
-
-        val nextDirection = nextSquare.connections
-          .filterNot(_ == direction.invert)
-          .singleElementUnsafe
-
-        CoordsWithDirection(
-          coords = nextCoords,
-          direction = nextDirection,
-        )
-      }
-
-      def coordsToTheRight: List[Coords2D] = {
-        val diffs: List[Direction2D] = data.at(coords) match {
-          case Pipe.Empty => Nil
-
-          case Pipe.N_S | Pipe.E_W =>
-            direction.rotate(Rotation.Right90) :: Nil
-
-          case Pipe.N_E =>
-            direction match {
-              case Direction2D.E => W :: SW :: S :: Nil
-              case _             => Nil
-            }
-          case Pipe.N_W =>
-            direction match {
-              case Direction2D.N => S :: SE :: E :: Nil
-              case _             => Nil
-            }
-          case Pipe.S_W =>
-            direction match {
-              case Direction2D.W => N :: NE :: E :: Nil
-              case _             => Nil
-            }
-          case Pipe.S_E =>
-            direction match {
-              case Direction2D.S => N :: NW :: W :: Nil
-              case _             => Nil
-            }
-        }
-
-        diffs.map(x => coords + x)
-      }
-    }
-
     val start = CoordsWithDirection(
       coords = data.animalAt,
       direction = animalStartDirection,
     )
 
     val trackCoordsWithAnimalDirection =
-      Bfs.bfsReachable[CoordsWithDirection](start, x => x.nextOnTrack :: Nil)
+      Bfs.bfsReachable[CoordsWithDirection](
+        start,
+        x => x.nextOnTrack(data.field) :: Nil,
+      )
 
     val trackCarets = onlyTrack
       .mapByCoordsWithValues { case (c, _) =>
@@ -157,7 +99,7 @@ object Advent10 {
       }
 
     val rightCoords = trackCoordsWithAnimalDirection
-      .flatMap(x => x.coordsToTheRight.toSet)
+      .flatMap(x => x.coordsToTheRight(data.field).toSet)
       .toSet
       .diff(trackCoords)
 
