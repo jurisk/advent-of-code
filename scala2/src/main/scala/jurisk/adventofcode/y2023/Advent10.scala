@@ -180,12 +180,7 @@ object Advent10 {
       .filter(x => onlyTrack.at(x).contains(Empty))
 
     val seeds: Field2D[Char] = trackCarets.mapByCoordsWithValues {
-      case (c, v) =>
-        if (rightCoords.contains(c)) {
-          '█'
-        } else {
-          v
-        }
+      case (c, v) => if (rightCoords.contains(c)) '█' else v
     }
 
     println(toDebugRepresentation(seeds))
@@ -197,7 +192,7 @@ object Advent10 {
         x =>
           onlyTrack
             .neighboursFor(x, includeDiagonal = false)
-            .filter(n => onlyTrack.atOrElse(n, Empty) == Empty),
+            .filter(n => onlyTrack.at(n).contains(Empty)),
       )
     }
 
