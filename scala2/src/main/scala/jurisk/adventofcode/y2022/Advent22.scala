@@ -63,7 +63,7 @@ object Advent22 {
     }
 
   def parse(data: String): Parsed = {
-    val Array(fieldS, commandsS) = data.split("\n\n")
+    val List(fieldS, commandsS) = data.splitByDoubleNewline
 
     val field    = Field2D.parseFromString(fieldS, Square.parse)
     val commands = parseCommands(commandsS, Vector.empty).toList

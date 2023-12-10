@@ -9,7 +9,7 @@ import jurisk.adventofcode.y2022.Advent07.OutputLine.Dir
 import jurisk.adventofcode.y2022.Advent07.OutputLine.File
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import jurisk.utils.Parsing.splitIntoSections
+import jurisk.utils.Parsing.splitIntoSectionsUsingMarker
 import org.scalatest.matchers.should.Matchers._
 
 object Advent07 {
@@ -174,7 +174,7 @@ object Advent07 {
     }
 
     val lines    = readFileLines(fileName)
-    val sections = splitIntoSections[String](lines, commandMatches)
+    val sections = splitIntoSectionsUsingMarker[String](lines, commandMatches)
     sections map { case (start, remaining) =>
       (
         parseCommand(start),

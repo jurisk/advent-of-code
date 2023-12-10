@@ -63,7 +63,7 @@ object Advent11 {
   }
 
   def parse(data: String): Parsed = {
-    val list   = data.parseList("\n\n", parseMonkey)
+    val list   = data.parseSections(parseMonkey)
     val (a, b) = list.unzip
     (a, b.flatten)
   }

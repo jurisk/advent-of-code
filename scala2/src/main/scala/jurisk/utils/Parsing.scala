@@ -13,7 +13,7 @@ object Parsing {
   /** Splits data (such as a log) into sections, with 'isStart' detecting start
     * of each section
     */
-  def splitIntoSections[T](
+  def splitIntoSectionsUsingMarker[T](
     data: List[T],
     isStart: T => Boolean,
   ): List[(T, List[T])] = {
@@ -56,6 +56,9 @@ object Parsing {
     def splitPairUnsafe(separator: String): (String, String) =
       s.split(separator).toList.twoElementsUnsafe
 
+    def splitByDoubleNewline: List[String] =
+      s.split("\n\n").toList
+
     def parsePairUnsafe[A, B](
       separator: String,
       parserLeft: String => A,
@@ -80,6 +83,10 @@ object Parsing {
     def parseLines[T](
       parser: String => T
     ): List[T] = parseList("\n", parser)
+
+    def parseSections[T](
+      parser: String => T
+    ): List[T] = parseList("\n\n", parser)
 
     private def extractDigitStrings: Regex.MatchIterator = {
       val RegEx = """([-+]?\d+)""".r

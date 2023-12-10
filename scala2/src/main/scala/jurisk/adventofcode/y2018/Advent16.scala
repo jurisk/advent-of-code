@@ -90,7 +90,7 @@ object Advent16 {
 
   def parse(data: String): Parsed = {
     val Array(samplesString, programString) = data.split("\n\n\n\n")
-    val samples                             = samplesString.parseList("\n\n", Sample.parse)
+    val samples                             = samplesString.parseSections(Sample.parse)
     val program                             = programString.split("\n").map(InstructionBinary.parse).toList
     (samples, program)
   }

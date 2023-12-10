@@ -82,7 +82,7 @@ object Advent12 {
   type Parsed   = (State, Patterns)
 
   def parse(data: String): Parsed = {
-    val (a, b) = data.splitPairUnsafe("\n\n");
+    val List(a, b) = data.splitByDoubleNewline
     (State.parse(a), b.parseLines(parsePattern).toMap)
   }
 

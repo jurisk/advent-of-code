@@ -247,7 +247,7 @@ object Advent24 {
     }
 
     def parse(s: String): State = {
-      val Array(immuneSystem, infection) = s.split("\n\n")
+      val List(immuneSystem, infection) = s.splitByDoubleNewline
 
       def parseGroupSet(
         s: String,

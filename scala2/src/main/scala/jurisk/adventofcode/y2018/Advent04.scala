@@ -3,7 +3,7 @@ package jurisk.adventofcode.y2018
 import cats.implicits._
 import jurisk.adventofcode.y2018.Advent04.Entry.BeginsShift
 import jurisk.utils.FileInput.parseFileLines
-import jurisk.utils.Parsing.splitIntoSections
+import jurisk.utils.Parsing.splitIntoSectionsUsingMarker
 import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
@@ -98,7 +98,7 @@ object Advent04 {
     parseFileLines(fileName, Entry.parse)
 
   private def segment(data: List[Entry]): List[(Entry, List[Entry])] =
-    splitIntoSections[Entry](
+    splitIntoSectionsUsingMarker[Entry](
       data,
       {
         case BeginsShift(_, _) => true

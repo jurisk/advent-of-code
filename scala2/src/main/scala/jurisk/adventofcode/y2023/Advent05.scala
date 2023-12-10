@@ -140,13 +140,11 @@ object Advent05 extends IOApp.Simple {
     }
   }
 
-  def parse(input: String): Input = {
-    val sections = input.split("\n\n").toList
-    sections match {
+  def parse(input: String): Input =
+    input.splitByDoubleNewline match {
       case h :: t => Input(h.extractLongList, t map ConversionMap.parse)
       case _      => input.failedToParse
     }
-  }
 
   def solve(
     data: Input,

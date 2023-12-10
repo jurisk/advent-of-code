@@ -77,7 +77,7 @@ object Advent13 {
   }
 
   def parse(data: String): Parsed =
-    data.parseList("\n\n", Pair.parse)
+    data.parseSections(Pair.parse)
 
   def part1(data: Parsed): Int =
     data.zipWithIndex.flatMap { case (pair, index) =>
