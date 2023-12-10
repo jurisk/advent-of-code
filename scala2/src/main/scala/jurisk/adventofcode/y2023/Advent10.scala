@@ -4,7 +4,7 @@ import jurisk.geometry.{Coords2D, Direction2D, Field2D, Rotation}
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import cats.implicits._
-import jurisk.adventofcode.y2023.Advent10.Square._
+import jurisk.adventofcode.y2023.Advent10.Pipe._
 import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
 import jurisk.geometry.Direction2D.{
   CardinalDirection2D,
@@ -22,73 +22,67 @@ import jurisk.geometry.Field2D.toDebugRepresentation
 object Advent10 {
   final case class Input(
     animalAt: Coords2D,
-    field: Field2D[Square],
+    field: Field2D[Pipe],
     animalStartDirection: CardinalDirection2D,
   ) {
-    def at(coords: Coords2D): Square =
-      field.atOrElse(coords, Square.Empty)
+    def at(coords: Coords2D): Pipe =
+      field.atOrElse(coords, Pipe.Empty)
 
     def successors(coords: Coords2D): List[Coords2D] = {
-      val fromDirection: Map[CardinalDirection2D, Set[Square]] = Map(
+      val fromDirection: Map[CardinalDirection2D, Set[Pipe]] = Map(
         Direction2D.S -> Set(N_S, S_E, S_W),
         Direction2D.N -> Set(N_S, N_E, N_W),
         Direction2D.W -> Set(E_W, N_W, S_W),
         Direction2D.E -> Set(E_W, S_E, N_E),
       )
 
-      def check(direction: CardinalDirection2D): List[Coords2D] = {
-        val other      = coords + direction
-        val otherValue = at(other)
+      def check(direction: CardinalDirection2D): List[Coords2D] =
+        Some(coords + direction)
+          .filter(other =>
+            fromDirection(direction.rotate(Rotation.TurnAround))
+              .contains(at(other))
+          )
+          .toList
 
-        val turnAround = direction.rotate(Rotation.TurnAround)
-
-        val valid = fromDirection(turnAround).contains(otherValue)
-        if (valid) {
-          other :: Nil
-        } else {
-          Nil
-        }
-      }
-
-      at(coords).connections.flatMap(check)
+      at(coords).connections.flatMap(check).toList
     }
   }
 
-  sealed trait Square {
+  sealed trait Pipe {
     def symbol: Char
-    def connections: List[CardinalDirection2D]
+    def connections: Set[CardinalDirection2D]
   }
 
-  case object Square {
-    case object Empty extends Square {
-      override def symbol: Char                           = ' '
-      override def connections: List[CardinalDirection2D] = Nil
+  case object Pipe {
+    case object Empty extends Pipe {
+      override def symbol: Char                          = ' '
+      override def connections: Set[CardinalDirection2D] = Set.empty
     }
-    case object N_S   extends Square {
-      override def symbol: Char                           = '┃'
-      override def connections: List[CardinalDirection2D] = N :: S :: Nil
+    case object N_S   extends Pipe {
+      override def symbol: Char                          = '┃'
+      override def connections: Set[CardinalDirection2D] = Set(N, S)
     }
-    case object E_W   extends Square {
-      override def symbol: Char                           = '━'
-      override def connections: List[CardinalDirection2D] = E :: W :: Nil
+    case object E_W   extends Pipe {
+      override def symbol: Char                          = '━'
+      override def connections: Set[CardinalDirection2D] = Set(E, W)
     }
-    case object N_E   extends Square {
-      override def symbol: Char                           = '┗'
-      override def connections: List[CardinalDirection2D] = N :: E :: Nil
+    case object N_E   extends Pipe {
+      override def symbol: Char                          = '┗'
+      override def connections: Set[CardinalDirection2D] = Set(N, E)
     }
-    case object N_W   extends Square {
-      override def symbol: Char                           = '┛'
-      override def connections: List[CardinalDirection2D] = N :: W :: Nil
-    }
-
-    case object S_W extends Square {
-      override def symbol: Char                           = '┓'
-      override def connections: List[CardinalDirection2D] = S :: W :: Nil
+    case object N_W   extends Pipe {
+      override def symbol: Char                          = '┛'
+      override def connections: Set[CardinalDirection2D] = Set(N, W)
     }
 
-    case object S_E extends Square {
-      override def symbol: Char                           = '┏'
-      override def connections: List[CardinalDirection2D] = S :: E :: Nil
+    case object S_W extends Pipe {
+      override def symbol: Char                          = '┓'
+      override def connections: Set[CardinalDirection2D] = Set(S, W)
+    }
+
+    case object S_E extends Pipe {
+      override def symbol: Char                          = '┏'
+      override def connections: Set[CardinalDirection2D] = Set(S, E)
     }
 
   }
@@ -103,16 +97,16 @@ object Advent10 {
 
       val animalAt = chars.filterCoordsByValue(_ == 'S').singleResultUnsafe
 
-      val field: Field2D[Square] = Field2D.parseFromString(
+      val field: Field2D[Pipe] = Field2D.parseFromString(
         s.replace('S', animalReplace),
         {
-          case '|' => Square.N_S
-          case '-' => Square.E_W
-          case 'L' => Square.N_E
-          case 'J' => Square.N_W
-          case '7' => Square.S_W
-          case 'F' => Square.S_E
-          case '.' => Square.Empty
+          case '|' => Pipe.N_S
+          case '-' => Pipe.E_W
+          case 'L' => Pipe.N_E
+          case 'J' => Pipe.N_W
+          case '7' => Pipe.S_W
+          case 'F' => Pipe.S_E
+          case '.' => Pipe.Empty
         },
       )
 
@@ -160,31 +154,31 @@ object Advent10 {
         val nextSquare = data.at(nextCoords)
 
         val nextDirection = nextSquare match {
-          case Square.Empty => ???
-          case Square.N_S   => direction
-          case Square.E_W   => direction
-          case Square.N_E   =>
+          case Pipe.Empty => ???
+          case Pipe.N_S   => direction
+          case Pipe.E_W   => direction
+          case Pipe.N_E   =>
             direction match {
               case Direction2D.N => ???
               case Direction2D.S => E
               case Direction2D.W => N
               case Direction2D.E => ???
             }
-          case Square.N_W   =>
+          case Pipe.N_W   =>
             direction match {
               case Direction2D.N => ???
               case Direction2D.S => W
               case Direction2D.W => ???
               case Direction2D.E => N
             }
-          case Square.S_W   =>
+          case Pipe.S_W   =>
             direction match {
               case Direction2D.N => W
               case Direction2D.S => ???
               case Direction2D.W => ???
               case Direction2D.E => S
             }
-          case Square.S_E   =>
+          case Pipe.S_E   =>
             direction match {
               case Direction2D.N => E
               case Direction2D.S => ???
@@ -201,31 +195,31 @@ object Advent10 {
 
       def coordsToTheRight: List[Coords2D] = {
         val directions: List[Direction2D] = data.at(coords) match {
-          case Square.Empty => Nil
-          case Square.N_S   => direction.rotate(Rotation.Right90) :: Nil
-          case Square.E_W   => direction.rotate(Rotation.Right90) :: Nil
-          case Square.N_E   =>
+          case Pipe.Empty => Nil
+          case Pipe.N_S   => direction.rotate(Rotation.Right90) :: Nil
+          case Pipe.E_W   => direction.rotate(Rotation.Right90) :: Nil
+          case Pipe.N_E   =>
             direction match {
               case Direction2D.N => NE :: Nil
               case Direction2D.S => ???
               case Direction2D.W => ???
               case Direction2D.E => W :: SW :: S :: Nil
             }
-          case Square.N_W   =>
+          case Pipe.N_W   =>
             direction match {
               case Direction2D.N => S :: SE :: E :: Nil
               case Direction2D.S => ???
               case Direction2D.W => NW :: Nil
               case Direction2D.E => ???
             }
-          case Square.S_W   =>
+          case Pipe.S_W   =>
             direction match {
               case Direction2D.N => ???
               case Direction2D.S => SW :: Nil
               case Direction2D.W => N :: NE :: E :: Nil
               case Direction2D.E => ???
             }
-          case Square.S_E   =>
+          case Pipe.S_E   =>
             direction match {
               case Direction2D.N => ???
               case Direction2D.S => N :: NW :: W :: Nil
