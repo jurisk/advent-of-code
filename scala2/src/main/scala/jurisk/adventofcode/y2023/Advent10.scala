@@ -98,7 +98,6 @@ object Advent10 {
 
         val nextDirection = nextSquare.connections
           .filterNot(_ == direction.invert)
-          .toList
           .singleElementUnsafe
 
         CoordsWithDirection(
@@ -108,41 +107,37 @@ object Advent10 {
       }
 
       def coordsToTheRight: List[Coords2D] = {
-        val directions: List[Direction2D] = data.at(coords) match {
-          case Pipe.Empty => Nil
-          case Pipe.N_S   => direction.rotate(Rotation.Right90) :: Nil
-          case Pipe.E_W   => direction.rotate(Rotation.Right90) :: Nil
-          case Pipe.N_E   =>
+        val diffs: List[Coords2D] = data.at(coords) match {
+          case Pipe.Empty          => Nil
+          case Pipe.N_S | Pipe.E_W =>
+            direction.rotate(Rotation.Right90).diff :: Nil
+//          case angled =>
+//            val (a, b) = angled.connections.map(_.invert).twoElementsUnsafe
+//            a.diff :: b.diff :: (a.diff + b.diff) :: Nil
+
+          case Pipe.N_E =>
             direction match {
-              case Direction2D.N => NE :: Nil
-              case Direction2D.S => ???
-              case Direction2D.W => ???
-              case Direction2D.E => W :: SW :: S :: Nil
+              case Direction2D.E => (W :: SW :: S :: Nil).map(_.diff)
+              case _             => Nil
             }
-          case Pipe.N_W   =>
+          case Pipe.N_W =>
             direction match {
-              case Direction2D.N => S :: SE :: E :: Nil
-              case Direction2D.S => ???
-              case Direction2D.W => NW :: Nil
-              case Direction2D.E => ???
+              case Direction2D.N => (S :: SE :: E :: Nil).map(_.diff)
+              case _             => Nil
             }
-          case Pipe.S_W   =>
+          case Pipe.S_W =>
             direction match {
-              case Direction2D.N => ???
-              case Direction2D.S => SW :: Nil
-              case Direction2D.W => N :: NE :: E :: Nil
-              case Direction2D.E => ???
+              case Direction2D.W => (N :: NE :: E :: Nil).map(_.diff)
+              case _             => Nil
             }
-          case Pipe.S_E   =>
+          case Pipe.S_E =>
             direction match {
-              case Direction2D.N => ???
-              case Direction2D.S => N :: NW :: W :: Nil
-              case Direction2D.W => ???
-              case Direction2D.E => SE :: Nil
+              case Direction2D.S => (N :: NW :: W :: Nil).map(_.diff)
+              case _             => Nil
             }
         }
 
-        directions.map(x => coords + x)
+        diffs.map(x => coords + x)
       }
     }
 
