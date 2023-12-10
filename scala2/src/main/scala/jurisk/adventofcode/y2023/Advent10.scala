@@ -107,32 +107,30 @@ object Advent10 {
       }
 
       def coordsToTheRight: List[Coords2D] = {
-        val diffs: List[Coords2D] = data.at(coords) match {
-          case Pipe.Empty          => Nil
+        val diffs: List[Direction2D] = data.at(coords) match {
+          case Pipe.Empty => Nil
+
           case Pipe.N_S | Pipe.E_W =>
-            direction.rotate(Rotation.Right90).diff :: Nil
-//          case angled =>
-//            val (a, b) = angled.connections.map(_.invert).twoElementsUnsafe
-//            a.diff :: b.diff :: (a.diff + b.diff) :: Nil
+            direction.rotate(Rotation.Right90) :: Nil
 
           case Pipe.N_E =>
             direction match {
-              case Direction2D.E => (W :: SW :: S :: Nil).map(_.diff)
+              case Direction2D.E => W :: SW :: S :: Nil
               case _             => Nil
             }
           case Pipe.N_W =>
             direction match {
-              case Direction2D.N => (S :: SE :: E :: Nil).map(_.diff)
+              case Direction2D.N => S :: SE :: E :: Nil
               case _             => Nil
             }
           case Pipe.S_W =>
             direction match {
-              case Direction2D.W => (N :: NE :: E :: Nil).map(_.diff)
+              case Direction2D.W => N :: NE :: E :: Nil
               case _             => Nil
             }
           case Pipe.S_E =>
             direction match {
-              case Direction2D.S => (N :: NW :: W :: Nil).map(_.diff)
+              case Direction2D.S => N :: NW :: W :: Nil
               case _             => Nil
             }
         }
