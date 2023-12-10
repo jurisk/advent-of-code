@@ -28,7 +28,7 @@ object Advent10 {
     def at(coords: Coords2D): Pipe =
       field.atOrElse(coords, Pipe.Empty)
 
-    def successors(coords: Coords2D): List[Coords2D] =
+    def connectedNeighbours(coords: Coords2D): List[Coords2D] =
       at(coords).connections
         .filter { direction =>
           at(coords + direction).connections.contains(direction.invert)
@@ -119,7 +119,7 @@ object Advent10 {
     Dijkstra
       .dijkstraAll(
         data.animalAt,
-        (c: Coords2D) => data.successors(c).map(x => (x, 1)),
+        (c: Coords2D) => data.connectedNeighbours(c).map(x => (x, 1)),
       )
       .map { case (coord @ _, (parent @ _, distance)) =>
         distance
@@ -130,7 +130,7 @@ object Advent10 {
     val trackCoords = Dijkstra
       .dijkstraAll(
         data.animalAt,
-        (c: Coords2D) => data.successors(c).map(x => (x, 1)),
+        (c: Coords2D) => data.connectedNeighbours(c).map(x => (x, 1)),
       )
       .keySet
 
