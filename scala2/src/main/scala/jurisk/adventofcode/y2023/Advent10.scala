@@ -92,26 +92,14 @@ object Advent10 {
       coords: Coords2D,
       direction: CardinalDirection2D,
     ) {
-      def next: CoordsWithDirection = {
+      def nextOnTrack: CoordsWithDirection = {
         val nextCoords = coords + direction
         val nextSquare = data.at(nextCoords)
 
-        val rotation = (nextSquare, direction) match {
-          case (Pipe.Empty, _) => "Expected to be on track".fail
-          case (Pipe.N_S, _)   => Rotation.NoRotation
-          case (Pipe.E_W, _)   => Rotation.NoRotation
-          case (Pipe.N_E, S)   => Rotation.Left90
-          case (Pipe.N_E, W)   => Rotation.Right90
-          case (Pipe.S_E, N)   => Rotation.Right90
-          case (Pipe.S_E, W)   => Rotation.Left90
-          case (Pipe.S_W, N)   => Rotation.Left90
-          case (Pipe.S_W, E)   => Rotation.Right90
-          case (Pipe.N_W, S)   => Rotation.Right90
-          case (Pipe.N_W, E)   => Rotation.Left90
-          case (_, _)          => "Unexpected".fail
-        }
-
-        val nextDirection = direction.rotate(rotation)
+        val nextDirection = nextSquare.connections
+          .filterNot(_ == direction.invert)
+          .toList
+          .singleElementUnsafe
 
         CoordsWithDirection(
           coords = nextCoords,
@@ -164,7 +152,7 @@ object Advent10 {
     )
 
     val trackCoordsWithAnimalDirection =
-      Bfs.bfsReachable[CoordsWithDirection](start, x => x.next :: Nil)
+      Bfs.bfsReachable[CoordsWithDirection](start, x => x.nextOnTrack :: Nil)
 
     val trackCarets = onlyTrack
       .mapByCoordsWithValues { case (c, _) =>
