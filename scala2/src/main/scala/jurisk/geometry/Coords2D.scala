@@ -3,6 +3,8 @@ package jurisk.geometry
 import cats.implicits._
 import jurisk.utils.Parsing.StringOps
 
+import scala.collection.immutable.ArraySeq
+
 final case class Coords2D(x: Int, y: Int) {
   def +(other: Coords2D): Coords2D =
     Coords2D(x + other.x, y + other.y)
@@ -47,6 +49,7 @@ final case class Coords2D(x: Int, y: Int) {
 }
 
 object Coords2D {
+
   implicit val readingOrdering: Ordering[Coords2D] =
     Ordering[(Int, Int)].contramap(c => (c.y, c.x))
 
@@ -88,5 +91,21 @@ object Coords2D {
 
     } else
       s"Expected $a and $b to have same x or y coordinates, but they do not".fail
+
+  // https://en.wikipedia.org/wiki/Shoelace_formula#Shoelace_formula
+  def areaOfSimplePolygon(seq: IndexedSeq[Coords2D]): Double = {
+    val n = seq.length
+
+    val determinants = (0 to n)
+      .map(_ % n)
+      .toList
+      .sliding2
+      .map { case (a, b) =>
+        (seq(a).x.toDouble * seq(b).y.toDouble) -
+          (seq(a).y.toDouble * seq(b).x.toDouble)
+      }
+
+    (determinants.sum / 2.0).abs
+  }
 
 }

@@ -9,6 +9,9 @@ import jurisk.geometry.{Coords2D, Field2D}
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+import cats.implicits._
+
+import scala.collection.immutable.ArraySeq
 
 object Advent10 {
   final case class Input(
@@ -56,32 +59,30 @@ object Advent10 {
 
   def parse(input: String): Input = Input.parse(input)
 
+  private def dijkstraToAllTrackNodes(data: Input) = Dijkstra
+    .dijkstraAll(
+      data.animalAt,
+      (c: Coords2D) => connectedNeighbours(data.field, c).map(x => (x, 1)),
+    )
+
   // Find distance to all nodes we can get to while going on the track, take the maximum
   def part1(data: Input): Int =
-    Dijkstra
-      .dijkstraAll(
-        data.animalAt,
-        (c: Coords2D) => connectedNeighbours(data.field, c).map(x => (x, 1)),
-      )
-      .map { case (coord @ _, (parent @ _, distance)) =>
+    dijkstraToAllTrackNodes(data).map {
+      case (coord @ _, (parent @ _, distance)) =>
         distance
-      }
-      .max
+    }.max
 
   def part2(data: Input): Int = {
-    // All the track coordinates
-    val trackCoords = Dijkstra
-      .dijkstraAll(
-        data.animalAt,
-        (c: Coords2D) => connectedNeighbours(data.field, c).map(x => (x, 1)),
-      )
-      .keySet
+    val fromPicksShoelace        = part2PicksShoelace(data)
+    val fromMarkRightSideOfTrack = part2MarkRightSideOfTrack(data)
+    assert(
+      fromPicksShoelace == fromMarkRightSideOfTrack,
+      s"Expected to get same results: $fromPicksShoelace and $fromMarkRightSideOfTrack",
+    )
+    fromPicksShoelace
+  }
 
-    // The field with only track cells left, others are Empty
-    val onlyTrack = data.field.mapByCoordsWithValues { case (c, v) =>
-      if (trackCoords.contains(c)) v else Empty
-    }
-
+  private def findStart(onlyTrack: Field2D[Pipe]): CoordsWithDirection = {
     // We don't know which direction is inside and which is outside for the animal coordinates,
     // but we can figure it out for the top left coordinates. This depends on the order in which `allCoords`
     // returns coordinates.
@@ -99,17 +100,59 @@ object Advent10 {
       case Pipe.S_E   => E
     }
 
-    val start = CoordsWithDirection(
+    CoordsWithDirection(
       coords = topLeftFullCoord,
       direction = topLeftStartDirection,
     )
+  }
+
+  private def walkTrack(data: Field2D[Pipe]) = {
+    val start = findStart(data)
+
+    Bfs
+      .bfsReachable[CoordsWithDirection](
+        start,
+        x => x.nextOnTrack(data) :: Nil,
+      )
+  }
+
+  def part2PicksShoelace(data: Input): Int = {
+    // All the track coordinates
+    val trackCoords = dijkstraToAllTrackNodes(data).keySet
+
+    // The field with only track cells left, others are Empty
+    val onlyTrack = data.field.mapByCoordsWithValues { case (c, v) =>
+      if (trackCoords.contains(c)) v else Empty
+    }
 
     // Which direction was the animal facing on each track segment?
-    val trackCoordsWithAnimalDirection =
-      Bfs.bfsReachable[CoordsWithDirection](
-        start,
-        x => x.nextOnTrack(data.field) :: Nil,
-      )
+    val trackCoordsWithAnimalDirection = walkTrack(onlyTrack)
+
+    // Track coordinates in walking order
+    val trackCoordsInWalkingOrder = ArraySeq.from(
+      trackCoordsWithAnimalDirection
+        .map(_.coords)
+    )
+
+    val boundaryPoints = trackCoordsInWalkingOrder.length
+
+    val area = Coords2D.areaOfSimplePolygon(trackCoordsInWalkingOrder)
+
+    // https://en.wikipedia.org/wiki/Pick%27s_theorem
+    (area - (boundaryPoints.toDouble / 2.0) + 1.0).toInt
+  }
+
+  def part2MarkRightSideOfTrack(data: Input): Int = {
+    // All the track coordinates
+    val trackCoords = dijkstraToAllTrackNodes(data).keySet
+
+    // The field with only track cells left, others are Empty
+    val onlyTrack = data.field.mapByCoordsWithValues { case (c, v) =>
+      if (trackCoords.contains(c)) v else Empty
+    }
+
+    // Which direction was the animal facing on each track segment?
+    val trackCoordsWithAnimalDirection = walkTrack(onlyTrack)
 
     // Which cells were on the right of the track, as the animal was walking around it?
     val rightCoordinateSeeds = trackCoordsWithAnimalDirection
