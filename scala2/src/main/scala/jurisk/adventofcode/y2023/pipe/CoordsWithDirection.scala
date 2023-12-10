@@ -9,6 +9,7 @@ final case class CoordsWithDirection(
   coords: Coords2D,
   direction: CardinalDirection2D,
 ) {
+  // Next coordinate & direction if we walk along the track
   def nextOnTrack(field: Field2D[Pipe]): CoordsWithDirection = {
     val nextCoords = coords + direction
     val nextSquare = field.atOrElse(nextCoords, Empty)
@@ -23,6 +24,7 @@ final case class CoordsWithDirection(
     )
   }
 
+  // Coordinates to the right of these `coords`, if facing in `direction`
   def coordsToTheRight(field: Field2D[Pipe]): List[Coords2D] = {
     val diffs: List[Direction2D] = field.atOrElse(coords, Empty) match {
       case Pipe.Empty => Nil

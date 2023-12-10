@@ -19,18 +19,18 @@ class Advent10Spec extends AnyFlatSpec {
   }
 
   it should "test part 2 1" in {
-    part2(parseFile("2023/10-test-3.txt"), E) shouldEqual 4
+    part2(parseFile("2023/10-test-3.txt")) shouldEqual 4
   }
 
   it should "test part 2 2" in {
-    part2(parseFile("2023/10-test-4.txt"), S) shouldEqual 8
+    part2(parseFile("2023/10-test-4.txt")) shouldEqual 8
   }
 
   it should "test part 2 3" in {
-    part2(parseFile("2023/10-test-5.txt"), S) shouldEqual 10
+    part2(parseFile("2023/10-test-5.txt")) shouldEqual 10
   }
 
   it should "real part 2" in {
-    part2(parseFile("2023/10.txt"), S) shouldEqual 351
+    part2(parseFile("2023/10.txt")) shouldEqual 351
   }
 }
