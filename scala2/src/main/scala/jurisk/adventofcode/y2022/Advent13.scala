@@ -71,7 +71,7 @@ object Advent13 {
 
   object Pair {
     def parse(s: String): Pair = {
-      val Array(a, b) = s.split("\n")
+      val List(a, b) = s.splitLines
       Pair(Packet.parse(a), Packet.parse(b))
     }
   }

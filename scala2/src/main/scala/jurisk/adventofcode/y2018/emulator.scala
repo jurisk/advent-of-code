@@ -61,7 +61,7 @@ final case class Program(
 
 object Program {
   def parse(data: String): Program = {
-    val lines      = data.split("\n")
+    val lines      = data.splitLines
     val ipRegister = lines.head match {
       case s"#ip $ip" => ip.toInt
       case s          => s.failedToParse

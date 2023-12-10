@@ -37,12 +37,9 @@ object Advent16 {
   }
 
   def parse(data: String): Task = {
-    val input                          = data.split("\n")
-    val parsed: Array[ValveDefinition] = input.map { s =>
-      ValveDefinition.parse(s)
-    }
+    val parsed = data.parseLines(ValveDefinition.parse)
 
-    val valves = parsed.toList.map { x =>
+    val valves = parsed.map { x =>
       x.id -> x
     }.toMap
 

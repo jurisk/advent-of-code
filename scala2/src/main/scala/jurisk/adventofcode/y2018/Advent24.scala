@@ -254,7 +254,7 @@ object Advent24 {
         header: String,
         idPrefix: String,
       ): Map[Group.Id, Group] = {
-        val lines = s.split("\n")
+        val lines = s.splitLines
         lines.head shouldEqual header
 
         lines.tail.zipWithIndex.map { case (x, idx) =>

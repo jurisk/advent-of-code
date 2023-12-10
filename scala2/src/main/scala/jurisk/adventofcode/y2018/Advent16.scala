@@ -67,8 +67,8 @@ object Advent16 {
 
   object Sample {
     def parse(s: String): Sample = {
-      val Array(beforeString, instructionString, afterString) = s.split("\n")
-      val beforeNumbers                                       = beforeString match {
+      val List(beforeString, instructionString, afterString) = s.splitLines
+      val beforeNumbers                                      = beforeString match {
         case s"Before: [$data]" => data.split(", ").map(_.toInt)
         case _                  => beforeString.failedToParse
       }
@@ -91,7 +91,7 @@ object Advent16 {
   def parse(data: String): Parsed = {
     val Array(samplesString, programString) = data.split("\n\n\n\n")
     val samples                             = samplesString.parseSections(Sample.parse)
-    val program                             = programString.split("\n").map(InstructionBinary.parse).toList
+    val program                             = programString.splitLines.map(InstructionBinary.parse)
     (samples, program)
   }
 

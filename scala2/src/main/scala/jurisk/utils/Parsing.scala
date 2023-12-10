@@ -59,6 +59,9 @@ object Parsing {
     def splitByDoubleNewline: List[String] =
       s.split("\n\n").toList
 
+    def splitLines: List[String] =
+      s.split("\n").toList
+
     def parsePairUnsafe[A, B](
       separator: String,
       parserLeft: String => A,

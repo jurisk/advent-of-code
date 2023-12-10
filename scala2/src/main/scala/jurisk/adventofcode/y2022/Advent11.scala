@@ -31,7 +31,7 @@ object Advent11 {
   )
 
   private def parseMonkey(s: String): (MonkeyLogic, List[ItemState]) = {
-    val Array(m, si, o, t, iT, iF) = s.split("\n")
+    val List(m, si, o, t, iT, iF) = s.splitLines
 
     val logic = MonkeyLogic(
       index = m.extractIntList.singleElementUnsafe,

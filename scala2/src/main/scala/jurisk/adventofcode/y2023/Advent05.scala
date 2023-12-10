@@ -45,7 +45,7 @@ object Advent05 extends IOApp.Simple {
   private object ConversionMap {
     // Note - the conversion maps must be in the right order in the input!
     def parse(input: String): ConversionMap = {
-      val lines = input.split("\n").toList
+      val lines = input.splitLines
       lines match {
         case h :: t =>
           val (from, to) = h match {
