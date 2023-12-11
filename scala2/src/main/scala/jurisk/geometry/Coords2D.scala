@@ -3,8 +3,6 @@ package jurisk.geometry
 import cats.implicits._
 import jurisk.utils.Parsing.StringOps
 
-import scala.collection.immutable.ArraySeq
-
 final case class Coords2D(x: Int, y: Int) {
   def +(other: Coords2D): Coords2D =
     Coords2D(x + other.x, y + other.y)
