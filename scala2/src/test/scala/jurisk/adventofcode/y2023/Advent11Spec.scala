@@ -4,16 +4,18 @@ import org.scalatest.freespec.AnyFreeSpec
 import Advent11._
 import org.scalatest.matchers.should.Matchers._
 
+import scala.collection.immutable.ArraySeq
+
 class Advent11Spec extends AnyFreeSpec {
   "expandRows" - {
     "test 1" in {
       expandRows(
-        Set(
+        ArraySeq(
           BigCoords2D(0, 0),
           BigCoords2D(0, 1),
         ),
         2,
-      ) shouldEqual Set(
+      ) shouldEqual ArraySeq(
         BigCoords2D(0, 0),
         BigCoords2D(0, 1),
       )
@@ -21,12 +23,12 @@ class Advent11Spec extends AnyFreeSpec {
 
     "test 2" in {
       expandRows(
-        Set(
+        ArraySeq(
           BigCoords2D(0, 0),
           BigCoords2D(0, 2),
         ),
         2,
-      ) shouldEqual Set(
+      ) shouldEqual ArraySeq(
         BigCoords2D(0, 0),
         BigCoords2D(0, 3),
       )
@@ -34,12 +36,12 @@ class Advent11Spec extends AnyFreeSpec {
 
     "test 3" in {
       expandRows(
-        Set(
+        ArraySeq(
           BigCoords2D(0, 0),
           BigCoords2D(0, 3),
         ),
         2,
-      ) shouldEqual Set(
+      ) shouldEqual ArraySeq(
         BigCoords2D(0, 0),
         BigCoords2D(0, 5),
       )
@@ -47,12 +49,12 @@ class Advent11Spec extends AnyFreeSpec {
 
     "test 4" in {
       expandRows(
-        Set(
+        ArraySeq(
           BigCoords2D(0, 0),
           BigCoords2D(0, 1),
         ),
         100_000,
-      ) shouldEqual Set(
+      ) shouldEqual ArraySeq(
         BigCoords2D(0, 0),
         BigCoords2D(0, 1),
       )
@@ -60,12 +62,12 @@ class Advent11Spec extends AnyFreeSpec {
 
     "test 5" in {
       expandRows(
-        Set(
+        ArraySeq(
           BigCoords2D(0, 0),
           BigCoords2D(0, 2),
         ),
         100_000,
-      ) shouldEqual Set(
+      ) shouldEqual ArraySeq(
         BigCoords2D(0, 0),
         BigCoords2D(0, 100_001),
       )
