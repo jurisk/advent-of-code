@@ -1,11 +1,14 @@
 package jurisk.adventofcode.y2023
 
+import cats.implicits._
 import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+import monocle.Lens
 
 import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
+import monocle.macros.GenLens
 
 final case class BigCoords2D(x: BigInt, y: BigInt) {
   def +(other: BigCoords2D): BigCoords2D =
@@ -19,7 +22,6 @@ final case class BigCoords2D(x: BigInt, y: BigInt) {
 
   def manhattanDistance(other: BigCoords2D): BigInt =
     (this - other).manhattanDistanceToOrigin
-
 }
 
 object Advent11 {
@@ -44,69 +46,63 @@ object Advent11 {
     ArraySeq.from(results)
   }
 
-  def expandColumns(data: Galaxies, factor: BigInt): Galaxies = {
-    val sorted                                    = data.toList.sortBy(_.x)
-    val results: mutable.ArrayBuffer[BigCoords2D] = mutable.ArrayBuffer.empty
+  private def expandGeneric(
+    data: Galaxies,
+    factor: BigInt,
+    access: Lens[BigCoords2D, BigInt],
+  ): Galaxies = {
+    val sorted = data.toList.sortBy(access.get)
 
-    var currX         = sorted.head.x
-    var diffX: BigInt = 0
-    sorted foreach { point =>
-      if (point.x > currX) {
-        val diff = point.x - currX
-        if (diff > 1) {
-          diffX += (diff - 1) * (factor - 1)
+    sorted.headOption match {
+      case Some(first) =>
+        val results: mutable.ArrayBuffer[BigCoords2D] =
+          mutable.ArrayBuffer.empty
+
+        var current       = access.get(first)
+        var diffX: BigInt = 0
+        sorted foreach { point =>
+          val pointCoordinate = access.get(point)
+
+          if (pointCoordinate > current) {
+            val diff = pointCoordinate - current
+            if (diff > 1) {
+              diffX += (diff - 1) * (factor - 1)
+            }
+            current = pointCoordinate
+          }
+
+          val newPoint = access.modify(_ + diffX)(point)
+          results += newPoint
         }
-        currX = point.x
-      }
 
-      results += point + BigCoords2D(diffX, 0)
+        ArraySeq.from(results)
+      case None        =>
+        ArraySeq.empty
     }
-
-    ArraySeq.from(results)
   }
 
-  def expandRows(data: Galaxies, factor: BigInt): Galaxies = {
-    val sorted                                    = data.toList.sortBy(_.y)
-    val results: mutable.ArrayBuffer[BigCoords2D] = mutable.ArrayBuffer.empty
+  def expandColumns(data: Galaxies, factor: BigInt): Galaxies =
+    expandGeneric(data, factor, GenLens[BigCoords2D](_.x))
 
-    var currY         = sorted.head.y
-    var diffY: BigInt = 0
-    sorted foreach { point =>
-      if (point.y > currY) {
-        val diff = point.y - currY
-        if (diff > 1) {
-          diffY += (diff - 1) * (factor - 1)
-        }
-        currY = point.y
-      }
-
-      results += (point + BigCoords2D(BigInt(0), diffY))
-    }
-
-    ArraySeq.from(results)
-  }
-
-//  def print(data: Input): Unit = {
-//    println(SparseBooleanField(data, 1000).toDebugRepresentation)
-//  }
+  def expandRows(data: Galaxies, factor: BigInt): Galaxies =
+    expandGeneric(data, factor, GenLens[BigCoords2D](_.y))
 
   /*
     Due to something involving gravitational effects, only some space expands. In fact, the result is that any rows or columns that contain no galaxies should all actually be twice as big.
    */
-  def expand(data: Galaxies, factor: BigInt): Galaxies = {
-//    print(data)
-    val result = expandColumns(expandRows(data, factor), factor)
-//    print(result)
-    result
-  }
+  def expand(data: Galaxies, factor: BigInt): Galaxies =
+    expandColumns(expandRows(data, factor), factor)
 
   def solve(data: Galaxies, factor: BigInt): BigInt = {
     val expanded = expand(data, factor)
 
-    (for {
-      a <- expanded.toList
-      b <- expanded.toList
-    } yield a.manhattanDistance(b)).sum / 2
+    expanded
+      .combinations(2)
+      .map {
+        case ArraySeq(a, b) => a.manhattanDistance(b)
+        case unexpected     => unexpected.toString.fail
+      }
+      .sum
   }
 
   def part1(data: Galaxies): BigInt =
