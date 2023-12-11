@@ -92,7 +92,7 @@ object Advent14 {
       case Sand  => 'o'
     }
 
-    println(Field2D.toDebugRepresentation(display))
+    Field2D.printCharField(display)
   }
 
   private val SandOrigin: Coords2D = Coords2D.of(500, 0)

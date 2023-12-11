@@ -7,4 +7,6 @@ package object geometry {
   type Coords2D       = Coordinates2D[Int]
   type LongCoords2D   = Coordinates2D[Long]
   type BigIntCoords2D = Coordinates2D[BigInt]
+
+  def visualizeBoolean(b: Boolean): Char = if (b) '█' else '░'
 }

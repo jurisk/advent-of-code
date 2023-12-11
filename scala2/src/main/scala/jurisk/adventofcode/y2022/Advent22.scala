@@ -65,7 +65,7 @@ object Advent22 {
   def parse(data: String): Parsed = {
     val List(fieldS, commandsS) = data.splitByDoubleNewline
 
-    val field    = Field2D.parseFromString(fieldS, Square.parse)
+    val field    = Field2D.parse(fieldS, Square.parse)
     val commands = parseCommands(commandsS, Vector.empty).toList
     (field, commands)
   }
@@ -103,7 +103,7 @@ object Advent22 {
         charField
       }
 
-      println(Field2D.toDebugRepresentation(withCharacter))
+      Field2D.printCharField(withCharacter)
       println()
     }
 

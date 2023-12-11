@@ -1,5 +1,6 @@
 package jurisk.adventofcode.y2018
 
+import cats.implicits._
 import jurisk.adventofcode.y2018.Advent18.Square._
 import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
@@ -35,7 +36,7 @@ object Advent18 {
   }
 
   def parse(data: String): Field =
-    Field2D.parseFromString(data, Square.parse)
+    Field2D.parse(data, Square.parse)
 
   private def next(state: Field): Field =
     state.mapByCoordsWithValues { case (c, v) =>
@@ -51,7 +52,7 @@ object Advent18 {
       }
     }
 
-  def solve(initial: Field, times: Long): Int = {
+  def solve(initial: Field, times: Long): Long = {
     val result = Simulation.runNIterationsRemovingLoops(initial, times) {
       case (state, _) =>
         next(state)

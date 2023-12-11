@@ -93,7 +93,7 @@ object Advent15 {
         ' '
       }
     )
-    println(Field2D.toDebugRepresentation(filledOut))
+    Field2D.printCharField(filledOut)
   }
 
   private def findHiddenBeacon(

@@ -86,20 +86,12 @@ object Advent23 {
       val resulting = elves.foldLeft(field) { case (acc, e) =>
         acc.updatedAtUnsafe(e.location, e.charRep)
       }
-      val asString  = Field2D.toDebugRepresentation(resulting)
-      println(asString)
+      Field2D.printCharField(resulting)
     }
   }
 
   def parse(data: String): State = {
-    val field = Field2D.parseFromString(
-      data,
-      {
-        case '#' => true
-        case '.' => false
-        case ch  => ch.toString.failedToParse
-      },
-    )
+    val field = Field2D.parseBooleanField(data)
 
     val elfPositions = field.filterCoordsByValue(_ == true)
     val elves        = elfPositions.zipWithIndex.map { case (c, idx) =>

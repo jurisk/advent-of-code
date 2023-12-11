@@ -1,18 +1,14 @@
 package jurisk.adventofcode.y2016
 
 import cats.Endo
-import cats.effect.IO
-import cats.effect.IOApp
+import cats.effect.{IO, IOApp}
 import cats.syntax.all._
-import jurisk.adventofcode.y2016.Advent24.Square.LocationCode
-import jurisk.adventofcode.y2016.Advent24.Square.Zero
+import jurisk.adventofcode.y2016.Advent24.Square.{LocationCode, Zero}
 import jurisk.algorithms.pathfinding.Bfs
 import jurisk.collections.SetOfTwo
-import jurisk.geometry.Coords2D
-import jurisk.geometry.Field2D
-import jurisk.geometry.Field2D.parseFromLines
-import jurisk.utils.FileInputIO.readFileLines
+import jurisk.geometry.{Coords2D, Field2D}
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.FileInputIO.readFileText
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
@@ -74,8 +70,8 @@ object Advent24 extends IOApp.Simple {
   }
 
   object Ducts {
-    def parse(lines: List[String]): Ducts =
-      Ducts(parseFromLines(lines, Square.parse))
+    def parse(input: String): Ducts =
+      Ducts(Field2D.parse(input, Square.parse))
   }
 
   sealed trait Square
@@ -100,22 +96,22 @@ object Advent24 extends IOApp.Simple {
   }
 
   private def parseAndSolve(
-    lines: List[String],
+    input: String,
     f: Endo[List[LocationCode]],
   ): Int =
-    Ducts.parse(lines).solve(f)
+    Ducts.parse(input).solve(f)
 
-  private def part1(lines: List[String]): Int =
-    parseAndSolve(lines, permutation => Zero :: permutation)
+  private def part1(input: String): Int =
+    parseAndSolve(input, permutation => Zero :: permutation)
 
-  private def part2(lines: List[String]): Int =
-    parseAndSolve(lines, permutation => Zero :: permutation ::: (Zero :: Nil))
+  private def part2(input: String): Int =
+    parseAndSolve(input, permutation => Zero :: permutation ::: (Zero :: Nil))
 
   override def run: IO[Unit] = for {
-    testData   <- readFileLines("2016/24-test.txt")
+    testData   <- readFileText("2016/24-test.txt")
     testResult1 = part1(testData)
     _           = testResult1 shouldEqual 14
-    realData   <- readFileLines("2016/24.txt")
+    realData   <- readFileText("2016/24.txt")
     realResult1 = part1(realData)
     _          <- IO.println(s"Part 1: $realResult1")
     _           = realResult1 shouldEqual 428

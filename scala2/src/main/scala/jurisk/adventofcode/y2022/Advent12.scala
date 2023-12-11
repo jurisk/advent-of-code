@@ -30,7 +30,7 @@ object Advent12 {
   }
 
   def parse(data: String): Task = {
-    val charField   = Field2D.parseFromString(data, identity)
+    val charField   = Field2D.parseCharField(data)
     val List(start) = charField.filterCoordsByValue(_ == 'S')
     val List(end)   = charField.filterCoordsByValue(_ == 'E')
 

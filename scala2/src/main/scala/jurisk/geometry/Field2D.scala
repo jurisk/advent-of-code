@@ -1,7 +1,8 @@
 package jurisk.geometry
 
-import cats.Functor
-import cats.implicits.toFunctorOps
+import cats.{Eval, Foldable, Functor}
+import cats.implicits._
+import jurisk.algorithms.pathfinding.Bfs
 import jurisk.utils.Parsing.StringOps
 
 final case class Field2D[T](
@@ -137,9 +138,6 @@ final case class Field2D[T](
   def firstColumnValues: Vector[T] = column(0)
   def lastColumnValues: Vector[T]  = column(width - 1)
 
-  def count(p: T => Boolean): Int =
-    values count p
-
   def createSuccessorsFunction(
     canGoPredicate: (T, T) => Boolean,
     includeDiagonal: Boolean,
@@ -150,12 +148,56 @@ final case class Field2D[T](
       canGoPredicate(thisSquare, otherSquare)
     }
   }
+
+  /** Note - all the fields returned by `f` must have the same shape.
+    */
+  def flatMap[U](f: T => Field2D[U]): Field2D[U] = {
+    val newData = data.flatMap { row =>
+      val transformedRows = row.map(f(_).data)
+      if (transformedRows.isEmpty) Vector.empty
+      else transformedRows.transpose.map(_.flatten)
+    }
+
+    Field2D(newData)
+  }
+
+  def chunkIntoSubfields(width: Int, height: Int): Field2D[Field2D[T]] = {
+    assert(
+      data.nonEmpty && data.forall(_.length == data.head.length),
+      "Irregular dimensions in Field2D",
+    )
+    assert(
+      data.head.length % width == 0,
+      s"Width $width does not evenly divide the row length",
+    )
+    assert(
+      data.length      % height == 0,
+      s"Height $height does not evenly divide the number of rows",
+    )
+
+    val rowChunks        = data.map(row => row.grouped(width).toVector)
+    val transposedChunks = rowChunks.transpose
+    val chunkedRows      =
+      transposedChunks.map(column => column.grouped(height).toVector).transpose
+    val subfields        = chunkedRows.map(_.map(Field2D(_)))
+    Field2D(subfields)
+  }
 }
 
 object Field2D {
   implicit val functorField2D: Functor[Field2D] = new Functor[Field2D] {
     override def map[A, B](fa: Field2D[A])(f: A => B): Field2D[B] =
       fa.mapByCoordsWithValues { case (_, v) => f(v) }
+  }
+
+  implicit val field2DFoldable: Foldable[Field2D] = new Foldable[Field2D] {
+    override def foldLeft[A, B](fa: Field2D[A], b: B)(f: (B, A) => B): B =
+      fa.data.foldLeft(b)((acc, row) => row.foldLeft(acc)(f))
+
+    override def foldRight[A, B](fa: Field2D[A], lb: Eval[B])(
+      f: (A, Eval[B]) => Eval[B]
+    ): Eval[B] =
+      fa.data.foldRight(lb)((row, acc) => row.foldRight(acc)(f))
   }
 
   def ofSize[T](
@@ -177,6 +219,27 @@ object Field2D {
       boundingBox.topLeft,
     )
 
+  def floodFillField[T](
+    field: Field2D[T],
+    seed: Coords2D,
+    f: (T, T) => Boolean,
+    mark: T,
+  ): Field2D[T] = {
+    val reachable =
+      Bfs.bfsReachable[Coords2D](
+        seed,
+        from =>
+          field.adjacent4(from).filter { to =>
+            f(field.atUnsafe(from), field.atUnsafe(to))
+          },
+      )
+
+    // We lack bulk update feature, so this will have to do
+    reachable.foldLeft(field) { case (acc, c) =>
+      acc.updatedAtUnsafe(c, mark)
+    }
+  }
+
   def toDebugRepresentation(field: Field2D[Char]): String = mergeSeqSeqChar(
     field.yIndices map { y =>
       field.xIndices.map { x =>
@@ -185,6 +248,9 @@ object Field2D {
     }
   )
 
+  def printCharField(field: Field2D[Char]): Unit =
+    printField[Char](none, field, identity)
+
   def printField[T](
     intro: Option[String],
     field: Field2D[T],
@@ -192,21 +258,39 @@ object Field2D {
   ): Unit = {
     intro foreach println
     val charField      = field.map(toChar)
-    val representation = Field2D.toDebugRepresentation(charField)
+    val representation = toDebugRepresentation(charField)
     println(representation)
     println()
   }
 
-  def parseFromString[T](data: String, parser: Char => T): Field2D[T] =
+  def printBooleanField(field: Field2D[Boolean]): Unit =
+    printField(none, field, visualizeBoolean)
+
+  def parse[T](data: String, parser: Char => T): Field2D[T] =
     parseFromLines(
       data
-        .split("\\R")
+        .split("\\R") // not splitting on '\n' because it failed in Windows
         .filter(_.nonEmpty)
-        .toList, // not splitting on '\n' because it failed in Windows
+        .toList,
       parser,
     )
 
-  def parseFromLines[T](
+  def parseCharField(data: String): Field2D[Char] = parse(data, identity)
+  def parseDigitField(data: String): Field2D[Int] = parse(data, _ - '0')
+  def parseBooleanField(
+    data: String,
+    falseChar: Char = '.',
+    trueChar: Char = '#',
+  ): Field2D[Boolean] = parse(
+    data,
+    {
+      case `falseChar` => false
+      case `trueChar`  => true
+      case ch          => s"Unrecognized character: $ch".fail
+    },
+  )
+
+  private def parseFromLines[T](
     lines: List[String],
     parser: Char => T,
     padIfNotEnoughWidthWith: Char = ' ',

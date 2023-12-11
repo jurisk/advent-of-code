@@ -73,7 +73,7 @@ object Advent24 {
   sealed trait Command
   object Maze {
     def parse(s: String): Maze = {
-      val charField = Field2D.parseFromString[Char](s, identity)
+      val charField = Field2D.parseCharField(s)
 
       val start = Coords2D.of(charField.firstRowValues.indexOf('.'), 0)
       val goal  =

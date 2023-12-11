@@ -37,7 +37,7 @@ object Advent03 {
   type Parsed = Field2D[Square]
 
   def parse(input: String): Parsed =
-    Field2D.parseFromString(input, Square.parse)
+    Field2D.parse(input, Square.parse)
 
   private def extractNumbers(
     field: Field2D[Square]

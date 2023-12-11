@@ -17,4 +17,8 @@ object FileInputIO {
     sourceResource(fileName).use { source =>
       IO(source.getLines().toList)
     }
+
+  def readFileText(fileName: String): IO[String] = for {
+    lines <- readFileLines(fileName)
+  } yield lines.mkString("\n")
 }

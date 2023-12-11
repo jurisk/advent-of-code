@@ -254,7 +254,7 @@ object Advent15 {
   }
 
   def parse(data: String): State = {
-    val charField = Field2D.parseFromString(data, identity)
+    val charField = Field2D.parseCharField(data)
     val walls     = charField.map {
       case '#'             => true
       case '.' | 'G' | 'E' => false

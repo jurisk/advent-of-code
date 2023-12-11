@@ -2,8 +2,7 @@ package jurisk.adventofcode.y2022
 
 import cats.data.NonEmptyList
 import cats.implicits._
-import jurisk.geometry.Coords2D
-import jurisk.geometry.Field2D
+import jurisk.geometry.{Coords2D, Field2D, visualizeBoolean}
 import jurisk.utils.FileInput._
 import org.scalatest.matchers.should.Matchers._
 
@@ -11,12 +10,12 @@ object Advent08 {
   type TreeHeight = Int
   type Parsed     = Field2D[TreeHeight]
   type Processed  = Parsed
-  type Result1    = Int
+  type Result1    = Long
   type Result2    = Long
 
   def readFileAndParse(fileName: String): Parsed = {
-    val lines = readFileLines(fileName)
-    Field2D.parseFromLines(lines, _ - '0')
+    val lines = readFileText(fileName)
+    Field2D.parseDigitField(lines)
   }
 
   private def visibleFromOutside(data: NonEmptyList[TreeHeight]): Boolean =
@@ -54,10 +53,8 @@ object Advent08 {
 
     val visible = data.mapByCoords(isVisible)
 
-    val visualisation: Field2D[Char] = visible map {
-      if (_) '█' else '░'
-    }
-    println(Field2D.toDebugRepresentation(visualisation))
+    val visualisation: Field2D[Char] = visible map visualizeBoolean
+    Field2D.printCharField(visualisation)
 
     visible.count(_ == true)
   }

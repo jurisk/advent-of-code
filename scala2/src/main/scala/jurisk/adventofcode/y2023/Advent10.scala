@@ -5,7 +5,7 @@ import jurisk.adventofcode.y2023.pipe.Pipe._
 import jurisk.adventofcode.y2023.pipe.{CoordsWithDirection, Pipe}
 import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
 import jurisk.geometry.Direction2D.{E, N, S, W}
-import jurisk.geometry.{Coords2D, Field2D}
+import jurisk.geometry.{Coords2D, Field2D, visualizeBoolean}
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -23,7 +23,7 @@ object Advent10 {
 
   object Input {
     def parse(s: String): Input = {
-      val chars: Field2D[Char] = Field2D.parseFromString(s, identity)
+      val chars: Field2D[Char] = Field2D.parseCharField(s)
 
       val animalAt = chars.filterCoordsByValue(_ == 'S').singleResultUnsafe
 
@@ -38,7 +38,7 @@ object Advent10 {
         'S' -> Empty,
       )
 
-      val field: Field2D[Pipe] = Field2D.parseFromString(s, mapping.apply)
+      val field: Field2D[Pipe] = Field2D.parse(s, mapping.apply)
 
       // Find a suitable pipe to replace the `S` animal cell
       val animalPipe = Pipe.NonEmpty.filter { candidate =>
@@ -74,9 +74,14 @@ object Advent10 {
   def part2(data: Input): Int = {
     val fromPicksShoelace        = part2PicksShoelace(data)
     val fromMarkRightSideOfTrack = part2MarkRightSideOfTrack(data)
+    val from3x3Expansion         = part2From3x3Expansion(data)
     assert(
-      fromPicksShoelace == fromMarkRightSideOfTrack,
-      s"Expected to get same results: $fromPicksShoelace and $fromMarkRightSideOfTrack",
+      Set(
+        fromPicksShoelace,
+        fromMarkRightSideOfTrack,
+        from3x3Expansion,
+      ).size == 1,
+      s"Expected to get same results: $fromPicksShoelace and $fromMarkRightSideOfTrack and $from3x3Expansion",
     )
     fromPicksShoelace
   }
@@ -115,7 +120,7 @@ object Advent10 {
       )
   }
 
-  def part2PicksShoelace(data: Input): Int = {
+  private def extractTrack(data: Input): (Set[Coords2D], Field2D[Pipe]) = {
     // All the track coordinates
     val trackCoords = dijkstraToAllTrackNodes(data).keySet
 
@@ -123,6 +128,12 @@ object Advent10 {
     val onlyTrack = data.field.mapByCoordsWithValues { case (c, v) =>
       if (trackCoords.contains(c)) v else Empty
     }
+
+    (trackCoords, onlyTrack)
+  }
+
+  def part2PicksShoelace(data: Input): Int = {
+    val (trackCoords @ _, onlyTrack) = extractTrack(data)
 
     // Which direction was the animal facing on each track segment?
     val trackCoordsWithAnimalDirection = walkTrack(onlyTrack)
@@ -142,13 +153,7 @@ object Advent10 {
   }
 
   def part2MarkRightSideOfTrack(data: Input): Int = {
-    // All the track coordinates
-    val trackCoords = dijkstraToAllTrackNodes(data).keySet
-
-    // The field with only track cells left, others are Empty
-    val onlyTrack = data.field.mapByCoordsWithValues { case (c, v) =>
-      if (trackCoords.contains(c)) v else Empty
-    }
+    val (trackCoords, onlyTrack) = extractTrack(data)
 
     // Which direction was the animal facing on each track segment?
     val trackCoordsWithAnimalDirection = walkTrack(onlyTrack)
@@ -168,6 +173,52 @@ object Advent10 {
     }
 
     floodFilled.size
+  }
+
+  def part2From3x3Expansion(data: Input): Long = {
+    val (_, onlyTrack) = extractTrack(data)
+
+    val expanded = onlyTrack.flatMap {
+      case Pipe.Empty => Field2D.parseBooleanField(s"""...
+                                                      |...
+                                                      |...
+                                                      |""".stripMargin)
+      case Pipe.N_S   => Field2D.parseBooleanField(s""".#.
+                                                    |.#.
+                                                    |.#.
+                                                    |""".stripMargin)
+      case Pipe.E_W   => Field2D.parseBooleanField(s"""...
+                                                    |###
+                                                    |...
+                                                    |""".stripMargin)
+      case Pipe.N_E   => Field2D.parseBooleanField(s""".#.
+                                                    |.##
+                                                    |...
+                                                    |""".stripMargin)
+      case Pipe.N_W   => Field2D.parseBooleanField(s""".#.
+                                                    |##.
+                                                    |...
+                                                    |""".stripMargin)
+      case Pipe.S_W   => Field2D.parseBooleanField(s"""...
+                                                    |##.
+                                                    |.#.
+                                                    |""".stripMargin)
+      case Pipe.S_E   => Field2D.parseBooleanField(s"""...
+                                                    |.##
+                                                    |.#.
+                                                    |""".stripMargin)
+    }
+
+    Field2D.printBooleanField(expanded)
+
+    val floodFilled = Field2D
+      .floodFillField[Boolean](expanded, Coords2D.Zero, (_, to) => !to, true)
+
+    Field2D.printBooleanField(floodFilled)
+
+    val chunked = floodFilled.chunkIntoSubfields(3, 3)
+
+    chunked.count(x => x.forall(_ == false))
   }
 
   def parseFile(fileName: String): Input =

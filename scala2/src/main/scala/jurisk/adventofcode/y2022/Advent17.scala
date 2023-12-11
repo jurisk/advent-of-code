@@ -131,8 +131,7 @@ object Advent17 {
       case Square.Empty => '.'
     }
 
-    val asString = Field2D.toDebugRepresentation(charField)
-    println(asString)
+    Field2D.printCharField(charField)
     println()
   }
 

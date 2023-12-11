@@ -187,7 +187,7 @@ object Advent13 {
   }
 
   def parse(data: String, processingStrategy: ProcessingStrategy): State = {
-    val field: Field2D[Char] = Field2D.parseFromString(data, identity)
+    val field: Field2D[Char] = Field2D.parseCharField(data)
     val carts                = field.entries.flatMap { case (c, ch) =>
       Direction2D.parseCaretToOption(ch) map { d => Cart(d, c, 0) }
     }.toSet

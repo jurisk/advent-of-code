@@ -74,7 +74,7 @@ object Advent10 {
       state = state.next
     }
 
-    println(Field2D.toDebugRepresentation(screen))
+    Field2D.printCharField(screen)
 
     totalSignalStrength
   }

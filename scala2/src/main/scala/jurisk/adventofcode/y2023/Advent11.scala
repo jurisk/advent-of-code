@@ -14,14 +14,7 @@ object Advent11 {
   private type Galaxies = ArraySeq[BigIntCoords2D]
 
   def parse(input: String): Galaxies = {
-    val field = Field2D.parseFromString(
-      input,
-      {
-        case '#' => true
-        case '.' => false
-        case ch  => ch.toString.fail
-      },
-    )
+    val field = Field2D.parseBooleanField(input)
 
     val coords = field.filterCoordsByValue(_ == true)
 
