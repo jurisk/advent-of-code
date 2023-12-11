@@ -7,9 +7,9 @@ import org.scalatest.matchers.should.Matchers._
 import scala.collection.immutable.ArraySeq
 
 class Advent11Spec extends AnyFreeSpec {
-  "expandRows" - {
+  "expand" - {
     "test 1" in {
-      expandRows(
+      expand(
         ArraySeq(
           BigCoords2D(0, 0),
           BigCoords2D(0, 1),
@@ -22,7 +22,7 @@ class Advent11Spec extends AnyFreeSpec {
     }
 
     "test 2" in {
-      expandRows(
+      expand(
         ArraySeq(
           BigCoords2D(0, 0),
           BigCoords2D(0, 2),
@@ -35,7 +35,7 @@ class Advent11Spec extends AnyFreeSpec {
     }
 
     "test 3" in {
-      expandRows(
+      expand(
         ArraySeq(
           BigCoords2D(0, 0),
           BigCoords2D(0, 3),
@@ -48,7 +48,7 @@ class Advent11Spec extends AnyFreeSpec {
     }
 
     "test 4" in {
-      expandRows(
+      expand(
         ArraySeq(
           BigCoords2D(0, 0),
           BigCoords2D(0, 1),
@@ -61,7 +61,7 @@ class Advent11Spec extends AnyFreeSpec {
     }
 
     "test 5" in {
-      expandRows(
+      expand(
         ArraySeq(
           BigCoords2D(0, 0),
           BigCoords2D(0, 2),

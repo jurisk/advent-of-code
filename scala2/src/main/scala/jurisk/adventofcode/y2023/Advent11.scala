@@ -25,7 +25,7 @@ final case class BigCoords2D(x: BigInt, y: BigInt) {
 }
 
 object Advent11 {
-  type Galaxies = ArraySeq[BigCoords2D]
+  private type Galaxies = ArraySeq[BigCoords2D]
 
   def parse(input: String): Galaxies = {
     val field = Field2D.parseFromString(
@@ -77,17 +77,20 @@ object Advent11 {
     }
   }
 
-  def expandColumns(data: Galaxies, factor: BigInt): Galaxies =
-    expandGeneric(data, factor, GenLens[BigCoords2D](_.x))
-
-  def expandRows(data: Galaxies, factor: BigInt): Galaxies =
-    expandGeneric(data, factor, GenLens[BigCoords2D](_.y))
-
   /*
-    Due to something involving gravitational effects, only some space expands. In fact, the result is that any rows or columns that contain no galaxies should all actually be twice as big.
+   * Due to something involving gravitational effects, only some space expands.
+   * In fact, the result is that any rows or columns that contain no galaxies should all actually be `factor` times as
+   * big.
    */
-  def expand(data: Galaxies, factor: BigInt): Galaxies =
+  private[y2023] def expand(data: Galaxies, factor: BigInt): Galaxies = {
+    def expandColumns(data: Galaxies, factor: BigInt): Galaxies =
+      expandGeneric(data, factor, GenLens[BigCoords2D](_.x))
+
+    def expandRows(data: Galaxies, factor: BigInt): Galaxies =
+      expandGeneric(data, factor, GenLens[BigCoords2D](_.y))
+
     expandColumns(expandRows(data, factor), factor)
+  }
 
   def solve(data: Galaxies, factor: BigInt): BigInt = {
     val expanded = expand(data, factor)
