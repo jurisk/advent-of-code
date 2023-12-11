@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
-import jurisk.geometry.Field2D
+import jurisk.geometry.{BigIntCoords2D, Coordinates2D, Field2D}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import monocle.Lens
@@ -9,20 +9,6 @@ import monocle.Lens
 import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
 import monocle.macros.GenLens
-
-final case class BigIntCoords2D(x: BigInt, y: BigInt) {
-  def +(other: BigIntCoords2D): BigIntCoords2D =
-    BigIntCoords2D(x + other.x, y + other.y)
-
-  def -(other: BigIntCoords2D): BigIntCoords2D =
-    BigIntCoords2D(x - other.x, y - other.y)
-
-  def manhattanDistanceToOrigin: BigInt =
-    x.abs + y.abs
-
-  def manhattanDistance(other: BigIntCoords2D): BigInt =
-    (this - other).manhattanDistanceToOrigin
-}
 
 object Advent11 {
   private type Galaxies = ArraySeq[BigIntCoords2D]

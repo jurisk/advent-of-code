@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2023
 
 import org.scalatest.freespec.AnyFreeSpec
 import Advent11._
+import jurisk.geometry.BigIntCoords2D
 import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.immutable.ArraySeq

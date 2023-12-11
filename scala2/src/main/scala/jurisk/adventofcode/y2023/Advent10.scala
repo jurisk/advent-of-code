@@ -5,7 +5,7 @@ import jurisk.adventofcode.y2023.pipe.Pipe._
 import jurisk.adventofcode.y2023.pipe.{CoordsWithDirection, Pipe}
 import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
 import jurisk.geometry.Direction2D.{E, N, S, W}
-import jurisk.geometry.{Coords2D, Field2D}
+import jurisk.geometry.{Coordinates2D, Coords2D, Field2D}
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps

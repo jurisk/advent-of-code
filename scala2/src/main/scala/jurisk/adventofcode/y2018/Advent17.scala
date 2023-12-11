@@ -74,8 +74,8 @@ object Advent17 {
       field.yIndices.flatMap { y =>
         consecutiveRanges(field.row(y), RunningWater) map { case (start, end) =>
           (
-            Coords2D(field.topLeft.x + start, y),
-            Coords2D(field.topLeft.x + end, y),
+            Coords2D.of(field.topLeft.x + start, y),
+            Coords2D.of(field.topLeft.x + end, y),
           )
         }
       }.toList

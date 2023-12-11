@@ -39,7 +39,10 @@ object Area2D {
     width: Int,
     height: Int,
   ): Area2D =
-    Area2D(Coords2D(left, top), Coords2D(left + width - 1, top + height - 1))
+    Area2D(
+      Coords2D.of(left, top),
+      Coords2D.of(left + width - 1, top + height - 1),
+    )
 
   def boundingBoxInclusive(coords: Seq[Coords2D]): Area2D =
     Coords2D.boundingBoxInclusive(coords)
