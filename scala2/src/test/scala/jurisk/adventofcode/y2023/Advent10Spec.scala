@@ -3,7 +3,6 @@ package jurisk.adventofcode.y2023
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
 import Advent10._
-import jurisk.geometry.Direction2D._
 
 class Advent10Spec extends AnyFlatSpec {
   "Advent10" should "test part 1 1" in {

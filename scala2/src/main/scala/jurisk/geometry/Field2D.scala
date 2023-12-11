@@ -185,12 +185,12 @@ final case class Field2D[T](
 }
 
 object Field2D {
-  implicit val functorField2D: Functor[Field2D] = new Functor[Field2D] {
+  implicit val functorInstance: Functor[Field2D] = new Functor[Field2D] {
     override def map[A, B](fa: Field2D[A])(f: A => B): Field2D[B] =
       fa.mapByCoordsWithValues { case (_, v) => f(v) }
   }
 
-  implicit val field2DFoldable: Foldable[Field2D] = new Foldable[Field2D] {
+  implicit val foldableInstance: Foldable[Field2D] = new Foldable[Field2D] {
     override def foldLeft[A, B](fa: Field2D[A], b: B)(f: (B, A) => B): B =
       fa.data.foldLeft(b)((acc, row) => row.foldLeft(acc)(f))
 
