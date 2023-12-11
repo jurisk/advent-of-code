@@ -59,19 +59,19 @@ object Advent11 {
           mutable.ArrayBuffer.empty
 
         var current       = access.get(first)
-        var diffX: BigInt = 0
+        var accumulatedDiff: BigInt = 0
         sorted foreach { point =>
           val pointCoordinate = access.get(point)
 
           if (pointCoordinate > current) {
             val diff = pointCoordinate - current
             if (diff > 1) {
-              diffX += (diff - 1) * (factor - 1)
+              accumulatedDiff += (diff - 1) * (factor - 1)
             }
             current = pointCoordinate
           }
 
-          val newPoint = access.modify(_ + diffX)(point)
+          val newPoint = access.modify(_ + accumulatedDiff)(point)
           results += newPoint
         }
 
