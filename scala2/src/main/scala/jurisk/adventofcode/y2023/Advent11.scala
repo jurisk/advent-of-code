@@ -1,14 +1,14 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
-import jurisk.geometry.{BigIntCoords2D, Coordinates2D, Field2D}
+import jurisk.geometry.{BigIntCoords2D, Field2D}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import monocle.Lens
+import monocle.macros.GenLens
 
 import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
-import monocle.macros.GenLens
 
 object Advent11 {
   private type Galaxies = ArraySeq[BigIntCoords2D]
