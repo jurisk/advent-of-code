@@ -11,65 +11,65 @@ class Advent11Spec extends AnyFreeSpec {
     "test 1" in {
       expand(
         ArraySeq(
-          BigCoords2D(0, 0),
-          BigCoords2D(0, 1),
+          BigIntCoords2D(0, 0),
+          BigIntCoords2D(0, 1),
         ),
         2,
       ) shouldEqual ArraySeq(
-        BigCoords2D(0, 0),
-        BigCoords2D(0, 1),
+        BigIntCoords2D(0, 0),
+        BigIntCoords2D(0, 1),
       )
     }
 
     "test 2" in {
       expand(
         ArraySeq(
-          BigCoords2D(0, 0),
-          BigCoords2D(0, 2),
+          BigIntCoords2D(0, 0),
+          BigIntCoords2D(0, 2),
         ),
         2,
       ) shouldEqual ArraySeq(
-        BigCoords2D(0, 0),
-        BigCoords2D(0, 3),
+        BigIntCoords2D(0, 0),
+        BigIntCoords2D(0, 3),
       )
     }
 
     "test 3" in {
       expand(
         ArraySeq(
-          BigCoords2D(0, 0),
-          BigCoords2D(0, 3),
+          BigIntCoords2D(0, 0),
+          BigIntCoords2D(0, 3),
         ),
         2,
       ) shouldEqual ArraySeq(
-        BigCoords2D(0, 0),
-        BigCoords2D(0, 5),
+        BigIntCoords2D(0, 0),
+        BigIntCoords2D(0, 5),
       )
     }
 
     "test 4" in {
       expand(
         ArraySeq(
-          BigCoords2D(0, 0),
-          BigCoords2D(0, 1),
+          BigIntCoords2D(0, 0),
+          BigIntCoords2D(0, 1),
         ),
         100_000,
       ) shouldEqual ArraySeq(
-        BigCoords2D(0, 0),
-        BigCoords2D(0, 1),
+        BigIntCoords2D(0, 0),
+        BigIntCoords2D(0, 1),
       )
     }
 
     "test 5" in {
       expand(
         ArraySeq(
-          BigCoords2D(0, 0),
-          BigCoords2D(0, 2),
+          BigIntCoords2D(0, 0),
+          BigIntCoords2D(0, 2),
         ),
         100_000,
       ) shouldEqual ArraySeq(
-        BigCoords2D(0, 0),
-        BigCoords2D(0, 100_001),
+        BigIntCoords2D(0, 0),
+        BigIntCoords2D(0, 100_001),
       )
     }
 

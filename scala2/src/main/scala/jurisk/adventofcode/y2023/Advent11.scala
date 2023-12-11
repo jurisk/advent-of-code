@@ -10,22 +10,22 @@ import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
 import monocle.macros.GenLens
 
-final case class BigCoords2D(x: BigInt, y: BigInt) {
-  def +(other: BigCoords2D): BigCoords2D =
-    BigCoords2D(x + other.x, y + other.y)
+final case class BigIntCoords2D(x: BigInt, y: BigInt) {
+  def +(other: BigIntCoords2D): BigIntCoords2D =
+    BigIntCoords2D(x + other.x, y + other.y)
 
-  def -(other: BigCoords2D): BigCoords2D =
-    BigCoords2D(x - other.x, y - other.y)
+  def -(other: BigIntCoords2D): BigIntCoords2D =
+    BigIntCoords2D(x - other.x, y - other.y)
 
   def manhattanDistanceToOrigin: BigInt =
     x.abs + y.abs
 
-  def manhattanDistance(other: BigCoords2D): BigInt =
+  def manhattanDistance(other: BigIntCoords2D): BigInt =
     (this - other).manhattanDistanceToOrigin
 }
 
 object Advent11 {
-  private type Galaxies = ArraySeq[BigCoords2D]
+  private type Galaxies = ArraySeq[BigIntCoords2D]
 
   def parse(input: String): Galaxies = {
     val field = Field2D.parseFromString(
@@ -40,7 +40,7 @@ object Advent11 {
     val coords = field.filterCoordsByValue(_ == true)
 
     val results = coords.map { c =>
-      BigCoords2D(c.x, c.y)
+      BigIntCoords2D(c.x, c.y)
     }
 
     ArraySeq.from(results)
@@ -49,13 +49,13 @@ object Advent11 {
   private def expandGeneric(
     data: Galaxies,
     factor: BigInt,
-    access: Lens[BigCoords2D, BigInt],
+    access: Lens[BigIntCoords2D, BigInt],
   ): Galaxies = {
     val sorted = data.toList.sortBy(access.get)
 
     sorted.headOption match {
       case Some(first) =>
-        val results: mutable.ArrayBuffer[BigCoords2D] =
+        val results: mutable.ArrayBuffer[BigIntCoords2D] =
           mutable.ArrayBuffer.empty
 
         var previous                = access.get(first)
@@ -84,10 +84,10 @@ object Advent11 {
    */
   private[y2023] def expand(data: Galaxies, factor: BigInt): Galaxies = {
     def expandColumns(data: Galaxies, factor: BigInt): Galaxies =
-      expandGeneric(data, factor, GenLens[BigCoords2D](_.x))
+      expandGeneric(data, factor, GenLens[BigIntCoords2D](_.x))
 
     def expandRows(data: Galaxies, factor: BigInt): Galaxies =
-      expandGeneric(data, factor, GenLens[BigCoords2D](_.y))
+      expandGeneric(data, factor, GenLens[BigIntCoords2D](_.y))
 
     expandColumns(expandRows(data, factor), factor)
   }
