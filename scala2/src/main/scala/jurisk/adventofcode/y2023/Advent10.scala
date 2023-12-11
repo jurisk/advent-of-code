@@ -9,7 +9,6 @@ import jurisk.geometry.{Coords2D, Field2D}
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import cats.implicits._
 
 import scala.collection.immutable.ArraySeq
 

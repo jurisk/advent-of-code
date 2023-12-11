@@ -19,7 +19,7 @@ final case class Field2D[T](
   def mapByCoordsWithValues[B](f: (Coords2D, T) => B): Field2D[B] = Field2D {
     yIndices.toVector map { y =>
       xIndices.toVector map { x =>
-        val coords = Coords2D(x, y)
+        val coords = Coords2D.of(x, y)
         f(coords, atUnsafe(coords))
       }
     }
@@ -101,7 +101,7 @@ final case class Field2D[T](
   def allCoords: Seq[Coords2D] =
     yIndices flatMap { y =>
       xIndices map { x =>
-        Coords2D(x, y)
+        Coords2D.of(x, y)
       }
     }
 
@@ -110,14 +110,14 @@ final case class Field2D[T](
   def entries: Seq[(Coords2D, T)] =
     yIndices flatMap { y =>
       xIndices map { x =>
-        val c = Coords2D(x, y)
+        val c = Coords2D.of(x, y)
         c -> atUnsafe(c)
       }
     }
 
   def row(y: Int): Vector[T]               = data(y - topLeft.y)
   def coordsForRow(y: Int): List[Coords2D] = xIndices.toList map { x =>
-    Coords2D(x, y)
+    Coords2D.of(x, y)
   }
 
   def rows: List[Vector[T]] = data.toList
@@ -128,7 +128,7 @@ final case class Field2D[T](
 
   def column(x: Int): Vector[T]               = data.map(_(x - topLeft.x))
   def coordsForColumn(x: Int): List[Coords2D] = yIndices.toList map { y =>
-    Coords2D(x, y)
+    Coords2D.of(x, y)
   }
 
   def firstRowValues: Vector[T] = row(0)
@@ -180,7 +180,7 @@ object Field2D {
   def toDebugRepresentation(field: Field2D[Char]): String = mergeSeqSeqChar(
     field.yIndices map { y =>
       field.xIndices.map { x =>
-        field.atUnsafe(Coords2D(x, y))
+        field.atUnsafe(Coords2D.of(x, y))
       }
     }
   )

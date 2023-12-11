@@ -54,7 +54,7 @@ object Parsing {
 
     def parseCoords2D: Coords2D = {
       val (x, y): (Int, Int) = s.parsePairUnsafe(",", _.trim.toInt)
-      Coords2D(x, y)
+      Coords2D.of(x, y)
     }
 
     def splitPairUnsafe(separator: String): (String, String) =
