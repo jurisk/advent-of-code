@@ -8,7 +8,6 @@ object Coords2D {
 
   val Zero: Coords2D = Coordinates2D.zero[Int]
 
-  // TODO: Make Area2D generic on N: Integral and then move this to Coordinates2D
   def boundingBoxInclusive(coords: Iterable[Coords2D]): Area2D = {
     val xList = coords.map(_.x)
     val minX  = xList.min
