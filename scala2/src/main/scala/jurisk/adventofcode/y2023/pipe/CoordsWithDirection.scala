@@ -1,8 +1,11 @@
 package jurisk.adventofcode.y2023.pipe
 
 import jurisk.adventofcode.y2023.pipe.Pipe.Empty
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
-import jurisk.geometry.{Coords2D, Direction2D, Field2D, Rotation}
+import jurisk.geometry.Field2D
+import jurisk.geometry.Rotation
 import jurisk.utils.CollectionOps.IterableOps
 
 final case class CoordsWithDirection(

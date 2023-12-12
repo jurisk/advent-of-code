@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2023
 
-import jurisk.math.{QuadraticEquation, countLongsBetweenExclusive}
+import jurisk.math.QuadraticEquation
+import jurisk.math.countLongsBetweenExclusive
 
 object Advent06 {
   type Input = List[Race]

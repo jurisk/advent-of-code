@@ -1,7 +1,12 @@
 package jurisk.adventofcode.y2023.pipe
 
-import jurisk.geometry.Direction2D.{CardinalDirection2D, E, N, S, W}
-import jurisk.geometry.{Coords2D, Field2D}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D.CardinalDirection2D
+import jurisk.geometry.Direction2D.E
+import jurisk.geometry.Direction2D.N
+import jurisk.geometry.Direction2D.S
+import jurisk.geometry.Direction2D.W
+import jurisk.geometry.Field2D
 
 sealed trait Pipe {
   def symbol: Char

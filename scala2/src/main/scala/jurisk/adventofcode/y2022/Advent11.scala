@@ -1,10 +1,10 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
+import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
-import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 import scala.annotation.tailrec

@@ -25,7 +25,7 @@ object HasSqrt {
     }
   }
 
-  implicit class SqrtOps[T](val x: T) extends AnyVal {
+  implicit class SqrtOps[T](private val x: T) extends AnyVal {
     def sqrt(implicit hasSqrt: HasSqrt[T]): Option[T] = hasSqrt.sqrt(x)
   }
 }

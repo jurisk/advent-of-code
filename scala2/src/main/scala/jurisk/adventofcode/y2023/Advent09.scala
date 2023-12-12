@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2023
 
-import jurisk.utils.CollectionOps.{EqIterableOps, IntegralSeqOps}
+import jurisk.utils.CollectionOps.EqIterableOps
+import jurisk.utils.CollectionOps.IntegralSeqOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 

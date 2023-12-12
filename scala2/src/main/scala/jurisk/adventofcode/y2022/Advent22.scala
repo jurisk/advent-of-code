@@ -9,9 +9,9 @@ import jurisk.geometry.Direction2D._
 import jurisk.geometry.Field2D
 import jurisk.geometry.Rotation
 import jurisk.geometry.Rotation.TurnAround
+import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 import scala.annotation.tailrec

@@ -1,7 +1,9 @@
 package jurisk.adventofcode.y2023
 
 import jurisk.algorithms.pathfinding.ConnectedComponents
-import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 
 object Advent03 {
@@ -20,7 +22,7 @@ object Advent03 {
       override def toChar: Char = value
     }
 
-    final case object Empty extends Square {
+    case object Empty extends Square {
       override def toChar: Char = '.'
     }
 

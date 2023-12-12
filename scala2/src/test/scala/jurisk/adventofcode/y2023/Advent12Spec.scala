@@ -1,10 +1,11 @@
 package jurisk.adventofcode.y2023
 
-import org.scalatest.freespec.AnyFreeSpec
-import Advent12._
+import cats.effect.testing.scalatest.AsyncIOSpec
+import jurisk.adventofcode.y2023.Advent12._
+import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers._
 
-class Advent12Spec extends AnyFreeSpec {
+class Advent12Spec extends AsyncFreeSpec with AsyncIOSpec {
   def testPart1(input: String, expected: Long): Unit =
     input in {
       val row = Row.parse(input)
@@ -45,13 +46,19 @@ class Advent12Spec extends AnyFreeSpec {
 
   "part 1" - {
     "real" in {
-      part1(parseFile("2023/12.txt")) shouldEqual 7694
+      for {
+        input    <- parseFile("2023/12.txt")
+        solution <- part1(input)
+      } yield solution shouldEqual 7694
     }
   }
 
   "part 2" - {
     "real" in {
-      part2(parseFile("2023/12.txt")) shouldEqual 5071883216318L
+      for {
+        input    <- parseFile("2023/12.txt")
+        solution <- part2(input)
+      } yield solution shouldEqual 5071883216318L
     }
   }
 }

@@ -2,9 +2,10 @@ package jurisk.adventofcode.y2018
 
 import cats.implicits._
 import jurisk.adventofcode.y2018.Advent04.Entry.BeginsShift
-import jurisk.utils.FileInput.parseFileLines
-import jurisk.utils.Parsing.{StringOps, splitIntoSectionsUsingMarker}
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.FileInput.parseFileLines
+import jurisk.utils.Parsing.StringOps
+import jurisk.utils.Parsing.splitIntoSectionsUsingMarker
 import org.scalatest.matchers.should.Matchers._
 
 import java.time.Duration

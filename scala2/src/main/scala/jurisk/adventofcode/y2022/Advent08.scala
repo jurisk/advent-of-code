@@ -2,7 +2,9 @@ package jurisk.adventofcode.y2022
 
 import cats.data.NonEmptyList
 import cats.implicits._
-import jurisk.geometry.{Coords2D, Field2D, visualizeBoolean}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Field2D
+import jurisk.geometry.visualizeBoolean
 import jurisk.utils.FileInput._
 import org.scalatest.matchers.should.Matchers._
 

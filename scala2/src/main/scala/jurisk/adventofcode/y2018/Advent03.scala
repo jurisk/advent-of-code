@@ -3,8 +3,8 @@ package jurisk.adventofcode.y2018
 import cats.implicits._
 import jurisk.geometry.Area2D
 import jurisk.geometry.Coords2D
-import jurisk.utils.FileInput.parseFileLines
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.FileInput.parseFileLines
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 

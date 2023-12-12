@@ -1,9 +1,9 @@
 package jurisk.adventofcode.y2023
 
-import jurisk.utils.FileInput._
-import jurisk.utils.Parsing.StringOps
 import cats.implicits._
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.FileInput._
+import jurisk.utils.Parsing.StringOps
 
 import Ordering.Implicits.seqOrdering
 
@@ -15,12 +15,12 @@ object Advent07 {
   }
 
   object PokerGame {
-    final case object Camel1 extends PokerGame {
+    case object Camel1 extends PokerGame {
       override def handValue(hand: Hand): Value =
         Value(ValueKind.fromRanks(hand.ranks), hand.ranks)
     }
 
-    final case object Camel2 extends PokerGame {
+    case object Camel2 extends PokerGame {
       override def handValue(hand: Hand): Value = {
         val ranks = hand.ranks map { r =>
           if (r == Rank.parse('J')) Rank.Wildcard else r
@@ -86,13 +86,13 @@ object Advent07 {
   object ValueKind {
     implicit val ordering: Ordering[ValueKind] = Ordering.by(_.strength)
 
-    final case object HighCard     extends ValueKind(0)
-    final case object Pair         extends ValueKind(1)
-    final case object TwoPairs     extends ValueKind(2)
-    final case object ThreeOfAKind extends ValueKind(3)
-    final case object FullHouse    extends ValueKind(4)
-    final case object FourOfAKind  extends ValueKind(5)
-    final case object FiveOfAKind  extends ValueKind(6)
+    case object HighCard     extends ValueKind(0)
+    case object Pair         extends ValueKind(1)
+    case object TwoPairs     extends ValueKind(2)
+    case object ThreeOfAKind extends ValueKind(3)
+    case object FullHouse    extends ValueKind(4)
+    case object FourOfAKind  extends ValueKind(5)
+    case object FiveOfAKind  extends ValueKind(6)
 
     private val Mapping = Map(
       (5 :: Nil)                     -> ValueKind.FiveOfAKind,

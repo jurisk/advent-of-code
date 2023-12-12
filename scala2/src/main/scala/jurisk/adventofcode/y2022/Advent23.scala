@@ -4,10 +4,10 @@ import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
 import jurisk.geometry.Field2D
-import jurisk.utils.FileInput._
-import jurisk.utils.Simulation
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.immutable.ArraySeq

@@ -1,7 +1,8 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
-import jurisk.geometry.{BigIntCoords2D, Field2D}
+import jurisk.geometry.BigIntCoords2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import monocle.Lens

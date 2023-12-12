@@ -1,8 +1,8 @@
 package jurisk.adventofcode.y2018
 
+import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput.readSingleFileLine
 import jurisk.utils.Parsing.StringOps
-import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent08 {

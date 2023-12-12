@@ -1,11 +1,18 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
+import jurisk.adventofcode.y2023.pipe.CoordsWithDirection
+import jurisk.adventofcode.y2023.pipe.Pipe
 import jurisk.adventofcode.y2023.pipe.Pipe._
-import jurisk.adventofcode.y2023.pipe.{CoordsWithDirection, Pipe}
-import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
-import jurisk.geometry.Direction2D.{E, N, S, W}
-import jurisk.geometry.{Coords2D, Field2D, visualizeBoolean}
+import jurisk.algorithms.pathfinding.Bfs
+import jurisk.algorithms.pathfinding.Dijkstra
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D.E
+import jurisk.geometry.Direction2D.N
+import jurisk.geometry.Direction2D.S
+import jurisk.geometry.Direction2D.W
+import jurisk.geometry.Field2D
+import jurisk.geometry.visualizeBoolean
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -179,34 +186,34 @@ object Advent10 {
     val (_, onlyTrack) = extractTrack(data)
 
     val expanded = onlyTrack.flatMap {
-      case Pipe.Empty => Field2D.parseBooleanField(s"""...
-                                                      |...
-                                                      |...
-                                                      |""".stripMargin)
-      case Pipe.N_S   => Field2D.parseBooleanField(s""".#.
-                                                    |.#.
-                                                    |.#.
-                                                    |""".stripMargin)
-      case Pipe.E_W   => Field2D.parseBooleanField(s"""...
-                                                    |###
-                                                    |...
-                                                    |""".stripMargin)
-      case Pipe.N_E   => Field2D.parseBooleanField(s""".#.
-                                                    |.##
-                                                    |...
-                                                    |""".stripMargin)
-      case Pipe.N_W   => Field2D.parseBooleanField(s""".#.
-                                                    |##.
-                                                    |...
-                                                    |""".stripMargin)
-      case Pipe.S_W   => Field2D.parseBooleanField(s"""...
-                                                    |##.
-                                                    |.#.
-                                                    |""".stripMargin)
-      case Pipe.S_E   => Field2D.parseBooleanField(s"""...
-                                                    |.##
-                                                    |.#.
-                                                    |""".stripMargin)
+      case Pipe.Empty => Field2D.parseBooleanField("""...
+                                                     |...
+                                                     |...
+                                                     |""".stripMargin)
+      case Pipe.N_S   => Field2D.parseBooleanField(""".#.
+                                                   |.#.
+                                                   |.#.
+                                                   |""".stripMargin)
+      case Pipe.E_W   => Field2D.parseBooleanField("""...
+                                                   |###
+                                                   |...
+                                                   |""".stripMargin)
+      case Pipe.N_E   => Field2D.parseBooleanField(""".#.
+                                                   |.##
+                                                   |...
+                                                   |""".stripMargin)
+      case Pipe.N_W   => Field2D.parseBooleanField(""".#.
+                                                   |##.
+                                                   |...
+                                                   |""".stripMargin)
+      case Pipe.S_W   => Field2D.parseBooleanField("""...
+                                                   |##.
+                                                   |.#.
+                                                   |""".stripMargin)
+      case Pipe.S_E   => Field2D.parseBooleanField("""...
+                                                   |.##
+                                                   |.#.
+                                                   |""".stripMargin)
     }
 
     Field2D.printBooleanField(expanded)

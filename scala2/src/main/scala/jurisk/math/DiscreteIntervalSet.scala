@@ -1,6 +1,7 @@
 package jurisk.math
 
 import cats.implicits._
+
 import scala.math.Ordering.Implicits._
 
 final case class DiscreteIntervalSet[N: Numeric](

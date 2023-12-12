@@ -1,9 +1,9 @@
 package jurisk.adventofcode
 
 import cats.implicits._
+import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import jurisk.utils.CollectionOps.IterableOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent00 {

@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2022
 
-import jurisk.utils.FileInput.readLineGroups
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.FileInput.readLineGroups
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 

@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2023
 
 import jurisk.utils.FileInput._
+
 import scala.annotation.tailrec
 
 object Advent01 {

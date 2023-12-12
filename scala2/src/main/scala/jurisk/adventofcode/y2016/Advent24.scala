@@ -1,12 +1,15 @@
 package jurisk.adventofcode.y2016
 
 import cats.Endo
-import cats.effect.{IO, IOApp}
+import cats.effect.IO
+import cats.effect.IOApp
 import cats.syntax.all._
-import jurisk.adventofcode.y2016.Advent24.Square.{LocationCode, Zero}
+import jurisk.adventofcode.y2016.Advent24.Square.LocationCode
+import jurisk.adventofcode.y2016.Advent24.Square.Zero
 import jurisk.algorithms.pathfinding.Bfs
 import jurisk.collections.SetOfTwo
-import jurisk.geometry.{Coords2D, Field2D}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Field2D
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInputIO.readFileText
 import jurisk.utils.Parsing.StringOps

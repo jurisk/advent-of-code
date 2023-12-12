@@ -2,10 +2,10 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits._
 import jurisk.math.lcmMany
+import jurisk.utils.CollectionOps.IndexedSeqOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
-import jurisk.utils.CollectionOps.IndexedSeqOps
 
 object Advent08 {
   sealed trait Instruction

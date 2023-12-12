@@ -1,10 +1,12 @@
 package jurisk.adventofcode.y2023
 
-import cats.effect.{IO, IOApp}
+import cats.effect.IO
+import cats.effect.IOApp
+import cats.implicits._
+import jurisk.math.DiscreteInterval
+import jurisk.math.DiscreteIntervalSet
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import cats.implicits._
-import jurisk.math.{DiscreteInterval, DiscreteIntervalSet}
 
 object Advent05 extends IOApp.Simple {
   final case class Input(
