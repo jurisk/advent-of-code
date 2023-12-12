@@ -1,10 +1,7 @@
 package jurisk.adventofcode.y2023
 
-import jurisk.adventofcode.y2023.Advent12.Condition.{
-  Damaged,
-  Operational,
-  Unknown,
-}
+import jurisk.adventofcode.y2023.Advent12.Condition._
+import jurisk.math.Combinatorics
 import jurisk.utils.CollectionOps.{ListListOps, ListOps}
 import jurisk.utils.FileInput._
 import jurisk.utils.Memoize
@@ -111,6 +108,14 @@ object Advent12 {
       conditions.multiplyAndFlattenWithSeparator(times, Unknown),
       groups.multiplyAndFlatten(times),
     )
+
+    // Not actually used except by tests, shown for illustration
+    def bruteForceArrangements: Int =
+      Combinatorics
+        .fillWildcards(conditions, Unknown, List(Damaged, Operational))
+        .count { option =>
+          option.splitBySeparator(Operational).map(_.length) == groups
+        }
 
     def arrangements: Long = {
       val grouped: List[List[NonOperational]] =

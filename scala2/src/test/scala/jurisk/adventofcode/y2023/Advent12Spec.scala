@@ -7,7 +7,9 @@ import org.scalatest.matchers.should.Matchers._
 class Advent12Spec extends AnyFreeSpec {
   def testPart1(input: String, expected: Long): Unit =
     input in {
-      Row.parse(input).arrangements shouldEqual expected
+      val row = Row.parse(input)
+      row.arrangements shouldEqual expected
+      row.bruteForceArrangements shouldEqual expected
     }
 
   def testPart2(input: String, expected: Long): Unit =
