@@ -35,7 +35,7 @@ object Advent12 extends IOApp.Simple {
 
   private val calculateArrangementsMemoized
     : ((List[List[NonOperational]], List[Int])) => Long =
-    Memoize.memoize(calculateArrangements)
+    Memoize.memoizeSynchronized(calculateArrangements)
 
   private def calculateArrangements(
     input: (List[List[NonOperational]], List[Int])
