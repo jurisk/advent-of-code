@@ -7,10 +7,8 @@ import jurisk.adventofcode.y2023.Advent12.Condition.{
 }
 import jurisk.utils.CollectionOps.{ListListOps, ListOps}
 import jurisk.utils.FileInput._
+import jurisk.utils.Memoize
 import jurisk.utils.Parsing.StringOps
-
-import scala.annotation.tailrec
-import scala.collection.mutable
 
 object Advent12 {
   type Input = List[Row]
@@ -34,16 +32,15 @@ object Advent12 {
     }
   }
 
-  private def printL(l: List[Condition]): String =
-    l.map(_.symbol).mkString
+  private val calculateArrangementsMemoized
+    : ((List[List[NonOperational]], List[Int])) => Long =
+    Memoize.memoize(calculateArrangements)
 
-  private val memo: mutable.Map[(List[List[NonOperational]], List[Int]), Long] =
-    mutable.Map.empty
-
-  private def arr(
-    springs: List[List[NonOperational]],
-    groups: List[Int],
+  private def calculateArrangements(
+    input: (List[List[NonOperational]], List[Int])
   ): Long = {
+    val (springs, groups) = input
+
     val maxPossibleDamaged = springs.map(_.size).sum
     val groupSum           = groups.sum
 
@@ -51,11 +48,7 @@ object Advent12 {
       return 0
     }
 
-    if (memo.contains((springs, groups))) {
-      return memo((springs, groups))
-    }
-
-    val result = groups match {
+    groups match {
       case nextGroup :: otherGroups =>
         springs match {
           case nextSprings :: _ =>
@@ -66,9 +59,11 @@ object Advent12 {
 
             val startingHereOptions =
               if (groupCanStartHere && validSpaceAfter) {
-                arr(
-                  springs.dropFromFirstEliminatingEmpty(nextGroup + 1),
-                  otherGroups,
+                calculateArrangementsMemoized(
+                  (
+                    springs.dropFromFirstEliminatingEmpty(nextGroup + 1),
+                    otherGroups,
+                  )
                 )
               } else {
                 0
@@ -79,9 +74,11 @@ object Advent12 {
               0
             } else {
               // What if we skip the next one?
-              arr(
-                springs.dropFromFirstEliminatingEmpty(1),
-                nextGroup :: otherGroups,
+              calculateArrangementsMemoized(
+                (
+                  springs.dropFromFirstEliminatingEmpty(1),
+                  nextGroup :: otherGroups,
+                )
               )
             }
 
@@ -99,22 +96,22 @@ object Advent12 {
           0
         }
     }
-
-    memo.put((springs, groups), result)
-
-    result
   }
 
   final case class Row(
     conditions: List[Condition],
     groups: List[Int],
   ) {
-    def expand(times: Int): Row =
+    def expand(times: Int): Row = {
+      def printL(l: List[Condition]): String =
+        l.map(_.symbol).mkString
+
       Row.parse(
         List.fill(times)(printL(conditions)).mkString("?") + " " + List
           .fill(times)(groups.map(_.toString).mkString(","))
           .mkString(",")
       )
+    }
 
     def expandedArrangements(times: Int): Long =
       expand(times).arrangements
@@ -128,7 +125,7 @@ object Advent12 {
           }
         }
 
-      arr(grouped, groups)
+      calculateArrangements((grouped, groups))
     }
   }
 
