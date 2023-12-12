@@ -8,6 +8,8 @@ import jurisk.adventofcode.y2023.Advent12.Condition.{
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
+import scala.collection.mutable
+
 object Advent12 {
   type Input = List[Row]
 
@@ -30,16 +32,33 @@ object Advent12 {
     }
   }
 
-  def splitBySeparator[T](l: List[T], sep: T): List[List[T]] =
+  private def splitBySeparator[T](l: List[T], sep: T): List[List[T]] =
     (l.span(_ != sep) match {
       case (hd, _ :: tl) => hd :: splitBySeparator(tl, sep)
       case (hd, _)       => List(hd)
     }).filter(_.nonEmpty)
 
-  def printL(l: List[Condition]): String =
+  private def printL(l: List[Condition]): String =
     l.map(_.symbol).mkString
 
-  def arr(springs: List[List[NonOperational]], groups: List[Int]): Int = {
+  val memo: mutable.Map[(List[List[NonOperational]], List[Int]), Long] =
+    mutable.Map.empty
+
+  private def arr(
+    springs: List[List[NonOperational]],
+    groups: List[Int],
+  ): Long = {
+    val maxPossibleDamaged = springs.map(_.size).sum
+    val groupSum           = groups.sum
+
+    if (groupSum > maxPossibleDamaged) {
+      return 0
+    }
+
+    if (memo.contains((springs, groups))) {
+      return memo((springs, groups))
+    }
+
     val result = groups match {
       case nextGroup :: otherGroups =>
         springs match {
@@ -89,7 +108,9 @@ object Advent12 {
         }
     }
 
-//    println(s"`${springs.map(x => printL(x)).mkString(" ")}` $groups => $result")
+//    println(s"`${springs.map(x => printL(x))}` $groups => $result")
+
+    memo.put((springs, groups), result)
 
     result
   }
@@ -98,17 +119,17 @@ object Advent12 {
     conditions: List[Condition],
     groups: List[Int],
   ) {
-    def expand(times: Int): Row = {
+    def expand(times: Int): Row =
       Row.parse(
-        List.fill(times)(printL(conditions)).mkString("?") + " " + List.fill(times)(groups.map(_.toString).mkString(",")).mkString(",")
+        List.fill(times)(printL(conditions)).mkString("?") + " " + List
+          .fill(times)(groups.map(_.toString).mkString(","))
+          .mkString(",")
       )
-    }
 
-    def expandedArrangements(times: Int): Int = {
+    def expandedArrangements(times: Int): Long =
       expand(times).arrangements
-    }
 
-    def arrangements: Int = {
+    def arrangements: Long = {
       val grouped: List[List[NonOperational]] =
         splitBySeparator(conditions, Operational).map { list =>
           list.map {
@@ -128,7 +149,7 @@ object Advent12 {
 
   object Row {
     def parse(s: String): Row = {
-      println(s)
+//      println(s)
 
       val (a, b)     = s.splitPairUnsafe(" ")
       val conditions = a.toList.map {
@@ -148,10 +169,10 @@ object Advent12 {
   def parse(input: String): Input =
     input.parseLines(Row.parse)
 
-  def part1(data: Input): Int =
+  def part1(data: Input): Long =
     data.map(_.arrangements).sum
 
-  def part2(data: Input): Int =
+  def part2(data: Input): Long =
     data.map(_.expandedArrangements(5)).sum
 
   def parseFile(fileName: String): Input =
