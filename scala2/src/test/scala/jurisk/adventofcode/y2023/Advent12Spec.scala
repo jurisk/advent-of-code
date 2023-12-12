@@ -12,7 +12,7 @@ class Advent12Spec extends AnyFreeSpec {
 
   def testPart2(input: String, expected: Long): Unit =
     input in {
-      Row.parse(input).expandedArrangements(5) shouldEqual expected
+      Row.parse(input).expand(5).arrangements shouldEqual expected
     }
 
   "part 1 arrangements" - {
@@ -36,6 +36,7 @@ class Advent12Spec extends AnyFreeSpec {
   "part 2 arrangements" - {
     testPart2("???.### 1,1,3", 1)
     testPart2("????.######..#####. 1,6,5", 2500)
+    testPart2(".??..??...?##. 1,1,3", 16384)
     testPart2("?###???????? 3,2,1", 506250)
     testPart2(".#????????????????? 1,4,3,2,2", 120681045)
   }

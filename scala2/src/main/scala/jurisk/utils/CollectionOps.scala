@@ -11,28 +11,38 @@ object CollectionOps {
   implicit class ListOps[T](list: List[T]) {
     def splitBySeparator(separator: T): List[List[T]] = {
       @tailrec
-      def splitBySeparatorAccumulator(
+      def f(
         remaining: List[T],
         current: List[T],
-        accumulator: List[List[T]],
+        acc: List[List[T]],
       ): List[List[T]] =
         remaining match {
           case Nil                 =>
-            val finalAccumulator =
-              if (current.nonEmpty) current :: accumulator else accumulator
+            val finalAccumulator = if (current.nonEmpty) current :: acc else acc
             finalAccumulator.reverse.map(_.reverse)
           case `separator` :: tail =>
-            splitBySeparatorAccumulator(
-              tail,
-              Nil,
-              if (current.nonEmpty) current :: accumulator else accumulator,
-            )
+            val newAcc = if (current.nonEmpty) current :: acc else acc
+            f(tail, Nil, newAcc)
           case head :: tail        =>
-            splitBySeparatorAccumulator(tail, head :: current, accumulator)
+            f(tail, head :: current, acc)
         }
 
-      splitBySeparatorAccumulator(list, Nil, Nil)
+      f(list, Nil, Nil)
     }
+
+    def multiplyAndFlattenWithSeparator(times: Int, separator: T): List[T] = {
+      val lists = List.fill(times)(list)
+      if (lists.isEmpty) {
+        Nil
+      } else {
+        lists.reduce[List[T]] { case (a, b) =>
+          a ::: List(separator) ::: b
+        }
+      }
+    }
+
+    def multiplyAndFlatten(times: Int): List[T] =
+      List.fill(times)(list).flatten
   }
 
   implicit class IterableOps[T](seq: Iterable[T]) {
@@ -85,6 +95,5 @@ object CollectionOps {
           }
         case Nil          => Nil
       }
-
   }
 }

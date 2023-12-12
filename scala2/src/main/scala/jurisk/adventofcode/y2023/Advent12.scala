@@ -45,56 +45,64 @@ object Advent12 {
     val groupSum           = groups.sum
 
     if (groupSum > maxPossibleDamaged) {
-      return 0
-    }
+      // We don't have enough possible springs left in `springs` to cover all the groups in `groups`, it is hopeless
+      0
+    } else {
+      groups match {
+        case nextGroup :: otherGroups =>
+          springs match {
+            case nextSprings :: _ =>
+              val startingHereOptions = {
+                // Do we even have enough space to start the next group here?
+                val groupCanStartHere = nextSprings.length >= nextGroup
 
-    groups match {
-      case nextGroup :: otherGroups =>
-        springs match {
-          case nextSprings :: _ =>
-            val nextDamaged = nextSprings.head == Damaged
+                // If we start a group here, the next one has to be free
+                val validSpaceAfter =
+                  !nextSprings.lift(nextGroup).contains(Damaged)
 
-            val groupCanStartHere = nextSprings.length >= nextGroup
-            val validSpaceAfter   = !nextSprings.lift(nextGroup).contains(Damaged)
-
-            val startingHereOptions =
-              if (groupCanStartHere && validSpaceAfter) {
-                calculateArrangementsMemoized(
-                  (
-                    springs.dropFromFirstEliminatingEmpty(nextGroup + 1),
-                    otherGroups,
+                if (groupCanStartHere && validSpaceAfter) {
+                  calculateArrangementsMemoized(
+                    (
+                      springs.dropFromFirstEliminatingEmpty(nextGroup + 1),
+                      otherGroups,
+                    )
                   )
-                )
-              } else {
-                0
+                } else {
+                  0
+                }
               }
 
-            val skippingNextOptions = if (nextDamaged) {
-              // Next is damaged, we cannot skip it
-              0
-            } else {
-              // What if we skip the next one?
-              calculateArrangementsMemoized(
-                (
-                  springs.dropFromFirstEliminatingEmpty(1),
-                  nextGroup :: otherGroups,
-                )
-              )
-            }
+              val skippingNextOptions = {
+                val nextDamaged = nextSprings.head == Damaged
 
-            startingHereOptions + skippingNextOptions
+                if (nextDamaged) {
+                  // Next is damaged, we cannot skip it
+                  0
+                } else {
+                  // What if we skip the next one?
+                  calculateArrangementsMemoized(
+                    (
+                      springs.dropFromFirstEliminatingEmpty(1),
+                      nextGroup :: otherGroups,
+                    )
+                  )
+                }
+              }
 
-          case Nil => 0 // Group left but no matching springs
-        }
+              startingHereOptions + skippingNextOptions
 
-      case Nil =>
-        if (springs.forall(_.forall(_ == Unknown))) {
-          // some springs left, but no groups left, but all those springs can be empty
-          1
-        } else {
-          // we have damaged springs remaining but no groups left to cover
-          0
-        }
+            case Nil => 0 // Group left but no matching springs
+          }
+
+        case Nil =>
+          if (springs.forall(_.forall(_ == Unknown))) {
+            // some springs left, but no groups left, but all those springs can be empty
+            1
+          } else {
+            // we have damaged springs remaining but no groups left to cover
+            0
+          }
+      }
     }
   }
 
@@ -102,26 +110,17 @@ object Advent12 {
     conditions: List[Condition],
     groups: List[Int],
   ) {
-    def expand(times: Int): Row = {
-      def printL(l: List[Condition]): String =
-        l.map(_.symbol).mkString
-
-      Row.parse(
-        List.fill(times)(printL(conditions)).mkString("?") + " " + List
-          .fill(times)(groups.map(_.toString).mkString(","))
-          .mkString(",")
-      )
-    }
-
-    def expandedArrangements(times: Int): Long =
-      expand(times).arrangements
+    def expand(times: Int): Row = Row(
+      conditions.multiplyAndFlattenWithSeparator(times, Unknown),
+      groups.multiplyAndFlatten(times),
+    )
 
     def arrangements: Long = {
       val grouped: List[List[NonOperational]] =
         conditions.splitBySeparator(Operational).map { list =>
           list.map {
             case x: NonOperational => x
-            case x                 => x.toString.fail
+            case x                 => s"Did not expect $x in split conditions".fail
           }
         }
 
@@ -143,17 +142,19 @@ object Advent12 {
 
       Row(conditions, groups)
     }
-
   }
 
   def parse(input: String): Input =
     input.parseLines(Row.parse)
 
+  def solve(data: Input, times: Int): Long =
+    data.map(_.expand(times).arrangements).sum
+
   def part1(data: Input): Long =
-    data.map(_.arrangements).sum
+    solve(data, 1)
 
   def part2(data: Input): Long =
-    data.map(_.expandedArrangements(5)).sum
+    solve(data, 5)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
