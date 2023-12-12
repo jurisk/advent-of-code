@@ -5,9 +5,11 @@ import jurisk.adventofcode.y2023.Advent12.Condition.{
   Operational,
   Unknown,
 }
+import jurisk.utils.CollectionOps.{ListListOps, ListOps}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 
 object Advent12 {
@@ -32,16 +34,10 @@ object Advent12 {
     }
   }
 
-  private def splitBySeparator[T](l: List[T], sep: T): List[List[T]] =
-    (l.span(_ != sep) match {
-      case (hd, _ :: tl) => hd :: splitBySeparator(tl, sep)
-      case (hd, _)       => List(hd)
-    }).filter(_.nonEmpty)
-
   private def printL(l: List[Condition]): String =
     l.map(_.symbol).mkString
 
-  val memo: mutable.Map[(List[List[NonOperational]], List[Int]), Long] =
+  private val memo: mutable.Map[(List[List[NonOperational]], List[Int]), Long] =
     mutable.Map.empty
 
   private def arr(
@@ -62,38 +58,34 @@ object Advent12 {
     val result = groups match {
       case nextGroup :: otherGroups =>
         springs match {
-          case nextSprings :: otherSprings =>
+          case nextSprings :: _ =>
             val nextDamaged = nextSprings.head == Damaged
 
             val groupCanStartHere = nextSprings.length >= nextGroup
-            val validSpaceAfter   = nextSprings.lift(nextGroup) != Some(Damaged)
+            val validSpaceAfter   = !nextSprings.lift(nextGroup).contains(Damaged)
 
-            val mult1 = if (groupCanStartHere && validSpaceAfter) {
-              val updated = nextSprings.drop(nextGroup + 1)
-              val rem     = if (updated.nonEmpty) {
-                updated :: otherSprings
+            val startingHereOptions =
+              if (groupCanStartHere && validSpaceAfter) {
+                arr(
+                  springs.dropFromFirstEliminatingEmpty(nextGroup + 1),
+                  otherGroups,
+                )
               } else {
-                otherSprings
+                0
               }
 
-              arr(rem, otherGroups)
-            } else {
+            val skippingNextOptions = if (nextDamaged) {
+              // Next is damaged, we cannot skip it
               0
+            } else {
+              // What if we skip the next one?
+              arr(
+                springs.dropFromFirstEliminatingEmpty(1),
+                nextGroup :: otherGroups,
+              )
             }
 
-            val mult2 = if (nextDamaged) { 0 }
-            else {
-              val updated = nextSprings.drop(1)
-              val rem     = if (updated.nonEmpty) {
-                updated :: otherSprings
-              } else {
-                otherSprings
-              }
-
-              arr(rem, nextGroup :: otherGroups)
-            }
-
-            mult1 + mult2
+            startingHereOptions + skippingNextOptions
 
           case Nil => 0 // Group left but no matching springs
         }
@@ -107,8 +99,6 @@ object Advent12 {
           0
         }
     }
-
-//    println(s"`${springs.map(x => printL(x))}` $groups => $result")
 
     memo.put((springs, groups), result)
 
@@ -131,17 +121,12 @@ object Advent12 {
 
     def arrangements: Long = {
       val grouped: List[List[NonOperational]] =
-        splitBySeparator(conditions, Operational).map { list =>
+        conditions.splitBySeparator(Operational).map { list =>
           list.map {
             case x: NonOperational => x
             case x                 => x.toString.fail
           }
         }
-//
-//      println(conditions)
-//      println(grouped)
-//      println(groups)
-//      println()
 
       arr(grouped, groups)
     }
@@ -149,8 +134,6 @@ object Advent12 {
 
   object Row {
     def parse(s: String): Row = {
-//      println(s)
-
       val (a, b)     = s.splitPairUnsafe(" ")
       val conditions = a.toList.map {
         case '.' => Operational

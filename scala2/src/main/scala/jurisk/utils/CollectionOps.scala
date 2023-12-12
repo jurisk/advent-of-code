@@ -4,9 +4,37 @@ import cats.Eq
 import cats.implicits._
 import jurisk.utils.Parsing.StringOps
 
+import scala.annotation.tailrec
 import scala.math.Integral.Implicits.infixIntegralOps
 
 object CollectionOps {
+  implicit class ListOps[T](list: List[T]) {
+    def splitBySeparator(separator: T): List[List[T]] = {
+      @tailrec
+      def splitBySeparatorAccumulator(
+        remaining: List[T],
+        current: List[T],
+        accumulator: List[List[T]],
+      ): List[List[T]] =
+        remaining match {
+          case Nil                 =>
+            val finalAccumulator =
+              if (current.nonEmpty) current :: accumulator else accumulator
+            finalAccumulator.reverse.map(_.reverse)
+          case `separator` :: tail =>
+            splitBySeparatorAccumulator(
+              tail,
+              Nil,
+              if (current.nonEmpty) current :: accumulator else accumulator,
+            )
+          case head :: tail        =>
+            splitBySeparatorAccumulator(tail, head :: current, accumulator)
+        }
+
+      splitBySeparatorAccumulator(list, Nil, Nil)
+    }
+  }
+
   implicit class IterableOps[T](seq: Iterable[T]) {
     def counts: Map[T, Int] = seq.groupMapReduce(identity)(_ => 1)(_ + _)
 
@@ -43,5 +71,20 @@ object CollectionOps {
       val adjusted = index % I.fromInt(seq.length)
       seq(adjusted.toInt)
     }
+  }
+
+  implicit class ListListOps[T](listList: List[List[T]]) {
+    def dropFromFirstEliminatingEmpty(n: Int): List[List[T]] =
+      listList match {
+        case head :: tail =>
+          val updated = head.drop(n)
+          if (updated.isEmpty) {
+            tail
+          } else {
+            updated :: tail
+          }
+        case Nil          => Nil
+      }
+
   }
 }

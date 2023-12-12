@@ -5,82 +5,39 @@ import Advent12._
 import org.scalatest.matchers.should.Matchers._
 
 class Advent12Spec extends AnyFreeSpec {
-  "arrangements" - {
-    "a" in {
-      Row.parse("# 1").arrangements shouldEqual 1
-      Row.parse("? 1").arrangements shouldEqual 1
-      Row.parse(". 1").arrangements shouldEqual 0
+  def testPart1(input: String, expected: Long): Unit =
+    input in {
+      Row.parse(input).arrangements shouldEqual expected
     }
 
-    "aa" in {
-      Row.parse("# 2").arrangements shouldEqual 0
+  def testPart2(input: String, expected: Long): Unit =
+    input in {
+      Row.parse(input).expandedArrangements(5) shouldEqual expected
     }
 
-    "b" in {
-      Row.parse("?? 1").arrangements shouldEqual 2
-    }
+  "part 1 arrangements" - {
+    testPart1("# 1", 1)
+    testPart1("? 1", 1)
+    testPart1(". 1", 0)
+    testPart1("# 2", 0)
+    testPart1("?? 1", 2)
+    testPart1("??? 1,1", 1)
+    testPart1("???.### 1,1,3", 1)
+    testPart1(".??..??...?##. 1,1,3", 4)
+    Row.parse("?#?#?#?#?#?#?#? 1,3,1,6").arrangements shouldEqual 1
+    Row.parse("????.#...#... 4,1,1").arrangements shouldEqual 1
+    Row.parse("????.######..#####. 1,6,5").arrangements shouldEqual 4
+    Row.parse("??????? 2,1").arrangements shouldEqual 10
+    Row.parse("?###? 3").arrangements shouldEqual 1
+    Row.parse("###? 3").arrangements shouldEqual 1
+    Row.parse("?###???????? 3,2,1").arrangements shouldEqual 10
+  }
 
-    "c" in {
-      Row.parse("??? 1,1").arrangements shouldEqual 1
-    }
-
-    "1" in {
-      Row.parse("???.### 1,1,3").arrangements shouldEqual 1
-    }
-
-    "1 expand" in {
-      Row.parse("???.### 1,1,3").expandedArrangements(5) shouldEqual 1
-    }
-
-    "2" in {
-      Row.parse(".??..??...?##. 1,1,3").arrangements shouldEqual 4
-    }
-
-    "3" in {
-      Row.parse("?#?#?#?#?#?#?#? 1,3,1,6").arrangements shouldEqual 1
-    }
-
-    "4" in {
-      Row.parse("????.#...#... 4,1,1").arrangements shouldEqual 1
-    }
-
-    "5" in {
-      Row.parse("????.######..#####. 1,6,5").arrangements shouldEqual 4
-    }
-
-    "6a" in {
-      Row.parse("??????? 2,1").arrangements shouldEqual 10
-    }
-
-    "6b" in {
-      Row.parse("?###? 3").arrangements shouldEqual 1
-    }
-
-    "6c" in {
-      Row.parse("###? 3").arrangements shouldEqual 1
-    }
-
-    "6" in {
-      Row.parse("?###???????? 3,2,1").arrangements shouldEqual 10
-    }
-
-    "6 expand" in {
-      Row.parse("?###???????? 3,2,1").expandedArrangements(5) shouldEqual 506250
-    }
-
-    "2500" in {
-      Row
-        .parse("????.######..#####. 1,6,5")
-        .expandedArrangements(5) shouldEqual 2500
-    }
-
-    "slow" in {
-      Row
-        .parse(
-          ".#??????????????????.#??????????????????.#??????????????????.#??????????????????.#????????????????? 1,4,3,2,2,1,4,3,2,2,1,4,3,2,2,1,4,3,2,2,1,4,3,2,2"
-        )
-        .arrangements shouldEqual 120681045
-    }
+  "part 2 arrangements" - {
+    testPart2("???.### 1,1,3", 1)
+    testPart2("????.######..#####. 1,6,5", 2500)
+    testPart2("?###???????? 3,2,1", 506250)
+    testPart2(".#????????????????? 1,4,3,2,2", 120681045)
   }
 
   "part 1" - {
