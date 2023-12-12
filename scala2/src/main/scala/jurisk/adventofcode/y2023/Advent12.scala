@@ -72,11 +72,9 @@ object Advent12 {
                 }
               }
 
-              val skippingNextOptions = {
-                val nextDamaged = nextSprings.head == Damaged
-
-                if (nextDamaged) {
-                  // Next is damaged, we cannot skip it
+              val skippingNextOptions =
+                if (nextSprings.headOption.contains(Damaged)) {
+                  // Next is damaged, we cannot skip it and must start the group here
                   0
                 } else {
                   // What if we skip the next one?
@@ -87,7 +85,6 @@ object Advent12 {
                     )
                   )
                 }
-              }
 
               startingHereOptions + skippingNextOptions
 
