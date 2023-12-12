@@ -13,8 +13,8 @@ rust-version = "1.74.0"
 pedantic = "warn"
 
 [workspace.dependencies]
-nonempty = "0.8"
-itertools = "0.11"
+nonempty = "0.9"
+itertools = "0.12"
 pathfinding = "4.3"
 num-traits = "0.2"
 num-derive = "0.4"
