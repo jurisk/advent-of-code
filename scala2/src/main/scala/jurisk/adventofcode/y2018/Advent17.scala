@@ -39,7 +39,7 @@ object Advent17 {
 
   final case class State(field: Field2D[Square]) {
     private def withWaterFromSpring: State =
-      if (field.at(SpringOfWater.S).contains(Empty)) {
+      if (field.atOrElse(SpringOfWater.S, Empty) == Empty) {
         State(field.updatedAtUnsafe(SpringOfWater.S, RunningWater))
       } else {
         this

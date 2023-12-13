@@ -74,6 +74,7 @@ object Advent14 {
       (Direction2D.S :: Direction2D.SW :: Direction2D.SE :: Nil)
         .map(from + _)
 
+    // The .at is important, cannot default to Empty
     val found = potentialDestinations.find(c => field.at(c).contains(Empty))
     found match {
       case None        => from
