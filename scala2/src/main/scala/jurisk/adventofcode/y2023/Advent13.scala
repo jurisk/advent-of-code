@@ -15,7 +15,10 @@ object Advent13 {
     v.map(x => Field2D.parseBooleanField(x))
   }
 
-  def verticalReflection(field: Field2D[Boolean]): Option[Int] = {
+  def verticalReflection(field: Field2D[Boolean]): Option[Int] =
+    verticalReflectionInt(field).headOption
+
+  def verticalReflectionInt(field: Field2D[Boolean]): List[Int] = {
     val result = horizontalReflectionInt(field.rotate90Left)
 
     println(s"Vert $result:")
@@ -30,7 +33,7 @@ object Advent13 {
     println(s"Horiz $result:")
     printBooleanField(field)
 
-    result
+    result.headOption
   }
 
   def horizontalReflectionPerfect(field: Field2D[Boolean]): Option[Int] =
@@ -48,7 +51,7 @@ object Advent13 {
       }
     } else none
 
-  def horizontalReflectionInt(field: Field2D[Boolean]): Option[Int] = {
+  def horizontalReflectionInt(field: Field2D[Boolean]): List[Int] = {
     val maxSkip = field.height - 2
 
     val optionsDropTop = (0 to maxSkip).map { drop =>
@@ -62,10 +65,11 @@ object Advent13 {
     }
 
     (optionsDropTop.toList ::: optionsDropBottom.toList).flatten match {
-      case x :: Nil => x.some
-      case Nil      => None
+      case x :: Nil => x :: Nil
+      case Nil      => Nil
       case what     =>
-        what.minBy(x => (x - field.height.toDouble / 2).abs).some
+        what.sortBy(x => (x - field.height.toDouble / 2).abs)
+//        what.minBy(x => (x - field.height.toDouble / 2).abs).some
 //
 //        printBooleanField(field)
 //        what.toString.fail // what.min.some
@@ -77,6 +81,13 @@ object Advent13 {
     val h = horizontalReflection(field).map(x => x * 100)
 
     v.toList ::: h.toList
+  }
+
+  def valuesInt(field: Field2D[Boolean]): List[Int] = {
+    val v = verticalReflectionInt(field)
+    val h = horizontalReflectionInt(field).map(x => x * 100)
+
+    v ::: h
   }
 
   def value(field: Field2D[Boolean]): Int =
@@ -91,7 +102,7 @@ object Advent13 {
     val originalValue = value(field)
 
     val results = fixor(field)
-      .flatMap(valueInt)
+      .flatMap(valuesInt)
       .filterNot(_ == originalValue)
       .distinct
       .toList
