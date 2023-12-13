@@ -88,8 +88,8 @@ object Advent17 {
           val isSolidBasement = Coords2D
             .allPointsInclusive(from.S, to.S)
             .forall(c => isSolid(acc, c))
-          val hasLeftSide     = acc.at(from.W).contains(Clay)
-          val hasRightSide    = acc.at(to.E).contains(Clay)
+          val hasLeftSide     = acc.atOrElse(from.W, Empty) == Clay
+          val hasRightSide    = acc.atOrElse(to.E, Empty) == Clay
 
           if (isSolidBasement && hasLeftSide && hasRightSide) {
             Coords2D.allPointsInclusive(from, to).foldLeft(acc) {
@@ -107,10 +107,10 @@ object Advent17 {
 
   object State {
     private def isSolid(field: Field2D[Square], c: Coords2D): Boolean =
-      field.at(c) match {
-        case Some(Clay)          => true
-        case Some(StandingWater) => true
-        case _                   => false
+      field.atOrElse(c, Empty) match {
+        case Clay          => true
+        case StandingWater => true
+        case _             => false
       }
 
     @tailrec

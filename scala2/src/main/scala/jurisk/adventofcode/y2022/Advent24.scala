@@ -161,7 +161,7 @@ object Advent24 {
       acc.updatedAtUnsafe(location, newList)
     }
 
-    withBlizzards.at(state.location) shouldEqual Some(Nil)
+    withBlizzards.atOrElse(state.location, Nil) shouldEqual Nil
 
     val charField = withBlizzards.map {
       case Nil                    => '.'

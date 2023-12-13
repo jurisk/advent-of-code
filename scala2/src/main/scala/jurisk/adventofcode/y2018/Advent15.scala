@@ -81,7 +81,7 @@ object Advent15 {
     }
 
     private def isFree(c: Coords2D): Boolean =
-      walls.at(c).contains(false) && !units.values.exists(w =>
+      !walls.atOrElse(c, true) && !units.values.exists(w =>
         w.location == c && w.isAlive
       )
 

@@ -76,11 +76,8 @@ object Advent22 {
     direction: CardinalDirection2D,
     logicType: LogicType,
   ) {
-    private def isValid(c: Coords2D): Boolean = field.at(c) match {
-      case Some(Outside) => false
-      case None          => false
-      case _             => true
-    }
+    private def isValid(c: Coords2D): Boolean =
+      field.atOrElse(c, Outside) != Outside
 
     def debugPrint(): Unit = {
       val charField = field.map {

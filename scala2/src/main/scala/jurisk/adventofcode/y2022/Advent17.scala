@@ -105,7 +105,7 @@ object Advent17 {
     field: Field2D[Square],
     rockCoords: Set[Coords2D],
   ): Boolean =
-    !rockCoords.forall(c => field.at(c).contains(Empty))
+    !rockCoords.forall(c => field.atOrElse(c, Square.Wall) == Empty)
 
   private def fieldMinY(field: Field2D[Square]): Int =
     field
@@ -221,7 +221,7 @@ object Advent17 {
   }
 
   def part1(jetPattern: JetPattern, rocksToCount: Long): Long = {
-    println(jetPattern.length)
+    println(s"Jet pattern length: ${jetPattern.length}")
 
     val withBottom = fieldWithBottom(10000)
 
@@ -316,13 +316,13 @@ object Advent17 {
       Bfs.bfsVisitAll[Coords2D](
         Coords2D.of(x, minY - 1),
         c =>
-          if (field.at(c).contains(Square.Empty)) {
+          if (field.atOrElse(c, Square.Wall) == Square.Empty) {
             field.adjacent4(c).filter(_.y >= minY - 1)
           } else {
             Nil
           },
         c =>
-          if (!field.at(c).contains(Square.Empty)) {
+          if (field.atOrElse(c, Square.Wall) != Square.Empty) {
             frontier.add(c)
           },
       )
