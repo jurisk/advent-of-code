@@ -30,6 +30,8 @@ final case class Coords3D(x: Int, y: Int, z: Int) {
 }
 
 object Coords3D {
+  val Zero: Coords3D = Coords3D(0, 0, 0)
+
   def parse(s: String): Coords3D =
     s match {
       case s"$x,$y,$z" => Coords3D(x.trim.toInt, y.trim.toInt, z.trim.toInt)

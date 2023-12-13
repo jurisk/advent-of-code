@@ -18,3 +18,8 @@ final case class Area3D(min: Coords3D, max: Coords3D) {
     max + Coords3D(n, n, n),
   )
 }
+
+object Area3D {
+  def boundingBoxInclusive(points: Iterable[Coords3D]): Area3D =
+    Coords3D.boundingBoxInclusive(points)
+}

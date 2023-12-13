@@ -1,18 +1,9 @@
 package jurisk.adventofcode.y2018
 
-import com.google.ortools.Loader
-import com.google.ortools.sat.{
-  CpModel,
-  CpSolver,
-  CpSolverStatus,
-  LinearArgument,
-  LinearExpr,
-}
-import jurisk.geometry.Coords3D
+import com.microsoft.z3.{BoolSort, Context, Expr, IntNum, IntSort}
+import jurisk.geometry.{Area3D, Coords3D}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-
-import java.util.Arrays.stream
 
 object Advent23 {
   type Input = List[Nanobot]
@@ -45,76 +36,97 @@ object Advent23 {
   }
 
   def part2(data: Input): Int = {
-    /*
+    val ctx = new Context
+    import ctx._
 
-    def zabs(x: int):
-        return If(x >= 0, x, -x)
+    val o = mkOptimize
 
-    def boolean_to_int(x):
-        return If(x, 1, 0)
+    val List(x, y, z) = List("x", "y", "z").map(mkIntConst)
 
-    def range_query(nanobot: Nanobot):
-        (nx, ny, nz, nr) = (nanobot.location.x, nanobot.location.y, nanobot.location.z, nanobot.radius)
-        return zabs(x - nx) + zabs(y - ny) + zabs(z - nz) <= nr
-     */
+    val (minCoord, maxCoord) = {
+      val boundingBox = Area3D.boundingBoxInclusive(data.map(_.position))
+      val min         = boundingBox.min.x min boundingBox.min.y min boundingBox.min.z
+      val max         = boundingBox.max.x max boundingBox.max.y max boundingBox.max.z
+      (mkInt(min), mkInt(max))
+    }
 
-    // nanobotInRange is array of Ints, and is equal to boolean_to_int(range_query(nanobots[idx]))
-    // nanobotsInRange is sum of nanobotInRange
-
-    // distanceFromOrigin is x.abs + y.abs + z.abs
-
-    // Find x, y, z such that maximize nanobotsInRange and minimize distanceFromOrigin
-
-    Loader.loadNativeLibraries()
-
-    // Create the model.
-    val model = new CpModel
-
-    // Create the variables.
-    val x = model.newIntVar(0, 1000, "x")
-    val y = model.newIntVar(0, 1000, "y")
-    val z = model.newIntVar(0, 1000, "z")
-
-    // Create the constraints.
-    // 2x + 7y + 3z <= 25
-    model.addLessOrEqual(
-      LinearExpr.weightedSum(Array(x, y, z), Array(2, 7, 3)),
-      50,
+    o.Add(
+      mkGe(x, minCoord),
+      mkGe(y, minCoord),
+      mkGe(z, minCoord),
+      mkLe(x, maxCoord),
+      mkLe(y, maxCoord),
+      mkLe(z, maxCoord),
     )
 
-    model.addLessOrEqual(
-      LinearExpr.weightedSum(Array(x, y, z), Array(3, -5, 7)),
-      45,
-    )
-    model.addLessOrEqual(
-      LinearExpr.weightedSum(Array(x, y, z), Array(5, 2, -6)),
-      37,
-    )
+    val Zero     = mkInt(0)
+    val One      = mkInt(1)
+    val MinusOne = mkInt(-1)
 
-    // Objective - maximize 2x + 2y + 3z
-    model.maximize(LinearExpr.weightedSum(Array(x, y, z), Array(2, 2, 3)))
+    def abs(v: Expr[IntSort]): Expr[IntSort] =
+      mkITE(mkGe(v, Zero), v, mkMul(v, MinusOne))
 
-    // Create a solver and solve the model.
-    val solver = new CpSolver
+    def boolToInt(b: Expr[BoolSort]): Expr[IntSort] =
+      mkITE(b, One, Zero)
 
-    val status = solver.solve(model)
+    def nanobotInRange(nanobot: Nanobot): Expr[IntSort] = {
+      val List(nx, ny, nz, nr) = List(
+        nanobot.position.x,
+        nanobot.position.y,
+        nanobot.position.z,
+        nanobot.radius,
+      ).map(v => mkInt(v))
 
-    if (
-      (status eq CpSolverStatus.OPTIMAL) || (status eq CpSolverStatus.FEASIBLE)
-    ) {
-      println(s"Maximum of objective function: ${solver.objectiveValue}")
-      println(s"x = ${solver.value(x)}")
-      println(s"y = ${solver.value(y)}")
-      println(s"z = ${solver.value(z)}")
-    } else System.out.println("No solution found.")
+      val xe = mkSub(x, nx)
+      val ye = mkSub(y, ny)
+      val ze = mkSub(z, nz)
 
-    // Statistics.
-    println("Statistics:")
-    println(s"  conflicts: ${solver.numConflicts}")
-    println(s"  branches : ${solver.numBranches}")
-    println(s"  wall time: ${solver.wallTime}")
+      val inRange = mkGe(
+        mkAdd(
+          Array(xe, ye, ze).map(abs): _*
+        ),
+        nr,
+      )
 
-    0
+      boolToInt(inRange)
+    }
+
+    val nanobotsInRange = mkIntConst("nanobotsInRange")
+    o.Add(mkEq(nanobotsInRange, mkAdd(data.map(nanobotInRange).toArray: _*)))
+
+    val distanceFromOrigin = mkIntConst("distanceFromOrigin")
+    o.Add(mkEq(distanceFromOrigin, mkAdd(abs(x), abs(y), abs(z))))
+
+    // Objective - maximize nanobotsInRange and minimize distanceFromOrigin
+    val objective1 = o.MkMaximize(nanobotsInRange)
+    val objective2 = o.MkMinimize(distanceFromOrigin)
+
+    println(o)
+    println(o.Check())
+
+    println(objective1.getLower)
+    println(objective1.getUpper)
+    println(objective1)
+
+    println(objective2.getLower)
+    println(objective2.getUpper)
+    println(objective2)
+
+    val model = o.getModel
+
+    println(model)
+
+    val List(xc, yc, zc) = List(x, y, z).map { v =>
+      val result = model.evaluate(v, true)
+      result match {
+        case intNum: IntNum => intNum.getInt
+        case _              => s"Expected IntNum: $result".fail
+      }
+    }
+
+    val found = Coords3D(xc, yc, zc)
+    println(found)
+    found.manhattanDistance(Coords3D.Zero)
   }
 
   def parseFile(fileName: String): Input =
