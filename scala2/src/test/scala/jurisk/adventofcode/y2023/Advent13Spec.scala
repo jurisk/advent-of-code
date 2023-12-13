@@ -36,15 +36,15 @@ class Advent13Spec extends AnyFreeSpec {
 
       val parsed = Field2D.parseBooleanField(test)
 
-      initialValue(parsed) shouldEqual 500
-      repairedValue(parsed) shouldEqual 1200
+      singleReflection(parsed).value shouldEqual 500
+      repairedReflection(parsed).value shouldEqual 1200
     }
 
     "test" in {
       val input      = parseFile("2023/13-test.txt")
       val List(a, b) = input
-      repairedValue(a) shouldEqual 300
-      repairedValue(b) shouldEqual 100
+      repairedReflection(a).value shouldEqual 300
+      repairedReflection(b).value shouldEqual 100
       part2(input) shouldEqual 400
     }
 

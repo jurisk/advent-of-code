@@ -63,42 +63,37 @@ object Advent13 {
       )
     }
 
-    (optionsDropBottom.toList ::: optionsDropTop.toList).flatten.sortBy(x =>
-      x.covered
-    )(Ordering[Int].reverse)
+    (optionsDropBottom.toList ::: optionsDropTop.toList).flatten
   }
 
-  private def values(field: Field2D[Boolean]): List[Int] =
-    (verticalReflections(field) ::: horizontalReflections(field)).map(_.value)
+  private def reflections(field: Field2D[Boolean]): List[Reflection] =
+    verticalReflections(field) ::: horizontalReflections(field)
 
-  def initialValue(field: Field2D[Boolean]): Int =
-    values(field).singleResultUnsafe
+  def singleReflection(field: Field2D[Boolean]): Reflection =
+    reflections(field).singleResultUnsafe
 
   private def repairedOptions(field: Field2D[Boolean]): Seq[Field2D[Boolean]] =
     field.allCoords.map { c =>
       field.updatedAtUnsafe(c, !field.at(c).get)
     }
 
-  def repairedValue(field: Field2D[Boolean]): Int = {
-    val initial = initialValue(field)
+  def repairedReflection(field: Field2D[Boolean]): Reflection = {
+    val initial = singleReflection(field)
 
     val results = repairedOptions(field)
-      .flatMap(values)
+      .flatMap(reflections)
       .filterNot(_ == initial)
       .distinct
       .toList
 
-    results match {
-      case x :: Nil => x
-      case what     => what.toString.fail
-    }
+    results.singleResultUnsafe
   }
 
   def part1(data: Input): Int =
-    data.map(initialValue).sum
+    data.map(singleReflection(_).value).sum
 
   def part2(data: Input): Int =
-    data.map(repairedValue).sum
+    data.map(repairedReflection(_).value).sum
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
