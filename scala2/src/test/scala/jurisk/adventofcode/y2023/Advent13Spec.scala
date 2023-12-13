@@ -2,7 +2,8 @@ package jurisk.adventofcode.y2023
 
 import org.scalatest.freespec.AnyFreeSpec
 import Advent13._
-import org.scalatest.matchers.should.Matchers._
+import jurisk.geometry.Field2D
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 class Advent13Spec extends AnyFreeSpec {
   "part 1" - {
@@ -16,6 +17,29 @@ class Advent13Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
+    "interesting" in {
+      val test = """.#..###.#
+                   |.###.##.#
+                   |....###.#
+                   |.######..
+                   |...#.#.#.
+                   |...#.#.#.
+                   |.######..
+                   |....###.#
+                   |.###.##.#
+                   |.#..###.#
+                   |####...##
+                   |..##.#..#
+                   |..##....#
+                   |####...##
+                   |.#..###.#""".stripMargin
+
+      val parsed = Field2D.parseBooleanField(test)
+
+      value(parsed) shouldEqual 500
+      fixedValue(parsed) shouldEqual 1200
+    }
+
     "test" in {
       val input      = parseFile("2023/13-test.txt")
       val List(a, b) = input
