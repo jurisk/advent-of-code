@@ -178,7 +178,7 @@ object Advent17 {
     val (result, _) = Simulation.runUntilStableState(State(field)) {
       case (state, iteration) =>
         val newState = state.next
-        if (iteration % 100 == 0) {
+        if (iteration % 1_000 == 0) {
           printField("Next", newState.field)
         }
         newState
@@ -218,17 +218,19 @@ object Advent17 {
   def part2(field: Field2D[Square]): Int =
     squareCount(field, Set(StandingWater))
 
-  def main(args: Array[String]): Unit = {
-    val realData = readFileText("2018/17.txt")
-    val testData = readFileText("2018/17-test.txt")
+  def parseFile(fileName: String): Field2D[Square] = parse(
+    readFileText(fileName)
+  )
 
-    val testInput  = parse(testData)
-    val testResult = simulate(testInput)
+  def main(args: Array[String]): Unit = {
+    val realData = parseFile("2018/17.txt")
+    val testData = parseFile("2018/17-test.txt")
+
+    val testResult = simulate(testData)
     part1(testResult) shouldEqual 57
     part2(testResult) shouldEqual 29
 
-    val realInput  = parse(realData)
-    val realResult = simulate(realInput)
+    val realResult = simulate(realData)
     part1(realResult) shouldEqual 33004
     part2(realResult) shouldEqual 23294
   }

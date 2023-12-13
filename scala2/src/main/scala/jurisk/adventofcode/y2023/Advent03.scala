@@ -11,19 +11,23 @@ object Advent03 {
 
   sealed trait Square {
     def toChar: Char
+    def isDigit: Boolean
   }
 
   object Square {
     final case class Digit(value: Int) extends Square {
-      override def toChar: Char = ('0'.toInt + value).toChar
+      def toChar: Char     = ('0'.toInt + value).toChar
+      def isDigit: Boolean = true
     }
 
     final case class Symbol(value: Char) extends Square {
-      override def toChar: Char = value
+      def toChar: Char     = value
+      def isDigit: Boolean = false
     }
 
     case object Empty extends Square {
-      override def toChar: Char = '.'
+      def toChar: Char     = '.'
+      def isDigit: Boolean = false
     }
 
     val Gear: Symbol = Symbol('*')
@@ -44,12 +48,7 @@ object Advent03 {
   private def extractNumbers(
     field: Field2D[Square]
   ): Set[(Int, Set[Coords2D])] = {
-    def isDigit(square: Square) = square match {
-      case Digit(_) => true
-      case _        => false
-    }
-
-    val digitCoords = field.filterCoordsByValue(isDigit)
+    val digitCoords = field.filterCoordsByValue(_.isDigit)
 
     val islands = ConnectedComponents
       .connectedComponents[Coords2D](
@@ -57,7 +56,7 @@ object Advent03 {
         x => {
           def helper(d: Direction2D): List[Coords2D] = {
             val n = x + d
-            if (field.at(n).exists(isDigit)) n :: Nil else Nil
+            if (field.atOrElse(n, Empty).isDigit) n :: Nil else Nil
           }
 
           helper(Direction2D.W) ::: helper(Direction2D.E) ::: Nil
@@ -67,8 +66,8 @@ object Advent03 {
     islands.map { island =>
       val number = island.toList
         .sortBy(_.x)
-        .flatMap { c =>
-          field.at(c)
+        .map { c =>
+          field.atOrElse(c, Empty)
         }
         .map(_.toChar)
         .mkString
