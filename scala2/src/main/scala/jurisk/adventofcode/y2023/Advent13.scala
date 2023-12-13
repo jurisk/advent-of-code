@@ -2,7 +2,6 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits._
 import jurisk.geometry.Field2D
-import jurisk.geometry.Field2D.{printBooleanField, printField}
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -18,23 +17,11 @@ object Advent13 {
   def verticalReflection(field: Field2D[Boolean]): Option[Int] =
     verticalReflectionInt(field).headOption
 
-  def verticalReflectionInt(field: Field2D[Boolean]): List[Int] = {
-    val result = horizontalReflectionInt(field.rotate90Left)
+  def verticalReflectionInt(field: Field2D[Boolean]): List[Int] =
+    horizontalReflectionInt(field.rotate90Left)
 
-    println(s"Vert $result:")
-    printBooleanField(field)
-
-    result
-  }
-
-  def horizontalReflection(field: Field2D[Boolean]): Option[Int] = {
-    val result = horizontalReflectionInt(field)
-
-    println(s"Horiz $result:")
-    printBooleanField(field)
-
-    result.headOption
-  }
+  def horizontalReflection(field: Field2D[Boolean]): Option[Int] =
+    horizontalReflectionInt(field).headOption
 
   def horizontalReflectionPerfect(field: Field2D[Boolean]): Option[Int] =
     if (field.height % 2 == 0) {
@@ -64,16 +51,9 @@ object Advent13 {
       horizontalReflectionPerfect(newField)
     }
 
-    (optionsDropTop.toList ::: optionsDropBottom.toList).flatten match {
-      case x :: Nil => x :: Nil
-      case Nil      => Nil
-      case what     =>
-        what.sortBy(x => (x - field.height.toDouble / 2).abs)
-//        what.minBy(x => (x - field.height.toDouble / 2).abs).some
-//
-//        printBooleanField(field)
-//        what.toString.fail // what.min.some
-    }
+    (optionsDropTop.toList ::: optionsDropBottom.toList).flatten.sortBy(x =>
+      (x - field.height.toDouble / 2).abs
+    )
   }
 
   def valueInt(field: Field2D[Boolean]): List[Int] = {
@@ -106,11 +86,6 @@ object Advent13 {
       .filterNot(_ == originalValue)
       .distinct
       .toList
-
-    println(s"Failed to find any other reflection than $originalValue")
-    printBooleanField(field)
-    println(results)
-    println()
 
     results match {
       case x :: Nil => x
