@@ -19,6 +19,17 @@ final case class Field2D[T](
   def xIndices: Seq[Int] = (0 until width).map(x => x + topLeft.x)
   def yIndices: Seq[Int] = (0 until height).map(y => y + topLeft.y)
 
+  def rotate(rotation: Rotation): Field2D[T] = {
+    val newData = rotation match {
+      case Rotation.Left90     => data.transpose.map(_.reverse)
+      case Rotation.NoRotation => data
+      case Rotation.Right90    => data.transpose.map(row => row.reverse)
+      case Rotation.TurnAround => data.map(_.reverse).reverse
+    }
+
+    Field2D(newData)
+  }
+
   def mapByCoordsWithValues[B](f: (Coords2D, T) => B): Field2D[B] = Field2D {
     yIndices.toVector map { y =>
       xIndices.toVector map { x =>
@@ -62,6 +73,12 @@ final case class Field2D[T](
       )
     )
   }
+
+  def modifyUnsafe(c: Coords2D, f: T => T): Field2D[T] =
+    at(c) match {
+      case Some(value) => updatedAtUnsafe(c, f(value))
+      case None        => s"Coordinate $c is out of bounds in `modifyUnsafe`".fail
+    }
 
   def conditionalUpdate(
     c: Coords2D,
@@ -184,6 +201,17 @@ final case class Field2D[T](
     val subfields        = chunkedRows.map(_.map(Field2D(_)))
     Field2D(subfields)
   }
+
+  def reverseRows: Field2D[T]    = Field2D(data.reverse)
+  def reverseColumns: Field2D[T] = Field2D(data.map(_.reverse))
+
+  def topRows(rows: Int): Field2D[T]        = Field2D(data.take(rows))
+  def leftColumns(columns: Int): Field2D[T] = Field2D(data.map(_.take(columns)))
+
+  def bottomRows(rows: Int): Field2D[T]      = Field2D(data.takeRight(rows))
+  def rightColumns(columns: Int): Field2D[T] = Field2D(
+    data.map(_.takeRight(columns))
+  )
 }
 
 object Field2D {
