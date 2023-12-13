@@ -2,7 +2,8 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits._
 import jurisk.geometry.Field2D
-import jurisk.geometry.Field2D.printBooleanField
+import jurisk.geometry.Field2D.{printBooleanField, printField}
+import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -48,12 +49,14 @@ object Advent13 {
     } else none
 
   def horizontalReflectionInt(field: Field2D[Boolean]): Option[Int] = {
-    val optionsDropTop = (0 to field.height - 2).map { drop =>
+    val maxSkip = field.height - 2
+
+    val optionsDropTop = (0 to maxSkip).map { drop =>
       val newField = Field2D(field.data.drop(drop))
       horizontalReflectionPerfect(newField).map(_ + drop)
     }
 
-    val optionsDropBottom = (0 to field.height - 2).map { drop =>
+    val optionsDropBottom = (0 to maxSkip).map { drop =>
       val newField = Field2D(field.data.take(field.height - drop))
       horizontalReflectionPerfect(newField)
     }
@@ -61,27 +64,54 @@ object Advent13 {
     (optionsDropTop.toList ::: optionsDropBottom.toList).flatten match {
       case x :: Nil => x.some
       case Nil      => None
-      case what     => what.toString.fail
+      case what     =>
+        what.minBy(x => (x - field.height.toDouble / 2).abs).some
+//
+//        printBooleanField(field)
+//        what.toString.fail // what.min.some
     }
   }
 
-  def value(field: Field2D[Boolean]): Int = {
-    val v = verticalReflection(field) getOrElse 0                     // .map(_ + 1)
-    val h = horizontalReflection(field).map(x => x * 100) getOrElse 0 // (x + 1)
+  def valueInt(field: Field2D[Boolean]): List[Int] = {
+    val v = verticalReflection(field)
+    val h = horizontalReflection(field).map(x => x * 100)
 
-    if (v == 0 && h == 0) {
-      printBooleanField(field)
-      "fail".fail
+    v.toList ::: h.toList
+  }
+
+  def value(field: Field2D[Boolean]): Int =
+    valueInt(field).singleResultUnsafe
+
+  def fixor(field: Field2D[Boolean]): Seq[Field2D[Boolean]] =
+    field.allCoords.map { c =>
+      field.updatedAtUnsafe(c, !field.at(c).get)
     }
 
-    v + h
+  def fixedValue(field: Field2D[Boolean]): Int = {
+    val originalValue = value(field)
+
+    val results = fixor(field)
+      .flatMap(valueInt)
+      .filterNot(_ == originalValue)
+      .distinct
+      .toList
+
+    println(s"Failed to find any other reflection than $originalValue")
+    printBooleanField(field)
+    println(results)
+    println()
+
+    results match {
+      case x :: Nil => x
+      case what     => what.toString.fail
+    }
   }
 
   def part1(data: Input): Int =
     data.map(value).sum
 
   def part2(data: Input): Int =
-    ???
+    data.map(fixedValue).sum
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))

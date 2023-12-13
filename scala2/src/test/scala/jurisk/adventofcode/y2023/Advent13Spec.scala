@@ -17,7 +17,11 @@ class Advent13Spec extends AnyFreeSpec {
 
   "part 2" - {
     "test" in {
-      part2(parseFile("2023/13-test.txt")) shouldEqual 0
+      val input      = parseFile("2023/13-test.txt")
+      val List(a, b) = input
+      fixedValue(a) shouldEqual 300
+      fixedValue(b) shouldEqual 100
+      part2(input) shouldEqual 400
     }
 
     "real" in {
