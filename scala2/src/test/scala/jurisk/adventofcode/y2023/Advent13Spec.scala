@@ -11,7 +11,7 @@ class Advent13Spec extends AnyFreeSpec {
     }
 
     "real" in {
-      part1(parseFile("2023/13.txt")) shouldEqual 0
+      part1(parseFile("2023/13.txt")) shouldEqual 36448
     }
   }
 

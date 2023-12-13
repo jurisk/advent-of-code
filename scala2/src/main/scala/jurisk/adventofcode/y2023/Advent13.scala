@@ -32,7 +32,7 @@ object Advent13 {
     result
   }
 
-  def horizontalReflectionInt(field: Field2D[Boolean]): Option[Int] =
+  def horizontalReflectionPerfect(field: Field2D[Boolean]): Option[Int] =
     if (field.height % 2 == 0) {
       val half = field.height / 2
       val a    = Field2D(field.data.take(half))
@@ -45,16 +45,29 @@ object Advent13 {
       } else {
         none
       }
-    } else {
-      val dropFirst = horizontalReflectionInt(Field2D(field.data.init))
-      val dropLast  = horizontalReflectionInt(Field2D(field.data.tail))
+    } else none
 
-      dropFirst.map(_ + 1) orElse dropLast
+  def horizontalReflectionInt(field: Field2D[Boolean]): Option[Int] = {
+    val optionsDropTop = (0 to field.height - 2).map { drop =>
+      val newField = Field2D(field.data.drop(drop))
+      horizontalReflectionPerfect(newField).map(_ + drop)
     }
 
+    val optionsDropBottom = (0 to field.height - 2).map { drop =>
+      val newField = Field2D(field.data.take(field.height - drop))
+      horizontalReflectionPerfect(newField)
+    }
+
+    (optionsDropTop.toList ::: optionsDropBottom.toList).flatten match {
+      case x :: Nil => x.some
+      case Nil      => None
+      case what     => what.toString.fail
+    }
+  }
+
   def value(field: Field2D[Boolean]): Int = {
-    val v = verticalReflection(field).map(_ + 1) getOrElse 0
-    val h = horizontalReflection(field).map(x => (x + 1) * 100) getOrElse 0
+    val v = verticalReflection(field) getOrElse 0                     // .map(_ + 1)
+    val h = horizontalReflection(field).map(x => x * 100) getOrElse 0 // (x + 1)
 
     if (v == 0 && h == 0) {
       printBooleanField(field)
