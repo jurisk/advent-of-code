@@ -8,7 +8,7 @@ import jurisk.algorithms.pathfinding.Bfs
 import jurisk.utils.Parsing.StringOps
 
 final case class Field2D[T](
-  data: Vector[Vector[T]], // TODO: private
+  private val data: Vector[Vector[T]],
   topLeft: Coords2D = Coords2D.Zero,
 ) {
   val width: Int  = data.head.length
@@ -195,6 +195,11 @@ final case class Field2D[T](
     val subfields        = chunkedRows.map(_.map(Field2D(_)))
     Field2D(subfields)
   }
+
+  def reverseRows: Field2D[T] = Field2D(data.reverse)
+
+  def topRows(rows: Int): Field2D[T]    = Field2D(data.take(rows))
+  def bottomRows(rows: Int): Field2D[T] = Field2D(data.takeRight(rows))
 }
 
 object Field2D {

@@ -26,12 +26,10 @@ object Advent13 {
   def horizontalReflectionPerfect(field: Field2D[Boolean]): Option[Int] =
     if (field.height % 2 == 0) {
       val half = field.height / 2
-      val a    = Field2D(field.data.take(half))
-      val b    = Field2D(field.data.drop(half))
+      val a    = field.topRows(half)
+      val b    = field.bottomRows(half).reverseRows
 
-      val bReverse = Field2D(b.data.reverse)
-
-      if (a == bReverse) {
+      if (a == b) {
         half.some
       } else {
         none
@@ -41,18 +39,18 @@ object Advent13 {
   def horizontalReflectionInt(field: Field2D[Boolean]): List[Int] = {
     val maxSkip = field.height - 2
 
-    val optionsDropTop = (0 to maxSkip).map { drop =>
-      val newField = Field2D(field.data.drop(drop))
-      horizontalReflectionPerfect(newField).map(_ + drop)
-    }
-
     val optionsDropBottom = (0 to maxSkip).map { drop =>
-      val newField = Field2D(field.data.take(field.height - drop))
+      val newField = field.topRows(field.height - drop)
       horizontalReflectionPerfect(newField)
     }
 
-    (optionsDropTop.toList ::: optionsDropBottom.toList).flatten.sortBy(x =>
-      (x - field.height.toDouble / 2).abs
+    val optionsDropTop = (0 to maxSkip).map { drop =>
+      val newField = field.bottomRows(field.height - drop)
+      horizontalReflectionPerfect(newField).map(_ + drop)
+    }
+
+    (optionsDropBottom.toList ::: optionsDropTop.toList).flatten.sortBy(x =>
+      (x - field.height / 2).abs
     )
   }
 
