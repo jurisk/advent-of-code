@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
-import jurisk.geometry.Field2D
+import jurisk.geometry.{Field2D, Rotation}
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -18,7 +18,7 @@ object Advent13 {
     verticalReflectionInt(field).headOption
 
   def verticalReflectionInt(field: Field2D[Boolean]): List[Int] =
-    horizontalReflectionInt(field.rotate90Left)
+    horizontalReflectionInt(field.rotate(Rotation.Left90))
 
   def horizontalReflection(field: Field2D[Boolean]): Option[Int] =
     horizontalReflectionInt(field).headOption

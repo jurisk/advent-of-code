@@ -19,10 +19,15 @@ final case class Field2D[T](
   def xIndices: Seq[Int] = (0 until width).map(x => x + topLeft.x)
   def yIndices: Seq[Int] = (0 until height).map(y => y + topLeft.y)
 
-  def rotate90Left: Field2D[T] = {
-    val transposed = data.transpose
-    val rotated    = transposed.map(_.reverse)
-    Field2D(rotated)
+  def rotate(rotation: Rotation): Field2D[T] = {
+    val newData = rotation match {
+      case Rotation.Left90     => data.transpose.map(_.reverse)
+      case Rotation.NoRotation => data
+      case Rotation.Right90    => data.transpose.map(row => row.reverse)
+      case Rotation.TurnAround => data.map(_.reverse).reverse
+    }
+
+    Field2D(newData)
   }
 
   def mapByCoordsWithValues[B](f: (Coords2D, T) => B): Field2D[B] = Field2D {

@@ -1,5 +1,6 @@
 package jurisk.geometry
 
+import jurisk.geometry.Rotation.{Left90, NoRotation, Right90, TurnAround}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
 
@@ -28,5 +29,25 @@ class Field2DSpec extends AnyFreeSpec {
     )
 
     result shouldEqual expected
+  }
+
+  "rotate" - {
+    val field = Field2D.parseDigitField("""12
+                                          |34
+                                          |""".stripMargin)
+
+    List(
+      List(NoRotation),
+      List(Left90, Left90, Left90, Left90),
+      List(Right90, Right90, Right90, Right90),
+      List(Left90, Left90, TurnAround),
+      List(Right90, Right90, TurnAround),
+    ) foreach { test =>
+      s"rotate $test" in {
+        test.foldLeft(field) { case (acc, r) =>
+          acc.rotate(r)
+        } shouldEqual field
+      }
+    }
   }
 }
