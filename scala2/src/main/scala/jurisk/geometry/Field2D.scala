@@ -8,7 +8,7 @@ import jurisk.algorithms.pathfinding.Bfs
 import jurisk.utils.Parsing.StringOps
 
 final case class Field2D[T](
-  private val data: Vector[Vector[T]],
+  data: Vector[Vector[T]], // TODO: private
   topLeft: Coords2D = Coords2D.Zero,
 ) {
   val width: Int  = data.head.length
@@ -18,6 +18,12 @@ final case class Field2D[T](
 
   def xIndices: Seq[Int] = (0 until width).map(x => x + topLeft.x)
   def yIndices: Seq[Int] = (0 until height).map(y => y + topLeft.y)
+
+  def rotate90Left: Field2D[T] = {
+    val transposed = data.transpose
+    val rotated    = transposed.map(_.reverse)
+    Field2D(rotated)
+  }
 
   def mapByCoordsWithValues[B](f: (Coords2D, T) => B): Field2D[B] = Field2D {
     yIndices.toVector map { y =>
