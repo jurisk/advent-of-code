@@ -36,6 +36,9 @@ object Advent23 {
   }
 
   def part2(data: Input): Int = {
+    data foreach println
+    println()
+
     val ctx = new Context
     import ctx._
 
@@ -81,7 +84,7 @@ object Advent23 {
       val ye = mkSub(y, ny)
       val ze = mkSub(z, nz)
 
-      val inRange = mkGe(
+      val inRange = mkLe(
         mkAdd(
           Array(xe, ye, ze).map(abs): _*
         ),
@@ -116,16 +119,17 @@ object Advent23 {
 
     println(model)
 
-    val List(xc, yc, zc) = List(x, y, z).map { v =>
-      val result = model.evaluate(v, true)
-      result match {
-        case intNum: IntNum => intNum.getInt
-        case _              => s"Expected IntNum: $result".fail
+    val List(xc, yc, zc, nir, dor) =
+      List(x, y, z, nanobotsInRange, distanceFromOrigin).map { v =>
+        val result = model.evaluate(v, true)
+        result match {
+          case intNum: IntNum => intNum.getInt
+          case _              => s"Expected IntNum: $result".fail
+        }
       }
-    }
 
     val found = Coords3D(xc, yc, zc)
-    println(found)
+    println(s"$found: nanobots in range: $nir, distance from origin: $dor")
     found.manhattanDistance(Coords3D.Zero)
   }
 
