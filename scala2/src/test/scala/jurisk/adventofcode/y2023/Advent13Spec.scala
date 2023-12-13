@@ -36,6 +36,7 @@ class Advent13Spec extends AnyFreeSpec {
 
       val parsed = Field2D.parseBooleanField(test)
 
+      repairedReflection(parsed) shouldEqual Reflection.Horizontal(12)
       singleReflection(parsed).value shouldEqual 500
       repairedReflection(parsed).value shouldEqual 1200
     }

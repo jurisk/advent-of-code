@@ -11,15 +11,14 @@ object Advent13 {
   type Input = List[Field2D[Boolean]]
 
   sealed trait Reflection {
-    def covered: Int
     def value: Int
   }
 
-  private object Reflection {
-    final case class Horizontal(skipTop: Int, covered: Int) extends Reflection {
+  object Reflection {
+    final case class Horizontal(skipTop: Int) extends Reflection {
       def value: Int = skipTop * 100
     }
-    final case class Vertical(skipLeft: Int, covered: Int)  extends Reflection {
+    final case class Vertical(skipLeft: Int)  extends Reflection {
       def value: Int = skipLeft
     }
   }
@@ -31,42 +30,42 @@ object Advent13 {
     field: Field2D[Boolean]
   ): List[Reflection.Vertical] =
     horizontalReflections(field.rotate(Rotation.Left90)).map { reflection =>
-      Reflection.Vertical(reflection.skipTop, reflection.covered)
+      Reflection.Vertical(skipLeft = reflection.skipTop)
     }
 
   private def horizontalReflectionPerfect(
     field: Field2D[Boolean]
   ): Option[Reflection.Horizontal] =
     if (field.height % 2 == 0) {
-      val half = field.height / 2
-      val a    = field.topRows(half)
-      val b    = field.bottomRows(half).reverseRows
+      val halfHeight         = field.height / 2
+      val topHalf            = field.topRows(halfHeight)
+      val bottomHalfReversed = field.bottomRows(halfHeight).reverseRows
 
-      (a == b).option(Reflection.Horizontal(half, field.height))
+      (topHalf == bottomHalfReversed).option(Reflection.Horizontal(halfHeight))
     } else none
 
   private def horizontalReflections(
     field: Field2D[Boolean]
   ): List[Reflection.Horizontal] = {
-    val maxSkip = field.height - 2
+    val maxDrop = field.height - 2
 
-    val optionsDropBottom = (0 to maxSkip).map { drop =>
+    val optionsDropBottom = (0 to maxDrop) flatMap { drop =>
       val newField = field.topRows(field.height - drop)
       horizontalReflectionPerfect(newField)
     }
 
     // Starts from 1 on purpose so we don't do unchanged "field" twice
-    val optionsDropTop = (1 to maxSkip).map { drop =>
+    val optionsDropTop = (1 to maxDrop) flatMap { drop =>
       val newField = field.bottomRows(field.height - drop)
-      horizontalReflectionPerfect(newField).map(result =>
-        result.copy(skipTop = result.skipTop + drop)
-      )
+      horizontalReflectionPerfect(newField) map { result =>
+        Reflection.Horizontal(result.skipTop + drop)
+      }
     }
 
-    (optionsDropBottom.toList ::: optionsDropTop.toList).flatten
+    optionsDropBottom.toList ::: optionsDropTop.toList
   }
 
-  private def reflections(field: Field2D[Boolean]): List[Reflection] =
+  private[y2023] def reflections(field: Field2D[Boolean]): List[Reflection] =
     verticalReflections(field) ::: horizontalReflections(field)
 
   def singleReflection(field: Field2D[Boolean]): Reflection =
@@ -74,7 +73,7 @@ object Advent13 {
 
   private def repairedOptions(field: Field2D[Boolean]): Seq[Field2D[Boolean]] =
     field.allCoords.map { c =>
-      field.updatedAtUnsafe(c, !field.at(c).get)
+      field.modifyUnsafe(c, !_)
     }
 
   def repairedReflection(field: Field2D[Boolean]): Reflection = {
@@ -83,8 +82,7 @@ object Advent13 {
     val results = repairedOptions(field)
       .flatMap(reflections)
       .filterNot(_ == initial)
-      .distinct
-      .toList
+      .toSet
 
     results.singleResultUnsafe
   }

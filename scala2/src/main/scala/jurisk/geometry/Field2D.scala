@@ -74,6 +74,12 @@ final case class Field2D[T](
     )
   }
 
+  def modifyUnsafe(c: Coords2D, f: T => T): Field2D[T] =
+    at(c) match {
+      case Some(value) => updatedAtUnsafe(c, f(value))
+      case None        => s"Coordinate $c is out of bounds in `modifyUnsafe`".fail
+    }
+
   def conditionalUpdate(
     c: Coords2D,
     condition: T => Boolean,
