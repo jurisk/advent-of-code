@@ -196,10 +196,16 @@ final case class Field2D[T](
     Field2D(subfields)
   }
 
-  def reverseRows: Field2D[T] = Field2D(data.reverse)
+  def reverseRows: Field2D[T]    = Field2D(data.reverse)
+  def reverseColumns: Field2D[T] = Field2D(data.map(_.reverse))
 
-  def topRows(rows: Int): Field2D[T]    = Field2D(data.take(rows))
-  def bottomRows(rows: Int): Field2D[T] = Field2D(data.takeRight(rows))
+  def topRows(rows: Int): Field2D[T]        = Field2D(data.take(rows))
+  def leftColumns(columns: Int): Field2D[T] = Field2D(data.map(_.take(columns)))
+
+  def bottomRows(rows: Int): Field2D[T]      = Field2D(data.takeRight(rows))
+  def rightColumns(columns: Int): Field2D[T] = Field2D(
+    data.map(_.takeRight(columns))
+  )
 }
 
 object Field2D {
