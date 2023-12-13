@@ -218,6 +218,7 @@ def test_real_1(real_data):
 def test_real_2(real_data):
     assert part2(real_data) == 12628
 
+# Not sure that this actually works, it doesn't seem to terminate.
 if __name__ == "__main__":
     data = parse("day19.txt")
     test_data = parse("day19-test.txt")

@@ -11,4 +11,3 @@ workspace = true
 
 [dependencies]
 advent-of-code-common = { path = "../common" }
-nom.workspace = true

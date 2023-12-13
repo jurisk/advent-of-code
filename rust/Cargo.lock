@@ -111,7 +111,6 @@ name = "advent-of-code-2023"
 version = "0.1.0"
 dependencies = [
  "advent-of-code-common",
- "nom",
 ]
 
 [[package]]

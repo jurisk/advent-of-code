@@ -1,19 +1,22 @@
 # Useful commands
 
+Note - Python 3 is required.
+
 ```
-pip3 install z3-solver
-pip3 install more-itertools
-pip3 install numpy
-python3 y20AB/dayXY.py
-python3 -m pytest
+pip install z3-solver
+pip install more-itertools
+pip install numpy
+pip install pytest
+python y20AB/dayXY.py
+python -m pytest
 ```
 
 # Types
 
 In theory:
 ```
-pip3 install mypy
-python3 -m mypy file.py
+pip install mypy
+python -m mypy file.py
 ```
 
 In VS Code, in settings, search for "Mypy" and enable it.
