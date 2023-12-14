@@ -2,41 +2,32 @@ package jurisk.adventofcode.y2018
 
 import cats.implicits._
 import jurisk.adventofcode.y2018.Advent18.Square._
+import jurisk.collections.BiMap
+import jurisk.collections.BiMap.BiDirectionalArrowAssociation
 import jurisk.geometry.Field2D
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
-import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers._
 
 object Advent18 {
   type Field = Field2D[Square]
 
-  sealed trait Square {
-    def toChar: Char
-  }
-  object Square       {
-    case object Open       extends Square {
-      val toChar: Char = '.'
-    }
-    case object Lumberyard extends Square {
-      val toChar: Char = '#'
-    }
-    case object Trees      extends Square {
-      val toChar: Char = '|'
-    }
+  sealed trait Square extends Product with Serializable
+  object Square {
+    val Mapping: BiMap[Char, Square] = BiMap(
+      '.' <-> Open,
+      '#' <-> Lumberyard,
+      '|' <-> Trees,
+    )
 
-    def parse(ch: Char): Square =
-      ch match {
-        case Open.toChar       => Open
-        case Trees.toChar      => Trees
-        case Lumberyard.toChar => Lumberyard
-        case _                 => s"Did not recognize '$ch'".fail
-      }
+    case object Open       extends Square
+    case object Lumberyard extends Square
+    case object Trees      extends Square
   }
 
   def parse(data: String): Field =
-    Field2D.parse(data, Square.parse)
+    Field2D.parseFromBiMap(data, Square.Mapping)
 
   private def next(state: Field): Field =
     state.mapByCoordsWithValues { case (c, v) =>

@@ -48,6 +48,16 @@ object CollectionOps {
   implicit class IterableOps[T](seq: Iterable[T]) {
     def counts: Map[T, Int] = seq.groupMapReduce(identity)(_ => 1)(_ + _)
 
+    def consecutiveGroupCounts: List[(T, Int)] =
+      seq.headOption match {
+        case Some(head) =>
+          val (taken, remaining) = seq.span(_ == head)
+          (head -> taken.size) :: remaining.consecutiveGroupCounts
+
+        case None =>
+          Nil
+      }
+
     def allDistinct: Boolean = seq.toSet.size == seq.size
 
     def singleElementUnsafe: T =

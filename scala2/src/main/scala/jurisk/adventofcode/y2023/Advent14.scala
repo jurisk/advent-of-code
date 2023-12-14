@@ -24,37 +24,32 @@ object Advent14 {
   }
 
   def parse(input: String): Input =
-    Field2D.parse(input, Square.Mapping.leftToRightUnsafe)
+    Field2D.parseFromBiMap(input, Square.Mapping)
 
   def debugPrint(input: Input): Unit =
-    Field2D.printField[Square](input, Square.Mapping.rightToLeftUnsafe)
+    Field2D.printFieldFromBiMap[Square](input, Square.Mapping)
 
-  private def slideRowLeft(row: Vector[Square]): Vector[Square] = {
-    import Vector.fill
-
-    val potential = row.takeWhile(_ != Cube)
-
-    if (potential.nonEmpty) {
-      val emptyCount = potential.count(_ == Empty)
-      val roundCount = potential.count(_ == Round)
-
-      fill(roundCount)(Round) ++ fill(emptyCount)(Empty) ++ slideRowLeft(
-        row.drop(potential.length)
-      )
-    } else {
-      val cubes = row.takeWhile(_ == Cube)
-      if (cubes.isEmpty) {
-        Vector.empty
-      } else {
-        cubes ++ slideRowLeft(row.drop(cubes.length))
-      }
-    }
-  }
-
+  // `rotation` - the rotation needed to be applied to `data` so that the sliding becomes to the West (left)
   private def slideHelper(data: Input, rotation: Rotation): Input = {
-    val rotated = data.rotate(rotation)
-    val slided  = Field2D(rotated.data.map(slideRowLeft))
-    slided.rotate(rotation.inverse)
+    def slideRowLeft(row: Vector[Square]): Vector[Square] = {
+      def slideHelper(row: List[Square], emptiesToAdd: Int): List[Square] = {
+        import List.fill
+
+        row match {
+          case Empty :: tail => slideHelper(tail, emptiesToAdd + 1)
+          case Round :: tail => Round :: slideHelper(tail, emptiesToAdd)
+          case Cube :: tail  =>
+            fill(emptiesToAdd)(Empty) ::: Cube :: slideHelper(tail, 0)
+          case Nil           => fill(emptiesToAdd)(Empty)
+        }
+      }
+
+      slideHelper(row.toList, 0).toVector
+    }
+
+    val rotated = data rotate rotation
+    val slided  = rotated mapByRows slideRowLeft
+    slided rotate rotation.inverse
   }
 
   private[y2023] def slideWest(data: Input): Input =

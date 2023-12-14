@@ -5,10 +5,11 @@ import cats.Foldable
 import cats.Functor
 import cats.implicits._
 import jurisk.algorithms.pathfinding.Bfs
+import jurisk.collections.BiMap
 import jurisk.utils.Parsing.StringOps
 
-final case class Field2D[T](
-  data: Vector[Vector[T]],
+final case class Field2D[T] private (
+  private val data: Vector[Vector[T]],
   topLeft: Coords2D = Coords2D.Zero,
 ) {
   val width: Int  = data.head.length
@@ -52,6 +53,9 @@ final case class Field2D[T](
     case (c, _) =>
       f(c)
   }
+
+  def mapByRows[B](f: Vector[T] => Vector[B]): Field2D[B] =
+    Field2D(data map f)
 
   def at(c: Coords2D): Option[T] =
     data
@@ -301,6 +305,9 @@ object Field2D {
     println()
   }
 
+  def printFieldFromBiMap[T](field: Field2D[T], mapping: BiMap[Char, T]): Unit =
+    printField(field, mapping.rightToLeftUnsafe, none)
+
   def printBooleanField(field: Field2D[Boolean]): Unit =
     printField(field, visualizeBoolean)
 
@@ -312,6 +319,9 @@ object Field2D {
         .toList,
       parser,
     )
+
+  def parseFromBiMap[T](data: String, mapping: BiMap[Char, T]): Field2D[T] =
+    parse[T](data, mapping.leftToRightUnsafe)
 
   def parseCharField(data: String): Field2D[Char] = parse(data, identity)
   def parseDigitField(data: String): Field2D[Int] = parse(data, _ - '0')

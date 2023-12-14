@@ -20,6 +20,10 @@ O..#.OO...
 #....###..
 #....#....""")
 
+    debugPrint(test)
+    debugPrint(expected)
+    debugPrint(slided)
+
     slided shouldEqual expected
   }
 

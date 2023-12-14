@@ -8,7 +8,7 @@ import jurisk.geometry.Direction2D.S
 import jurisk.geometry.Direction2D.W
 import jurisk.geometry.Field2D
 
-sealed trait Pipe {
+sealed trait Pipe extends Product with Serializable {
   def symbol: Char
   def connections: Set[CardinalDirection2D]
 }

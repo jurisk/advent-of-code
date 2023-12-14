@@ -3,8 +3,8 @@ package jurisk.collections
 import jurisk.utils.Parsing.StringOps
 
 class BiMap[A, B] private (
-  val leftToRightUnderlying: Map[A, B],
-  val rightToLeftUnderlying: Map[B, A],
+  private val leftToRightUnderlying: Map[A, B],
+  private val rightToLeftUnderlying: Map[B, A],
 ) {
   def leftToRight(left: A): Option[B]  = leftToRightUnderlying.get(left)
   def rightToLeft(right: B): Option[A] = rightToLeftUnderlying.get(right)
