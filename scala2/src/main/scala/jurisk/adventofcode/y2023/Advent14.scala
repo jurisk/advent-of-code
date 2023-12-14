@@ -4,7 +4,6 @@ import cats.implicits._
 import jurisk.adventofcode.y2023.Advent14.Square.{Cube, Empty, Round}
 import jurisk.geometry.{Field2D, Rotation}
 import jurisk.utils.FileInput._
-import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
 
 object Advent14 {
@@ -34,11 +33,10 @@ object Advent14 {
       },
     )
 
-  def slideLeft(row: Vector[Square]): Vector[Square] =
+  private def slideRowLeft(row: Vector[Square]): Vector[Square] =
     if (row.isEmpty) {
       Vector.empty
     } else {
-
       val potential = row.takeWhile(_ != Cube)
 
       if (potential.nonEmpty) {
@@ -48,81 +46,51 @@ object Advent14 {
         val a = Vector.fill(roundCount)(Round) appendedAll Vector.fill(
           emptyCount
         )(Empty)
-        a appendedAll slideLeft(row.drop(potential.length))
+        a appendedAll slideRowLeft(row.drop(potential.length))
       } else {
         val cubes = row.takeWhile(_ == Cube)
-        cubes appendedAll slideLeft(row.drop(cubes.length))
+        cubes appendedAll slideRowLeft(row.drop(cubes.length))
       }
-
     }
 
-  def slideWest(data: Input): Input = {
-    val newData = data.data.map(slideLeft)
-    Field2D(newData)
+  private def slideHelper(data: Input, rotation: Rotation): Input = {
+    val rotated = data.rotate(rotation)
+    val slided  = Field2D(rotated.data.map(slideRowLeft))
+    slided.rotate(rotation.inverse)
   }
 
-  def slideSouth(data: Input): Input = {
-    val a = data.reverseRows
-    val b = slideNorth(a)
-    b.reverseRows
-  }
+  def slideWest(data: Input): Input =
+    slideHelper(data, Rotation.NoRotation)
 
-  def slideEast(data: Input): Input = {
-    val a = data.reverseColumns
-    val b = slideWest(a)
-    b.reverseColumns
-  }
+  def slideSouth(data: Input): Input =
+    slideHelper(data, Rotation.Right90)
 
-  def slideNorth(data: Input): Input = {
-//    debugPrint(data)
+  def slideEast(data: Input): Input =
+    slideHelper(data, Rotation.TurnAround)
 
-    val a = data
-      .rotate(Rotation.Left90)
-      .rotate(Rotation.Left90)
-      .rotate(Rotation.Left90)
-//    debugPrint(a)
+  def slideNorth(data: Input): Input =
+    slideHelper(data, Rotation.Left90)
 
-    val b = slideWest(a)
-//    debugPrint(b)
-
-    val result = b.rotate(Rotation.Left90)
-//    debugPrint(result)
-
-    result
-  }
-
-  def cycle(data: Input): Input = {
-    val a = slideNorth(data)
-    val b = slideWest(a)
-    val c = slideSouth(b)
-    val d = slideEast(c)
-    d
-  }
+  def cycle(data: Input): Input =
+    (slideNorth _ andThen slideWest andThen slideSouth andThen slideEast)(data)
 
   def value(data: Input): Int =
     data.allCoords.map { c =>
       val v = data.atOrElse(c, Square.Empty)
 
       v match {
-        case Square.Round => data.height - c.y
-        case Square.Cube  => 0
-        case Square.Empty => 0
+        case Round        => data.height - c.y
+        case Cube | Empty => 0
       }
     }.sum
 
-  def part1(data: Input): Int = {
-    val slided = slideNorth(data)
-    value(slided)
-  }
+  def part1(data: Input): Int =
+    (slideNorth _ andThen value)(data)
 
   def cycles(data: Input, count: Int): Input =
     Simulation.runNIterationsRemovingLoops(data, count) { case (acc, _) =>
       cycle(acc)
     }
-//
-//    (0 until count).foldLeft(data) { case (acc, _) =>
-//      cycle(acc)
-//    }
 
   def part2(data: Input): Int =
     value(cycles(data, 1000000000))

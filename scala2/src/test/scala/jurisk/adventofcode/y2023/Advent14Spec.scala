@@ -2,12 +2,12 @@ package jurisk.adventofcode.y2023
 
 import org.scalatest.freespec.AnyFreeSpec
 import Advent14._
-import jurisk.geometry.Field2D
 import org.scalatest.matchers.should.Matchers._
 
 class Advent14Spec extends AnyFreeSpec {
-  "qq" in {
-    val test     = parseFile("2023/14-test.txt")
+  private val test = parseFile("2023/14-test.txt")
+
+  "slideNorth" in {
     val slided   = slideNorth(test)
     val expected = parse("""OOOO.#.O..
 OO..#....#
@@ -20,13 +20,10 @@ O..#.OO...
 #....###..
 #....#....""")
 
-    debugPrint(slided)
-
     slided shouldEqual expected
   }
 
   "1 cycle" in {
-    val test     = parseFile("2023/14-test.txt")
     val slided   = cycle(test)
     val expected = parse(""".....#....
 ....#...O#
@@ -38,8 +35,6 @@ O..#.OO...
 ......OOOO
 #...O###..
 #..OO#....""")
-
-    debugPrint(slided)
 
     slided shouldEqual expected
   }
@@ -58,14 +53,12 @@ O..#.OO...
 #...O###.O
 #.OOO#...O""")
 
-    debugPrint(slided)
-
     slided shouldEqual expected
   }
 
   "part 1" - {
     "test" in {
-      part1(parseFile("2023/14-test.txt")) shouldEqual 136
+      part1(test) shouldEqual 136
     }
 
     "real" in {
@@ -75,7 +68,7 @@ O..#.OO...
 
   "part 2" - {
     "test" in {
-      part2(parseFile("2023/14-test.txt")) shouldEqual 64
+      part2(test) shouldEqual 64
     }
 
     "real" in {

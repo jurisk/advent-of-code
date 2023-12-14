@@ -29,7 +29,7 @@ object Advent13 {
   private def verticalReflections(
     field: Field2D[Boolean]
   ): List[Reflection.Vertical] =
-    horizontalReflections(field.rotate(Rotation.Left90)).map { reflection =>
+    horizontalReflections(field.rotate(Rotation.Right90)).map { reflection =>
       Reflection.Vertical(skipLeft = reflection.skipTop)
     }
 

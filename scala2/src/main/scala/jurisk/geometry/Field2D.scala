@@ -21,11 +21,9 @@ final case class Field2D[T](
 
   def rotate(rotation: Rotation): Field2D[T] = {
     val newData = rotation match {
-      case Rotation.Left90     => data.transpose.map(_.reverse)
+      case Rotation.Left90     => data.map(_.reverse).transpose
       case Rotation.NoRotation => data
       case Rotation.Right90    => data.transpose.map(row => row.reverse)
-//      case Rotation.Right90 => data.map(_.reverse).transpose // TODO ???
-
       case Rotation.TurnAround => data.map(_.reverse).reverse
     }
 
