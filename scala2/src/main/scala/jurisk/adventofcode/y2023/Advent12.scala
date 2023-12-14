@@ -33,9 +33,11 @@ object Condition {
 object Advent12 extends IOApp.Simple {
   type Input = List[Row]
 
+  // Memoizing without a capacity limit was slightly faster, but let's leave this like this as an indirect test for the
+  // LRUCache
   private val calculateArrangementsMemoized
     : ((List[List[NonOperational]], List[Int])) => Long =
-    Memoize.memoizeSynchronized(calculateArrangements)
+    Memoize.memoizeWithCapacitySynchronized(calculateArrangements, 1_000)
 
   private def calculateArrangements(
     input: (List[List[NonOperational]], List[Int])
