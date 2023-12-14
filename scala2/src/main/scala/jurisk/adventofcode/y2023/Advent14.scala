@@ -24,7 +24,6 @@ object Advent14 {
 
   def debugPrint(input: Input): Unit =
     Field2D.printField[Square](
-      none,
       input,
       {
         case Round => 'O'
@@ -33,25 +32,27 @@ object Advent14 {
       },
     )
 
-  private def slideRowLeft(row: Vector[Square]): Vector[Square] =
-    if (row.isEmpty) {
-      Vector.empty
+  private def slideRowLeft(row: Vector[Square]): Vector[Square] = {
+    import Vector.fill
+
+    val potential = row.takeWhile(_ != Cube)
+
+    if (potential.nonEmpty) {
+      val emptyCount = potential.count(_ == Empty)
+      val roundCount = potential.count(_ == Round)
+
+      fill(roundCount)(Round) ++ fill(emptyCount)(Empty) ++ slideRowLeft(
+        row.drop(potential.length)
+      )
     } else {
-      val potential = row.takeWhile(_ != Cube)
-
-      if (potential.nonEmpty) {
-        val emptyCount = potential.count(_ == Empty)
-        val roundCount = potential.count(_ == Round)
-
-        val a = Vector.fill(roundCount)(Round) appendedAll Vector.fill(
-          emptyCount
-        )(Empty)
-        a appendedAll slideRowLeft(row.drop(potential.length))
+      val cubes = row.takeWhile(_ == Cube)
+      if (cubes.isEmpty) {
+        Vector.empty
       } else {
-        val cubes = row.takeWhile(_ == Cube)
-        cubes appendedAll slideRowLeft(row.drop(cubes.length))
+        cubes ++ slideRowLeft(row.drop(cubes.length))
       }
     }
+  }
 
   private def slideHelper(data: Input, rotation: Rotation): Input = {
     val rotated = data.rotate(rotation)
@@ -75,9 +76,7 @@ object Advent14 {
     (slideNorth _ andThen slideWest andThen slideSouth andThen slideEast)(data)
 
   def value(data: Input): Int =
-    data.allCoords.map { c =>
-      val v = data.atOrElse(c, Square.Empty)
-
+    data.valuesAndCoords.map { case (c, v) =>
       v match {
         case Round        => data.height - c.y
         case Cube | Empty => 0
