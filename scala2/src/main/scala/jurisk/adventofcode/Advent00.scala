@@ -30,10 +30,10 @@ object Advent00 {
     input.parseLines(Command.parse)
 
   def part1(data: Input): Int =
-    data.length + 1234567
+    0
 
   def part2(data: Input): Int =
-    data.length + 1234567
+    0
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
