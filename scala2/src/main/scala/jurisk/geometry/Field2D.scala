@@ -8,7 +8,7 @@ import jurisk.algorithms.pathfinding.Bfs
 import jurisk.utils.Parsing.StringOps
 
 final case class Field2D[T](
-  private val data: Vector[Vector[T]],
+  data: Vector[Vector[T]],
   topLeft: Coords2D = Coords2D.Zero,
 ) {
   val width: Int  = data.head.length
@@ -21,7 +21,7 @@ final case class Field2D[T](
 
   def rotate(rotation: Rotation): Field2D[T] = {
     val newData = rotation match {
-      case Rotation.Left90     => data.transpose.map(_.reverse)
+      case Rotation.Left90     => data.map(_.reverse).transpose
       case Rotation.NoRotation => data
       case Rotation.Right90    => data.transpose.map(row => row.reverse)
       case Rotation.TurnAround => data.map(_.reverse).reverse
@@ -126,6 +126,14 @@ final case class Field2D[T](
     }
 
   def values: Iterable[T] = data.flatten
+
+  def valuesAndCoords: Seq[(Coords2D, T)] =
+    yIndices flatMap { y =>
+      xIndices map { x =>
+        val c = Coords2D.of(x, y)
+        c -> atUnsafe(c)
+      }
+    }
 
   def entries: Seq[(Coords2D, T)] =
     yIndices flatMap { y =>
@@ -279,12 +287,12 @@ object Field2D {
   )
 
   def printCharField(field: Field2D[Char]): Unit =
-    printField[Char](none, field, identity)
+    printField[Char](field, identity, none)
 
   def printField[T](
-    intro: Option[String],
     field: Field2D[T],
     toChar: T => Char,
+    intro: Option[String] = None,
   ): Unit = {
     intro foreach println
     val charField      = field.map(toChar)
@@ -294,7 +302,7 @@ object Field2D {
   }
 
   def printBooleanField(field: Field2D[Boolean]): Unit =
-    printField(none, field, visualizeBoolean)
+    printField(field, visualizeBoolean)
 
   def parse[T](data: String, parser: Char => T): Field2D[T] =
     parseFromLines(

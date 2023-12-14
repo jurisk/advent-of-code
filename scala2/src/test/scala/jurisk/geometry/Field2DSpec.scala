@@ -5,12 +5,12 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
 
 class Field2DSpec extends AnyFreeSpec {
-  "flatMap" in {
-    val field = Field2D.parseDigitField("""12
-                                          |34
-                                          |""".stripMargin)
+  private val field_12_34 = Field2D.parseDigitField("""12
+                                                      |34
+                                                      |""".stripMargin)
 
-    val result = field.flatMap { x =>
+  "flatMap" in {
+    val result = field_12_34.flatMap { x =>
       Field2D(
         Vector(
           Vector(x, x * 2, x * 3),
@@ -32,9 +32,29 @@ class Field2DSpec extends AnyFreeSpec {
   }
 
   "rotate" - {
-    val field = Field2D.parseDigitField("""12
-                                          |34
-                                          |""".stripMargin)
+    "NoRotation" in {
+      field_12_34.rotate(NoRotation) shouldEqual Field2D(
+        Vector(Vector(1, 2), Vector(3, 4))
+      )
+    }
+
+    "Left90" in {
+      field_12_34.rotate(Left90) shouldEqual Field2D(
+        Vector(Vector(2, 4), Vector(1, 3))
+      )
+    }
+
+    "TurnAround" in {
+      field_12_34.rotate(TurnAround) shouldEqual Field2D(
+        Vector(Vector(4, 3), Vector(2, 1))
+      )
+    }
+
+    "Right90" in {
+      field_12_34.rotate(Right90) shouldEqual Field2D(
+        Vector(Vector(3, 1), Vector(4, 2))
+      )
+    }
 
     List(
       List(NoRotation),
@@ -44,9 +64,9 @@ class Field2DSpec extends AnyFreeSpec {
       List(Right90, Right90, TurnAround),
     ) foreach { test =>
       s"rotate $test" in {
-        test.foldLeft(field) { case (acc, r) =>
+        test.foldLeft(field_12_34) { case (acc, r) =>
           acc.rotate(r)
-        } shouldEqual field
+        } shouldEqual field_12_34
       }
     }
   }
