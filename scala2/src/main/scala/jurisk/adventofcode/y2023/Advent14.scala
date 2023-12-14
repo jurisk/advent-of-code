@@ -1,7 +1,8 @@
 package jurisk.adventofcode.y2023
 
-import cats.implicits._
 import jurisk.adventofcode.y2023.Advent14.Square.{Cube, Empty, Round}
+import jurisk.collections.BiMap
+import jurisk.collections.BiMap.BiDirectionalArrowAssociation
 import jurisk.geometry.{Field2D, Rotation}
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
@@ -9,28 +10,24 @@ import jurisk.utils.Simulation
 object Advent14 {
   type Input = Field2D[Square]
 
-  sealed trait Square
+  sealed trait Square extends Product with Serializable
   object Square {
     case object Round extends Square
     case object Cube  extends Square
     case object Empty extends Square
 
-    def parse(ch: Char): Square =
-      Map('O' -> Round, '#' -> Cube, '.' -> Empty).apply(ch)
+    val Mapping: BiMap[Char, Square] = BiMap(
+      'O' <-> Round,
+      '#' <-> Cube,
+      '.' <-> Empty,
+    )
   }
 
   def parse(input: String): Input =
-    Field2D.parse(input, Square.parse)
+    Field2D.parse(input, Square.Mapping.leftToRightUnsafe)
 
   def debugPrint(input: Input): Unit =
-    Field2D.printField[Square](
-      input,
-      {
-        case Round => 'O'
-        case Cube  => '#'
-        case Empty => '.'
-      },
-    )
+    Field2D.printField[Square](input, Square.Mapping.rightToLeftUnsafe)
 
   private def slideRowLeft(row: Vector[Square]): Vector[Square] = {
     import Vector.fill
@@ -60,16 +57,16 @@ object Advent14 {
     slided.rotate(rotation.inverse)
   }
 
-  def slideWest(data: Input): Input =
+  private[y2023] def slideWest(data: Input): Input =
     slideHelper(data, Rotation.NoRotation)
 
-  def slideSouth(data: Input): Input =
+  private[y2023] def slideSouth(data: Input): Input =
     slideHelper(data, Rotation.Right90)
 
-  def slideEast(data: Input): Input =
+  private[y2023] def slideEast(data: Input): Input =
     slideHelper(data, Rotation.TurnAround)
 
-  def slideNorth(data: Input): Input =
+  private[y2023] def slideNorth(data: Input): Input =
     slideHelper(data, Rotation.Left90)
 
   def cycle(data: Input): Input =

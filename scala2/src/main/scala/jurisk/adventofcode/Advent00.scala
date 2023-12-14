@@ -9,7 +9,7 @@ import org.scalatest.matchers.should.Matchers._
 object Advent00 {
   type Input = List[Command]
 
-  sealed trait Command
+  sealed trait Command extends Product with Serializable
   object Command {
     case object Noop                      extends Command
     final case class Something(
