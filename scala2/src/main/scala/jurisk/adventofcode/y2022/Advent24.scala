@@ -10,7 +10,7 @@ import jurisk.geometry.Field2D
 import jurisk.math.absForWrappingAround
 import jurisk.math.lcm
 import jurisk.utils.FileInput._
-import jurisk.utils.Memoize.memoize
+import jurisk.utils.Memoize.memoize1
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
@@ -65,7 +65,7 @@ object Advent24 {
 
     private def calculateBlizzardsAtTime(time: Int): Set[Coords2D] =
       blizzards.map(b => blizzardAt(b, time))
-    private val blizzardsAt: Int => Set[Coords2D]                  = memoize(
+    private val blizzardsAt: Int => Set[Coords2D]                  = memoize1(
       calculateBlizzardsAtTime
     )
   }

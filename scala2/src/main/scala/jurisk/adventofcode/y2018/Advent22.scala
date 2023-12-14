@@ -11,7 +11,7 @@ import jurisk.algorithms.pathfinding.AStar
 import jurisk.geometry.Area2D
 import jurisk.geometry.Coords2D
 import jurisk.utils.CollectionOps.IterableOps
-import jurisk.utils.Memoize.memoize
+import jurisk.utils.Memoize.memoize1
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
@@ -40,11 +40,11 @@ object Advent22 {
   }
 
   final case class Input(depth: Int, target: Coords2D) {
-    private lazy val erosionLevel: Coords2D => Int = memoize(
+    private lazy val erosionLevel: Coords2D => Int = memoize1(
       calculateErosionLevel
     )
 
-    lazy val regionType: Coords2D => RegionType = memoize(calculateRegionType)
+    lazy val regionType: Coords2D => RegionType = memoize1(calculateRegionType)
 
     private def calculateRegionType(c: Coords2D): RegionType =
       if ((c.x < 0) || (c.y < 0)) {

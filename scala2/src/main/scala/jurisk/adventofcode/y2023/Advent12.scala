@@ -9,6 +9,7 @@ import jurisk.utils.CollectionOps.ListListOps
 import jurisk.utils.CollectionOps.ListOps
 import jurisk.utils.FileInputIO.readFileText
 import jurisk.utils.Memoize
+import jurisk.utils.Memoize.memoize2
 import jurisk.utils.Parsing.StringOps
 
 sealed trait Condition {
@@ -36,14 +37,13 @@ object Advent12 extends IOApp.Simple {
   // Memoizing without a capacity limit was slightly faster, but let's leave this like this as an indirect test for the
   // LRUCache
   private val calculateArrangementsMemoized
-    : ((List[List[NonOperational]], List[Int])) => Long =
-    Memoize.memoizeWithCapacitySynchronized(calculateArrangements, 1_000)
+    : (List[List[NonOperational]], List[Int]) => Long =
+    memoize2(calculateArrangements, 1_000.some)
 
   private def calculateArrangements(
-    input: (List[List[NonOperational]], List[Int])
+    springs: List[List[NonOperational]],
+    groups: List[Int],
   ): Long = {
-    val (springs, groups) = input
-
     val maxPossibleDamaged = springs.map(_.size).sum
     val groupSum           = groups.sum
 
@@ -65,10 +65,8 @@ object Advent12 extends IOApp.Simple {
 
                 if (groupCanStartHere && validSpaceAfter) {
                   calculateArrangementsMemoized(
-                    (
-                      springs.dropFromFirstEliminatingEmpty(nextGroup + 1),
-                      otherGroups,
-                    )
+                    springs.dropFromFirstEliminatingEmpty(nextGroup + 1),
+                    otherGroups,
                   )
                 } else {
                   0
@@ -82,10 +80,8 @@ object Advent12 extends IOApp.Simple {
                 } else {
                   // What if we skip the next one?
                   calculateArrangementsMemoized(
-                    (
-                      springs.dropFromFirstEliminatingEmpty(1),
-                      nextGroup :: otherGroups,
-                    )
+                    springs.dropFromFirstEliminatingEmpty(1),
+                    nextGroup :: otherGroups,
                   )
                 }
 
@@ -132,7 +128,7 @@ object Advent12 extends IOApp.Simple {
           }
         }
 
-      calculateArrangements((grouped, groups))
+      calculateArrangements(grouped, groups)
     }
   }
 
