@@ -5,6 +5,8 @@ import jurisk.utils.CollectionOps.VectorOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
+import scala.annotation.tailrec
+
 object Advent15 {
   private type Steps       = List[Step]
   private type Label       = String
@@ -21,18 +23,27 @@ object Advent15 {
   sealed trait Step {
     def label: Label
     def originalString: String
-    def applyTo(lenses: Vector[Lens]): Vector[Lens]
+    def applyTo(lenses: List[Lens]): List[Lens]
   }
 
   object Step {
     final private case class Remove(label: String) extends Step {
       def originalString: Label = s"$label-"
 
-      def applyTo(lenses: Vector[Lens]): Vector[Lens] =
-        lenses.firstIndexWhere(_.label == label) match {
-          case Some(idx) => lenses.removeAt(idx)
-          case None      => lenses
-        }
+      def applyTo(lenses: List[Lens]): List[Lens] = {
+        @tailrec
+        def helper(remainingLenses: List[Lens], acc: List[Lens]): List[Lens] =
+          remainingLenses match {
+            case head :: tail if head.label == label =>
+              acc.reverse ::: tail
+            case head :: tail                        =>
+              helper(tail, head :: acc)
+            case Nil                                 =>
+              acc.reverse
+          }
+
+        helper(lenses, List.empty)
+      }
     }
 
     final private case class Replace(
@@ -41,11 +52,20 @@ object Advent15 {
     ) extends Step {
       def originalString: Label = s"$label=$focalLength"
 
-      def applyTo(lenses: Vector[Lens]): Vector[Lens] =
-        lenses.firstIndexWhere(_.label == label) match {
-          case Some(idx) => lenses.updated(idx, Lens(label, focalLength))
-          case None      => lenses :+ Lens(label, focalLength)
-        }
+      def applyTo(lenses: List[Lens]): List[Lens] = {
+        @tailrec
+        def helper(remainingLenses: List[Lens], acc: List[Lens]): List[Lens] =
+          remainingLenses match {
+            case head :: tail if head.label == label =>
+              acc.reverse ::: Lens(label, focalLength) :: tail
+            case head :: tail                        =>
+              helper(tail, head :: acc)
+            case Nil                                 =>
+              acc.reverse ::: Lens(label, focalLength) :: Nil
+          }
+
+        helper(lenses, List.empty)
+      }
     }
 
     def parse(s: String): Step =
@@ -58,7 +78,7 @@ object Advent15 {
 
   final case class Lens(label: String, focalLength: Int)
 
-  final case class LensBox(lenses: Vector[Lens]) {
+  final case class LensBox(lenses: List[Lens]) {
     def value: Int =
       lenses.zipWithIndex.map { case (lens, index) =>
         (index + 1) * lens.focalLength
@@ -66,7 +86,7 @@ object Advent15 {
   }
 
   private object LensBox {
-    def empty: LensBox = LensBox(Vector.empty)
+    def empty: LensBox = LensBox(List.empty)
   }
 
   def part1(data: Steps): Int =
