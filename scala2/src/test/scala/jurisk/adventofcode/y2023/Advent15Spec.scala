@@ -5,14 +5,15 @@ import Advent15._
 import org.scalatest.matchers.should.Matchers._
 
 class Advent15Spec extends AnyFreeSpec {
-  "hash HASH" in {
-    calculateHash("HASH") shouldEqual 52
-  }
+  "calculateHash" - {
+    "HASH" in {
+      calculateHash("HASH") shouldEqual 52
+    }
 
-  "hash rn=1" in {
-    calculateHash("rn=1") shouldEqual 30
+    "rn=1" in {
+      calculateHash("rn=1") shouldEqual 30
+    }
   }
-
 
   "part 1" - {
     "test" in {
@@ -30,7 +31,7 @@ class Advent15Spec extends AnyFreeSpec {
     }
 
     "real" in {
-      part2(parseFile("2023/15.txt")) shouldEqual 0
+      part2(parseFile("2023/15.txt")) shouldEqual 252782
     }
   }
 }
