@@ -45,32 +45,43 @@ object CollectionOps {
       List.fill(times)(list).flatten
   }
 
-  implicit class IterableOps[T](seq: Iterable[T]) {
-    def counts: Map[T, Int] = seq.groupMapReduce(identity)(_ => 1)(_ + _)
+  implicit class SeqOps[T](seq: Seq[T]) {
+    def firstIndexWhere(p: T => Boolean, from: Int = 0): Option[Int] = {
+      val result = seq.indexWhere(p, from)
+      if (result == -1) {
+        none
+      } else {
+        result.some
+      }
+    }
+  }
+
+  implicit class IterableOps[T](iterable: Iterable[T]) {
+    def counts: Map[T, Int] = iterable.groupMapReduce(identity)(_ => 1)(_ + _)
 
     def consecutiveGroupCounts: List[(T, Int)] =
-      seq.headOption match {
+      iterable.headOption match {
         case Some(head) =>
-          val (taken, remaining) = seq.span(_ == head)
+          val (taken, remaining) = iterable.span(_ == head)
           (head -> taken.size) :: remaining.consecutiveGroupCounts
 
         case None =>
           Nil
       }
 
-    def allDistinct: Boolean = seq.toSet.size == seq.size
+    def allDistinct: Boolean = iterable.toSet.size == iterable.size
 
     def singleElementUnsafe: T =
-      if (seq.size == 1) seq.head
+      if (iterable.size == 1) iterable.head
       else
-        s"Expected a single element, but got ${seq.toList.mkString("(", ", ", ")")}".fail
+        s"Expected a single element, but got ${iterable.toList.mkString("(", ", ", ")")}".fail
 
     // We just keep mistyping this so much, we may as well add it :shrug:
     def singleResultUnsafe: T = singleElementUnsafe
 
     def twoElementsUnsafe: (T, T) =
-      if (seq.size == 2) (seq.head, seq.tail.head)
-      else s"Expected two elements, but got $seq".fail
+      if (iterable.size == 2) (iterable.head, iterable.tail.head)
+      else s"Expected two elements, but got $iterable".fail
   }
 
   implicit class EqIterableOps[T: Eq](seq: Iterable[T]) {
@@ -105,5 +116,16 @@ object CollectionOps {
           }
         case Nil          => Nil
       }
+  }
+
+  implicit class VectorOps[T](val vector: Vector[T]) extends AnyVal {
+    def updatedWith(index: Int)(modify: T => T): Vector[T] =
+      vector.lift(index) match {
+        case Some(currentValue) => vector.updated(index, modify(currentValue))
+        case None               => vector
+      }
+
+    def removeAt(index: Int): Vector[T] =
+      vector.slice(0, index) ++ vector.slice(index + 1, vector.length)
   }
 }

@@ -32,19 +32,22 @@ object Advent14 {
   // `rotation` - the rotation needed to be applied to `data` so that the sliding becomes to the West (left)
   private def slideHelper(data: Input, rotation: Rotation): Input = {
     def slideRowLeft(row: Vector[Square]): Vector[Square] = {
-      def slideHelper(row: List[Square], emptiesToAdd: Int): List[Square] = {
+      def f(row: List[Square], emptiesToAdd: Int): List[Square] = {
         import List.fill
 
         row match {
-          case Empty :: tail => slideHelper(tail, emptiesToAdd + 1)
-          case Round :: tail => Round :: slideHelper(tail, emptiesToAdd)
+          case Empty :: tail =>
+            f(tail, emptiesToAdd + 1)
+          case Round :: tail =>
+            Round :: f(tail, emptiesToAdd)
           case Cube :: tail  =>
-            fill(emptiesToAdd)(Empty) ::: Cube :: slideHelper(tail, 0)
-          case Nil           => fill(emptiesToAdd)(Empty)
+            fill(emptiesToAdd)(Empty) ::: Cube :: f(tail, 0)
+          case Nil           =>
+            fill(emptiesToAdd)(Empty)
         }
       }
 
-      slideHelper(row.toList, 0).toVector
+      f(row.toList, 0).toVector
     }
 
     val rotated = data rotate rotation
