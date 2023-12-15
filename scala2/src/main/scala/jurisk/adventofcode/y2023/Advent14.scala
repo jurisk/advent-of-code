@@ -1,9 +1,12 @@
 package jurisk.adventofcode.y2023
 
-import jurisk.adventofcode.y2023.Advent14.Square.{Cube, Empty, Round}
+import jurisk.adventofcode.y2023.Advent14.Square.Cube
+import jurisk.adventofcode.y2023.Advent14.Square.Empty
+import jurisk.adventofcode.y2023.Advent14.Square.Round
 import jurisk.collections.BiMap
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
-import jurisk.geometry.{Field2D, Rotation}
+import jurisk.geometry.Field2D
+import jurisk.geometry.Rotation
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
 

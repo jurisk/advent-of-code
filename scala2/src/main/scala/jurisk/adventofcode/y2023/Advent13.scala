@@ -1,7 +1,8 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
-import jurisk.geometry.{Field2D, Rotation}
+import jurisk.geometry.Field2D
+import jurisk.geometry.Rotation
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps

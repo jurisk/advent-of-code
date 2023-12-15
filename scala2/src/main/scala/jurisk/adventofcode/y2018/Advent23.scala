@@ -1,7 +1,12 @@
 package jurisk.adventofcode.y2018
 
-import com.microsoft.z3.{BoolSort, Context, Expr, IntNum, IntSort}
-import jurisk.geometry.{Area3D, Coords3D}
+import com.microsoft.z3.BoolSort
+import com.microsoft.z3.Context
+import com.microsoft.z3.Expr
+import com.microsoft.z3.IntNum
+import com.microsoft.z3.IntSort
+import jurisk.geometry.Area3D
+import jurisk.geometry.Coords3D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 

@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2023
 
-import jurisk.adventofcode.y2023.Advent15.Step.{Remove, Replace}
-import jurisk.utils.CollectionOps.{SeqOps, VectorOps}
+import jurisk.utils.CollectionOps.SeqOps
+import jurisk.utils.CollectionOps.VectorOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -19,19 +19,33 @@ object Advent15 {
     input.split(",").map(Step.parse).toList
 
   sealed trait Step {
+    def label: Label
     def originalString: String
+    def applyTo(lenses: Vector[Lens]): Vector[Lens]
   }
 
   object Step {
-    final case class Remove(label: String) extends Step {
-      override def originalString: Label = s"$label-"
+    final private case class Remove(label: String) extends Step {
+      def originalString: Label = s"$label-"
+
+      def applyTo(lenses: Vector[Lens]): Vector[Lens] =
+        lenses.firstIndexWhere(_.label == label) match {
+          case Some(idx) => lenses.removeAt(idx)
+          case None      => lenses
+        }
     }
 
-    final case class Replace(
+    final private case class Replace(
       label: Label,
       focalLength: FocalLength,
     ) extends Step {
-      override def originalString: Label = s"$label=$focalLength"
+      def originalString: Label = s"$label=$focalLength"
+
+      def applyTo(lenses: Vector[Lens]): Vector[Lens] =
+        lenses.firstIndexWhere(_.label == label) match {
+          case Some(idx) => lenses.updated(idx, Lens(label, focalLength))
+          case None      => lenses :+ Lens(label, focalLength)
+        }
     }
 
     def parse(s: String): Step =
@@ -45,20 +59,6 @@ object Advent15 {
   final case class Lens(label: String, focalLength: Int)
 
   final case class LensBox(lenses: Vector[Lens]) {
-    def subtract(label: Label): LensBox =
-      lenses.firstIndexWhere(_.label == label) match {
-        case Some(idx) => LensBox(lenses.removeAt(idx))
-        case None      => this
-      }
-
-    def replace(label: Label, value: FocalLength): LensBox =
-      LensBox(
-        lenses.firstIndexWhere(_.label == label) match {
-          case Some(idx) => lenses.updated(idx, Lens(label, value))
-          case None      => lenses :+ Lens(label, value)
-        }
-      )
-
     def value: Int =
       lenses.zipWithIndex.map { case (lens, index) =>
         (index + 1) * lens.focalLength
@@ -76,15 +76,8 @@ object Advent15 {
     val LensCount = 256
     val boxen     = ops.foldLeft(Vector.fill(LensCount)(LensBox.empty)) {
       case (acc, op) =>
-        op match {
-          case Remove(label) =>
-            val idx = calculateHash(label)
-            acc.updatedWith(idx)(_.subtract(label))
-
-          case Replace(label, focalLength) =>
-            val idx = calculateHash(label)
-            acc.updatedWith(idx)(_.replace(label, focalLength))
-        }
+        val idx = calculateHash(op.label)
+        acc.updatedWith(idx)(lensBox => LensBox(op.applyTo(lensBox.lenses)))
     }
 
     boxen.zipWithIndex.map { case (contents, idx) =>

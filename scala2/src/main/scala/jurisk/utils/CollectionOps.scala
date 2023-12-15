@@ -118,7 +118,7 @@ object CollectionOps {
       }
   }
 
-  implicit class VectorOps[T](val vector: Vector[T]) extends AnyVal {
+  implicit class VectorOps[T](private val vector: Vector[T]) extends AnyVal {
     def updatedWith(index: Int)(modify: T => T): Vector[T] =
       vector.lift(index) match {
         case Some(currentValue) => vector.updated(index, modify(currentValue))
