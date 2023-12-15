@@ -1,98 +1,102 @@
 package jurisk.adventofcode.y2023
 
-import jurisk.adventofcode.y2023.Advent15.Op.{Equals, Subtract}
+import jurisk.adventofcode.y2023.Advent15.Step.{Remove, Replace}
+import jurisk.utils.CollectionOps.{SeqOps, VectorOps}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent15 {
-  type Input = List[Op]
+  private type Steps       = List[Step]
+  private type Label       = String
+  private type FocalLength = Int
 
   def calculateHash(s: String): Int =
     s.toList.foldLeft(0) { case (acc, ch) =>
       ((acc + ch.toInt) * 17) % 256
     }
 
-  def parse(input: String): Input =
-    input.split(",").map(Op.parse).toList
+  def parse(input: String): Steps =
+    input.split(",").map(Step.parse).toList
 
-  def part1(data: Input): Int =
-    data.map(op => calculateHash(op.originalString)).sum
-
-  sealed trait Op {
+  sealed trait Step {
     def originalString: String
   }
 
-  object Op {
-    final case class Subtract(originalString: String, s: String) extends Op
-    final case class Equals(originalString: String, s: String, value: Int)
-        extends Op
+  object Step {
+    final case class Remove(label: String) extends Step {
+      override def originalString: Label = s"$label-"
+    }
 
-    def parse(s: String): Op =
+    final case class Replace(
+      label: Label,
+      focalLength: FocalLength,
+    ) extends Step {
+      override def originalString: Label = s"$label=$focalLength"
+    }
+
+    def parse(s: String): Step =
       s match {
-        case s"$something-"       => Subtract(s, something)
-        case s"$something=$value" => Equals(s, something, value.toInt)
-        case _                    => s.failedToParse
+        case s"$label-"             => Remove(label)
+        case s"$label=$focalLength" => Replace(label, focalLength.toInt)
+        case _                      => s.failedToParse
       }
   }
 
-  final case class LensValue(lens: String, focal: Int)
+  final case class Lens(label: String, focalLength: Int)
 
-  final case class LensBox(lenses: Vector[LensValue]) {
-    def subtract(s: String): LensBox = {
-      val idx = lenses.indexWhere(_.lens == s)
-      if (idx == -1) {
-        this
-      } else {
-        // TODO: improve
-        val updated = lenses.zipWithIndex.filter(_._2 != idx).map(_._1)
-        LensBox(updated)
+  final case class LensBox(lenses: Vector[Lens]) {
+    def subtract(label: Label): LensBox =
+      lenses.firstIndexWhere(_.label == label) match {
+        case Some(idx) => LensBox(lenses.removeAt(idx))
+        case None      => this
       }
-    }
 
-    def replace(s: String, value: Int): LensBox = {
-      val idx     = lenses.indexWhere(_.lens == s)
-      val updated = if (idx == -1) {
-        lenses :+ LensValue(s, value)
-      } else {
-        lenses.updated(idx, LensValue(s, value))
-      }
-      LensBox(updated)
-    }
+    def replace(label: Label, value: FocalLength): LensBox =
+      LensBox(
+        lenses.firstIndexWhere(_.label == label) match {
+          case Some(idx) => lenses.updated(idx, Lens(label, value))
+          case None      => lenses :+ Lens(label, value)
+        }
+      )
 
-    def value(idx: Int): Int =
+    def value: Int =
       lenses.zipWithIndex.map { case (lens, index) =>
-        (idx + 1) * (index + 1) * lens.focal
+        (index + 1) * lens.focalLength
       }.sum
   }
 
-  object LensBox {
+  private object LensBox {
     def empty: LensBox = LensBox(Vector.empty)
   }
 
-  def part2(ops: Input): Int = {
-    val boxen = ops.foldLeft(Vector.fill(256)(LensBox.empty)) {
+  def part1(data: Steps): Int =
+    data.map(op => calculateHash(op.originalString)).sum
+
+  def part2(ops: Steps): Int = {
+    val LensCount = 256
+    val boxen     = ops.foldLeft(Vector.fill(LensCount)(LensBox.empty)) {
       case (acc, op) =>
         op match {
-          case Subtract(_, s) =>
-            val idx = calculateHash(s)
-            val old = acc(idx)
-            acc.updated(idx, old.subtract(s))
+          case Remove(label) =>
+            val idx = calculateHash(label)
+            acc.updatedWith(idx)(_.subtract(label))
 
-          case Equals(_, s, value) =>
-            val idx = calculateHash(s)
-            val old = acc(idx)
-            acc.updated(idx, old.replace(s, value))
+          case Replace(label, focalLength) =>
+            val idx = calculateHash(label)
+            acc.updatedWith(idx)(_.replace(label, focalLength))
         }
     }
 
-    boxen.zipWithIndex.map { case (x, idx) => x.value(idx) }.sum
+    boxen.zipWithIndex.map { case (contents, idx) =>
+      (idx + 1) * contents.value
+    }.sum
   }
 
-  def parseFile(fileName: String): Input =
+  def parseFile(fileName: String): Steps =
     parse(readFileText(fileName))
 
   def main(args: Array[String]): Unit = {
-    val realData: Input = parseFile("2023/15.txt")
+    val realData: Steps = parseFile("2023/15.txt")
 
     println(s"Part 1: ${part1(realData)}")
     println(s"Part 2: ${part2(realData)}")
