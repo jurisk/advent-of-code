@@ -1,12 +1,12 @@
 package jurisk.adventofcode.y2018
 
-import com.microsoft.z3.BoolSort
 import com.microsoft.z3.Context
 import com.microsoft.z3.Expr
 import com.microsoft.z3.IntNum
 import com.microsoft.z3.IntSort
 import jurisk.geometry.Area3D
 import jurisk.geometry.Coords3D
+import jurisk.optimization.{abs, boolToInt}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -44,7 +44,7 @@ object Advent23 {
     data foreach println
     println()
 
-    val ctx = new Context
+    implicit val ctx: Context = new Context
     import ctx._
 
     val o = mkOptimize()
@@ -66,16 +66,6 @@ object Advent23 {
       mkLe(y, maxCoord),
       mkLe(z, maxCoord),
     )
-
-    val Zero     = mkInt(0)
-    val One      = mkInt(1)
-    val MinusOne = mkInt(-1)
-
-    def abs(v: Expr[IntSort]): Expr[IntSort] =
-      mkITE(mkGe(v, Zero), v, mkMul(v, MinusOne))
-
-    def boolToInt(b: Expr[BoolSort]): Expr[IntSort] =
-      mkITE(b, One, Zero)
 
     def nanobotInRange(nanobot: Nanobot): Expr[IntSort] = {
       val List(nx, ny, nz, nr) = List(

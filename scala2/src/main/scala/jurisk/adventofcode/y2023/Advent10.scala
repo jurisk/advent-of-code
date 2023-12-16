@@ -153,6 +153,7 @@ object Advent10 {
 
     val boundaryPoints = trackCoordsInWalkingOrder.length
 
+    // https://en.wikipedia.org/wiki/Shoelace_formula
     val area = Coords2D.areaOfSimplePolygon(trackCoordsInWalkingOrder)
 
     // https://en.wikipedia.org/wiki/Pick%27s_theorem
@@ -185,35 +186,47 @@ object Advent10 {
   def part2From3x3Expansion(data: Input): Long = {
     val (_, onlyTrack) = extractTrack(data)
 
-    val expanded = onlyTrack.flatMap {
-      case Pipe.Empty => Field2D.parseBooleanField("""...
-                                                     |...
-                                                     |...
-                                                     |""".stripMargin)
-      case Pipe.N_S   => Field2D.parseBooleanField(""".#.
-                                                   |.#.
-                                                   |.#.
-                                                   |""".stripMargin)
-      case Pipe.E_W   => Field2D.parseBooleanField("""...
-                                                   |###
-                                                   |...
-                                                   |""".stripMargin)
-      case Pipe.N_E   => Field2D.parseBooleanField(""".#.
-                                                   |.##
-                                                   |...
-                                                   |""".stripMargin)
-      case Pipe.N_W   => Field2D.parseBooleanField(""".#.
-                                                   |##.
-                                                   |...
-                                                   |""".stripMargin)
-      case Pipe.S_W   => Field2D.parseBooleanField("""...
-                                                   |##.
-                                                   |.#.
-                                                   |""".stripMargin)
-      case Pipe.S_E   => Field2D.parseBooleanField("""...
-                                                   |.##
-                                                   |.#.
-                                                   |""".stripMargin)
+    val mapping: Pipe => String = {
+      case Pipe.Empty =>
+        """...
+          |...
+          |...
+          |""".stripMargin
+      case Pipe.N_S   =>
+        """.#.
+          |.#.
+          |.#.
+          |""".stripMargin
+      case Pipe.E_W   =>
+        """...
+          |###
+          |...
+          |""".stripMargin
+      case Pipe.N_E   =>
+        """.#.
+          |.##
+          |...
+          |""".stripMargin
+      case Pipe.N_W   =>
+        """.#.
+          |##.
+          |...
+          |""".stripMargin
+      case Pipe.S_W   =>
+        """...
+          |##.
+          |.#.
+          |""".stripMargin
+
+      case Pipe.S_E =>
+        """...
+          |.##
+          |.#.
+          |""".stripMargin
+    }
+
+    val expanded = onlyTrack.flatMap { pipe =>
+      Field2D.parseBooleanField(mapping(pipe))
     }
 
     Field2D.printBooleanField(expanded)

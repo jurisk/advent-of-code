@@ -1,6 +1,5 @@
 package jurisk.adventofcode.y2023
 
-import jurisk.utils.CollectionOps.SeqOps
 import jurisk.utils.CollectionOps.VectorOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps

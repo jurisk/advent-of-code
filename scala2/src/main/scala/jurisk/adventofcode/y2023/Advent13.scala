@@ -34,20 +34,22 @@ object Advent13 {
       Reflection.Vertical(skipLeft = reflection.skipTop)
     }
 
-  private def horizontalReflectionPerfect(
-    field: Field2D[Boolean]
-  ): Option[Reflection.Horizontal] =
-    if (field.height % 2 == 0) {
-      val halfHeight         = field.height / 2
-      val topHalf            = field.topRows(halfHeight)
-      val bottomHalfReversed = field.bottomRows(halfHeight).reverseRows
-
-      (topHalf == bottomHalfReversed).option(Reflection.Horizontal(halfHeight))
-    } else none
-
   private def horizontalReflections(
     field: Field2D[Boolean]
   ): List[Reflection.Horizontal] = {
+    def horizontalReflectionPerfect(
+      field: Field2D[Boolean]
+    ): Option[Reflection.Horizontal] =
+      if (field.height % 2 == 0) {
+        val halfHeight         = field.height / 2
+        val topHalf            = field.topRows(halfHeight)
+        val bottomHalfReversed = field.bottomRows(halfHeight).reverseRows
+
+        (topHalf == bottomHalfReversed).option(
+          Reflection.Horizontal(halfHeight)
+        )
+      } else none
+
     val maxDrop = field.height - 2
 
     val optionsDropBottom = (0 to maxDrop) flatMap { drop =>

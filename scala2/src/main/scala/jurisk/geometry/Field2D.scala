@@ -5,7 +5,8 @@ import cats.Foldable
 import cats.Functor
 import cats.implicits._
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.collections.BiMap
+import jurisk.collections.{BiMap, SetOfTwo}
+import jurisk.geometry.Direction2D.CardinalDirection2D
 import jurisk.utils.Parsing.StringOps
 
 final case class Field2D[T] private (
@@ -134,6 +135,14 @@ final case class Field2D[T] private (
         Coords2D.of(x, y)
       }
     }
+
+  def allConnectionsDirectional
+    : Seq[(Coords2D, CardinalDirection2D, Coords2D)] = for {
+    from <- allCoords
+    dir  <- Direction2D.CardinalDirections
+    to    = from + dir
+    if isValidCoordinate(to)
+  } yield (from, dir, to)
 
   def values: Iterable[T] = data.flatten
 
