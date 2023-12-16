@@ -112,7 +112,7 @@ object Advent23 {
   }
 
   def part2(data: State): Long = {
-    val (_, lastIteration) = Simulation.runUntilStableState(data) {
+    val (_, lastIteration) = Simulation.runUntilStableStateWithCounter(data) {
       case (state, iteration) =>
         state.next(iteration.toInt)
     }

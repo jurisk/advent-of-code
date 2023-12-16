@@ -78,6 +78,12 @@ final case class Field2D[T] private (
     )
   }
 
+  def modifyIgnoringInvalidCoords(c: Coords2D, f: T => T): Field2D[T] =
+    at(c) match {
+      case Some(value) => updatedAtUnsafe(c, f(value))
+      case None        => this
+    }
+
   def modifyUnsafe(c: Coords2D, f: T => T): Field2D[T] =
     at(c) match {
       case Some(value) => updatedAtUnsafe(c, f(value))
@@ -162,6 +168,11 @@ final case class Field2D[T] private (
   def coordsForColumn(x: Int): List[Coords2D] = yIndices.toList map { y =>
     Coords2D.of(x, y)
   }
+
+  def topRowCoords: List[Coords2D]      = coordsForRow(0)
+  def bottomRowCoords: List[Coords2D]   = coordsForRow(height - 1)
+  def leftColumnCoords: List[Coords2D]  = coordsForColumn(0)
+  def rightColumnCoords: List[Coords2D] = coordsForColumn(width - 1)
 
   def firstRowValues: Vector[T] = row(0)
   def lastRowValues: Vector[T]  = row(height - 1)

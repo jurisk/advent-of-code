@@ -9,10 +9,10 @@ object Simulation {
   private type Counter =
     Long // We were doing `Counter : Numeric` at one point, but it was a hassle on the caller side
 
-  def runNIterations[State](state: State, iterations: Counter)(
+  def runNIterations[State](initial: State, iterations: Counter)(
     f: (State, Counter) => State
   ): State =
-    runWithIterationCount(state) { case (state, iteration) =>
+    runWithIterationCount(initial) { case (state, iteration) =>
       if (iteration < iterations) {
         f(state, iteration).asRight
       } else {
@@ -20,10 +20,10 @@ object Simulation {
       }
     }
 
-  def runUntilStableState[State](state: State)(
+  def runUntilStableStateWithCounter[State](initial: State)(
     f: (State, Counter) => State
   ): (State, Counter) =
-    runWithIterationCount(state) { case (state, iteration) =>
+    runWithIterationCount(initial) { case (state, iteration) =>
       val newState = f(state, iteration)
       if (newState == state) {
         (state, iteration + 1).asLeft
@@ -31,6 +31,14 @@ object Simulation {
         newState.asRight
       }
     }
+
+  def runUntilStableState[State](initial: State)(f: State => State): State = {
+    val (result, _) = runUntilStableStateWithCounter(initial) {
+      case (state, _) =>
+        f(state)
+    }
+    result
+  }
 
   def run[State, Result](state: State)(
     f: State => Either[Result, State]
@@ -41,10 +49,10 @@ object Simulation {
 
   @tailrec
   def runWithIterationCount[State, Result](
-    state: State,
+    initial: State,
     iterationCount: Counter = 0L,
   )(f: (State, Counter) => Either[Result, State]): Result =
-    f(state, iterationCount) match {
+    f(initial, iterationCount) match {
       case Left(result)    => result
       case Right(newState) =>
         runWithIterationCount(newState, iterationCount + 1L)(f)
