@@ -47,7 +47,7 @@ object Advent23 {
     val ctx = new Context
     import ctx._
 
-    val o = mkOptimize
+    val o = mkOptimize()
 
     val List(x, y, z) = List("x", "y", "z").map(mkIntConst)
 
