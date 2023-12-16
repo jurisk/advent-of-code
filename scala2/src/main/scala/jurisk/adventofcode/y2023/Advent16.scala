@@ -1,6 +1,6 @@
 package jurisk.adventofcode.y2023
 
-import cats.implicits.{catsSyntaxOptionId, catsSyntaxUnorderedFoldableOps, none}
+import cats.implicits._
 import jurisk.adventofcode.y2023.Advent16.Square.{
   Empty,
   HorizontalSplitter,
@@ -14,6 +14,7 @@ import jurisk.geometry.Direction2D.{CardinalDirection2D, E, N, S, W}
 import jurisk.geometry.{Coords2D, Direction2D, Field2D}
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
+import mouse.all.booleanSyntaxMouse
 
 object Advent16 {
   type Input = Field2D[Square]
@@ -22,7 +23,8 @@ object Advent16 {
     def incomingToOutgoing(
       incoming: CardinalDirection2D
     ): List[CardinalDirection2D] = this match {
-      case Square.Empty              => incoming.invert :: Nil
+      case Square.Empty              =>
+        incoming.invert :: Nil
       case Square.MirrorLeanRight    =>
         (incoming match {
           case N => W
@@ -39,17 +41,13 @@ object Advent16 {
         }) :: Nil
       case Square.HorizontalSplitter =>
         incoming match {
-          case N => E :: W :: Nil
-          case E => W :: Nil
-          case S => E :: W :: Nil
-          case W => E :: Nil
+          case N | S => E :: W :: Nil
+          case ew    => ew.invert :: Nil
         }
       case Square.VerticalSplitter   =>
         incoming match {
-          case N => S :: Nil
-          case E => N :: S :: Nil
-          case S => N :: Nil
-          case W => N :: S :: Nil
+          case E | W => N :: S :: Nil
+          case ns    => ns.invert :: Nil
         }
     }
   }
@@ -78,16 +76,16 @@ object Advent16 {
     incoming: Set[CardinalDirection2D],
     outgoing: Set[CardinalDirection2D],
   ) {
-    def nonEmpty: Boolean                                        = incoming.nonEmpty || outgoing.nonEmpty
-    def addIncoming(direction: CardinalDirection2D): SquareBeams =
-      copy(incoming = incoming + direction)
+    def nonEmpty: Boolean = incoming.nonEmpty || outgoing.nonEmpty
   }
 
   object SquareBeams {
     def empty: SquareBeams = SquareBeams(Set.empty, Set.empty)
   }
 
-  def runBeams(field: Input, state: State): State = {
+  type State = Field2D[SquareBeams]
+
+  private def runBeams(field: Input, state: State): State = {
     def newOutgoings(
       field: Input,
       state: State,
@@ -114,10 +112,8 @@ object Advent16 {
     val newOut = newOutgoings(field, state)
     val newIn  = newOut flatMap { case (c, dir) =>
       val neighbourCoords = c + dir
-      if (field.isValidCoordinate(neighbourCoords)) {
-        (neighbourCoords -> dir.invert).some
-      } else {
-        none
+      field.isValidCoordinate(neighbourCoords).option {
+        neighbourCoords -> dir.invert
       }
     }
 
@@ -138,47 +134,7 @@ object Advent16 {
     }
   }
 
-  def runBeamsOld(field: Input, state: State): State = {
-    def runIncomingToOutgoing(field: Input, state: State): State =
-      state.mapByCoordsWithValues { case (c, v) =>
-        val square      = field.atOrElse(c, Empty)
-        val incoming    = v.incoming
-        val outgoing    = v.outgoing
-        val newOutgoing = for {
-          incoming <- incoming
-          outgoing <- square.incomingToOutgoing(incoming)
-        } yield outgoing
-        SquareBeams(incoming, outgoing ++ newOutgoing)
-      }
-
-    def runOutgoingToNeighbourIncoming(
-      field: Input,
-      state: State,
-    ): State = {
-      var result = state
-      field.allCoords foreach { c =>
-        val v        = result.atOrElse(c, SquareBeams.empty)
-        val outgoing = v.outgoing
-        outgoing foreach { beam =>
-          val neighbourCoords = c + beam
-          if (result.isValidCoordinate(neighbourCoords)) {
-            val neighbourState    =
-              result.atOrElse(neighbourCoords, SquareBeams.empty)
-            val newNeighbourState = neighbourState.addIncoming(beam.invert)
-            result = result.updatedAtUnsafe(neighbourCoords, newNeighbourState)
-          }
-        }
-      }
-      result
-    }
-
-    val updatedOutgoing = runIncomingToOutgoing(field, state)
-    runOutgoingToNeighbourIncoming(field, updatedOutgoing)
-  }
-
-  type State = Field2D[SquareBeams]
-
-  def solve(
+  private def solve(
     field: Input,
     initialSquare: Coords2D,
     initialDirection: CardinalDirection2D,
@@ -190,7 +146,7 @@ object Advent16 {
     )
     val (endState, _) = Simulation.runUntilStableState(initial) {
       case (state, _) =>
-        runBeamsOld(field, state)
+        runBeams(field, state)
     }
     endState.count(_.nonEmpty)
   }
