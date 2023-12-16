@@ -1,6 +1,6 @@
 package jurisk.adventofcode.y2023
 
-import cats.implicits.catsSyntaxUnorderedFoldableOps
+import cats.implicits.{catsSyntaxOptionId, catsSyntaxUnorderedFoldableOps, none}
 import jurisk.adventofcode.y2023.Advent16.Square.{
   Empty,
   HorizontalSplitter,
@@ -87,41 +87,91 @@ object Advent16 {
     def empty: SquareBeams = SquareBeams(Set.empty, Set.empty)
   }
 
-  private def runIncomingToOutgoing(field: Input, state: State): State =
-    state.mapByCoordsWithValues { case (c, v) =>
-      val square      = field.atOrElse(c, Empty)
-      val incoming    = v.incoming
-      val outgoing    = v.outgoing
-      val newOutgoing = for {
-        incoming <- incoming
-        outgoing <- square.incomingToOutgoing(incoming)
-      } yield outgoing
-      SquareBeams(incoming, outgoing ++ newOutgoing)
-    }
+  def runBeams(field: Input, state: State): State = {
+    def newOutgoings(
+      field: Input,
+      state: State,
+    ): Seq[(Coords2D, CardinalDirection2D)] = {
+      var results = List.empty[(Coords2D, CardinalDirection2D)]
 
-  private def runOutgoingToNeighbourIncoming(
-    field: Input,
-    state: State,
-  ): State = {
-    var result = state
-    field.allCoords foreach { c =>
-      val v        = result.atOrElse(c, SquareBeams.empty)
-      val incoming = v.incoming
-      val outgoing = v.outgoing
-      outgoing foreach { beam =>
-        val neighbourCoords = c + beam
-        if (result.isValidCoordinate(neighbourCoords)) {
-          val neighbourState    =
-            result.atOrElse(neighbourCoords, SquareBeams.empty)
-          val newNeighbourState = neighbourState.addIncoming(beam.invert)
-          result = result.updatedAtUnsafe(neighbourCoords, newNeighbourState)
+      state.mapByCoordsWithValues { case (c, v) =>
+        val square      = field.atOrElse(c, Empty)
+        val incoming    = v.incoming
+        val oldOutgoing = v.outgoing
+        val newOutgoing = for {
+          incoming <- incoming
+          result   <- square.incomingToOutgoing(incoming)
+        } yield result
+        val diff        = newOutgoing -- oldOutgoing
+        diff foreach { d =>
+          results = (c -> d) :: results
         }
       }
+
+      results
     }
-    result
+
+    val newOut = newOutgoings(field, state)
+    val newIn  = newOut flatMap { case (c, dir) =>
+      val neighbourCoords = c + dir
+      if (field.isValidCoordinate(neighbourCoords)) {
+        (neighbourCoords -> dir.invert).some
+      } else {
+        none
+      }
+    }
+
+    val newOutMap = newOut.groupMap(_._1)(_._2)
+    val newInMap  = newIn.groupMap(_._1)(_._2)
+
+    state mapByCoordsWithValues { case (c, v) =>
+      val oldIncoming = v.incoming
+      val newIncoming = newInMap.getOrElse(c, Seq.empty)
+
+      val oldOutgoing = v.outgoing
+      val newOutgoing = newOutMap.getOrElse(c, Seq.empty)
+
+      SquareBeams(
+        incoming = oldIncoming ++ newIncoming.toSet,
+        outgoing = oldOutgoing ++ newOutgoing.toSet,
+      )
+    }
   }
 
-  def runBeams(field: Input, state: State): State = {
+  def runBeamsOld(field: Input, state: State): State = {
+    def runIncomingToOutgoing(field: Input, state: State): State =
+      state.mapByCoordsWithValues { case (c, v) =>
+        val square      = field.atOrElse(c, Empty)
+        val incoming    = v.incoming
+        val outgoing    = v.outgoing
+        val newOutgoing = for {
+          incoming <- incoming
+          outgoing <- square.incomingToOutgoing(incoming)
+        } yield outgoing
+        SquareBeams(incoming, outgoing ++ newOutgoing)
+      }
+
+    def runOutgoingToNeighbourIncoming(
+      field: Input,
+      state: State,
+    ): State = {
+      var result = state
+      field.allCoords foreach { c =>
+        val v        = result.atOrElse(c, SquareBeams.empty)
+        val outgoing = v.outgoing
+        outgoing foreach { beam =>
+          val neighbourCoords = c + beam
+          if (result.isValidCoordinate(neighbourCoords)) {
+            val neighbourState    =
+              result.atOrElse(neighbourCoords, SquareBeams.empty)
+            val newNeighbourState = neighbourState.addIncoming(beam.invert)
+            result = result.updatedAtUnsafe(neighbourCoords, newNeighbourState)
+          }
+        }
+      }
+      result
+    }
+
     val updatedOutgoing = runIncomingToOutgoing(field, state)
     runOutgoingToNeighbourIncoming(field, updatedOutgoing)
   }
@@ -140,7 +190,7 @@ object Advent16 {
     )
     val (endState, _) = Simulation.runUntilStableState(initial) {
       case (state, _) =>
-        runBeams(field, state)
+        runBeamsOld(field, state)
     }
     endState.count(_.nonEmpty)
   }
@@ -149,21 +199,21 @@ object Advent16 {
     solve(field, Coords2D.Zero, Direction2D.W)
 
   def part2(field: Input): Long = {
-    val fromNorth = for {
-      column <- field.xIndices
-    } yield solve(field, Coords2D.of(column, 0), Direction2D.N)
+    val fromNorth = field.topRowCoords.map {
+      solve(field, _, Direction2D.N)
+    }
 
-    val fromSouth = for {
-      column <- field.xIndices
-    } yield solve(field, Coords2D.of(column, field.height - 1), Direction2D.S)
+    val fromSouth = field.bottomRowCoords.map {
+      solve(field, _, Direction2D.S)
+    }
 
-    val fromWest = for {
-      row <- field.yIndices
-    } yield solve(field, Coords2D.of(0, row), Direction2D.W)
+    val fromWest = field.leftColumnCoords.map {
+      solve(field, _, Direction2D.W)
+    }
 
-    val fromEast = for {
-      row <- field.yIndices
-    } yield solve(field, Coords2D.of(field.width - 1, row), Direction2D.E)
+    val fromEast = field.rightColumnCoords.map {
+      solve(field, _, Direction2D.W)
+    }
 
     List(fromNorth, fromSouth, fromWest, fromEast).flatten.max
   }

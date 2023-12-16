@@ -163,6 +163,11 @@ final case class Field2D[T] private (
     Coords2D.of(x, y)
   }
 
+  def topRowCoords: List[Coords2D]      = coordsForRow(0)
+  def bottomRowCoords: List[Coords2D]   = coordsForRow(height - 1)
+  def leftColumnCoords: List[Coords2D]  = coordsForColumn(0)
+  def rightColumnCoords: List[Coords2D] = coordsForColumn(width - 1)
+
   def firstRowValues: Vector[T] = row(0)
   def lastRowValues: Vector[T]  = row(height - 1)
 
