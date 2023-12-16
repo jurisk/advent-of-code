@@ -78,20 +78,19 @@ object Advent16 {
     incomingEdgesProcessed: Set[(Coords2D, CardinalDirection2D)],
   ) {
     def next(field: Input): State = {
-      val candidateIncomingQueue = outgoingQueue flatMap { case (c, dir) =>
+      val newIncomingQueue = outgoingQueue.flatMap { case (c, dir) =>
         val neighbourCoords = c + dir
-        field.isValidCoordinate(neighbourCoords).option {
+        field.isValidCoordinate(neighbourCoords) option {
           neighbourCoords -> dir.invert
         }
-      }
+      } -- incomingEdgesProcessed
 
-      val newIncomingQueue = candidateIncomingQueue -- incomingEdgesProcessed
-
-      val newOutgoingQueue = incomingQueue flatMap { case (c, dir) =>
-        field.atOrElse(c, Empty).incomingToOutgoing(dir) map { outgoing =>
-          c -> outgoing
-        }
-      }
+      val newOutgoingQueue = for {
+        (c, dir) <- incomingQueue
+        values    = field.at(c).toSet
+        v        <- values
+        outgoing <- v.incomingToOutgoing(dir)
+      } yield c -> outgoing
 
       State(
         newIncomingQueue,
@@ -127,7 +126,7 @@ object Advent16 {
         state.next(field)
     }
 
-    endState.incomingEdgesProcessed.map(_._1).size
+    endState.incomingEdgesProcessed.map { case (c, _) => c }.size
   }
 
   def part1(field: Input): Long =
