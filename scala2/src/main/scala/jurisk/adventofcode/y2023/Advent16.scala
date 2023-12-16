@@ -72,64 +72,45 @@ object Advent16 {
       ),
     )
 
-  final case class SquareBeams(
-    incoming: Set[CardinalDirection2D],
-    outgoing: Set[CardinalDirection2D],
+  final case class State(
+    incomingQueue: Set[(Coords2D, CardinalDirection2D)],
+    outgoingQueue: Set[(Coords2D, CardinalDirection2D)],
+    incomingEdgesProcessed: Set[(Coords2D, CardinalDirection2D)],
   ) {
-    def nonEmpty: Boolean = incoming.nonEmpty || outgoing.nonEmpty
-  }
-
-  object SquareBeams {
-    def empty: SquareBeams = SquareBeams(Set.empty, Set.empty)
-  }
-
-  type State = Field2D[SquareBeams]
-
-  private def runBeams(field: Input, state: State): State = {
-    def newOutgoings(
-      field: Input,
-      state: State,
-    ): Seq[(Coords2D, CardinalDirection2D)] = {
-      var results = List.empty[(Coords2D, CardinalDirection2D)]
-
-      state.mapByCoordsWithValues { case (c, v) =>
-        val square      = field.atOrElse(c, Empty)
-        val incoming    = v.incoming
-        val oldOutgoing = v.outgoing
-        val newOutgoing = for {
-          incoming <- incoming
-          result   <- square.incomingToOutgoing(incoming)
-        } yield result
-        val diff        = newOutgoing -- oldOutgoing
-        diff foreach { d =>
-          results = (c -> d) :: results
+    def next(field: Input): State = {
+      val candidateIncomingQueue = outgoingQueue flatMap { case (c, dir) =>
+        val neighbourCoords = c + dir
+        field.isValidCoordinate(neighbourCoords).option {
+          neighbourCoords -> dir.invert
         }
       }
 
-      results
-    }
+      val newIncomingQueue = candidateIncomingQueue -- incomingEdgesProcessed
 
-    val newOut = newOutgoings(field, state)
-    val newIn  = newOut flatMap { case (c, dir) =>
-      val neighbourCoords = c + dir
-      field.isValidCoordinate(neighbourCoords).option {
-        neighbourCoords -> dir.invert
+      val newOutgoingQueue = incomingQueue flatMap { case (c, dir) =>
+        field.atOrElse(c, Empty).incomingToOutgoing(dir) map { outgoing =>
+          c -> outgoing
+        }
       }
+
+      State(
+        newIncomingQueue,
+        newOutgoingQueue,
+        incomingEdgesProcessed ++ newIncomingQueue,
+      )
     }
+  }
 
-    val newOutMap = newOut.groupMap(_._1)(_._2)
-    val newInMap  = newIn.groupMap(_._1)(_._2)
-
-    state mapByCoordsWithValues { case (c, v) =>
-      val oldIncoming = v.incoming
-      val newIncoming = newInMap.getOrElse(c, Seq.empty)
-
-      val oldOutgoing = v.outgoing
-      val newOutgoing = newOutMap.getOrElse(c, Seq.empty)
-
-      SquareBeams(
-        incoming = oldIncoming ++ newIncoming.toSet,
-        outgoing = oldOutgoing ++ newOutgoing.toSet,
+  object State {
+    def fromInitial(
+      initialSquare: Coords2D,
+      initialDirection: CardinalDirection2D,
+    ): State = {
+      val incomingQueue = Set(initialSquare -> initialDirection)
+      State(
+        incomingQueue = incomingQueue,
+        outgoingQueue = Set.empty,
+        incomingEdgesProcessed = incomingQueue,
       )
     }
   }
@@ -139,16 +120,14 @@ object Advent16 {
     initialSquare: Coords2D,
     initialDirection: CardinalDirection2D,
   ): Long = {
-    val beams         = field.mapByCoords(_ => SquareBeams.empty)
-    val initial       = beams.updatedAtUnsafe(
-      initialSquare,
-      SquareBeams(Set(initialDirection), Set.empty),
-    )
+    val initial = State.fromInitial(initialSquare, initialDirection)
+
     val (endState, _) = Simulation.runUntilStableState(initial) {
       case (state, _) =>
-        runBeams(field, state)
+        state.next(field)
     }
-    endState.count(_.nonEmpty)
+
+    endState.incomingEdgesProcessed.map(_._1).size
   }
 
   def part1(field: Input): Long =
