@@ -10,6 +10,8 @@ import jurisk.geometry.Rotation
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
 
+import scala.collection.immutable.ArraySeq
+
 object Advent14 {
   type Input = Field2D[Square]
 
@@ -34,7 +36,7 @@ object Advent14 {
 
   // `rotation` - the rotation needed to be applied to `data` so that the sliding becomes to the West (left)
   private def slideHelper(data: Input, rotation: Rotation): Input = {
-    def slideRowLeft(row: Vector[Square]): Vector[Square] = {
+    def slideRowLeft(row: ArraySeq[Square]): ArraySeq[Square] = {
       def f(row: List[Square], emptiesToAdd: Int): List[Square] = {
         import List.fill
 
@@ -50,7 +52,7 @@ object Advent14 {
         }
       }
 
-      f(row.toList, 0).toVector
+      ArraySeq.from(f(row.toList, 0))
     }
 
     val rotated = data rotate rotation

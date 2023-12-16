@@ -14,6 +14,8 @@ import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
 import mouse.all.booleanSyntaxMouse
 
+import scala.collection.immutable.ArraySeq
+
 object Advent16 {
   type Input = Field2D[Square]
 
@@ -293,12 +295,12 @@ object Advent16 {
           }
 
           Field2D(
-            Vector(
-              Vector(' ', '┄', '┄', '┄', ' '),
-              Vector('┆', ' ', f(N), ' ', '┆'),
-              Vector('┆', f(W), field.atOrElse(c, Empty).asChar, f(E), '┆'),
-              Vector('┆', ' ', f(S), ' ', '┆'),
-              Vector(' ', '┄', '┄', '┄', ' '),
+            ArraySeq(
+              ArraySeq(' ', '┄', '┄', '┄', ' '),
+              ArraySeq('┆', ' ', f(N), ' ', '┆'),
+              ArraySeq('┆', f(W), field.atOrElse(c, Empty).asChar, f(E), '┆'),
+              ArraySeq('┆', ' ', f(S), ' ', '┆'),
+              ArraySeq(' ', '┄', '┄', '┄', ' '),
             )
           )
         }

@@ -13,6 +13,7 @@ import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers._
 
 import scala.annotation.tailrec
+import scala.collection.immutable.ArraySeq
 
 object Advent17 {
   sealed trait Square {
@@ -115,7 +116,7 @@ object Advent17 {
 
     @tailrec
     private def consecutiveRanges[T](
-      vector: Vector[T],
+      vector: ArraySeq[T],
       searchValue: T,
       offset: Int = 0,
       acc: List[(Int, Int)] = Nil,

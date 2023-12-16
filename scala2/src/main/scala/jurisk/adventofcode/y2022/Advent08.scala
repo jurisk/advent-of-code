@@ -8,6 +8,8 @@ import jurisk.geometry.visualizeBoolean
 import jurisk.utils.FileInput._
 import org.scalatest.matchers.should.Matchers._
 
+import scala.collection.immutable.ArraySeq
+
 object Advent08 {
   type TreeHeight = Int
   type Parsed     = Field2D[TreeHeight]
@@ -36,7 +38,7 @@ object Advent08 {
     from: Coords2D,
   ): List[NonEmptyList[T]] = {
     def splitBothDirections(
-      value: Vector[T],
+      value: ArraySeq[T],
       idx: Int,
     ): List[NonEmptyList[T]] =
       NonEmptyList.fromListUnsafe(value.toList.take(idx + 1).reverse) ::

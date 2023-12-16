@@ -1,16 +1,17 @@
 package jurisk.geometry
 
-import cats.Eval
-import cats.Foldable
-import cats.Functor
+import cats.{Eval, Foldable, Functor}
 import cats.implicits._
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.collections.{BiMap, SetOfTwo}
+import jurisk.collections.BiMap
 import jurisk.geometry.Direction2D.CardinalDirection2D
 import jurisk.utils.Parsing.StringOps
 
+import scala.collection.immutable.ArraySeq
+import scala.reflect.ClassTag
+
 final case class Field2D[T] private (
-  private val data: Vector[Vector[T]],
+  private val data: ArraySeq[ArraySeq[T]],
   topLeft: Coords2D = Coords2D.Zero,
 ) {
   val width: Int  = data.head.length
@@ -33,8 +34,8 @@ final case class Field2D[T] private (
   }
 
   def mapByCoordsWithValues[B](f: (Coords2D, T) => B): Field2D[B] = Field2D {
-    yIndices.toVector map { y =>
-      xIndices.toVector map { x =>
+    ArraySeq.from(yIndices) map { y =>
+      ArraySeq.from(xIndices) map { x =>
         val coords = Coords2D.of(x, y)
         f(coords, atUnsafe(coords))
       }
@@ -55,7 +56,7 @@ final case class Field2D[T] private (
       f(c)
   }
 
-  def mapByRows[B](f: Vector[T] => Vector[B]): Field2D[B] =
+  def mapByRows[B](f: ArraySeq[T] => ArraySeq[B]): Field2D[B] =
     Field2D(data map f)
 
   def at(c: Coords2D): Option[T] =
@@ -162,18 +163,18 @@ final case class Field2D[T] private (
       }
     }
 
-  def row(y: Int): Vector[T]               = data(y - topLeft.y)
+  def row(y: Int): ArraySeq[T]             = data(y - topLeft.y)
   def coordsForRow(y: Int): List[Coords2D] = xIndices.toList map { x =>
     Coords2D.of(x, y)
   }
 
-  def rows: List[Vector[T]] = data.toList
+  def rows: List[ArraySeq[T]] = data.toList
 
-  def columns: List[Vector[T]] = for {
+  def columns: List[ArraySeq[T]] = for {
     columnIdx <- (0 until width).toList
   } yield column(columnIdx)
 
-  def column(x: Int): Vector[T]               = data.map(_(x - topLeft.x))
+  def column(x: Int): ArraySeq[T]             = data.map(_(x - topLeft.x))
   def coordsForColumn(x: Int): List[Coords2D] = yIndices.toList map { y =>
     Coords2D.of(x, y)
   }
@@ -183,11 +184,11 @@ final case class Field2D[T] private (
   def leftColumnCoords: List[Coords2D]  = coordsForColumn(0)
   def rightColumnCoords: List[Coords2D] = coordsForColumn(width - 1)
 
-  def firstRowValues: Vector[T] = row(0)
-  def lastRowValues: Vector[T]  = row(height - 1)
+  def firstRowValues: ArraySeq[T] = row(0)
+  def lastRowValues: ArraySeq[T]  = row(height - 1)
 
-  def firstColumnValues: Vector[T] = column(0)
-  def lastColumnValues: Vector[T]  = column(width - 1)
+  def firstColumnValues: ArraySeq[T] = column(0)
+  def lastColumnValues: ArraySeq[T]  = column(width - 1)
 
   def createSuccessorsFunction(
     canGoPredicate: (T, T) => Boolean,
@@ -262,18 +263,18 @@ object Field2D {
       fa.data.foldRight(lb)((row, acc) => row.foldRight(acc)(f))
   }
 
-  def ofSize[T](
+  def ofSize[T: ClassTag](
     width: Int,
     height: Int,
     initialValue: T,
     topLeft: Coords2D = Coords2D.Zero,
   ): Field2D[T] =
     Field2D(
-      Vector.fill(height)(Vector.fill(width)(initialValue)),
+      ArraySeq.fill(height)(ArraySeq.fill(width)(initialValue)),
       topLeft,
     )
 
-  def forArea[T](boundingBox: Area2D, initialValue: T): Field2D[T] =
+  def forArea[T: ClassTag](boundingBox: Area2D, initialValue: T): Field2D[T] =
     ofSize(
       boundingBox.width,
       boundingBox.height,
@@ -331,7 +332,7 @@ object Field2D {
   def printBooleanField(field: Field2D[Boolean]): Unit =
     printField(field, visualizeBoolean)
 
-  def parse[T](data: String, parser: Char => T): Field2D[T] =
+  def parse[T: ClassTag](data: String, parser: Char => T): Field2D[T] =
     parseFromLines(
       data
         .split("\\R") // not splitting on '\n' because it failed in Windows
@@ -340,7 +341,10 @@ object Field2D {
       parser,
     )
 
-  def parseFromBiMap[T](data: String, mapping: BiMap[Char, T]): Field2D[T] =
+  def parseFromBiMap[T: ClassTag](
+    data: String,
+    mapping: BiMap[Char, T],
+  ): Field2D[T] =
     parse[T](data, mapping.leftToRightUnsafe)
 
   def parseCharField(data: String): Field2D[Char] = parse(data, identity)
@@ -358,16 +362,16 @@ object Field2D {
     },
   )
 
-  private def parseFromLines[T](
+  private def parseFromLines[T: ClassTag](
     lines: List[String],
     parser: Char => T,
     padIfNotEnoughWidthWith: Char = ' ',
   ): Field2D[T] = {
     val width = lines.map(_.length).max
     Field2D(
-      lines.toVector.map { line =>
+      ArraySeq.from(lines).map { line =>
         val paddedLine = line.padTo(width, padIfNotEnoughWidthWith)
-        paddedLine.map(parser).toVector
+        ArraySeq.from(paddedLine.map(parser))
       }
     )
   }
