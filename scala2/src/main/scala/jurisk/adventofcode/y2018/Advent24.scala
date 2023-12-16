@@ -271,10 +271,7 @@ object Advent24 {
   }
 
   private def simulateRound(state: State): (Int, Int) = {
-    val (result, _) = Simulation.runUntilStableStateWithCounter(state) {
-      case (state, _) =>
-        state.next
-    }
+    val result = Simulation.runUntilStableState(state)(_.next)
 
     (
       result.immuneSystem.values.map(_.units).sum,
