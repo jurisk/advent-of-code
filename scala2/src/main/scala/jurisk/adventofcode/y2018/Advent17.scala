@@ -175,7 +175,7 @@ object Advent17 {
   def simulate(field: Field2D[Square]): Field2D[Square] = {
     printField("Before:", field)
 
-    val (result, _) = Simulation.runUntilStableState(State(field)) {
+    val (result, _) = Simulation.runUntilStableStateWithCounter(State(field)) {
       case (state, iteration) =>
         val newState = state.next
         if (iteration % 1_000 == 0) {

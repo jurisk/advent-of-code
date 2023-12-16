@@ -22,32 +22,32 @@ object Advent16 {
   sealed trait Square extends Product with Serializable {
     def incomingToOutgoing(
       incoming: CardinalDirection2D
-    ): List[CardinalDirection2D] = this match {
+    ): Set[CardinalDirection2D] = this match {
       case Square.Empty              =>
-        incoming.invert :: Nil
+        Set(incoming.invert)
       case Square.MirrorLeanRight    =>
-        (incoming match {
+        Set(incoming match {
           case N => W
           case E => S
           case S => E
           case W => N
-        }) :: Nil
+        })
       case Square.MirrorLeanLeft     =>
-        (incoming match {
+        Set(incoming match {
           case N => E
           case E => N
           case S => W
           case W => S
-        }) :: Nil
+        })
       case Square.HorizontalSplitter =>
         incoming match {
-          case N | S => E :: W :: Nil
-          case ew    => ew.invert :: Nil
+          case N | S => Set(E, W)
+          case ew    => Set(ew.invert)
         }
       case Square.VerticalSplitter   =>
         incoming match {
-          case E | W => N :: S :: Nil
-          case ns    => ns.invert :: Nil
+          case E | W => Set(N, S)
+          case ns    => Set(ns.invert)
         }
     }
   }
@@ -87,9 +87,7 @@ object Advent16 {
 
       val newOutgoingQueue = for {
         (c, dir) <- incomingQueue
-        values    = field.at(c).toSet
-        v        <- values
-        outgoing <- v.incomingToOutgoing(dir)
+        outgoing <- field.at(c).toList.flatMap(_.incomingToOutgoing(dir))
       } yield c -> outgoing
 
       State(
@@ -119,13 +117,8 @@ object Advent16 {
     initialSquare: Coords2D,
     initialDirection: CardinalDirection2D,
   ): Long = {
-    val initial = State.fromInitial(initialSquare, initialDirection)
-
-    val (endState, _) = Simulation.runUntilStableState(initial) {
-      case (state, _) =>
-        state.next(field)
-    }
-
+    val initial  = State.fromInitial(initialSquare, initialDirection)
+    val endState = Simulation.runUntilStableState(initial)(_.next(field))
     endState.incomingEdgesProcessed.map { case (c, _) => c }.size
   }
 
