@@ -126,23 +126,18 @@ object Advent16 {
     solve(field, Coords2D.Zero, Direction2D.W)
 
   def part2(field: Input): Long = {
-    val fromNorth = field.topRowCoords.map {
-      solve(field, _, Direction2D.N)
-    }
+    val solutions = for {
+      (initialDirection, coordsF) <-
+        Map[CardinalDirection2D, Input => Seq[Coords2D]](
+          N -> (_.topRowCoords),
+          E -> (_.rightColumnCoords),
+          S -> (_.bottomRowCoords),
+          W -> (_.leftColumnCoords),
+        )
+      initialSquare               <- coordsF(field)
+    } yield solve(field, initialSquare, initialDirection)
 
-    val fromSouth = field.bottomRowCoords.map {
-      solve(field, _, Direction2D.S)
-    }
-
-    val fromWest = field.leftColumnCoords.map {
-      solve(field, _, Direction2D.W)
-    }
-
-    val fromEast = field.rightColumnCoords.map {
-      solve(field, _, Direction2D.W)
-    }
-
-    List(fromNorth, fromSouth, fromWest, fromEast).flatten.max
+    solutions.max
   }
 
   def parseFile(fileName: String): Input =
