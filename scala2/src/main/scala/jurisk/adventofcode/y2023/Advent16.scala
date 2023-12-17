@@ -13,6 +13,7 @@ import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
 import jurisk.geometry.Field2D
+import jurisk.optimization.ImplicitConversions.{RichBoolExpr, RichExpr, RichString}
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -143,11 +144,11 @@ object Advent16 {
     optimizationDirection: MinimizeOrMaximize,
     debug: Boolean = false,
   ): Long = {
-    val optimizer = Optimizer.z3()
+    implicit val optimizer: Optimizer = Optimizer.z3()
     import optimizer._
 
     def boolExpr(c: Coords2D, direction: CardinalDirection2D, prefix: String) =
-      labeledBool(s"${prefix}_${c.x}_${c.y}_${direction.asString}")
+      s"${prefix}_${c.x}_${c.y}_${direction.asString}".labeledBool
 
     def incomingBool(c: Coords2D, direction: CardinalDirection2D) =
       boolExpr(c, direction, "incoming")
@@ -157,14 +158,8 @@ object Advent16 {
 
     // Outgoing equals incoming in neighbour
     field.allConnectionsDirectional.foreach { case (from, direction, to) =>
-      val thisOutgoing        = outgoingBool(from, direction)
-      val incomingInNeighbour = incomingBool(to, direction.invert)
-
       addConstraints(
-        equal(
-          thisOutgoing,
-          incomingInNeighbour,
-        )
+        outgoingBool(from, direction) === incomingBool(to, direction.invert)
       )
     }
 
@@ -179,7 +174,7 @@ object Advent16 {
 
           outgoingConstraintsQueue = (in -> out) :: outgoingConstraintsQueue
 
-          addConstraints(implies(in, out))
+          addConstraints(in ==> out)
         }
       }
     }
@@ -189,10 +184,7 @@ object Advent16 {
       .groupMap(_._2)(_._1)
       .foreach { case (out, ins) =>
         addConstraints(
-          equal(
-            out,
-            or(ins: _*),
-          )
+          out === or(ins: _*)
         )
       }
 
@@ -205,10 +197,7 @@ object Advent16 {
 
       directions foreach { direction =>
         addConstraints(
-          equal(
-            outgoingBool(c, direction),
-            False,
-          )
+          outgoingBool(c, direction) === False
         )
       }
     }
@@ -221,39 +210,28 @@ object Advent16 {
     assert(allEdgeIncomings.distinct.length == (field.height + field.width) * 2)
 
     addConstraints(
-      equal(
-        sum(allEdgeIncomings: _*),
-        One,
-      )
+      sum(allEdgeIncomings: _*) === One
     )
 
     // Only for Part 1 - initialSquare incoming initialDirection is 1, others are 0
     initial foreach { case (initialSquare, initialDirection) =>
       addConstraints(
-        equal(
-          incomingBool(initialSquare, initialDirection),
-          True,
-        )
+        incomingBool(initialSquare, initialDirection) === True
       )
     }
 
     // `energized` is sum of all squares which have incoming
     val energizedVar = labeledInt("energized")
     addConstraints(
-      equal(
-        energizedVar,
-        sum(
-          field.allCoords.map { c =>
-            boolToInt(
-              or(
-                Direction2D.CardinalDirections map { d =>
-                  incomingBool(c, d)
-                }: _*
-              )
+      energizedVar === sum(
+        field.allCoords.map { c =>
+          boolToInt(
+            or(
+              Direction2D.CardinalDirections map { incomingBool(c, _) }: _*
             )
-          }: _*
-        ),
-      )
+          )
+        }: _*
+      ),
     )
 
     // Note - I hoped that we can solve Part 2 in one go if we maximise, but the loops in the middle got turned on then,

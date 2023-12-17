@@ -179,6 +179,9 @@ object ImplicitConversions {
   implicit class RichString(val string: String) {
     def labeledInt(implicit optimizer: Optimizer): IntExpr =
       optimizer.labeledInt(string)
+
+    def labeledBool(implicit optimizer: Optimizer): BoolExpr =
+      optimizer.labeledBool(string)
   }
 
   implicit class RichArithExprIntSort[B <: ArithSort](val expr: Expr[B]) {
