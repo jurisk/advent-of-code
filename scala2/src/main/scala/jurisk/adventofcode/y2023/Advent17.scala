@@ -1,10 +1,16 @@
 package jurisk.adventofcode.y2023
 
-import cats.implicits.{catsSyntaxOptionId, none}
-import jurisk.algorithms.pathfinding.Dijkstra
-import jurisk.geometry.Direction2D.{CardinalDirection2D, E, S}
-import jurisk.geometry.Rotation.{Left90, NoRotation, Right90}
-import jurisk.geometry.{Coords2D, Field2D}
+import cats.implicits.catsSyntaxOptionId
+import cats.implicits.none
+import jurisk.algorithms.pathfinding.AStar
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D.CardinalDirection2D
+import jurisk.geometry.Direction2D.E
+import jurisk.geometry.Direction2D.S
+import jurisk.geometry.Field2D
+import jurisk.geometry.Rotation.Left90
+import jurisk.geometry.Rotation.NoRotation
+import jurisk.geometry.Rotation.Right90
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -73,11 +79,16 @@ object Advent17 {
       minimumBeforeStoppingOrTurning,
     ) _
 
-    val result = Dijkstra.dijkstra[State, Int](
-      State(coords = data.topLeft, none, singleDirectionCounter = 0),
+    val startState =
+      State(coords = data.topLeft, none, singleDirectionCounter = 0)
+    val goal       = data.bottomRight
+
+    val result = AStar.aStar[State, Int](
+      startState,
       calculateSuccessors,
+      _.coords manhattanDistance goal,
       s =>
-        s.coords == data.bottomRight && s.singleDirectionCounter >= minimumBeforeStoppingOrTurning,
+        s.coords == goal && s.singleDirectionCounter >= minimumBeforeStoppingOrTurning,
     )
 
     result match {
