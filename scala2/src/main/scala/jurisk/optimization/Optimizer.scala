@@ -181,23 +181,28 @@ object ImplicitConversions {
       optimizer.labeledInt(string)
   }
 
-  implicit class RichArithExprIntSort(val expr: ArithExpr[IntSort]) {
-    def +(other: IntExpr)(implicit optimizer: Optimizer): ArithExpr[IntSort] =
+  implicit class RichArithExprIntSort[B <: ArithSort](val expr: Expr[B]) {
+    def +(other: Expr[B])(implicit optimizer: Optimizer): ArithExpr[B] =
       optimizer.add(expr, other)
-    def -(other: IntExpr)(implicit optimizer: Optimizer): ArithExpr[IntSort] =
+    def -(other: Expr[B])(implicit optimizer: Optimizer): ArithExpr[B] =
       optimizer.sub(expr, other)
-    def *(other: IntExpr)(implicit optimizer: Optimizer): ArithExpr[IntSort] =
+    def *(other: Expr[B])(implicit optimizer: Optimizer): ArithExpr[B] =
       optimizer.mul(expr, other)
-    def /(other: IntExpr)(implicit optimizer: Optimizer): ArithExpr[IntSort] =
+    def /(other: Expr[B])(implicit optimizer: Optimizer): ArithExpr[B] =
       optimizer.div(expr, other)
-    def %(other: IntExpr)(implicit optimizer: Optimizer): ArithExpr[IntSort] =
-      optimizer.rem(expr, other)
-    def >=[B <: ArithSort](other: Expr[B])(implicit
+    def >=(other: Expr[B])(implicit
       optimizer: Optimizer
     ): BoolExpr = optimizer.greaterOrEqual(expr, other)
-    def <=[B <: ArithSort](other: Expr[B])(implicit
+    def <=(other: Expr[B])(implicit
       optimizer: Optimizer
     ): BoolExpr = optimizer.lessOrEqual(expr, other)
+  }
+
+  implicit class RichExprIntSort(val expr: Expr[IntSort]) {
+    def %(other: Expr[IntSort])(implicit optimizer: Optimizer): IntExpr =
+      optimizer.rem(expr, other)
+
+    def abs(implicit optimizer: Optimizer): Expr[IntSort] = optimizer.abs(expr)
   }
 
   implicit class RichExpr(val expr: Expr[_]) {

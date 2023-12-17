@@ -5,8 +5,9 @@ import com.microsoft.z3.IntNum
 import jurisk.adventofcode.y2022.Advent21.Expression._
 import jurisk.adventofcode.y2022.Advent21.Operation._
 import jurisk.optimization.ImplicitConversions.{
-  RichExpr,
   RichArithExprIntSort,
+  RichExpr,
+  RichExprIntSort,
   RichLong,
   RichString,
 }

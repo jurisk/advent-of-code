@@ -6,9 +6,10 @@ import com.microsoft.z3.IntSort
 import jurisk.geometry.Area3D
 import jurisk.geometry.Coords3D
 import jurisk.optimization.ImplicitConversions.{
-  RichInt,
   RichArithExprIntSort,
   RichExpr,
+  RichExprIntSort,
+  RichInt,
 }
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
@@ -74,22 +75,16 @@ object Advent23 {
         nanobot.radius,
       ).map(constant)
 
-      val inRange =
-        sum(
-          Seq(x - nx, y - ny, z - nz).map(abs): _*
-        ) <= nr
+      val inRange = (x - nx).abs + (y - ny).abs + (z - nz).abs <= nr
 
       boolToInt(inRange)
     }
 
-    val nanobotsInRange = labeledInt("nanobotsInRange")
-    addConstraints(
-      nanobotsInRange === sum(data.map(nanobotInRange): _*)
-    )
-
+    val nanobotsInRange    = labeledInt("nanobotsInRange")
     val distanceFromOrigin = labeledInt("distanceFromOrigin")
     addConstraints(
-      distanceFromOrigin === sum(abs(x), abs(y), abs(z))
+      nanobotsInRange === sum(data.map(nanobotInRange): _*),
+      distanceFromOrigin === sum(abs(x), abs(y), abs(z)),
     )
 
     // Objective - maximize nanobotsInRange and minimize distanceFromOrigin
