@@ -166,6 +166,11 @@ object Optimizer {
 }
 
 object ImplicitConversions {
+  implicit class RichInt(val int: Int) {
+    def constant(implicit optimizer: Optimizer): IntExpr =
+      optimizer.constant(int)
+  }
+
   implicit class RichLong(val long: Long) {
     def constant(implicit optimizer: Optimizer): IntExpr =
       optimizer.constant(long)
@@ -176,7 +181,7 @@ object ImplicitConversions {
       optimizer.labeledInt(string)
   }
 
-  implicit class RichIntExpr(val expr: IntExpr) {
+  implicit class RichArithExprIntSort(val expr: ArithExpr[IntSort]) {
     def +(other: IntExpr)(implicit optimizer: Optimizer): ArithExpr[IntSort] =
       optimizer.add(expr, other)
     def -(other: IntExpr)(implicit optimizer: Optimizer): ArithExpr[IntSort] =

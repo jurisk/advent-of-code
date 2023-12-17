@@ -5,6 +5,11 @@ import com.microsoft.z3.IntNum
 import com.microsoft.z3.IntSort
 import jurisk.geometry.Area3D
 import jurisk.geometry.Coords3D
+import jurisk.optimization.ImplicitConversions.{
+  RichInt,
+  RichArithExprIntSort,
+  RichExpr,
+}
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -40,7 +45,7 @@ object Advent23 {
   }
 
   def part2(data: Input): Int = {
-    val optimizer = Optimizer.z3()
+    implicit val optimizer: Optimizer = Optimizer.z3()
     import optimizer._
 
     val List(x, y, z) = List("x", "y", "z").map(labeledInt)
@@ -49,16 +54,16 @@ object Advent23 {
       val boundingBox = Area3D.boundingBoxInclusive(data.map(_.position))
       val min         = boundingBox.min.x min boundingBox.min.y min boundingBox.min.z
       val max         = boundingBox.max.x max boundingBox.max.y max boundingBox.max.z
-      (constant(min), constant(max))
+      (min.constant, max.constant)
     }
 
     addConstraints(
-      greaterOrEqual(x, minCoord),
-      greaterOrEqual(y, minCoord),
-      greaterOrEqual(z, minCoord),
-      lessOrEqual(x, maxCoord),
-      lessOrEqual(y, maxCoord),
-      lessOrEqual(z, maxCoord),
+      x >= minCoord,
+      y >= minCoord,
+      z >= minCoord,
+      x <= maxCoord,
+      y <= maxCoord,
+      z <= maxCoord,
     )
 
     def nanobotInRange(nanobot: Nanobot): Expr[IntSort] = {
@@ -67,32 +72,25 @@ object Advent23 {
         nanobot.position.y,
         nanobot.position.z,
         nanobot.radius,
-      ).map(v => constant(v))
+      ).map(constant)
 
-      val xe = sub(x, nx)
-      val ye = sub(y, ny)
-      val ze = sub(z, nz)
-
-      val inRange = lessOrEqual(
+      val inRange =
         sum(
-          Seq(xe, ye, ze).map(abs): _*
-        ),
-        nr,
-      )
+          Seq(x - nx, y - ny, z - nz).map(abs): _*
+        ) <= nr
 
       boolToInt(inRange)
     }
 
     val nanobotsInRange = labeledInt("nanobotsInRange")
     addConstraints(
-      equal(
-        nanobotsInRange,
-        sum(data.map(nanobotInRange): _*),
-      )
+      nanobotsInRange === sum(data.map(nanobotInRange): _*)
     )
 
     val distanceFromOrigin = labeledInt("distanceFromOrigin")
-    addConstraints(equal(distanceFromOrigin, sum(abs(x), abs(y), abs(z))))
+    addConstraints(
+      distanceFromOrigin === sum(abs(x), abs(y), abs(z))
+    )
 
     // Objective - maximize nanobotsInRange and minimize distanceFromOrigin
     val objective1 = maximize(nanobotsInRange)

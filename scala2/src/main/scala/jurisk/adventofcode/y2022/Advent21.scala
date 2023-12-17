@@ -6,7 +6,7 @@ import jurisk.adventofcode.y2022.Advent21.Expression._
 import jurisk.adventofcode.y2022.Advent21.Operation._
 import jurisk.optimization.ImplicitConversions.{
   RichExpr,
-  RichIntExpr,
+  RichArithExprIntSort,
   RichLong,
   RichString,
 }
