@@ -1,12 +1,9 @@
-package jurisk.adventofcode
+package jurisk.adventofcode.y2023
 
-import cats.implicits._
-import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import org.scalatest.matchers.should.Matchers._
 
-object Advent00 {
+object Advent17 {
   type Input = List[Command]
 
   sealed trait Command extends Product with Serializable
@@ -39,7 +36,7 @@ object Advent00 {
     parse(readFileText(fileName))
 
   def fileName(suffix: String): String =
-    s"2023/02$suffix.txt"
+    s"2023/17$suffix.txt"
 
   def main(args: Array[String]): Unit = {
     val realData: Input = parseFile(fileName(""))

@@ -1,10 +1,10 @@
-package jurisk.adventofcode
+package jurisk.adventofcode.y2023
 
-import Advent00._
 import org.scalatest.freespec.AnyFreeSpec
+import Advent17._
 import org.scalatest.matchers.should.Matchers._
 
-class Advent00Spec extends AnyFreeSpec {
+class Advent17Spec extends AnyFreeSpec {
   private def testData = parseFile(fileName("-test"))
   private def realData = parseFile(fileName(""))
 
