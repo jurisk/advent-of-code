@@ -146,7 +146,6 @@ object Advent16 {
     val optimizer = Optimizer.z3()
     import optimizer._
     import optimizer.context._
-    val o = optimizer.optimize
 
     def boolExpr(c: Coords2D, direction: CardinalDirection2D, prefix: String) =
       mkBoolConst(s"${prefix}_${c.x}_${c.y}_${direction.asString}")
@@ -162,7 +161,7 @@ object Advent16 {
       val thisOutgoing        = outgoingBool(from, direction)
       val incomingInNeighbour = incomingBool(to, direction.invert)
 
-      o.Add(
+      addConstraints(
         mkEq(
           thisOutgoing,
           incomingInNeighbour,
@@ -181,7 +180,7 @@ object Advent16 {
 
           outgoingConstraintsQueue = (in -> out) :: outgoingConstraintsQueue
 
-          o.Add(mkImplies(in, out))
+          addConstraints(mkImplies(in, out))
         }
       }
     }
@@ -190,7 +189,7 @@ object Advent16 {
     outgoingConstraintsQueue
       .groupMap(_._2)(_._1)
       .foreach { case (out, ins) =>
-        o.Add(
+        addConstraints(
           mkEq(
             out,
             mkOr(ins: _*),
@@ -206,7 +205,7 @@ object Advent16 {
       }
 
       directions foreach { direction =>
-        o.Add(
+        addConstraints(
           mkEq(
             outgoingBool(c, direction),
             mkBool(false),
@@ -222,7 +221,7 @@ object Advent16 {
 
     assert(allEdgeIncomings.distinct.length == (field.height + field.width) * 2)
 
-    o.Add(
+    addConstraints(
       mkEq(
         mkAdd(allEdgeIncomings: _*),
         One,
@@ -231,7 +230,7 @@ object Advent16 {
 
     // Only for Part 1 - initialSquare incoming initialDirection is 1, others are 0
     initial foreach { case (initialSquare, initialDirection) =>
-      o.Add(
+      addConstraints(
         mkEq(
           incomingBool(initialSquare, initialDirection),
           mkBool(true),
@@ -241,7 +240,7 @@ object Advent16 {
 
     // `energized` is sum of all squares which have incoming
     val energizedVar = mkIntConst("energized")
-    o.Add(
+    addConstraints(
       mkEq(
         energizedVar,
         mkAdd(
@@ -262,16 +261,13 @@ object Advent16 {
     // leading to results that were too high.
 
     val objective = optimizationDirection match {
-      case MinimizeOrMaximize.Minimize => o.MkMinimize(energizedVar)
-      case MinimizeOrMaximize.Maximize => o.MkMaximize(energizedVar)
+      case MinimizeOrMaximize.Minimize => minimize(energizedVar)
+      case MinimizeOrMaximize.Maximize => maximize(energizedVar)
     }
 
     if (debug) {
-      println(s"Optimizer:\n$o")
+      optimizer.debugPrint()
     }
-
-    val status = o.Check()
-    assert(status == Status.SATISFIABLE)
 
     if (debug) {
       println(s"Objective: $objective")
@@ -279,7 +275,7 @@ object Advent16 {
       println(s"Upper:\n${objective.getUpper}")
     }
 
-    val model = o.getModel
+    val model = checkAndGetModel()
 
     if (debug) {
       println(s"Model:\n$model")

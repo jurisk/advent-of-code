@@ -153,11 +153,11 @@ object Advent21 {
     extraEquality: Option[(Name, Name)],
   ): Value = {
     val optimizer = Optimizer.z3()
+    import optimizer._
     import optimizer.context._
-    val o = optimizer.optimize
 
     extraEquality foreach { case (a, b) =>
-      o.Add(mkEq(mkIntConst(a), mkIntConst(b)))
+      addConstraints(mkEq(mkIntConst(a), mkIntConst(b)))
     }
 
     commands foreach { case (name, monkey) =>
@@ -177,16 +177,12 @@ object Advent21 {
                 Nil
           }
 
-          clauses foreach { clause =>
-            o.Add(clause)
-          }
-        case Monkey.Literal(value)                        => o.Add(mkEq(n, mkInt(value)))
+          addConstraints(clauses: _*)
+        case Monkey.Literal(value)                        => addConstraints(mkEq(n, mkInt(value)))
       }
     }
 
-    println(o.Check())
-
-    val model = o.getModel
+    val model = checkAndGetModel()
 
     val result = model.evaluate(mkIntConst(calculate), true)
 

@@ -43,7 +43,6 @@ object Advent23 {
     val optimizer = Optimizer.z3()
     import optimizer._
     import optimizer.context._
-    val o = optimizer.optimize
 
     val List(x, y, z) = List("x", "y", "z").map(mkIntConst)
 
@@ -54,7 +53,7 @@ object Advent23 {
       (mkInt(min), mkInt(max))
     }
 
-    o.Add(
+    addConstraints(
       mkGe(x, minCoord),
       mkGe(y, minCoord),
       mkGe(z, minCoord),
@@ -86,27 +85,21 @@ object Advent23 {
     }
 
     val nanobotsInRange = mkIntConst("nanobotsInRange")
-    o.Add(mkEq(nanobotsInRange, mkAdd(data.map(nanobotInRange).toArray: _*)))
+    addConstraints(
+      mkEq(
+        nanobotsInRange,
+        mkAdd(data.map(nanobotInRange): _*),
+      )
+    )
 
     val distanceFromOrigin = mkIntConst("distanceFromOrigin")
-    o.Add(mkEq(distanceFromOrigin, mkAdd(abs(x), abs(y), abs(z))))
+    addConstraints(mkEq(distanceFromOrigin, mkAdd(abs(x), abs(y), abs(z))))
 
     // Objective - maximize nanobotsInRange and minimize distanceFromOrigin
-    val objective1 = o.MkMaximize(nanobotsInRange)
-    val objective2 = o.MkMinimize(distanceFromOrigin)
+    val objective1 = maximize(nanobotsInRange)
+    val objective2 = minimize(distanceFromOrigin)
 
-    println(o)
-    println(o.Check())
-
-    println(objective1.getLower)
-    println(objective1.getUpper)
-    println(objective1)
-
-    println(objective2.getLower)
-    println(objective2.getUpper)
-    println(objective2)
-
-    val model = o.getModel
+    val model = checkAndGetModel()
 
     println(model)
 
