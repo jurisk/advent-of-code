@@ -6,7 +6,8 @@ import com.microsoft.z3.IntNum
 import com.microsoft.z3.IntSort
 import jurisk.geometry.Area3D
 import jurisk.geometry.Coords3D
-import jurisk.optimization.{abs, boolToInt}
+import jurisk.optimization.abs
+import jurisk.optimization.boolToInt
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 

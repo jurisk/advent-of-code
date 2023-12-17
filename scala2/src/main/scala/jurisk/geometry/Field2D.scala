@@ -1,6 +1,8 @@
 package jurisk.geometry
 
-import cats.{Eval, Foldable, Functor}
+import cats.Eval
+import cats.Foldable
+import cats.Functor
 import cats.implicits._
 import jurisk.algorithms.pathfinding.Bfs
 import jurisk.collections.BiMap

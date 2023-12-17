@@ -1,14 +1,20 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
+import com.microsoft.z3.BoolExpr
+import com.microsoft.z3.Context
+import com.microsoft.z3.IntNum
+import com.microsoft.z3.Status
 import com.microsoft.z3.enumerations.Z3_lbool
-import com.microsoft.z3.{BoolExpr, Context, IntNum, Status}
 import jurisk.adventofcode.y2023.Advent16.Square.Empty
 import jurisk.collections.BiMap
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
-import jurisk.geometry.{Coords2D, Direction2D, Field2D}
-import jurisk.optimization.{One, boolToInt}
+import jurisk.geometry.Field2D
+import jurisk.optimization.One
+import jurisk.optimization.boolToInt
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
@@ -126,13 +132,18 @@ object Advent16 {
     endState.incomingEdgesProcessed.map { case (c, _) => c }.size
   }
 
-  private def solveByOptimization(
-    field: Input,
-    initialSquare: Coords2D,
-    initialDirection: CardinalDirection2D,
-  ): Long = {
-    val debug = false
+  sealed trait MinimizeOrMaximize
+  object MinimizeOrMaximize {
+    case object Minimize extends MinimizeOrMaximize
+    case object Maximize extends MinimizeOrMaximize
+  }
 
+  private[y2023] def solveByOptimization(
+    field: Input,
+    initial: Option[(Coords2D, CardinalDirection2D)],
+    optimizationDirection: MinimizeOrMaximize,
+    debug: Boolean = false,
+  ): Long = {
     implicit val ctx: Context = new Context
     import ctx._
 
@@ -220,18 +231,20 @@ object Advent16 {
     )
 
     // Only for Part 1 - initialSquare incoming initialDirection is 1, others are 0
-    o.Add(
-      mkEq(
-        incomingBool(initialSquare, initialDirection),
-        mkBool(true),
+    initial foreach { case (initialSquare, initialDirection) =>
+      o.Add(
+        mkEq(
+          incomingBool(initialSquare, initialDirection),
+          mkBool(true),
+        )
       )
-    )
+    }
 
-    // `result` is sum of all squares which have incoming
-    val resultVar = mkIntConst("result")
+    // `energized` is sum of all squares which have incoming
+    val energizedVar = mkIntConst("energized")
     o.Add(
       mkEq(
-        resultVar,
+        energizedVar,
         mkAdd(
           field.allCoords.map { c =>
             boolToInt(
@@ -248,25 +261,29 @@ object Advent16 {
 
     // Note - I hoped that we can solve Part 2 in one go if we maximise, but the loops in the middle got turned on then,
     // leading to results that were too high.
-    val objective1 = o.MkMinimize(resultVar)
+
+    val objective = optimizationDirection match {
+      case MinimizeOrMaximize.Minimize => o.MkMinimize(energizedVar)
+      case MinimizeOrMaximize.Maximize => o.MkMaximize(energizedVar)
+    }
 
     if (debug) {
-      println(s"Optimizer: $o")
+      println(s"Optimizer:\n$o")
     }
 
     val status = o.Check()
     assert(status == Status.SATISFIABLE)
 
     if (debug) {
-      println(s"Lower: ${objective1.getLower}")
-      println(s"Upper: ${objective1.getUpper}")
-      println(s"Objective 1: $objective1")
+      println(s"Objective: $objective")
+      println(s"Lower:\n${objective.getLower}")
+      println(s"Upper:\n${objective.getUpper}")
     }
 
     val model = o.getModel
 
     if (debug) {
-      println(s"Model: $model")
+      println(s"Model:\n$model")
 
       val debugField = field
         .mapByCoords { c =>
@@ -310,7 +327,7 @@ object Advent16 {
       Field2D.printCharField(debugField)
     }
 
-    val result = model.evaluate(resultVar, true)
+    val result = model.evaluate(energizedVar, true)
     result match {
       case intNum: IntNum => intNum.getInt64
       case _              => s"Expected IntNum: $result".fail
@@ -329,25 +346,20 @@ object Advent16 {
     solveBySimulation(field, Coords2D.Zero, Direction2D.W)
 
   private[y2023] def part1Optimization(field: Input): Long =
-    solveByOptimization(field, Coords2D.Zero, Direction2D.W)
+    solveByOptimization(field, (Coords2D.Zero, Direction2D.W).some, MinimizeOrMaximize.Minimize)
 
-  private[y2023] def part2Helper(
-    field: Input,
-    f: (Field2D[Square], Coords2D, CardinalDirection2D) => Long,
-  ): Long = {
+  private[y2023] def part2Simulation(field: Input): Long = {
     val solutions = edgeIncomings(field) map {
       case (initialSquare, initialDirection) =>
-        f(field, initialSquare, initialDirection)
+        solveBySimulation(field, initialSquare, initialDirection)
     }
 
     solutions.max
   }
 
-  private[y2023] def part2Simulation(field: Input): Long =
-    part2Helper(field, solveBySimulation)
-
+  // Note - this fails due to loops being "turned on"
   private[y2023] def part2Optimization(field: Input): Long =
-    part2Helper(field, solveByOptimization)
+    solveByOptimization(field, none, MinimizeOrMaximize.Maximize, debug = false)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))

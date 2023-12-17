@@ -1,6 +1,10 @@
 package jurisk
 
-import com.microsoft.z3.{BoolSort, Context, Expr, IntNum, IntSort}
+import com.microsoft.z3.BoolSort
+import com.microsoft.z3.Context
+import com.microsoft.z3.Expr
+import com.microsoft.z3.IntNum
+import com.microsoft.z3.IntSort
 
 package object optimization {
   def Zero(implicit ctx: Context): IntNum     = ctx.mkInt(0)
