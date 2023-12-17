@@ -1,5 +1,7 @@
 package jurisk.optimization
 
+import cats.implicits.catsSyntaxOptionId
+import com.microsoft.z3.enumerations.Z3_lbool
 import com.microsoft.z3.{
   ArithExpr,
   ArithSort,
@@ -15,8 +17,8 @@ import com.microsoft.z3.{
   Sort,
   Status,
 }
+import jurisk.utils.Parsing.StringOps
 
-// TODO: Make the API more idiomatic
 trait Optimizer {
   val context: Context
   val optimize: Optimize
@@ -66,6 +68,10 @@ trait Optimizer {
   def implies(a: BoolExpr, b: BoolExpr): BoolExpr
   def and(expressions: Expr[BoolSort]*): BoolExpr
   def or(expressions: Expr[BoolSort]*): BoolExpr
+
+  def extractBoolean(b: BoolExpr): Option[Boolean]
+  def extractInt(n: IntExpr): Int
+  def extractLong(n: IntExpr): Long
 }
 
 private class Z3Optimizer(val context: Context, val optimize: Optimize)
@@ -154,6 +160,31 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
 
   def or(expressions: Expr[BoolSort]*): BoolExpr =
     context.mkOr(expressions: _*)
+
+  def extractBoolean(b: BoolExpr): Option[Boolean] = {
+    val bool = optimize.getModel.evaluate(b, true)
+    bool.getBoolValue match {
+      case Z3_lbool.Z3_L_FALSE => false.some
+      case Z3_lbool.Z3_L_UNDEF => None
+      case Z3_lbool.Z3_L_TRUE  => true.some
+    }
+  }
+
+  def extractInt(n: IntExpr): Int = {
+    val result = optimize.getModel.evaluate(n, true)
+    result match {
+      case intNum: IntNum => intNum.getInt
+      case _              => s"Expected IntNum: $result".fail
+    }
+  }
+
+  def extractLong(n: IntExpr): Long = {
+    val result = optimize.getModel.evaluate(n, true)
+    result match {
+      case intNum: IntNum => intNum.getInt64
+      case _              => s"Expected IntNum: $result".fail
+    }
+  }
 }
 
 object Optimizer {
@@ -209,7 +240,8 @@ object ImplicitConversions {
   }
 
   implicit class RichExprBoolSort(val expr: Expr[BoolSort]) {
-    def toInt(implicit optimizer: Optimizer): Expr[IntSort] = optimizer.boolToInt(expr)
+    def toInt(implicit optimizer: Optimizer): Expr[IntSort] =
+      optimizer.boolToInt(expr)
   }
 
   implicit class RichExpr(val expr: Expr[_]) {

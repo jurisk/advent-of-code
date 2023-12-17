@@ -186,13 +186,9 @@ object Advent21 {
     }
 
     val model = checkAndGetModel()
+    println(model)
 
-    val result = model.evaluate(calculate.labeledInt, true)
-
-    result match {
-      case intNum: IntNum => intNum.getInt64
-      case _              => s"Expected IntNum: $result".fail
-    }
+    extractLong(calculate.labeledInt)
   }
 
   private def solvePart1Optimizer(

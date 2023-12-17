@@ -13,7 +13,12 @@ import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
 import jurisk.geometry.Field2D
-import jurisk.optimization.ImplicitConversions.{RichBoolExpr, RichExpr, RichExprBoolSort, RichString}
+import jurisk.optimization.ImplicitConversions.{
+  RichBoolExpr,
+  RichExpr,
+  RichExprBoolSort,
+  RichString,
+}
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -228,7 +233,7 @@ object Advent16 {
           val incomings = Direction2D.CardinalDirections.map(incomingBool(c, _))
           or(incomings: _*).toInt
         }: _*
-      ),
+      )
     )
 
     // Note - I hoped that we can solve Part 2 in one go if we maximise, but the loops in the middle got turned on then,
@@ -257,20 +262,11 @@ object Advent16 {
       val debugField = field
         .mapByCoords { c =>
           def f(d: CardinalDirection2D): Char = {
-            def extract(b: BoolExpr): Boolean = {
-              val bool = model.evaluate(b, true)
-              bool.getBoolValue match {
-                case Z3_lbool.Z3_L_FALSE => false
-                case Z3_lbool.Z3_L_UNDEF => s"$b was undef".fail
-                case Z3_lbool.Z3_L_TRUE  => true
-              }
-            }
-
             val incoming = incomingBool(c, d)
             val outgoing = outgoingBool(c, d)
 
-            val incm = extract(incoming)
-            val outg = extract(outgoing)
+            val incm = extractBoolean(incoming).getOrElse("Unknown".fail)
+            val outg = extractBoolean(outgoing).getOrElse("Unknown".fail)
 
             (incm, outg) match {
               case (false, false) => ' '
@@ -296,11 +292,7 @@ object Advent16 {
       Field2D.printCharField(debugField)
     }
 
-    val result = model.evaluate(energizedVar, true)
-    result match {
-      case intNum: IntNum => intNum.getInt64
-      case _              => s"Expected IntNum: $result".fail
-    }
+    extractLong(energizedVar)
   }
 
   private def edgeIncomings(

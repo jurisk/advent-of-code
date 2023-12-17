@@ -5,7 +5,13 @@ import com.microsoft.z3.IntNum
 import com.microsoft.z3.IntSort
 import jurisk.geometry.Area3D
 import jurisk.geometry.Coords3D
-import jurisk.optimization.ImplicitConversions.{RichArithExprIntSort, RichExpr, RichExprBoolSort, RichExprIntSort, RichInt}
+import jurisk.optimization.ImplicitConversions.{
+  RichArithExprIntSort,
+  RichExpr,
+  RichExprBoolSort,
+  RichExprIntSort,
+  RichInt,
+}
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -91,13 +97,7 @@ object Advent23 {
     println(model)
 
     val List(xc, yc, zc, nir, dor) =
-      List(x, y, z, nanobotsInRange, distanceFromOrigin).map { v =>
-        val result = model.evaluate(v, true)
-        result match {
-          case intNum: IntNum => intNum.getInt
-          case _              => s"Expected IntNum: $result".fail
-        }
-      }
+      List(x, y, z, nanobotsInRange, distanceFromOrigin).map(extractInt)
 
     val found = Coords3D(xc, yc, zc)
     println(s"$found: nanobots in range: $nir, distance from origin: $dor")
