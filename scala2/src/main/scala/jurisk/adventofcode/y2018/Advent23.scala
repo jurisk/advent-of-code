@@ -1,13 +1,14 @@
 package jurisk.adventofcode.y2018
 
-import com.microsoft.z3.Context
-import com.microsoft.z3.Expr
-import com.microsoft.z3.IntNum
-import com.microsoft.z3.IntSort
-import jurisk.geometry.Area3D
-import jurisk.geometry.Coords3D
-import jurisk.optimization.abs
-import jurisk.optimization.boolToInt
+import jurisk.geometry.{Area3D, Coords3D}
+import jurisk.optimization.ImplicitConversions.{
+  RichArithExprIntSort,
+  RichExpr,
+  RichExprBoolSort,
+  RichExprIntSort,
+  RichInt,
+}
+import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -42,87 +43,57 @@ object Advent23 {
   }
 
   def part2(data: Input): Int = {
-    data foreach println
-    println()
+    implicit val optimizer: Optimizer = Optimizer.z3()
+    import optimizer._
 
-    implicit val ctx: Context = new Context
-    import ctx._
-
-    val o = mkOptimize()
-
-    val List(x, y, z) = List("x", "y", "z").map(mkIntConst)
+    val List(x, y, z) = List("x", "y", "z").map(labeledInt)
 
     val (minCoord, maxCoord) = {
       val boundingBox = Area3D.boundingBoxInclusive(data.map(_.position))
       val min         = boundingBox.min.x min boundingBox.min.y min boundingBox.min.z
       val max         = boundingBox.max.x max boundingBox.max.y max boundingBox.max.z
-      (mkInt(min), mkInt(max))
+      (min.constant, max.constant)
     }
 
-    o.Add(
-      mkGe(x, minCoord),
-      mkGe(y, minCoord),
-      mkGe(z, minCoord),
-      mkLe(x, maxCoord),
-      mkLe(y, maxCoord),
-      mkLe(z, maxCoord),
+    addConstraints(
+      x >= minCoord,
+      y >= minCoord,
+      z >= minCoord,
+      x <= maxCoord,
+      y <= maxCoord,
+      z <= maxCoord,
     )
 
-    def nanobotInRange(nanobot: Nanobot): Expr[IntSort] = {
+    def nanobotInRange(nanobot: Nanobot) = {
       val List(nx, ny, nz, nr) = List(
         nanobot.position.x,
         nanobot.position.y,
         nanobot.position.z,
         nanobot.radius,
-      ).map(v => mkInt(v))
+      ).map(constant)
 
-      val xe = mkSub(x, nx)
-      val ye = mkSub(y, ny)
-      val ze = mkSub(z, nz)
+      val inRange = (x - nx).abs + (y - ny).abs + (z - nz).abs <= nr
 
-      val inRange = mkLe(
-        mkAdd(
-          Array(xe, ye, ze).map(abs): _*
-        ),
-        nr,
-      )
-
-      boolToInt(inRange)
+      inRange.toInt
     }
 
-    val nanobotsInRange = mkIntConst("nanobotsInRange")
-    o.Add(mkEq(nanobotsInRange, mkAdd(data.map(nanobotInRange).toArray: _*)))
-
-    val distanceFromOrigin = mkIntConst("distanceFromOrigin")
-    o.Add(mkEq(distanceFromOrigin, mkAdd(abs(x), abs(y), abs(z))))
+    val nanobotsInRange    = labeledInt("nanobotsInRange")
+    val distanceFromOrigin = labeledInt("distanceFromOrigin")
+    addConstraints(
+      nanobotsInRange === sum(data.map(nanobotInRange): _*),
+      distanceFromOrigin === sum(abs(x), abs(y), abs(z)),
+    )
 
     // Objective - maximize nanobotsInRange and minimize distanceFromOrigin
-    val objective1 = o.MkMaximize(nanobotsInRange)
-    val objective2 = o.MkMinimize(distanceFromOrigin)
+    val objective1 = maximize(nanobotsInRange)
+    val objective2 = minimize(distanceFromOrigin)
 
-    println(o)
-    println(o.Check())
-
-    println(objective1.getLower)
-    println(objective1.getUpper)
-    println(objective1)
-
-    println(objective2.getLower)
-    println(objective2.getUpper)
-    println(objective2)
-
-    val model = o.getModel
+    val model = checkAndGetModel()
 
     println(model)
 
     val List(xc, yc, zc, nir, dor) =
-      List(x, y, z, nanobotsInRange, distanceFromOrigin).map { v =>
-        val result = model.evaluate(v, true)
-        result match {
-          case intNum: IntNum => intNum.getInt
-          case _              => s"Expected IntNum: $result".fail
-        }
-      }
+      List(x, y, z, nanobotsInRange, distanceFromOrigin).map(extractInt)
 
     val found = Coords3D(xc, yc, zc)
     println(s"$found: nanobots in range: $nir, distance from origin: $dor")

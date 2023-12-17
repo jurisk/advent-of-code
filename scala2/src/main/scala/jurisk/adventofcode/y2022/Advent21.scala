@@ -1,13 +1,19 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
-import com.microsoft.z3.Context
-import com.microsoft.z3.IntNum
 import jurisk.adventofcode.y2022.Advent21.Expression._
 import jurisk.adventofcode.y2022.Advent21.Operation._
+import jurisk.optimization.ImplicitConversions.{
+  RichArithExprIntSort,
+  RichBoolExpr,
+  RichExpr,
+  RichExprIntSort,
+  RichLong,
+  RichString,
+}
+import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import org.scalatest.matchers.should.Matchers._
 
 import scala.annotation.tailrec
 
@@ -151,49 +157,39 @@ object Advent21 {
     calculate: Name,
     extraEquality: Option[(Name, Name)],
   ): Value = {
-    val ctx = new Context
-    import ctx._
-
-    val o = mkOptimize()
+    implicit val optimizer: Optimizer = Optimizer.z3()
+    import optimizer._
 
     extraEquality foreach { case (a, b) =>
-      o.Add(mkEq(mkIntConst(a), mkIntConst(b)))
+      addConstraints(a.labeledInt === b.labeledInt)
     }
 
     commands foreach { case (name, monkey) =>
-      val n = mkIntConst(name)
+      val n = name.labeledInt
       monkey match {
         case Monkey.BinaryMonkey(aName, operation, bName) =>
-          val a = mkIntConst(aName)
-          val b = mkIntConst(bName)
+          val a = aName.labeledInt
+          val b = bName.labeledInt
 
           val clauses = operation match {
-            case Operation.Plus     => mkEq(n, mkAdd(a, b)) :: Nil
-            case Operation.Minus    => mkEq(n, mkSub(a, b)) :: Nil
-            case Operation.Multiply => mkEq(n, mkMul(a, b)) :: Nil
+            case Operation.Plus     => n === a + b
+            case Operation.Minus    => n === a - b
+            case Operation.Multiply => n === a * b
             case Operation.Divide   =>
-              mkEq(n, mkDiv(a, b)) ::
-                mkEq(mkRem(a, b), mkInt(0)) ::
-                Nil
+              (n === a / b) && (a % b === Zero)
           }
 
-          clauses foreach { clause =>
-            o.Add(clause)
-          }
-        case Monkey.Literal(value)                        => o.Add(mkEq(n, mkInt(value)))
+          addConstraints(clauses)
+
+        case Monkey.Literal(value) =>
+          addConstraints(n === value.constant)
       }
     }
 
-    println(o.Check())
+    val model = checkAndGetModel()
+    println(model)
 
-    val model = o.getModel
-
-    val result = model.evaluate(mkIntConst(calculate), true)
-
-    result match {
-      case intNum: IntNum => intNum.getInt64
-      case _              => s"Expected IntNum: $result".fail
-    }
+    extractLong(calculate.labeledInt)
   }
 
   private def solvePart1Optimizer(
@@ -278,7 +274,7 @@ object Advent21 {
     val resultRight = rearrangedRight.evaluate(result)
     val success     = resultLeft == resultRight
     println(s"$resultLeft ${if (success) "==" else "!="} $resultRight")
-    resultLeft shouldEqual resultRight
+    assert(resultLeft == resultRight)
     println()
 
     result
@@ -310,6 +306,8 @@ object Advent21 {
 
     val test = parse(testData)
     val real = parse(realData)
+
+    import org.scalatest.matchers.should.Matchers._
 
     part1(test) shouldEqual 152
     part1(real) shouldEqual 87457751482938L

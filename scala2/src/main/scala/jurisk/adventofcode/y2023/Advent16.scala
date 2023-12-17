@@ -2,19 +2,18 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits._
 import com.microsoft.z3.BoolExpr
-import com.microsoft.z3.Context
-import com.microsoft.z3.IntNum
-import com.microsoft.z3.Status
-import com.microsoft.z3.enumerations.Z3_lbool
 import jurisk.adventofcode.y2023.Advent16.Square.Empty
 import jurisk.collections.BiMap
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
-import jurisk.geometry.Coords2D
-import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
-import jurisk.geometry.Field2D
-import jurisk.optimization.One
-import jurisk.optimization.boolToInt
+import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.optimization.ImplicitConversions.{
+  RichBoolExpr,
+  RichExpr,
+  RichExprBoolSort,
+  RichString,
+}
+import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
@@ -144,13 +143,11 @@ object Advent16 {
     optimizationDirection: MinimizeOrMaximize,
     debug: Boolean = false,
   ): Long = {
-    implicit val ctx: Context = new Context
-    import ctx._
-
-    val o = mkOptimize()
+    implicit val optimizer: Optimizer = Optimizer.z3()
+    import optimizer._
 
     def boolExpr(c: Coords2D, direction: CardinalDirection2D, prefix: String) =
-      mkBoolConst(s"${prefix}_${c.x}_${c.y}_${direction.asString}")
+      s"${prefix}_${c.x}_${c.y}_${direction.asString}".labeledBool
 
     def incomingBool(c: Coords2D, direction: CardinalDirection2D) =
       boolExpr(c, direction, "incoming")
@@ -160,14 +157,8 @@ object Advent16 {
 
     // Outgoing equals incoming in neighbour
     field.allConnectionsDirectional.foreach { case (from, direction, to) =>
-      val thisOutgoing        = outgoingBool(from, direction)
-      val incomingInNeighbour = incomingBool(to, direction.invert)
-
-      o.Add(
-        mkEq(
-          thisOutgoing,
-          incomingInNeighbour,
-        )
+      addConstraints(
+        outgoingBool(from, direction) === incomingBool(to, direction.invert)
       )
     }
 
@@ -182,7 +173,7 @@ object Advent16 {
 
           outgoingConstraintsQueue = (in -> out) :: outgoingConstraintsQueue
 
-          o.Add(mkImplies(in, out))
+          addConstraints(in ==> out)
         }
       }
     }
@@ -191,11 +182,8 @@ object Advent16 {
     outgoingConstraintsQueue
       .groupMap(_._2)(_._1)
       .foreach { case (out, ins) =>
-        o.Add(
-          mkEq(
-            out,
-            mkOr(ins: _*),
-          )
+        addConstraints(
+          out === or(ins: _*)
         )
       }
 
@@ -207,55 +195,38 @@ object Advent16 {
       }
 
       directions foreach { direction =>
-        o.Add(
-          mkEq(
-            outgoingBool(c, direction),
-            mkBool(false),
-          )
+        addConstraints(
+          outgoingBool(c, direction) === False
         )
       }
     }
 
     // Exactly one of the incomings from the edge is 1
     val allEdgeIncomings = edgeIncomings(field).map { case (c, d) =>
-      boolToInt(incomingBool(c, d))
+      incomingBool(c, d).toInt
     }.toSeq
 
     assert(allEdgeIncomings.distinct.length == (field.height + field.width) * 2)
 
-    o.Add(
-      mkEq(
-        mkAdd(allEdgeIncomings: _*),
-        One,
-      )
+    addConstraints(
+      sum(allEdgeIncomings: _*) === One
     )
 
     // Only for Part 1 - initialSquare incoming initialDirection is 1, others are 0
     initial foreach { case (initialSquare, initialDirection) =>
-      o.Add(
-        mkEq(
-          incomingBool(initialSquare, initialDirection),
-          mkBool(true),
-        )
+      addConstraints(
+        incomingBool(initialSquare, initialDirection) === True
       )
     }
 
     // `energized` is sum of all squares which have incoming
-    val energizedVar = mkIntConst("energized")
-    o.Add(
-      mkEq(
-        energizedVar,
-        mkAdd(
-          field.allCoords.map { c =>
-            boolToInt(
-              mkOr(
-                Direction2D.CardinalDirections map { d =>
-                  incomingBool(c, d)
-                }: _*
-              )
-            )
-          }: _*
-        ),
+    val energizedVar = labeledInt("energized")
+    addConstraints(
+      energizedVar === sum(
+        field.allCoords.map { c =>
+          val incomings = Direction2D.CardinalDirections.map(incomingBool(c, _))
+          or(incomings: _*).toInt
+        }: _*
       )
     )
 
@@ -263,16 +234,13 @@ object Advent16 {
     // leading to results that were too high.
 
     val objective = optimizationDirection match {
-      case MinimizeOrMaximize.Minimize => o.MkMinimize(energizedVar)
-      case MinimizeOrMaximize.Maximize => o.MkMaximize(energizedVar)
+      case MinimizeOrMaximize.Minimize => minimize(energizedVar)
+      case MinimizeOrMaximize.Maximize => maximize(energizedVar)
     }
 
     if (debug) {
-      println(s"Optimizer:\n$o")
+      optimizer.debugPrint()
     }
-
-    val status = o.Check()
-    assert(status == Status.SATISFIABLE)
 
     if (debug) {
       println(s"Objective: $objective")
@@ -280,7 +248,7 @@ object Advent16 {
       println(s"Upper:\n${objective.getUpper}")
     }
 
-    val model = o.getModel
+    val model = checkAndGetModel()
 
     if (debug) {
       println(s"Model:\n$model")
@@ -288,20 +256,11 @@ object Advent16 {
       val debugField = field
         .mapByCoords { c =>
           def f(d: CardinalDirection2D): Char = {
-            def extract(b: BoolExpr): Boolean = {
-              val bool = model.evaluate(b, true)
-              bool.getBoolValue match {
-                case Z3_lbool.Z3_L_FALSE => false
-                case Z3_lbool.Z3_L_UNDEF => s"$b was undef".fail
-                case Z3_lbool.Z3_L_TRUE  => true
-              }
-            }
-
             val incoming = incomingBool(c, d)
             val outgoing = outgoingBool(c, d)
 
-            val incm = extract(incoming)
-            val outg = extract(outgoing)
+            val incm = extractBoolean(incoming).getOrElse("Unknown".fail)
+            val outg = extractBoolean(outgoing).getOrElse("Unknown".fail)
 
             (incm, outg) match {
               case (false, false) => ' '
@@ -327,11 +286,7 @@ object Advent16 {
       Field2D.printCharField(debugField)
     }
 
-    val result = model.evaluate(energizedVar, true)
-    result match {
-      case intNum: IntNum => intNum.getInt64
-      case _              => s"Expected IntNum: $result".fail
-    }
+    extractLong(energizedVar)
   }
 
   private def edgeIncomings(

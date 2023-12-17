@@ -5,7 +5,7 @@ import jurisk.collections.BiMap.BiDirectionalArrowAssociation
 import jurisk.geometry.Rotation._
 import jurisk.utils.Parsing.StringOps
 
-sealed trait Direction2D {
+sealed trait Direction2D extends Product with Serializable {
   def diff: Coords2D
 }
 
