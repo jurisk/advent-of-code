@@ -64,6 +64,7 @@ trait Optimizer {
   def div[R <: ArithSort](a: Expr[R], b: Expr[R]): ArithExpr[R]
   def rem(a: Expr[IntSort], b: Expr[IntSort]): IntExpr
   def implies(a: BoolExpr, b: BoolExpr): BoolExpr
+  def and(expressions: Expr[BoolSort]*): BoolExpr
   def or(expressions: Expr[BoolSort]*): BoolExpr
 }
 
@@ -148,6 +149,9 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
   def implies(a: BoolExpr, b: BoolExpr): BoolExpr =
     context.mkImplies(a, b)
 
+  def and(expressions: Expr[BoolSort]*): BoolExpr =
+    context.mkAnd(expressions: _*)
+
   def or(expressions: Expr[BoolSort]*): BoolExpr =
     context.mkOr(expressions: _*)
 }
@@ -158,5 +162,50 @@ object Optimizer {
     val optimize         = context.mkOptimize()
 
     new Z3Optimizer(context, optimize)
+  }
+}
+
+object ImplicitConversions {
+  implicit class RichLong(val long: Long) {
+    def constant(implicit optimizer: Optimizer): IntExpr =
+      optimizer.constant(long)
+  }
+
+  implicit class RichString(val string: String) {
+    def labeledInt(implicit optimizer: Optimizer): IntExpr =
+      optimizer.labeledInt(string)
+  }
+
+  implicit class RichIntExpr(val expr: IntExpr) {
+    def +(other: IntExpr)(implicit optimizer: Optimizer): ArithExpr[IntSort] =
+      optimizer.add(expr, other)
+    def -(other: IntExpr)(implicit optimizer: Optimizer): ArithExpr[IntSort] =
+      optimizer.sub(expr, other)
+    def *(other: IntExpr)(implicit optimizer: Optimizer): ArithExpr[IntSort] =
+      optimizer.mul(expr, other)
+    def /(other: IntExpr)(implicit optimizer: Optimizer): ArithExpr[IntSort] =
+      optimizer.div(expr, other)
+    def %(other: IntExpr)(implicit optimizer: Optimizer): ArithExpr[IntSort] =
+      optimizer.rem(expr, other)
+    def >=[B <: ArithSort](other: Expr[B])(implicit
+      optimizer: Optimizer
+    ): BoolExpr = optimizer.greaterOrEqual(expr, other)
+    def <=[B <: ArithSort](other: Expr[B])(implicit
+      optimizer: Optimizer
+    ): BoolExpr = optimizer.lessOrEqual(expr, other)
+  }
+
+  implicit class RichExpr(val expr: Expr[_]) {
+    def ===(other: Expr[_])(implicit optimizer: Optimizer): BoolExpr =
+      optimizer.equal(expr, other)
+  }
+
+  implicit class RichBoolExpr(val expr: BoolExpr) {
+    def &&(other: BoolExpr)(implicit optimizer: Optimizer): BoolExpr  =
+      optimizer.and(expr, other)
+    def ||(other: BoolExpr)(implicit optimizer: Optimizer): BoolExpr  =
+      optimizer.or(expr, other)
+    def ==>(other: BoolExpr)(implicit optimizer: Optimizer): BoolExpr =
+      optimizer.implies(expr, other)
   }
 }

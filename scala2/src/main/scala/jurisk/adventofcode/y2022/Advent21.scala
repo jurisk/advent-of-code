@@ -1,14 +1,18 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
-import com.microsoft.z3.Context
 import com.microsoft.z3.IntNum
 import jurisk.adventofcode.y2022.Advent21.Expression._
 import jurisk.adventofcode.y2022.Advent21.Operation._
+import jurisk.optimization.ImplicitConversions.{
+  RichExpr,
+  RichIntExpr,
+  RichLong,
+  RichString,
+}
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import org.scalatest.matchers.should.Matchers._
 
 import scala.annotation.tailrec
 
@@ -152,38 +156,37 @@ object Advent21 {
     calculate: Name,
     extraEquality: Option[(Name, Name)],
   ): Value = {
-    val optimizer = Optimizer.z3()
+    implicit val optimizer: Optimizer = Optimizer.z3()
     import optimizer._
 
     extraEquality foreach { case (a, b) =>
-      addConstraints(equal(labeledInt(a), labeledInt(b)))
+      addConstraints(a.labeledInt === b.labeledInt)
     }
 
     commands foreach { case (name, monkey) =>
-      val n = labeledInt(name)
+      val n = name.labeledInt
       monkey match {
         case Monkey.BinaryMonkey(aName, operation, bName) =>
-          val a = labeledInt(aName)
-          val b = labeledInt(bName)
+          val a = aName.labeledInt
+          val b = bName.labeledInt
 
           val clauses = operation match {
-            case Operation.Plus     => equal(n, add(a, b)) :: Nil
-            case Operation.Minus    => equal(n, sub(a, b)) :: Nil
-            case Operation.Multiply => equal(n, mul(a, b)) :: Nil
+            case Operation.Plus     => (n === a + b) :: Nil
+            case Operation.Minus    => (n === a - b) :: Nil
+            case Operation.Multiply => (n === a * b) :: Nil
             case Operation.Divide   =>
-              equal(n, div(a, b)) ::
-                equal(rem(a, b), Zero) ::
-                Nil
+              (n === a / b) :: (a % b === Zero) :: Nil
           }
 
           addConstraints(clauses: _*)
-        case Monkey.Literal(value)                        => addConstraints(equal(n, constant(value)))
+
+        case Monkey.Literal(value) => addConstraints(n === value.constant)
       }
     }
 
     val model = checkAndGetModel()
 
-    val result = model.evaluate(labeledInt(calculate), true)
+    val result = model.evaluate(calculate.labeledInt, true)
 
     result match {
       case intNum: IntNum => intNum.getInt64
@@ -273,7 +276,7 @@ object Advent21 {
     val resultRight = rearrangedRight.evaluate(result)
     val success     = resultLeft == resultRight
     println(s"$resultLeft ${if (success) "==" else "!="} $resultRight")
-    resultLeft shouldEqual resultRight
+    assert(resultLeft == resultRight)
     println()
 
     result
@@ -305,6 +308,8 @@ object Advent21 {
 
     val test = parse(testData)
     val real = parse(realData)
+
+    import org.scalatest.matchers.should.Matchers._
 
     part1(test) shouldEqual 152
     part1(real) shouldEqual 87457751482938L
