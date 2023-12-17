@@ -11,13 +11,17 @@ class Advent16Spec extends AnyFreeSpec {
   private val realData: Input = parseFile("2023/16.txt")
 
   "solveByOptimization - simple maximization test that fails due to a loop" ignore {
-    val test = parse(
-      """/-
-        |/|
-        |\/
-        |""".stripMargin)
+    val test = parse("""/-
+                       |/|
+                       |\/
+                       |""".stripMargin)
 
-    solveByOptimization(test, (Coords2D.Zero, Direction2D.W).some, MinimizeOrMaximize.Maximize, debug = true) shouldEqual 1
+    solveByOptimization(
+      test,
+      (Coords2D.Zero, Direction2D.W).some,
+      MinimizeOrMaximize.Maximize,
+      debug = true,
+    ) shouldEqual 1
   }
 
   "part 1" - {
