@@ -1,11 +1,11 @@
 package jurisk.adventofcode.y2022
 
 import cats.implicits._
-import com.microsoft.z3.IntNum
 import jurisk.adventofcode.y2022.Advent21.Expression._
 import jurisk.adventofcode.y2022.Advent21.Operation._
 import jurisk.optimization.ImplicitConversions.{
   RichArithExprIntSort,
+  RichBoolExpr,
   RichExpr,
   RichExprIntSort,
   RichLong,
@@ -172,16 +172,17 @@ object Advent21 {
           val b = bName.labeledInt
 
           val clauses = operation match {
-            case Operation.Plus     => (n === a + b) :: Nil
-            case Operation.Minus    => (n === a - b) :: Nil
-            case Operation.Multiply => (n === a * b) :: Nil
+            case Operation.Plus     => n === a + b
+            case Operation.Minus    => n === a - b
+            case Operation.Multiply => n === a * b
             case Operation.Divide   =>
-              (n === a / b) :: (a % b === Zero) :: Nil
+              (n === a / b) && (a % b === Zero)
           }
 
-          addConstraints(clauses: _*)
+          addConstraints(clauses)
 
-        case Monkey.Literal(value) => addConstraints(n === value.constant)
+        case Monkey.Literal(value) =>
+          addConstraints(n === value.constant)
       }
     }
 

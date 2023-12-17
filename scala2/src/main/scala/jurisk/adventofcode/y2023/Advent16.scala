@@ -2,17 +2,11 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits._
 import com.microsoft.z3.BoolExpr
-import com.microsoft.z3.Context
-import com.microsoft.z3.IntNum
-import com.microsoft.z3.Status
-import com.microsoft.z3.enumerations.Z3_lbool
 import jurisk.adventofcode.y2023.Advent16.Square.Empty
 import jurisk.collections.BiMap
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
-import jurisk.geometry.Coords2D
-import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
-import jurisk.geometry.Field2D
+import jurisk.geometry.{Coords2D, Direction2D, Field2D}
 import jurisk.optimization.ImplicitConversions.{
   RichBoolExpr,
   RichExpr,
