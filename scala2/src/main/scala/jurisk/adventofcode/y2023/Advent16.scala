@@ -346,7 +346,11 @@ object Advent16 {
     solveBySimulation(field, Coords2D.Zero, Direction2D.W)
 
   private[y2023] def part1Optimization(field: Input): Long =
-    solveByOptimization(field, (Coords2D.Zero, Direction2D.W).some, MinimizeOrMaximize.Minimize)
+    solveByOptimization(
+      field,
+      (Coords2D.Zero, Direction2D.W).some,
+      MinimizeOrMaximize.Minimize,
+    )
 
   private[y2023] def part2Simulation(field: Input): Long = {
     val solutions = edgeIncomings(field) map {

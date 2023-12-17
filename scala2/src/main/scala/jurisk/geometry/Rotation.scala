@@ -1,6 +1,6 @@
 package jurisk.geometry
 
-sealed trait Rotation {
+sealed trait Rotation extends Product with Serializable {
   def inverse: Rotation
 }
 

@@ -38,8 +38,11 @@ object Advent00 {
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
 
+  def fileName(suffix: String): String =
+    s"2023/02$suffix.txt"
+
   def main(args: Array[String]): Unit = {
-    val realData: Input = parseFile("2023/02.txt")
+    val realData: Input = parseFile(fileName(""))
 
     println(s"Part 1: ${part1(realData)}")
     println(s"Part 2: ${part2(realData)}")
