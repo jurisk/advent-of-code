@@ -19,10 +19,10 @@ object Advent17 {
     singleDirection: Int,
   )
 
-  def successors(data: Input, state: State): List[(State, Int)] = {
+  def successors1(data: Input, state: State): List[(State, Int)] = {
     val candidateDirections = state.direction match {
       case Some(lastDirection) =>
-        if (state.singleDirection == 2) {
+        if (state.singleDirection == 3) {
           // must turn
           List(Left90, Right90) map { rotation =>
             lastDirection.rotate(rotation)
@@ -47,7 +47,45 @@ object Advent17 {
           if (direction.some == state.direction) {
             state.singleDirection + 1
           } else {
-            0
+            1
+          },
+        ) -> nextValue
+      }
+    }
+  }
+
+  def successors2(data: Input, state: State): List[(State, Int)] = {
+    val candidateDirections = state.direction match {
+      case Some(lastDirection) =>
+        if (state.singleDirection == 10) {
+          // must turn
+          List(Left90, Right90) map { rotation =>
+            lastDirection.rotate(rotation)
+          }
+        } else if (state.singleDirection < 4) {
+          // cannot turn yet
+          lastDirection.rotate(NoRotation) :: Nil
+        } else {
+          List(Left90, NoRotation, Right90) map { rotation =>
+            lastDirection.rotate(rotation)
+          }
+        }
+
+      case None =>
+        // Start
+        E :: S :: Nil
+    }
+
+    candidateDirections flatMap { direction =>
+      val nextCoords = state.coords + direction
+      data.at(nextCoords) map { nextValue =>
+        State(
+          nextCoords,
+          direction.some,
+          if (direction.some == state.direction) {
+            state.singleDirection + 1
+          } else {
+            1
           },
         ) -> nextValue
       }
@@ -57,15 +95,22 @@ object Advent17 {
   def part1(data: Input): Int = {
     val result = Dijkstra.dijkstra[State, Int](
       State(coords = data.topLeft, none, singleDirection = 0),
-      x => successors(data, x),
+      x => successors1(data, x),
       _.coords == data.bottomRight,
     )
 
     result.get._2
   }
 
-  def part2(data: Input): Int =
-    0
+  def part2(data: Input): Int = {
+    val result = Dijkstra.dijkstra[State, Int](
+      State(coords = data.topLeft, none, singleDirection = 0),
+      x => successors2(data, x),
+      s => s.coords == data.bottomRight && s.singleDirection >= 4,
+    )
+
+    result.get._2
+  }
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
