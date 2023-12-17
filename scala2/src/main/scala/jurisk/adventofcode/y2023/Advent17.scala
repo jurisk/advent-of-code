@@ -4,8 +4,9 @@ import cats.implicits.{catsSyntaxOptionId, none}
 import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.geometry.Direction2D.{CardinalDirection2D, E, S}
 import jurisk.geometry.Rotation.{Left90, NoRotation, Right90}
-import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.geometry.{Coords2D, Field2D}
 import jurisk.utils.FileInput._
+import jurisk.utils.Parsing.StringOps
 
 object Advent17 {
   type Input = Field2D[Int]
@@ -16,22 +17,28 @@ object Advent17 {
   final case class State(
     coords: Coords2D,
     direction: Option[CardinalDirection2D],
-    singleDirection: Int,
+    singleDirectionCounter: Int,
   )
 
-  def successors1(data: Input, state: State): List[(State, Int)] = {
+  private def successors(
+    data: Input,
+    atMostInSingleDirection: Int,
+    minimumBeforeTurning: Int,
+  )(state: State): List[(State, Int)] = {
     val candidateDirections = state.direction match {
       case Some(lastDirection) =>
-        if (state.singleDirection == 3) {
-          // must turn
-          List(Left90, Right90) map { rotation =>
-            lastDirection.rotate(rotation)
-          }
-        } else {
-          List(Left90, NoRotation, Right90) map { rotation =>
-            lastDirection.rotate(rotation)
-          }
-        }
+        val turns     =
+          if (state.singleDirectionCounter >= minimumBeforeTurning) {
+            // Allowed to turn
+            List(Left90, Right90)
+          } else Nil
+        val straights =
+          if (state.singleDirectionCounter < atMostInSingleDirection) {
+            // Allowed to go straight
+            List(NoRotation)
+          } else Nil
+
+        (turns ::: straights) map lastDirection.rotate
 
       case None =>
         // Start
@@ -40,77 +47,50 @@ object Advent17 {
 
     candidateDirections flatMap { direction =>
       val nextCoords = state.coords + direction
-      data.at(nextCoords) map { nextValue =>
-        State(
+      data.at(nextCoords) map { heatLoss =>
+        val newState = State(
           nextCoords,
           direction.some,
           if (direction.some == state.direction) {
-            state.singleDirection + 1
+            state.singleDirectionCounter + 1
           } else {
             1
           },
-        ) -> nextValue
+        )
+        newState -> heatLoss
       }
     }
   }
 
-  def successors2(data: Input, state: State): List[(State, Int)] = {
-    val candidateDirections = state.direction match {
-      case Some(lastDirection) =>
-        if (state.singleDirection == 10) {
-          // must turn
-          List(Left90, Right90) map { rotation =>
-            lastDirection.rotate(rotation)
-          }
-        } else if (state.singleDirection < 4) {
-          // cannot turn yet
-          lastDirection.rotate(NoRotation) :: Nil
-        } else {
-          List(Left90, NoRotation, Right90) map { rotation =>
-            lastDirection.rotate(rotation)
-          }
-        }
+  private def solve(
+    data: Input,
+    atMostInSingleDirection: Int,
+    minimumBeforeStoppingOrTurning: Int,
+  ): Int = {
+    val calculateSuccessors = successors(
+      data,
+      atMostInSingleDirection,
+      minimumBeforeStoppingOrTurning,
+    ) _
 
-      case None =>
-        // Start
-        E :: S :: Nil
-    }
+    val result = Dijkstra.dijkstra[State, Int](
+      State(coords = data.topLeft, none, singleDirectionCounter = 0),
+      calculateSuccessors,
+      s =>
+        s.coords == data.bottomRight && s.singleDirectionCounter >= minimumBeforeStoppingOrTurning,
+    )
 
-    candidateDirections flatMap { direction =>
-      val nextCoords = state.coords + direction
-      data.at(nextCoords) map { nextValue =>
-        State(
-          nextCoords,
-          direction.some,
-          if (direction.some == state.direction) {
-            state.singleDirection + 1
-          } else {
-            1
-          },
-        ) -> nextValue
-      }
+    result match {
+      case Some((_, result)) => result
+      case None              => "Failed to solve".fail
     }
   }
 
-  def part1(data: Input): Int = {
-    val result = Dijkstra.dijkstra[State, Int](
-      State(coords = data.topLeft, none, singleDirection = 0),
-      x => successors1(data, x),
-      _.coords == data.bottomRight,
-    )
+  def part1(data: Input): Int =
+    solve(data, 3, 0)
 
-    result.get._2
-  }
-
-  def part2(data: Input): Int = {
-    val result = Dijkstra.dijkstra[State, Int](
-      State(coords = data.topLeft, none, singleDirection = 0),
-      x => successors2(data, x),
-      s => s.coords == data.bottomRight && s.singleDirection >= 4,
-    )
-
-    result.get._2
-  }
+  def part2(data: Input): Int =
+    solve(data, 10, 4)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
