@@ -145,10 +145,9 @@ object Advent16 {
   ): Long = {
     val optimizer = Optimizer.z3()
     import optimizer._
-    import optimizer.context._
 
     def boolExpr(c: Coords2D, direction: CardinalDirection2D, prefix: String) =
-      mkBoolConst(s"${prefix}_${c.x}_${c.y}_${direction.asString}")
+      labeledBool(s"${prefix}_${c.x}_${c.y}_${direction.asString}")
 
     def incomingBool(c: Coords2D, direction: CardinalDirection2D) =
       boolExpr(c, direction, "incoming")
@@ -162,7 +161,7 @@ object Advent16 {
       val incomingInNeighbour = incomingBool(to, direction.invert)
 
       addConstraints(
-        mkEq(
+        equal(
           thisOutgoing,
           incomingInNeighbour,
         )
@@ -180,7 +179,7 @@ object Advent16 {
 
           outgoingConstraintsQueue = (in -> out) :: outgoingConstraintsQueue
 
-          addConstraints(mkImplies(in, out))
+          addConstraints(implies(in, out))
         }
       }
     }
@@ -190,9 +189,9 @@ object Advent16 {
       .groupMap(_._2)(_._1)
       .foreach { case (out, ins) =>
         addConstraints(
-          mkEq(
+          equal(
             out,
-            mkOr(ins: _*),
+            or(ins: _*),
           )
         )
       }
@@ -206,9 +205,9 @@ object Advent16 {
 
       directions foreach { direction =>
         addConstraints(
-          mkEq(
+          equal(
             outgoingBool(c, direction),
-            mkBool(false),
+            False,
           )
         )
       }
@@ -222,8 +221,8 @@ object Advent16 {
     assert(allEdgeIncomings.distinct.length == (field.height + field.width) * 2)
 
     addConstraints(
-      mkEq(
-        mkAdd(allEdgeIncomings: _*),
+      equal(
+        sum(allEdgeIncomings: _*),
         One,
       )
     )
@@ -231,22 +230,22 @@ object Advent16 {
     // Only for Part 1 - initialSquare incoming initialDirection is 1, others are 0
     initial foreach { case (initialSquare, initialDirection) =>
       addConstraints(
-        mkEq(
+        equal(
           incomingBool(initialSquare, initialDirection),
-          mkBool(true),
+          True,
         )
       )
     }
 
     // `energized` is sum of all squares which have incoming
-    val energizedVar = mkIntConst("energized")
+    val energizedVar = labeledInt("energized")
     addConstraints(
-      mkEq(
+      equal(
         energizedVar,
-        mkAdd(
+        sum(
           field.allCoords.map { c =>
             boolToInt(
-              mkOr(
+              or(
                 Direction2D.CardinalDirections map { d =>
                   incomingBool(c, d)
                 }: _*

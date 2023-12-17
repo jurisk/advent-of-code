@@ -154,37 +154,36 @@ object Advent21 {
   ): Value = {
     val optimizer = Optimizer.z3()
     import optimizer._
-    import optimizer.context._
 
     extraEquality foreach { case (a, b) =>
-      addConstraints(mkEq(mkIntConst(a), mkIntConst(b)))
+      addConstraints(equal(labeledInt(a), labeledInt(b)))
     }
 
     commands foreach { case (name, monkey) =>
-      val n = mkIntConst(name)
+      val n = labeledInt(name)
       monkey match {
         case Monkey.BinaryMonkey(aName, operation, bName) =>
-          val a = mkIntConst(aName)
-          val b = mkIntConst(bName)
+          val a = labeledInt(aName)
+          val b = labeledInt(bName)
 
           val clauses = operation match {
-            case Operation.Plus     => mkEq(n, mkAdd(a, b)) :: Nil
-            case Operation.Minus    => mkEq(n, mkSub(a, b)) :: Nil
-            case Operation.Multiply => mkEq(n, mkMul(a, b)) :: Nil
+            case Operation.Plus     => equal(n, add(a, b)) :: Nil
+            case Operation.Minus    => equal(n, sub(a, b)) :: Nil
+            case Operation.Multiply => equal(n, mul(a, b)) :: Nil
             case Operation.Divide   =>
-              mkEq(n, mkDiv(a, b)) ::
-                mkEq(mkRem(a, b), mkInt(0)) ::
+              equal(n, div(a, b)) ::
+                equal(rem(a, b), Zero) ::
                 Nil
           }
 
           addConstraints(clauses: _*)
-        case Monkey.Literal(value)                        => addConstraints(mkEq(n, mkInt(value)))
+        case Monkey.Literal(value)                        => addConstraints(equal(n, constant(value)))
       }
     }
 
     val model = checkAndGetModel()
 
-    val result = model.evaluate(mkIntConst(calculate), true)
+    val result = model.evaluate(labeledInt(calculate), true)
 
     result match {
       case intNum: IntNum => intNum.getInt64

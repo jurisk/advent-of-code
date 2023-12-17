@@ -42,24 +42,23 @@ object Advent23 {
   def part2(data: Input): Int = {
     val optimizer = Optimizer.z3()
     import optimizer._
-    import optimizer.context._
 
-    val List(x, y, z) = List("x", "y", "z").map(mkIntConst)
+    val List(x, y, z) = List("x", "y", "z").map(labeledInt)
 
     val (minCoord, maxCoord) = {
       val boundingBox = Area3D.boundingBoxInclusive(data.map(_.position))
       val min         = boundingBox.min.x min boundingBox.min.y min boundingBox.min.z
       val max         = boundingBox.max.x max boundingBox.max.y max boundingBox.max.z
-      (mkInt(min), mkInt(max))
+      (constant(min), constant(max))
     }
 
     addConstraints(
-      mkGe(x, minCoord),
-      mkGe(y, minCoord),
-      mkGe(z, minCoord),
-      mkLe(x, maxCoord),
-      mkLe(y, maxCoord),
-      mkLe(z, maxCoord),
+      greaterOrEqual(x, minCoord),
+      greaterOrEqual(y, minCoord),
+      greaterOrEqual(z, minCoord),
+      lessOrEqual(x, maxCoord),
+      lessOrEqual(y, maxCoord),
+      lessOrEqual(z, maxCoord),
     )
 
     def nanobotInRange(nanobot: Nanobot): Expr[IntSort] = {
@@ -68,15 +67,15 @@ object Advent23 {
         nanobot.position.y,
         nanobot.position.z,
         nanobot.radius,
-      ).map(v => mkInt(v))
+      ).map(v => constant(v))
 
-      val xe = mkSub(x, nx)
-      val ye = mkSub(y, ny)
-      val ze = mkSub(z, nz)
+      val xe = sub(x, nx)
+      val ye = sub(y, ny)
+      val ze = sub(z, nz)
 
-      val inRange = mkLe(
-        mkAdd(
-          Array(xe, ye, ze).map(abs): _*
+      val inRange = lessOrEqual(
+        sum(
+          Seq(xe, ye, ze).map(abs): _*
         ),
         nr,
       )
@@ -84,16 +83,16 @@ object Advent23 {
       boolToInt(inRange)
     }
 
-    val nanobotsInRange = mkIntConst("nanobotsInRange")
+    val nanobotsInRange = labeledInt("nanobotsInRange")
     addConstraints(
-      mkEq(
+      equal(
         nanobotsInRange,
-        mkAdd(data.map(nanobotInRange): _*),
+        sum(data.map(nanobotInRange): _*),
       )
     )
 
-    val distanceFromOrigin = mkIntConst("distanceFromOrigin")
-    addConstraints(mkEq(distanceFromOrigin, mkAdd(abs(x), abs(y), abs(z))))
+    val distanceFromOrigin = labeledInt("distanceFromOrigin")
+    addConstraints(equal(distanceFromOrigin, sum(abs(x), abs(y), abs(z))))
 
     // Objective - maximize nanobotsInRange and minimize distanceFromOrigin
     val objective1 = maximize(nanobotsInRange)
