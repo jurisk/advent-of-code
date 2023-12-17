@@ -1,13 +1,11 @@
 package jurisk.adventofcode.y2018
 
-import com.microsoft.z3.Context
 import com.microsoft.z3.Expr
 import com.microsoft.z3.IntNum
 import com.microsoft.z3.IntSort
 import jurisk.geometry.Area3D
 import jurisk.geometry.Coords3D
-import jurisk.optimization.abs
-import jurisk.optimization.boolToInt
+import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -42,13 +40,10 @@ object Advent23 {
   }
 
   def part2(data: Input): Int = {
-    data foreach println
-    println()
-
-    implicit val ctx: Context = new Context
-    import ctx._
-
-    val o = mkOptimize()
+    val optimizer = Optimizer.z3()
+    import optimizer._
+    import optimizer.context._
+    val o = optimizer.optimize
 
     val List(x, y, z) = List("x", "y", "z").map(mkIntConst)
 

@@ -13,8 +13,7 @@ import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
 import jurisk.geometry.Field2D
-import jurisk.optimization.One
-import jurisk.optimization.boolToInt
+import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
@@ -144,10 +143,10 @@ object Advent16 {
     optimizationDirection: MinimizeOrMaximize,
     debug: Boolean = false,
   ): Long = {
-    implicit val ctx: Context = new Context
-    import ctx._
-
-    val o = mkOptimize()
+    val optimizer = Optimizer.z3()
+    import optimizer._
+    import optimizer.context._
+    val o = optimizer.optimize
 
     def boolExpr(c: Coords2D, direction: CardinalDirection2D, prefix: String) =
       mkBoolConst(s"${prefix}_${c.x}_${c.y}_${direction.asString}")

@@ -5,6 +5,7 @@ import com.microsoft.z3.Context
 import com.microsoft.z3.IntNum
 import jurisk.adventofcode.y2022.Advent21.Expression._
 import jurisk.adventofcode.y2022.Advent21.Operation._
+import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
@@ -151,10 +152,9 @@ object Advent21 {
     calculate: Name,
     extraEquality: Option[(Name, Name)],
   ): Value = {
-    val ctx = new Context
-    import ctx._
-
-    val o = mkOptimize()
+    val optimizer = Optimizer.z3()
+    import optimizer.context._
+    val o = optimizer.optimize
 
     extraEquality foreach { case (a, b) =>
       o.Add(mkEq(mkIntConst(a), mkIntConst(b)))
