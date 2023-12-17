@@ -5,12 +5,7 @@ import com.microsoft.z3.IntNum
 import com.microsoft.z3.IntSort
 import jurisk.geometry.Area3D
 import jurisk.geometry.Coords3D
-import jurisk.optimization.ImplicitConversions.{
-  RichArithExprIntSort,
-  RichExpr,
-  RichExprIntSort,
-  RichInt,
-}
+import jurisk.optimization.ImplicitConversions.{RichArithExprIntSort, RichExpr, RichExprBoolSort, RichExprIntSort, RichInt}
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -77,7 +72,7 @@ object Advent23 {
 
       val inRange = (x - nx).abs + (y - ny).abs + (z - nz).abs <= nr
 
-      boolToInt(inRange)
+      inRange.toInt
     }
 
     val nanobotsInRange    = labeledInt("nanobotsInRange")

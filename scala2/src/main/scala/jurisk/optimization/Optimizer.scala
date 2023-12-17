@@ -208,6 +208,10 @@ object ImplicitConversions {
     def abs(implicit optimizer: Optimizer): Expr[IntSort] = optimizer.abs(expr)
   }
 
+  implicit class RichExprBoolSort(val expr: Expr[BoolSort]) {
+    def toInt(implicit optimizer: Optimizer): Expr[IntSort] = optimizer.boolToInt(expr)
+  }
+
   implicit class RichExpr(val expr: Expr[_]) {
     def ===(other: Expr[_])(implicit optimizer: Optimizer): BoolExpr =
       optimizer.equal(expr, other)

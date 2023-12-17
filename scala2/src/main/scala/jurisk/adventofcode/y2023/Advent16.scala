@@ -13,7 +13,7 @@ import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
 import jurisk.geometry.Field2D
-import jurisk.optimization.ImplicitConversions.{RichBoolExpr, RichExpr, RichString}
+import jurisk.optimization.ImplicitConversions.{RichBoolExpr, RichExpr, RichExprBoolSort, RichString}
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -204,7 +204,7 @@ object Advent16 {
 
     // Exactly one of the incomings from the edge is 1
     val allEdgeIncomings = edgeIncomings(field).map { case (c, d) =>
-      boolToInt(incomingBool(c, d))
+      incomingBool(c, d).toInt
     }.toSeq
 
     assert(allEdgeIncomings.distinct.length == (field.height + field.width) * 2)
@@ -225,11 +225,8 @@ object Advent16 {
     addConstraints(
       energizedVar === sum(
         field.allCoords.map { c =>
-          boolToInt(
-            or(
-              Direction2D.CardinalDirections map { incomingBool(c, _) }: _*
-            )
-          )
+          val incomings = Direction2D.CardinalDirections.map(incomingBool(c, _))
+          or(incomings: _*).toInt
         }: _*
       ),
     )
