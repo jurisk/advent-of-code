@@ -54,24 +54,23 @@ object Advent18 {
     solveFloodFill(data)
 
   def solveFloodFill(data: Input): Long = {
-    // TODO: extract "CoordsAndDirection2D" somewhere?
+    // TODO: Reuse "CoordsAndDirection2D" from y2023.pipe
 
-    var points  = Set[Coords2D](Coords2D.Zero)
-    var current = Coords2D.Zero
+    val boundary: Set[Coords2D] = {
+      var points  = Set[Coords2D](Coords2D.Zero)
+      var current = Coords2D.Zero
 
-    // TODO: extract a PathInstructions concept and walking the path?
-    data foreach { command =>
-      0 until command.meters foreach { _ =>
-        current = current + command.direction
-        points += current
+      // TODO: extract a PathInstructions (two constructions - with rotation and with direction) concept and walking the path?
+      data foreach { command =>
+        0 until command.meters foreach { _ =>
+          current = current + command.direction
+          points += current
+        }
       }
+
+      val bb = Area2D.boundingBoxInclusive(points.toSeq)
+      points.map(x => x - bb.topLeft)
     }
-
-    val bb = Area2D.boundingBoxInclusive(points.toSeq)
-
-    val boundary: Set[Coords2D] = points.map(x => x - bb.topLeft)
-
-    var dug: Set[Coords2D] = boundary
 
     val boundaryArea = Area2D.boundingBoxInclusive(boundary.toSeq)
 
@@ -98,7 +97,7 @@ object Advent18 {
     Field2D.printField[Square](field, sqPr)
 
     val reachable = Bfs.bfsReachable[Coords2D](
-      Coords2D.Zero,
+      Coords2D(-1, -1),
       x =>
         field.adjacent4(x).filter { n =>
           !field.at(n).contains(Square.Dug)
