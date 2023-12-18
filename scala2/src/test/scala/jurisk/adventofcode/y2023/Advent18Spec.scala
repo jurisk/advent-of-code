@@ -22,12 +22,21 @@ class Advent18Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
+
+    "asdf" in {
+      solve(testData) shouldEqual 62
+    }
+
+    "qq" in {
+      solve(realData) shouldEqual 106459
+    }
+
     "test" in {
       part2(testData) shouldEqual 952408144115L
     }
 
     "real" in {
-      part2(realData) shouldEqual 0
+      part2(realData) shouldEqual 63806916814808L
     }
   }
 }

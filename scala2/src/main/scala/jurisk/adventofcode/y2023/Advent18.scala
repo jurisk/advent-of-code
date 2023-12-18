@@ -14,7 +14,23 @@ object Advent18 {
     direction: CardinalDirection2D,
     meters: Int,
     color: String,
-  )
+  ) {
+    def part1ToPart2: Command = {
+      assert(color.head == '#')
+      assert(color.length == 7)
+      val newMeters    = Integer.parseInt(color.take(6).tail, 16)
+      val newDirection = color(6) match {
+        case '0' => Direction2D.E
+        case '1' => Direction2D.S
+        case '2' => Direction2D.W
+        case '3' => Direction2D.N
+        case s   => s.toString.fail
+      }
+
+      Command(newDirection, newMeters, "")
+    }
+  }
+
   object Command {
     def parse(s: String): Command =
       s match {
@@ -34,7 +50,10 @@ object Advent18 {
     case object Unknown extends Square
   }
 
-  def part1(data: Input): Long = {
+  def part1(data: Input): Long =
+    solveFloodFill(data)
+
+  def solveFloodFill(data: Input): Long = {
     var points  = Set[Coords2D](Coords2D.Zero)
     var current = Coords2D.Zero
     data foreach { command =>
@@ -88,11 +107,37 @@ object Advent18 {
 
     println(field.count(x => x == Square.Dug || x == Square.Unknown))
 
-    (field.width) * (field.height) - reachable.toSet.size // TODO: not sure why +1
+    field.width * field.height - reachable.toSet.size // TODO: not sure why +1 needed for test 1 !?
+  }
+
+  def solve(data: Input): Long = {
+    var points                   = Vector[Coords2D](Coords2D.Zero)
+    var current                  = Coords2D.Zero
+    var boundaryPointsArtificial = 0
+    data foreach { command =>
+      current = current + command.direction.diff * command.meters
+      boundaryPointsArtificial += command.meters
+      points = points :+ current
+    }
+
+    val bb = Area2D.boundingBoxInclusive(points)
+
+    val boundary = points.map(x => x - bb.topLeft)
+
+    println(s"boundary.size = ${boundary.size}")
+    println(s"bpa = $boundaryPointsArtificial")
+
+    val boundaryPoints = boundary.length
+
+    // https://en.wikipedia.org/wiki/Shoelace_formula
+    val area = Coords2D.areaOfSimplePolygon(boundary)
+
+    // https://en.wikipedia.org/wiki/Pick%27s_theorem
+    (area - (boundaryPointsArtificial.toDouble / 2.0) + 1.0).toLong + boundaryPointsArtificial
   }
 
   def part2(data: Input): Long =
-    0
+    solve(data.map(_.part1ToPart2))
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
