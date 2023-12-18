@@ -10,27 +10,25 @@ class Advent18Spec extends AnyFreeSpec {
 
   "part 1" - {
     "test" in {
-      // TODO: actually fails, off by one !?
       part1(testData) shouldEqual 62
     }
 
     "real" in {
-      // not 106460
-      // not 106459
       part1(realData) shouldEqual 106459
     }
   }
 
+  "apply picks shoelace to part 1 data" - {
+    "test" in {
+      solvePicksShoelace(testData) shouldEqual 62
+    }
+
+    "real" in {
+      solvePicksShoelace(realData) shouldEqual 106459
+    }
+  }
+
   "part 2" - {
-
-    "asdf" in {
-      solve(testData) shouldEqual 62
-    }
-
-    "qq" in {
-      solve(realData) shouldEqual 106459
-    }
-
     "test" in {
       part2(testData) shouldEqual 952408144115L
     }

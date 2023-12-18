@@ -2,7 +2,7 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits.catsSyntaxUnorderedFoldableOps
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.geometry.{Area2D, Coords2D, Direction2D, Field2D}
+import jurisk.geometry.{Area2D, Coordinates2D, Coords2D, Direction2D, Field2D}
 import jurisk.geometry.Direction2D.CardinalDirection2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -54,8 +54,12 @@ object Advent18 {
     solveFloodFill(data)
 
   def solveFloodFill(data: Input): Long = {
+    // TODO: extract "CoordsAndDirection2D" somewhere?
+
     var points  = Set[Coords2D](Coords2D.Zero)
     var current = Coords2D.Zero
+
+    // TODO: extract a PathInstructions concept and walking the path?
     data foreach { command =>
       0 until command.meters foreach { _ =>
         current = current + command.direction
@@ -65,12 +69,13 @@ object Advent18 {
 
     val bb = Area2D.boundingBoxInclusive(points.toSeq)
 
-    val boundary = points.map(x => x - bb.topLeft)
+    val boundary: Set[Coords2D] = points.map(x => x - bb.topLeft)
 
     var dug: Set[Coords2D] = boundary
 
     val boundaryArea = Area2D.boundingBoxInclusive(boundary.toSeq)
 
+    // TODO: extract expand field +1 in each direction
     var field: Field2D[Square] = Field2D.forArea(
       Area2D(
         min = boundaryArea.min - Coords2D(1, 1),
@@ -79,6 +84,7 @@ object Advent18 {
       Square.Unknown,
     )
 
+    // TODO: extract moving from Set[Coords2D] to Field[Boolean] ?
     boundary foreach { bc =>
       field = field.updatedAtUnsafe(bc, Square.Dug)
     }
@@ -110,9 +116,11 @@ object Advent18 {
     field.width * field.height - reachable.toSet.size // TODO: not sure why +1 needed for test 1 !?
   }
 
-  def solve(data: Input): Long = {
-    var points                   = Vector[Coords2D](Coords2D.Zero)
-    var current                  = Coords2D.Zero
+  def solvePicksShoelace(data: Input): Long = {
+    var points  = Vector[Coords2D](Coords2D.Zero)
+    var current = Coords2D.Zero
+
+    // TODO: extract this?
     var boundaryPointsArtificial = 0
     data foreach { command =>
       current = current + command.direction.diff * command.meters
@@ -129,6 +137,7 @@ object Advent18 {
 
     val boundaryPoints = boundary.length
 
+    // TODO: extract this "interior points" and "interior points with boundary" away somewhere?
     // https://en.wikipedia.org/wiki/Shoelace_formula
     val area = Coords2D.areaOfSimplePolygon(boundary)
 
@@ -137,7 +146,7 @@ object Advent18 {
   }
 
   def part2(data: Input): Long =
-    solve(data.map(_.part1ToPart2))
+    solvePicksShoelace(data.map(_.part1ToPart2))
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
