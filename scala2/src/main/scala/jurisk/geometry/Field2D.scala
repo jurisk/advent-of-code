@@ -186,6 +186,9 @@ final case class Field2D[T] private (
   def leftColumnCoords: List[Coords2D]  = coordsForColumn(0)
   def rightColumnCoords: List[Coords2D] = coordsForColumn(width - 1)
 
+  def allEdgeCoords: List[Coords2D] =
+    (topRowCoords ::: bottomRowCoords ::: leftColumnCoords ::: rightColumnCoords).distinct
+
   def firstRowValues: ArraySeq[T] = row(0)
   def lastRowValues: ArraySeq[T]  = row(height - 1)
 
