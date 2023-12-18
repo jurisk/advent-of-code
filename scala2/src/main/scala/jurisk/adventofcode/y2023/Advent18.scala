@@ -97,7 +97,7 @@ object Advent18 {
     Field2D.printField[Square](field, sqPr)
 
     val reachable = Bfs.bfsReachable[Coords2D](
-      Coords2D(-1, -1),
+      Coords2D.Zero - Coords2D(1, 1),
       x =>
         field.adjacent4(x).filter { n =>
           !field.at(n).contains(Square.Dug)
@@ -112,7 +112,7 @@ object Advent18 {
 
     println(field.count(x => x == Square.Dug || x == Square.Unknown))
 
-    field.width * field.height - reachable.toSet.size // TODO: not sure why +1 needed for test 1 !?
+    field.width * field.height - reachable.toSet.size
   }
 
   def solvePicksShoelace(data: Input): Long = {
@@ -134,14 +134,7 @@ object Advent18 {
     println(s"boundary.size = ${boundary.size}")
     println(s"bpa = $boundaryPointsArtificial")
 
-    val boundaryPoints = boundary.length
-
-    // TODO: extract this "interior points" and "interior points with boundary" away somewhere?
-    // https://en.wikipedia.org/wiki/Shoelace_formula
-    val area = Coords2D.areaOfSimplePolygon(boundary)
-
-    // https://en.wikipedia.org/wiki/Pick%27s_theorem
-    (area - (boundaryPointsArtificial.toDouble / 2.0) + 1.0).toLong + boundaryPointsArtificial
+    Coords2D.interiorPointsIncludingBoundary(boundary)
   }
 
   def part2(data: Input): Long =

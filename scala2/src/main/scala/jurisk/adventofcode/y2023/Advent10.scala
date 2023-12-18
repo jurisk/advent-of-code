@@ -77,7 +77,7 @@ object Advent10 {
         distance
     }.max
 
-  def part2(data: Input): Int = {
+  def part2(data: Input): Long = {
     val fromPicksShoelace        = part2PicksShoelace(data)
     val fromMarkRightSideOfTrack = part2MarkRightSideOfTrack(data)
     val from3x3Expansion         = part2From3x3Expansion(data)
@@ -138,7 +138,7 @@ object Advent10 {
     (trackCoords, onlyTrack)
   }
 
-  def part2PicksShoelace(data: Input): Int = {
+  def part2PicksShoelace(data: Input): Long = {
     val (trackCoords @ _, onlyTrack) = extractTrack(data)
 
     // Which direction was the animal facing on each track segment?
@@ -150,16 +150,10 @@ object Advent10 {
         .map(_.coords)
     )
 
-    val boundaryPoints = trackCoordsInWalkingOrder.length
-
-    // https://en.wikipedia.org/wiki/Shoelace_formula
-    val area = Coords2D.areaOfSimplePolygon(trackCoordsInWalkingOrder)
-
-    // https://en.wikipedia.org/wiki/Pick%27s_theorem
-    (area - (boundaryPoints.toDouble / 2.0) + 1.0).toInt
+    Coords2D.interiorPointsExcludingBoundary(trackCoordsInWalkingOrder)
   }
 
-  def part2MarkRightSideOfTrack(data: Input): Int = {
+  def part2MarkRightSideOfTrack(data: Input): Long = {
     val (trackCoords, onlyTrack) = extractTrack(data)
 
     // Which direction was the animal facing on each track segment?
