@@ -2,20 +2,14 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits.catsSyntaxUnorderedFoldableOps
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.geometry.Direction2D.CardinalDirection2D
-import jurisk.geometry.{Area2D, Coords2D, Direction2D, Field2D}
+import jurisk.geometry._
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent18 {
-  final case class Instruction(
-    direction: CardinalDirection2D,
-    meters: Int,
-  )
-
   final case class InputLine(
-    part1: Instruction,
-    part2: Instruction,
+    part1: MovementInstruction,
+    part2: MovementInstruction,
   )
 
   private object InputLine {
@@ -37,8 +31,8 @@ object Advent18 {
           val part2Meters    = Integer.parseInt(color.take(6).tail, 16)
 
           InputLine(
-            part1 = Instruction(part1Direction, part1Meters),
-            part2 = Instruction(part2Direction, part2Meters),
+            part1 = MovementInstruction(part1Direction, part1Meters),
+            part2 = MovementInstruction(part2Direction, part2Meters),
           )
         case _                        => s.failedToParse
       }
@@ -57,7 +51,7 @@ object Advent18 {
   def part1(data: List[InputLine]): Long =
     solveFloodFill(data.map(_.part1))
 
-  def solveFloodFill(data: List[Instruction]): Long = {
+  def solveFloodFill(data: List[MovementInstruction]): Long = {
     // TODO: Reuse "CoordsAndDirection2D" from y2023.pipe
 
     val boundary: Set[Coords2D] = {
@@ -66,7 +60,7 @@ object Advent18 {
 
       // TODO: extract a PathInstructions (two constructions - with rotation and with direction) concept and walking the path?
       data foreach { command =>
-        0 until command.meters foreach { _ =>
+        0 until command.distance foreach { _ =>
           current = current + command.direction
           points += current
         }
@@ -121,16 +115,9 @@ object Advent18 {
     a
   }
 
-  def solvePicksShoelace(data: List[Instruction]): Long = {
-    var points  = Vector[Coords2D](Coords2D.Zero)
-    var current = Coords2D.Zero
-
-    data foreach { command =>
-      current = current + command.direction.diff * command.meters
-      points = points :+ current
-    }
-
-    Coords2D.interiorPointsIncludingBoundary(points)
+  def solvePicksShoelace(data: List[MovementInstruction]): Long = {
+    val path = MovementInstruction.walkPath(data)
+    Coords2D.interiorPointsIncludingBoundary(path)
   }
 
   def part2(data: List[InputLine]): Long =
