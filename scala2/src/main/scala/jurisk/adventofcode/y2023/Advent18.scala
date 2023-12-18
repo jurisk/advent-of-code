@@ -96,6 +96,7 @@ object Advent18 {
 
     Field2D.printField[Square](field, sqPr)
 
+    // TODO: Field2D has Field2D.floodFillField that you could also have floodFillFromOutside with just f: T => Boolean ?
     val reachable = Bfs.bfsReachable[Coords2D](
       Coords2D.Zero - Coords2D(1, 1),
       x =>
@@ -110,31 +111,22 @@ object Advent18 {
 
     Field2D.printField[Square](field, sqPr)
 
-    println(field.count(x => x == Square.Dug || x == Square.Unknown))
-
-    field.width * field.height - reachable.toSet.size
+    val a = field.count(x => x == Square.Dug || x == Square.Unknown)
+    val b = field.width * field.height - reachable.toSet.size
+    assert(a == b)
+    a
   }
 
   def solvePicksShoelace(data: Input): Long = {
     var points  = Vector[Coords2D](Coords2D.Zero)
     var current = Coords2D.Zero
 
-    // TODO: extract this?
-    var boundaryPointsArtificial = 0
     data foreach { command =>
       current = current + command.direction.diff * command.meters
-      boundaryPointsArtificial += command.meters
       points = points :+ current
     }
 
-    val bb = Area2D.boundingBoxInclusive(points)
-
-    val boundary = points.map(x => x - bb.topLeft)
-
-    println(s"boundary.size = ${boundary.size}")
-    println(s"bpa = $boundaryPointsArtificial")
-
-    Coords2D.interiorPointsIncludingBoundary(boundary)
+    Coords2D.interiorPointsIncludingBoundary(points)
   }
 
   def part2(data: Input): Long =
