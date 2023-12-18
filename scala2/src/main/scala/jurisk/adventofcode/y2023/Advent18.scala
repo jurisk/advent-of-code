@@ -70,30 +70,19 @@ object Advent18 {
           case false => Square.Unknown
         },
       )
-    printField(field)
 
     field = field.expandOneSquareInAllDirections(Square.Unknown)
 
-    printField(field)
-
     // TODO: Field2D has Field2D.floodFillCoordinates that you could also have floodFillFromOutside with just f: T => Boolean ?
 
-    val reachable = Field2D.floodFillCoordinates[Square](
+    val next = Field2D.floodFillField[Square](
       field,
       field.topLeft,
       (_, to) => to == Square.Unknown,
+      Square.Outside,
     )
 
-    reachable foreach { r =>
-      field = field.updatedAtUnsafe(r, Square.Outside)
-    }
-
-    printField(field)
-
-    val a = field.count(x => x == Square.Dug || x == Square.Unknown)
-    val b = field.width * field.height - reachable.toSet.size
-    assert(a == b)
-    a
+    next.count(x => x == Square.Dug || x == Square.Unknown)
   }
 
   def solvePicksShoelace(data: List[MovementInstruction]): Long = {
