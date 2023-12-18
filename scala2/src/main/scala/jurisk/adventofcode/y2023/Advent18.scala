@@ -52,22 +52,11 @@ object Advent18 {
     solveFloodFill(data.map(_.part1))
 
   def solveFloodFill(data: List[MovementInstruction]): Long = {
-    // TODO: Reuse "CoordsAndDirection2D" from y2023.pipe
-
     val boundary: Set[Coords2D] = {
-      var points  = Set[Coords2D](Coords2D.Zero)
-      var current = Coords2D.Zero
+      val points = MovementInstruction.walkEveryPoint(data)
 
-      // TODO: extract a PathInstructions (two constructions - with rotation and with direction) concept and walking the path?
-      data foreach { command =>
-        0 until command.distance foreach { _ =>
-          current = current + command.direction
-          points += current
-        }
-      }
-
-      val bb = Area2D.boundingBoxInclusive(points.toSeq)
-      points.map(x => x - bb.topLeft)
+      val bb = Area2D.boundingBoxInclusive(points)
+      points.map(x => x - bb.topLeft).toSet
     }
 
     val boundaryArea = Area2D.boundingBoxInclusive(boundary.toSeq)

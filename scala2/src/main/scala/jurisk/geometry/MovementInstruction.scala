@@ -14,6 +14,19 @@ final case class MovementInstruction(
 }
 
 object MovementInstruction {
+  def walkEveryPoint(
+    instructions: Seq[MovementInstruction],
+    start: Coords2D = Coords2D.Zero,
+  ): IndexedSeq[Coords2D] = {
+    val flattened = instructions flatMap { instruction =>
+      Seq.fill(instruction.distance)(
+        MovementInstruction(instruction.direction, 1)
+      )
+    }
+
+    walkPath(flattened, start)
+  }
+
   def walkPath(
     instructions: Seq[MovementInstruction],
     start: Coords2D = Coords2D.Zero,
