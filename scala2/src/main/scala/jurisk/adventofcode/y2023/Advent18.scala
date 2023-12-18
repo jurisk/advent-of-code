@@ -76,13 +76,12 @@ object Advent18 {
 
     printField(field)
 
-    // TODO: Field2D has Field2D.floodFillField that you could also have floodFillFromOutside with just f: T => Boolean ?
-    val reachable = Bfs.bfsReachable[Coords2D](
+    // TODO: Field2D has Field2D.floodFillCoordinates that you could also have floodFillFromOutside with just f: T => Boolean ?
+
+    val reachable = Field2D.floodFillCoordinates[Square](
+      field,
       field.topLeft,
-      x =>
-        field.adjacent4(x).filter { n =>
-          !field.at(n).contains(Square.Dug)
-        },
+      (_, to) => to == Square.Unknown,
     )
 
     reachable foreach { r =>

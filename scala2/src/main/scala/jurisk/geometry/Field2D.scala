@@ -318,26 +318,28 @@ object Field2D {
       boundingBox.topLeft,
     )
 
+  def floodFillCoordinates[T](
+    field: Field2D[T],
+    seed: Coords2D,
+    f: (T, T) => Boolean,
+  ): Seq[Coords2D] = Bfs.bfsReachable[Coords2D](
+    seed,
+    from =>
+      field.adjacent4(from).filter { to =>
+        f(field.atUnsafe(from), field.atUnsafe(to))
+      },
+  )
+
   def floodFillField[T](
     field: Field2D[T],
     seed: Coords2D,
     f: (T, T) => Boolean,
     mark: T,
-  ): Field2D[T] = {
-    val reachable =
-      Bfs.bfsReachable[Coords2D](
-        seed,
-        from =>
-          field.adjacent4(from).filter { to =>
-            f(field.atUnsafe(from), field.atUnsafe(to))
-          },
-      )
-
+  ): Field2D[T] =
     // We lack bulk update feature, so this will have to do
-    reachable.foldLeft(field) { case (acc, c) =>
+    floodFillCoordinates(field, seed, f).foldLeft(field) { case (acc, c) =>
       acc.updatedAtUnsafe(c, mark)
     }
-  }
 
   def toDebugRepresentation(field: Field2D[Char]): String = mergeSeqSeqChar(
     field.yIndices map { y =>
