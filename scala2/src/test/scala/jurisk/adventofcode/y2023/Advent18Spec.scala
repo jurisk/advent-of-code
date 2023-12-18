@@ -20,11 +20,11 @@ class Advent18Spec extends AnyFreeSpec {
 
   "apply picks shoelace to part 1 data" - {
     "test" in {
-      solvePicksShoelace(testData) shouldEqual 62
+      solvePicksShoelace(testData.map(_.part1)) shouldEqual 62
     }
 
     "real" in {
-      solvePicksShoelace(realData) shouldEqual 106459
+      solvePicksShoelace(realData.map(_.part1)) shouldEqual 106459
     }
   }
 

@@ -2,46 +2,50 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits.catsSyntaxUnorderedFoldableOps
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.geometry.{Area2D, Coordinates2D, Coords2D, Direction2D, Field2D}
 import jurisk.geometry.Direction2D.CardinalDirection2D
+import jurisk.geometry.{Area2D, Coords2D, Direction2D, Field2D}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent18 {
-  type Input = List[Command]
-
-  final case class Command(
+  final case class Instruction(
     direction: CardinalDirection2D,
     meters: Int,
-    color: String,
-  ) {
-    def part1ToPart2: Command = {
-      assert(color.head == '#')
-      assert(color.length == 7)
-      val newMeters    = Integer.parseInt(color.take(6).tail, 16)
-      val newDirection = color(6) match {
-        case '0' => Direction2D.E
-        case '1' => Direction2D.S
-        case '2' => Direction2D.W
-        case '3' => Direction2D.N
-        case s   => s.toString.fail
-      }
+  )
 
-      Command(newDirection, newMeters, "")
-    }
-  }
+  final case class InputLine(
+    part1: Instruction,
+    part2: Instruction,
+  )
 
-  object Command {
-    def parse(s: String): Command =
+  private object InputLine {
+    def parse(s: String): InputLine =
       s match {
         case s"$dir $meters ($color)" =>
-          Command(Direction2D.parseUDLR(dir), meters.toInt, color)
+          val part1Direction = Direction2D.parseUDLR(dir)
+          val part1Meters    = meters.toInt
+
+          assert(color.head == '#')
+          assert(color.length == 7)
+          val part2Direction = color(6) match {
+            case '0' => Direction2D.E
+            case '1' => Direction2D.S
+            case '2' => Direction2D.W
+            case '3' => Direction2D.N
+            case s   => s"Unrecognized direction $s".fail
+          }
+          val part2Meters    = Integer.parseInt(color.take(6).tail, 16)
+
+          InputLine(
+            part1 = Instruction(part1Direction, part1Meters),
+            part2 = Instruction(part2Direction, part2Meters),
+          )
         case _                        => s.failedToParse
       }
   }
 
-  def parse(input: String): Input =
-    input.parseLines(Command.parse)
+  def parse(input: String): List[InputLine] =
+    input.parseLines(InputLine.parse)
 
   sealed trait Square
   object Square {
@@ -50,10 +54,10 @@ object Advent18 {
     case object Unknown extends Square
   }
 
-  def part1(data: Input): Long =
-    solveFloodFill(data)
+  def part1(data: List[InputLine]): Long =
+    solveFloodFill(data.map(_.part1))
 
-  def solveFloodFill(data: Input): Long = {
+  def solveFloodFill(data: List[Instruction]): Long = {
     // TODO: Reuse "CoordsAndDirection2D" from y2023.pipe
 
     val boundary: Set[Coords2D] = {
@@ -117,7 +121,7 @@ object Advent18 {
     a
   }
 
-  def solvePicksShoelace(data: Input): Long = {
+  def solvePicksShoelace(data: List[Instruction]): Long = {
     var points  = Vector[Coords2D](Coords2D.Zero)
     var current = Coords2D.Zero
 
@@ -129,17 +133,17 @@ object Advent18 {
     Coords2D.interiorPointsIncludingBoundary(points)
   }
 
-  def part2(data: Input): Long =
-    solvePicksShoelace(data.map(_.part1ToPart2))
+  def part2(data: List[InputLine]): Long =
+    solvePicksShoelace(data.map(_.part2))
 
-  def parseFile(fileName: String): Input =
+  def parseFile(fileName: String): List[InputLine] =
     parse(readFileText(fileName))
 
   def fileName(suffix: String): String =
     s"2023/18$suffix.txt"
 
   def main(args: Array[String]): Unit = {
-    val realData: Input = parseFile(fileName(""))
+    val realData: List[InputLine] = parseFile(fileName(""))
 
     println(s"Part 1: ${part1(realData)}")
     println(s"Part 2: ${part2(realData)}")
