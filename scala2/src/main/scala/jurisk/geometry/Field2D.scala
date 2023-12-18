@@ -12,6 +12,15 @@ import jurisk.utils.Parsing.StringOps
 import scala.collection.immutable.ArraySeq
 import scala.reflect.ClassTag
 
+// TODO:  Extract Field2D as a trait and have various implementations to test performance on:
+//          - ArraySeq[ArraySeq[T]]
+//          - Vector[Vector[T]]
+//          - ArraySeq[T]
+//          - Vector[T]
+//          - Map[Coords2D, T] with default Empty
+
+// TODO: Think about whether you can have a mandatory `empty` square required and if it helps or hurts ease of use
+
 final case class Field2D[T] private (
   private val data: ArraySeq[ArraySeq[T]],
   topLeft: Coords2D = Coords2D.Zero,
@@ -250,6 +259,16 @@ final case class Field2D[T] private (
   def rightColumns(columns: Int): Field2D[T] = Field2D(
     data.map(_.takeRight(columns))
   )
+
+  def expandOneSquareInAllDirections(
+    empty: T
+  )(implicit classTag: ClassTag[T]): Field2D[T] = {
+    val field = Field2D
+      .forArea[T](Area2D(topLeft, bottomRight + Direction2D.SE.diff * 2), empty)
+    valuesAndCoords.foldLeft(field) { case (acc, (c, v)) =>
+      acc.updatedAtUnsafe(c + Direction2D.SE, v)
+    }
+  }
 }
 
 object Field2D {
@@ -278,6 +297,18 @@ object Field2D {
       ArraySeq.fill(height)(ArraySeq.fill(width)(initialValue)),
       topLeft,
     )
+
+  def fromPoints[T: ClassTag](
+    points: Seq[Coords2D],
+    f: Boolean => T,
+  ): Field2D[T] = {
+    val boundingBox = Area2D.boundingBoxInclusive(points)
+    val field       = Field2D.forArea(boundingBox, f(false))
+
+    points.foldLeft(field) { case (acc, c) =>
+      acc.updatedAtUnsafe(c, f(true))
+    }
+  }
 
   def forArea[T: ClassTag](boundingBox: Area2D, initialValue: T): Field2D[T] =
     ofSize(

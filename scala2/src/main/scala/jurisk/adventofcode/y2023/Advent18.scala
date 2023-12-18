@@ -41,51 +41,44 @@ object Advent18 {
   def parse(input: String): List[InputLine] =
     input.parseLines(InputLine.parse)
 
-  sealed trait Square
+  sealed trait Square extends Product with Serializable
   object Square {
     case object Outside extends Square
     case object Dug     extends Square
     case object Unknown extends Square
   }
 
-  def part1(data: List[InputLine]): Long =
-    solveFloodFill(data.map(_.part1))
+  private def printField(field: Field2D[Square]): Unit = {
+    println(s"Top left: ${field.topLeft}")
+
+    Field2D.printField[Square](
+      field,
+      {
+        case Square.Outside => '.'
+        case Square.Dug     => '#'
+        case Square.Unknown => '?'
+      },
+    )
+  }
 
   def solveFloodFill(data: List[MovementInstruction]): Long = {
-    val boundary: Set[Coords2D] = {
-      val points = MovementInstruction.walkEveryPoint(data)
+    var field = Field2D
+      .fromPoints(
+        MovementInstruction.walkEveryPoint(data),
+        {
+          case true  => Square.Dug
+          case false => Square.Unknown
+        },
+      )
+    printField(field)
 
-      val bb = Area2D.boundingBoxInclusive(points)
-      points.map(x => x - bb.topLeft).toSet
-    }
+    field = field.expandOneSquareInAllDirections(Square.Unknown)
 
-    val boundaryArea = Area2D.boundingBoxInclusive(boundary.toSeq)
-
-    // TODO: extract expand field +1 in each direction
-    var field: Field2D[Square] = Field2D.forArea(
-      Area2D(
-        min = boundaryArea.min - Coords2D(1, 1),
-        max = boundaryArea.max + Coords2D(1, 1),
-      ),
-      Square.Unknown,
-    )
-
-    // TODO: extract moving from Set[Coords2D] to Field[Boolean] ?
-    boundary foreach { bc =>
-      field = field.updatedAtUnsafe(bc, Square.Dug)
-    }
-
-    def sqPr(square: Square): Char = square match {
-      case Square.Outside => '.'
-      case Square.Dug     => '#'
-      case Square.Unknown => '?'
-    }
-
-    Field2D.printField[Square](field, sqPr)
+    printField(field)
 
     // TODO: Field2D has Field2D.floodFillField that you could also have floodFillFromOutside with just f: T => Boolean ?
     val reachable = Bfs.bfsReachable[Coords2D](
-      Coords2D.Zero - Coords2D(1, 1),
+      field.topLeft,
       x =>
         field.adjacent4(x).filter { n =>
           !field.at(n).contains(Square.Dug)
@@ -96,7 +89,7 @@ object Advent18 {
       field = field.updatedAtUnsafe(r, Square.Outside)
     }
 
-    Field2D.printField[Square](field, sqPr)
+    printField(field)
 
     val a = field.count(x => x == Square.Dug || x == Square.Unknown)
     val b = field.width * field.height - reachable.toSet.size
@@ -108,6 +101,9 @@ object Advent18 {
     val path = MovementInstruction.walkPath(data)
     Coords2D.interiorPointsIncludingBoundary(path)
   }
+
+  def part1(data: List[InputLine]): Long =
+    solveFloodFill(data.map(_.part1))
 
   def part2(data: List[InputLine]): Long =
     solvePicksShoelace(data.map(_.part2))
