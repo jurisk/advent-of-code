@@ -269,6 +269,9 @@ final case class Field2D[T] private (
       acc.updatedAtUnsafe(c + Direction2D.SE, v)
     }
   }
+
+  def contractOneSquareInAllDirections: Field2D[T] =
+    Field2D(data.tail.init.map(_.tail.init))
 }
 
 object Field2D {
@@ -298,15 +301,14 @@ object Field2D {
       topLeft,
     )
 
-  def fromPoints[T: ClassTag](
-    points: Seq[Coords2D],
-    f: Boolean => T,
-  ): Field2D[T] = {
+  def fromPoints(
+    points: Seq[Coords2D]
+  ): Field2D[Boolean] = {
     val boundingBox = Area2D.boundingBoxInclusive(points)
-    val field       = Field2D.forArea(boundingBox, f(false))
+    val field       = Field2D.forArea(boundingBox, false)
 
     points.foldLeft(field) { case (acc, c) =>
-      acc.updatedAtUnsafe(c, f(true))
+      acc.updatedAtUnsafe(c, true)
     }
   }
 
@@ -329,6 +331,21 @@ object Field2D {
         f(field.atUnsafe(from), field.atUnsafe(to))
       },
   )
+
+  def floodFillFromOutside[T: ClassTag](
+    field: Field2D[T],
+    outside: T,
+    mark: T,
+  ): Field2D[T] = {
+    val expanded = field.expandOneSquareInAllDirections(outside)
+    val filled   = floodFillField[T](
+      expanded,
+      expanded.topLeft,
+      (_, to) => to == outside,
+      mark,
+    )
+    filled.contractOneSquareInAllDirections
+  }
 
   def floodFillField[T](
     field: Field2D[T],

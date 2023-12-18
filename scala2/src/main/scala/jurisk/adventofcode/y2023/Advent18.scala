@@ -1,7 +1,6 @@
 package jurisk.adventofcode.y2023
 
-import cats.implicits.catsSyntaxUnorderedFoldableOps
-import jurisk.algorithms.pathfinding.Bfs
+import cats.implicits._
 import jurisk.geometry._
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -62,27 +61,17 @@ object Advent18 {
   }
 
   def solveFloodFill(data: List[MovementInstruction]): Long = {
-    var field = Field2D
-      .fromPoints(
-        MovementInstruction.walkEveryPoint(data),
-        {
-          case true  => Square.Dug
-          case false => Square.Unknown
-        },
-      )
+    val field = Field2D
+      .fromPoints(MovementInstruction.walkEveryPoint(data))
+      .map(if (_) Square.Dug else Square.Unknown)
 
-    field = field.expandOneSquareInAllDirections(Square.Unknown)
-
-    // TODO: Field2D has Field2D.floodFillCoordinates that you could also have floodFillFromOutside with just f: T => Boolean ?
-
-    val next = Field2D.floodFillField[Square](
+    val filled = Field2D.floodFillFromOutside[Square](
       field,
-      field.topLeft,
-      (_, to) => to == Square.Unknown,
-      Square.Outside,
+      outside = Square.Unknown,
+      mark = Square.Outside,
     )
 
-    next.count(x => x == Square.Dug || x == Square.Unknown)
+    filled.count(_ != Square.Outside)
   }
 
   def solvePicksShoelace(data: List[MovementInstruction]): Long = {
