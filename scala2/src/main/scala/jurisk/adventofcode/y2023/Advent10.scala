@@ -1,12 +1,11 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
-import jurisk.adventofcode.y2023.pipe.CoordsWithDirection
 import jurisk.adventofcode.y2023.pipe.Pipe
 import jurisk.adventofcode.y2023.pipe.Pipe._
 import jurisk.algorithms.pathfinding.Bfs
 import jurisk.algorithms.pathfinding.Dijkstra
-import jurisk.geometry.Coords2D
+import jurisk.geometry.{Coords2D, CoordsAndDirection2D}
 import jurisk.geometry.Direction2D.E
 import jurisk.geometry.Direction2D.N
 import jurisk.geometry.Direction2D.S
@@ -78,7 +77,7 @@ object Advent10 {
         distance
     }.max
 
-  def part2(data: Input): Int = {
+  def part2(data: Input): Long = {
     val fromPicksShoelace        = part2PicksShoelace(data)
     val fromMarkRightSideOfTrack = part2MarkRightSideOfTrack(data)
     val from3x3Expansion         = part2From3x3Expansion(data)
@@ -93,7 +92,7 @@ object Advent10 {
     fromPicksShoelace
   }
 
-  private def findStart(onlyTrack: Field2D[Pipe]): CoordsWithDirection = {
+  private def findStart(onlyTrack: Field2D[Pipe]): CoordsAndDirection2D = {
     // We don't know which direction is inside and which is outside for the animal coordinates,
     // but we can figure it out for the top left coordinates. This depends on the order in which `allCoords`
     // returns coordinates.
@@ -111,7 +110,7 @@ object Advent10 {
       case Pipe.S_E   => E
     }
 
-    CoordsWithDirection(
+    CoordsAndDirection2D(
       coords = topLeftFullCoord,
       direction = topLeftStartDirection,
     )
@@ -121,9 +120,9 @@ object Advent10 {
     val start = findStart(data)
 
     Bfs
-      .bfsReachable[CoordsWithDirection](
+      .bfsReachable[CoordsAndDirection2D](
         start,
-        x => x.nextOnTrack(data) :: Nil,
+        x => nextOnTrack(x, data) :: Nil,
       )
   }
 
@@ -139,7 +138,7 @@ object Advent10 {
     (trackCoords, onlyTrack)
   }
 
-  def part2PicksShoelace(data: Input): Int = {
+  def part2PicksShoelace(data: Input): Long = {
     val (trackCoords @ _, onlyTrack) = extractTrack(data)
 
     // Which direction was the animal facing on each track segment?
@@ -151,16 +150,10 @@ object Advent10 {
         .map(_.coords)
     )
 
-    val boundaryPoints = trackCoordsInWalkingOrder.length
-
-    // https://en.wikipedia.org/wiki/Shoelace_formula
-    val area = Coords2D.areaOfSimplePolygon(trackCoordsInWalkingOrder)
-
-    // https://en.wikipedia.org/wiki/Pick%27s_theorem
-    (area - (boundaryPoints.toDouble / 2.0) + 1.0).toInt
+    Coords2D.interiorPointsExcludingBoundary(trackCoordsInWalkingOrder)
   }
 
-  def part2MarkRightSideOfTrack(data: Input): Int = {
+  def part2MarkRightSideOfTrack(data: Input): Long = {
     val (trackCoords, onlyTrack) = extractTrack(data)
 
     // Which direction was the animal facing on each track segment?
@@ -168,7 +161,7 @@ object Advent10 {
 
     // Which cells were on the right of the track, as the animal was walking around it?
     val rightCoordinateSeeds = trackCoordsWithAnimalDirection
-      .flatMap(x => x.coordsToTheRight(data.field).toSet)
+      .flatMap(x => coordsToTheRight(x, data.field).toSet)
       .toSet
       .diff(trackCoords)
 

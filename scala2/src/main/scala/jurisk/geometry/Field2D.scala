@@ -12,6 +12,15 @@ import jurisk.utils.Parsing.StringOps
 import scala.collection.immutable.ArraySeq
 import scala.reflect.ClassTag
 
+// TODO:  Extract Field2D as a trait and have various implementations to test performance on:
+//          - ArraySeq[ArraySeq[T]]
+//          - Vector[Vector[T]]
+//          - ArraySeq[T]
+//          - Vector[T]
+//          - Map[Coords2D, T] with default Empty
+
+// TODO: Think about whether you can have a mandatory `empty` square required and if it helps or hurts ease of use
+
 final case class Field2D[T] private (
   private val data: ArraySeq[ArraySeq[T]],
   topLeft: Coords2D = Coords2D.Zero,
@@ -186,6 +195,9 @@ final case class Field2D[T] private (
   def leftColumnCoords: List[Coords2D]  = coordsForColumn(0)
   def rightColumnCoords: List[Coords2D] = coordsForColumn(width - 1)
 
+  def allEdgeCoords: List[Coords2D] =
+    (topRowCoords ::: bottomRowCoords ::: leftColumnCoords ::: rightColumnCoords).distinct
+
   def firstRowValues: ArraySeq[T] = row(0)
   def lastRowValues: ArraySeq[T]  = row(height - 1)
 
@@ -247,6 +259,19 @@ final case class Field2D[T] private (
   def rightColumns(columns: Int): Field2D[T] = Field2D(
     data.map(_.takeRight(columns))
   )
+
+  def expandOneSquareInAllDirections(
+    empty: T
+  )(implicit classTag: ClassTag[T]): Field2D[T] = {
+    val field = Field2D
+      .forArea[T](Area2D(topLeft, bottomRight + Direction2D.SE.diff * 2), empty)
+    valuesAndCoords.foldLeft(field) { case (acc, (c, v)) =>
+      acc.updatedAtUnsafe(c + Direction2D.SE, v)
+    }
+  }
+
+  def contractOneSquareInAllDirections: Field2D[T] =
+    Field2D(data.tail.init.map(_.tail.init))
 }
 
 object Field2D {
@@ -276,6 +301,17 @@ object Field2D {
       topLeft,
     )
 
+  def fromPoints(
+    points: Seq[Coords2D]
+  ): Field2D[Boolean] = {
+    val boundingBox = Area2D.boundingBoxInclusive(points)
+    val field       = Field2D.forArea(boundingBox, false)
+
+    points.foldLeft(field) { case (acc, c) =>
+      acc.updatedAtUnsafe(c, true)
+    }
+  }
+
   def forArea[T: ClassTag](boundingBox: Area2D, initialValue: T): Field2D[T] =
     ofSize(
       boundingBox.width,
@@ -284,26 +320,43 @@ object Field2D {
       boundingBox.topLeft,
     )
 
+  def floodFillCoordinates[T](
+    field: Field2D[T],
+    seed: Coords2D,
+    f: (T, T) => Boolean,
+  ): Seq[Coords2D] = Bfs.bfsReachable[Coords2D](
+    seed,
+    from =>
+      field.adjacent4(from).filter { to =>
+        f(field.atUnsafe(from), field.atUnsafe(to))
+      },
+  )
+
+  def floodFillFromOutside[T: ClassTag](
+    field: Field2D[T],
+    outside: T,
+    mark: T,
+  ): Field2D[T] = {
+    val expanded = field.expandOneSquareInAllDirections(outside)
+    val filled   = floodFillField[T](
+      expanded,
+      expanded.topLeft,
+      (_, to) => to == outside,
+      mark,
+    )
+    filled.contractOneSquareInAllDirections
+  }
+
   def floodFillField[T](
     field: Field2D[T],
     seed: Coords2D,
     f: (T, T) => Boolean,
     mark: T,
-  ): Field2D[T] = {
-    val reachable =
-      Bfs.bfsReachable[Coords2D](
-        seed,
-        from =>
-          field.adjacent4(from).filter { to =>
-            f(field.atUnsafe(from), field.atUnsafe(to))
-          },
-      )
-
+  ): Field2D[T] =
     // We lack bulk update feature, so this will have to do
-    reachable.foldLeft(field) { case (acc, c) =>
+    floodFillCoordinates(field, seed, f).foldLeft(field) { case (acc, c) =>
       acc.updatedAtUnsafe(c, mark)
     }
-  }
 
   def toDebugRepresentation(field: Field2D[Char]): String = mergeSeqSeqChar(
     field.yIndices map { y =>
