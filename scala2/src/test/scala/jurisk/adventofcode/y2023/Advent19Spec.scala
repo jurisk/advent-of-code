@@ -19,7 +19,7 @@ class Advent19Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
-    "simple" in {
+    "only 1 in A dimension" in {
       part2(
         Input(
           rules = Map(

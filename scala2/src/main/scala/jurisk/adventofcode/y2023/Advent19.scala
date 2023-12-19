@@ -30,7 +30,7 @@ object Advent19 {
     def sum: Long                         = values.values.sum
     def apply(dimension: Dimension): Long = values(dimension)
 
-    def updateToBeLessOrEqual(dimension: Dimension, n: Int): Part =
+    def updateToBeLessOrEqual(dimension: Dimension, n: Long): Part =
       Part(
         values.updated(
           dimension,
@@ -38,7 +38,7 @@ object Advent19 {
         )
       )
 
-    def updateToBeMoreOrEqual(dimension: Dimension, n: Int): Part =
+    def updateToBeMoreOrEqual(dimension: Dimension, n: Long): Part =
       Part(
         values.updated(
           dimension,
@@ -53,40 +53,39 @@ object Advent19 {
       input match {
         case s"{x=$x,m=$m,a=$a,s=$s}" =>
           Part(
-            Map(
-              Dimension.X -> x.toInt,
-              Dimension.M -> m.toInt,
-              Dimension.A -> a.toInt,
-              Dimension.S -> s.toInt,
-            )
+            (Dimension.All zip List(x, m, a, s)).map { case (d, n) =>
+              d -> n.toLong
+            }.toMap
           )
         case _                        => input.failedToParse
       }
   }
 
-  type RuleName = String
-  val StartRuleName: RuleName = "in"
+  private type RuleName = String
+  private val StartRuleName: RuleName  = "in"
+  private val AcceptRuleName: RuleName = "A"
+  private val RejectRuleName: RuleName = "R"
 
   sealed trait Criterion
   object Criterion {
     case object Accepted                     extends Criterion
     case object Rejected                     extends Criterion
     final case class Forward(rule: RuleName) extends Criterion
-    final case class LessThan(a: Dimension, b: Int, rule: RuleName)
+    final case class LessThan(a: Dimension, b: Long, rule: RuleName)
         extends Criterion
-    final case class GreaterThan(a: Dimension, b: Int, rule: RuleName)
+    final case class GreaterThan(a: Dimension, b: Long, rule: RuleName)
         extends Criterion
 
     def parse(input: String): Criterion =
       input match {
         case s"$bef1>$bef2:$after" =>
-          GreaterThan(Dimension.parse(bef1), bef2.toInt, after)
+          GreaterThan(Dimension.parse(bef1), bef2.toLong, after)
 
         case s"$bef1<$bef2:$after" =>
-          LessThan(Dimension.parse(bef1), bef2.toInt, after)
+          LessThan(Dimension.parse(bef1), bef2.toLong, after)
 
-        case "A" => Accepted
-        case "R" => Rejected
+        case AcceptRuleName => Accepted
+        case RejectRuleName => Rejected
 
         case other => Forward(other)
       }
@@ -124,9 +123,9 @@ object Advent19 {
 
       def resolve(ruleName: RuleName): Boolean =
         ruleName match {
-          case "A"   => true
-          case "R"   => false
-          case other =>
+          case `AcceptRuleName` => true
+          case `RejectRuleName` => false
+          case other            =>
             val rule = rules(other)
             resolve2(rule.criteria)
 
@@ -153,9 +152,11 @@ object Advent19 {
     low: Part,
     high: Part,
     d: Dimension,
-    n1: Int,
-    n2: Int,
+    n1: Long,
+    n2: Long,
   ): ((Part, Part), (Part, Part)) = {
+    assert(n1 + 1 == n2)
+
     val beforeChecksum = spaceSizeRaw(low, high)
 
     val a1 = low
@@ -182,8 +183,8 @@ object Advent19 {
       criteria match {
         case head :: tail =>
           head match {
-            case Criterion.Accepted                => spaceSize(low, high, "A")
-            case Criterion.Rejected                => spaceSize(low, high, "R")
+            case Criterion.Accepted                => spaceSize(low, high, AcceptRuleName)
+            case Criterion.Rejected                => spaceSize(low, high, RejectRuleName)
             case Criterion.Forward(forwardTo)      => spaceSize(low, high, forwardTo)
             case Criterion.LessThan(d, n, rule)    =>
               val ((a1, a2), (b1, b2)) = splitAt(low, high, d, n - 1, n)
@@ -200,10 +201,10 @@ object Advent19 {
 
     def spaceSize(low: Part, high: Part, ruleName: RuleName): Long =
       ruleName match {
-        case "A" =>
+        case `AcceptRuleName` =>
           spaceSizeRaw(low, high)
 
-        case "R" =>
+        case `RejectRuleName` =>
           0
 
         case other =>
@@ -211,24 +212,8 @@ object Advent19 {
           spaceSize2(low, high, rule.criteria)
       }
 
-    val startD = 1
-    val endD   = 4000
-    val low    = Part(
-      Map(
-        Dimension.X -> startD,
-        Dimension.M -> startD,
-        Dimension.A -> startD,
-        Dimension.S -> startD,
-      )
-    )
-    val high   = Part(
-      Map(
-        Dimension.X -> endD,
-        Dimension.M -> endD,
-        Dimension.A -> endD,
-        Dimension.S -> endD,
-      )
-    )
+    val low  = Part(Dimension.All.map(_ -> 1L).toMap)
+    val high = Part(Dimension.All.map(_ -> 4000L).toMap)
 
     spaceSize(low, high, StartRuleName)
   }
