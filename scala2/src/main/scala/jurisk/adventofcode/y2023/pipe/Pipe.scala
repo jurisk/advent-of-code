@@ -1,23 +1,19 @@
 package jurisk.adventofcode.y2023.pipe
 
-import jurisk.geometry.{
-  Coords2D,
-  CoordsAndDirection2D,
-  Direction2D,
-  Field2D,
-  Rotation,
-}
-import jurisk.geometry.Direction2D.{
-  CardinalDirection2D,
-  E,
-  N,
-  NE,
-  NW,
-  S,
-  SE,
-  SW,
-  W,
-}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.CoordsAndDirection2D
+import jurisk.geometry.Direction2D
+import jurisk.geometry.Direction2D.CardinalDirection2D
+import jurisk.geometry.Direction2D.E
+import jurisk.geometry.Direction2D.N
+import jurisk.geometry.Direction2D.NE
+import jurisk.geometry.Direction2D.NW
+import jurisk.geometry.Direction2D.S
+import jurisk.geometry.Direction2D.SE
+import jurisk.geometry.Direction2D.SW
+import jurisk.geometry.Direction2D.W
+import jurisk.geometry.Field2D
+import jurisk.geometry.Rotation
 import jurisk.utils.CollectionOps.IterableOps
 
 sealed trait Pipe extends Product with Serializable {
@@ -31,17 +27,14 @@ object Pipe {
     current: CoordsAndDirection2D,
     field: Field2D[Pipe],
   ): CoordsAndDirection2D = {
-    val nextCoords = current.nextStraight.coords
-    val nextSquare = field.atOrElse(nextCoords, Empty)
+    val next       = current.nextStraight
+    val nextSquare = field.atOrElse(next.coords, Empty)
 
     val nextDirection = nextSquare.connections
       .filterNot(_ == current.direction.invert)
       .singleElementUnsafe
 
-    CoordsAndDirection2D(
-      coords = nextCoords,
-      direction = nextDirection,
-    )
+    next.copy(direction = nextDirection)
   }
 
   // Coordinates to the right of these `coords`, if facing in `direction`

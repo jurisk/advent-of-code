@@ -5,14 +5,14 @@ import com.microsoft.z3.BoolExpr
 import jurisk.adventofcode.y2023.Advent16.Square.Empty
 import jurisk.collections.BiMap
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
-import jurisk.geometry.{Coords2D, Direction2D, Field2D}
-import jurisk.optimization.ImplicitConversions.{
-  RichBoolExpr,
-  RichExpr,
-  RichExprBoolSort,
-  RichString,
-}
+import jurisk.geometry.Field2D
+import jurisk.optimization.ImplicitConversions.RichBoolExpr
+import jurisk.optimization.ImplicitConversions.RichExpr
+import jurisk.optimization.ImplicitConversions.RichExprBoolSort
+import jurisk.optimization.ImplicitConversions.RichString
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps

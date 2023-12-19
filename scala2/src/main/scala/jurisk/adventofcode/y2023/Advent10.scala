@@ -5,13 +5,13 @@ import jurisk.adventofcode.y2023.pipe.Pipe
 import jurisk.adventofcode.y2023.pipe.Pipe._
 import jurisk.algorithms.pathfinding.Bfs
 import jurisk.algorithms.pathfinding.Dijkstra
-import jurisk.geometry.{Coords2D, CoordsAndDirection2D}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.CoordsAndDirection2D
 import jurisk.geometry.Direction2D.E
 import jurisk.geometry.Direction2D.N
 import jurisk.geometry.Direction2D.S
 import jurisk.geometry.Direction2D.W
 import jurisk.geometry.Field2D
-import jurisk.geometry.visualizeBoolean
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps

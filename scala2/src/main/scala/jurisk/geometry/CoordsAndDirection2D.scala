@@ -8,4 +8,10 @@ final case class CoordsAndDirection2D(
 ) {
   def nextStraight: CoordsAndDirection2D =
     CoordsAndDirection2D(coords + direction, direction)
+
+  def moveInDirection(newDirection: CardinalDirection2D): CoordsAndDirection2D =
+    CoordsAndDirection2D(
+      coords + newDirection,
+      newDirection,
+    )
 }

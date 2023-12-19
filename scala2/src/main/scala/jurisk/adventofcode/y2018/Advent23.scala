@@ -1,13 +1,12 @@
 package jurisk.adventofcode.y2018
 
-import jurisk.geometry.{Area3D, Coords3D}
-import jurisk.optimization.ImplicitConversions.{
-  RichArithExprIntSort,
-  RichExpr,
-  RichExprBoolSort,
-  RichExprIntSort,
-  RichInt,
-}
+import jurisk.geometry.Area3D
+import jurisk.geometry.Coords3D
+import jurisk.optimization.ImplicitConversions.RichArithExprIntSort
+import jurisk.optimization.ImplicitConversions.RichExpr
+import jurisk.optimization.ImplicitConversions.RichExprBoolSort
+import jurisk.optimization.ImplicitConversions.RichExprIntSort
+import jurisk.optimization.ImplicitConversions.RichInt
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps

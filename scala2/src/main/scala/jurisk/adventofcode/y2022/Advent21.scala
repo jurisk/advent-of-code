@@ -3,14 +3,12 @@ package jurisk.adventofcode.y2022
 import cats.implicits._
 import jurisk.adventofcode.y2022.Advent21.Expression._
 import jurisk.adventofcode.y2022.Advent21.Operation._
-import jurisk.optimization.ImplicitConversions.{
-  RichArithExprIntSort,
-  RichBoolExpr,
-  RichExpr,
-  RichExprIntSort,
-  RichLong,
-  RichString,
-}
+import jurisk.optimization.ImplicitConversions.RichArithExprIntSort
+import jurisk.optimization.ImplicitConversions.RichBoolExpr
+import jurisk.optimization.ImplicitConversions.RichExpr
+import jurisk.optimization.ImplicitConversions.RichExprIntSort
+import jurisk.optimization.ImplicitConversions.RichLong
+import jurisk.optimization.ImplicitConversions.RichString
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps

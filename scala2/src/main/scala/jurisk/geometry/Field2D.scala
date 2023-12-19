@@ -263,6 +263,7 @@ final case class Field2D[T] private (
   def expandOneSquareInAllDirections(
     empty: T
   )(implicit classTag: ClassTag[T]): Field2D[T] = {
+    // Could be more efficient, but used rarely
     val field = Field2D
       .forArea[T](Area2D(topLeft, bottomRight + Direction2D.SE.diff * 2), empty)
     valuesAndCoords.foldLeft(field) { case (acc, (c, v)) =>

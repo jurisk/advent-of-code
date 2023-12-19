@@ -16,16 +16,18 @@ object Advent13 {
   type Result2 = String
 
   final case class Cart(
-    direction: CardinalDirection2D,
-    coords: Coords2D,
+    at: CoordsAndDirection2D,
     turnsMade: Int,
   ) {
     override def toString: String =
-      s"coords = $coords, direction = $direction, turnsMade = $turnsMade"
+      s"at = $at, turnsMade = $turnsMade"
 
     private val rotations = List(Left90, NoRotation, Right90)
 
-    def directionSymbol: Char = direction match {
+    def coords: Coords2D               = at.coords
+    def direction: CardinalDirection2D = at.direction
+
+    def directionSymbol: Char = at.direction match {
       case N => '^'
       case E => '>'
       case W => '<'
@@ -49,7 +51,6 @@ object Advent13 {
             case Direction2D.E => N
             case Direction2D.N => E
             case Direction2D.W => S
-            case _             => s"Unexpected direction $direction".fail
           }
         case Track.NW_SE =>
           direction match {
@@ -57,14 +58,12 @@ object Advent13 {
             case Direction2D.E => S
             case Direction2D.N => W
             case Direction2D.W => N
-            case _             => s"Unexpected direction $direction".fail
           }
         case Track.Empty => s"Unexpected situation $square".fail
       }
 
       Cart(
-        newDirection,
-        coords + newDirection,
+        at.moveInDirection(newDirection),
         turnsMade + (if (square == Track.Intersection) 1 else 0),
       )
     }
@@ -189,7 +188,9 @@ object Advent13 {
   def parse(data: String, processingStrategy: ProcessingStrategy): State = {
     val field: Field2D[Char] = Field2D.parseCharField(data)
     val carts                = field.entries.flatMap { case (c, ch) =>
-      Direction2D.parseCaretToOption(ch) map { d => Cart(d, c, 0) }
+      Direction2D.parseCaretToOption(ch) map { d =>
+        Cart(CoordsAndDirection2D(c, d), 0)
+      }
     }.toSet
 
     val board: Field2D[Track] = field.map {

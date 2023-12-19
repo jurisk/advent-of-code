@@ -1,22 +1,20 @@
 package jurisk.optimization
 
 import cats.implicits.catsSyntaxOptionId
+import com.microsoft.z3.ArithExpr
+import com.microsoft.z3.ArithSort
+import com.microsoft.z3.BoolExpr
+import com.microsoft.z3.BoolSort
+import com.microsoft.z3.Context
+import com.microsoft.z3.Expr
+import com.microsoft.z3.IntExpr
+import com.microsoft.z3.IntNum
+import com.microsoft.z3.IntSort
+import com.microsoft.z3.Model
+import com.microsoft.z3.Optimize
+import com.microsoft.z3.Sort
+import com.microsoft.z3.Status
 import com.microsoft.z3.enumerations.Z3_lbool
-import com.microsoft.z3.{
-  ArithExpr,
-  ArithSort,
-  BoolExpr,
-  BoolSort,
-  Context,
-  Expr,
-  IntExpr,
-  IntNum,
-  IntSort,
-  Model,
-  Optimize,
-  Sort,
-  Status,
-}
 import jurisk.utils.Parsing.StringOps
 
 trait Optimizer {

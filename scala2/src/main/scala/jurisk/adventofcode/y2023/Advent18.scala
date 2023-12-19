@@ -61,8 +61,10 @@ object Advent18 {
   }
 
   def solveFloodFill(data: List[MovementInstruction]): Long = {
+    val pathPoints = MovementInstruction.walkEveryPoint(data)
+
     val field = Field2D
-      .fromPoints(MovementInstruction.walkEveryPoint(data))
+      .fromPoints(pathPoints)
       .map(if (_) Square.Dug else Square.Unknown)
 
     val filled = Field2D.floodFillFromOutside[Square](
