@@ -22,8 +22,8 @@ class Advent19Spec extends AnyFreeSpec {
     "only 1 in A dimension" in {
       part2(
         Input(
-          rules = Map(
-            "in" -> Rule(
+          workflows = Map(
+            "in" -> Workflow(
               Criterion.LessThan(Dimension.A, 2, "A") ::
                 Criterion.Forward("R")
                 :: Nil
