@@ -74,11 +74,12 @@ object Advent12 extends IOApp.Simple {
 
             val skippingNextOptions =
               springs.headOption match {
-                case Some(Damaged)                     => 0
-                // We cannot skip this one
                 case Some(Operational) | Some(Unknown) =>
                   // What if we skip the next one?
                   fMemoized(at + 1, dropGroups)
+                case Some(Damaged)                     =>
+                  // We cannot skip this one
+                  0
                 case None                              =>
                   0
               }
@@ -86,12 +87,12 @@ object Advent12 extends IOApp.Simple {
             startingHereOptions + skippingNextOptions
 
           case Nil =>
-            if (!springs.contains(Damaged)) {
-              // some springs left, but no groups left, but all those springs can be empty
-              1
-            } else {
+            if (springs.contains(Damaged)) {
               // we have damaged springs remaining but no groups left to cover
               0
+            } else {
+              // some springs left, but no groups left, but all those springs can be empty
+              1
             }
         }
 
