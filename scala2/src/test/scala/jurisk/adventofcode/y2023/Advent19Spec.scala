@@ -20,18 +20,8 @@ class Advent19Spec extends AnyFreeSpec {
 
   "part 2" - {
     "only 1 in A dimension" in {
-      part2(
-        Input(
-          workflows = Map(
-            "in" -> Workflow(
-              Rule.LessThan(Dimension.A, 2, "A") ::
-                Rule.Forward("R")
-                :: Nil
-            )
-          ),
-          parts = Nil,
-        )
-      ) shouldEqual 1L * 4000 * 4000 * 4000
+      val input = Input.parse("in{a<2:A,R}\n\n{x=0,m=0,a=0,s=0}")
+      part2(input) shouldEqual 1L * 4000 * 4000 * 4000
     }
 
     "test" in {
