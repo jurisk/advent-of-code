@@ -47,7 +47,24 @@ object Advent19 {
       )
   }
 
-  final case class PartSpace(low: Part, high: Part)
+  final case class PartSpace(low: Part, high: Part) {
+    // Providing two cut points 1 unit apart even though we could have just one, but this seemed
+    // less error-prone
+    def splitAt(
+      d: Dimension,
+      cutAtLower: Long,
+      cutAtHigher: Long,
+    ): (PartSpace, PartSpace) = {
+      assert(cutAtLower + 1 == cutAtHigher)
+
+      val a = copy(high = high.updateToBeLessOrEqual(d, cutAtLower))
+      val b = copy(low = low.updateToBeMoreOrEqual(d, cutAtHigher))
+
+      assert(spaceSizeRaw(this) == spaceSizeRaw(a) + spaceSizeRaw(b))
+
+      (a, b)
+    }
+  }
 
   object Part {
     def parse(input: String): Part =
@@ -124,11 +141,7 @@ object Advent19 {
         }
 
       def resolveWorkflow(workflowName: WorkflowName): Boolean =
-        workflowName match {
-          case other =>
-            val workflow = workflows(other)
-            resolveRules(workflow.rules)
-        }
+        resolveRules(workflows(workflowName).rules)
 
       resolveWorkflow(StartWorkflowName)
     }
@@ -156,24 +169,6 @@ object Advent19 {
   def part1(data: Input): Long =
     data.parts.filter(data.validPart).map(_.sum).sum
 
-  // Providing two cut points 1 unit apart even though we could have just one, but this seemed
-  // less error-prone
-  def splitAt(
-    space: PartSpace,
-    d: Dimension,
-    cutAtLower: Long,
-    cutAtHigher: Long,
-  ): (PartSpace, PartSpace) = {
-    assert(cutAtLower + 1 == cutAtHigher)
-
-    val a = space.copy(high = space.high.updateToBeLessOrEqual(d, cutAtLower))
-    val b = space.copy(low = space.low.updateToBeMoreOrEqual(d, cutAtHigher))
-
-    assert(spaceSizeRaw(space) == spaceSizeRaw(a) + spaceSizeRaw(b))
-
-    (a, b)
-  }
-
   def spaceSizeRaw(space: PartSpace): Long =
     Dimension.All.map(d => space.high(d) - space.low(d) + 1).product
 
@@ -191,10 +186,10 @@ object Advent19 {
             case Rule.Forward(forwardTo)          =>
               workflowSpaceSize(space, forwardTo)
             case Rule.LessThan(d, n, workflow)    =>
-              val (a, b) = splitAt(space, d, n - 1, n)
+              val (a, b) = space.splitAt(d, n - 1, n)
               workflowSpaceSize(a, workflow) + ruleSpaceSize(b, tail)
             case Rule.GreaterThan(d, n, workflow) =>
-              val (a, b) = splitAt(space, d, n, n + 1)
+              val (a, b) = space.splitAt(d, n, n + 1)
               ruleSpaceSize(a, tail) + workflowSpaceSize(b, workflow)
           }
 
