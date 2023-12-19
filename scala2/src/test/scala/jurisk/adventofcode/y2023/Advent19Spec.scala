@@ -19,12 +19,27 @@ class Advent19Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
+    "simple" in {
+      part2(
+        Input(
+          rules = Map(
+            "in" -> Rule(
+              Criterion.LessThan(Dimension.A, 2, "A") ::
+                Criterion.Forward("R")
+                :: Nil
+            )
+          ),
+          parts = Nil,
+        )
+      ) shouldEqual 1L * 4000 * 4000 * 4000
+    }
+
     "test" in {
       part2(testData) shouldEqual 167409079868000L
     }
 
     "real" in {
-      part2(realData) shouldEqual 256000000000000L
+      part2(realData) shouldEqual 135506683246673L
     }
   }
 }

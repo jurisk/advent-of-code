@@ -13,6 +13,8 @@ object Advent19 {
     case object A extends Dimension
     case object S extends Dimension
 
+    val All: List[Dimension] = X :: M :: A :: S :: Nil
+
     def parse(input: String): Dimension = {
       assert(input.length == 1)
       input.head match {
@@ -24,9 +26,26 @@ object Advent19 {
     }
   }
 
-  final case class Part(values: Map[Dimension, Int]) {
-    def sum: Int                                  = values.values.sum
-    def getByDimension(dimension: Dimension): Int = values(dimension)
+  final case class Part(values: Map[Dimension, Long]) {
+    def sum: Long                         = values.values.sum
+    def apply(dimension: Dimension): Long = values(dimension)
+
+    def updateToBeLessOrEqual(dimension: Dimension, n: Int): Part =
+      Part(
+        values.updated(
+          dimension,
+          apply(dimension).min(n),
+        )
+      )
+
+    def updateToBeMoreOrEqual(dimension: Dimension, n: Int): Part =
+      Part(
+        values.updated(
+          dimension,
+          apply(dimension).max(n),
+        )
+      )
+
   }
 
   object Part {
@@ -94,10 +113,10 @@ object Advent19 {
               case Criterion.Rejected                => false
               case Criterion.Forward(rule)           => resolve(rule)
               case Criterion.LessThan(a, b, rule)    =>
-                if (part.getByDimension(a) < b) resolve(rule)
+                if (part(a) < b) resolve(rule)
                 else resolve2(tail)
               case Criterion.GreaterThan(a, b, rule) =>
-                if (part.getByDimension(a) > b) resolve(rule)
+                if (part(a) > b) resolve(rule)
                 else resolve2(tail)
             }
           case Nil          => "wtf".fail
@@ -127,11 +146,92 @@ object Advent19 {
     Input(rules, parts)
   }
 
-  def part1(data: Input): Int =
+  def part1(data: Input): Long =
     data.parts.filter(data.validPart).map(_.sum).sum
 
-  def part2(data: Input): Int =
-    ???
+  def splitAt(
+    low: Part,
+    high: Part,
+    d: Dimension,
+    n1: Int,
+    n2: Int,
+  ): ((Part, Part), (Part, Part)) = {
+    val beforeChecksum = spaceSizeRaw(low, high)
+
+    val a1 = low
+    val a2 = high.updateToBeLessOrEqual(d, n1)
+
+    val b1 = low.updateToBeMoreOrEqual(d, n2)
+    val b2 = high
+
+    val aChecksum = spaceSizeRaw(a1, a2)
+    val bChecksum = spaceSizeRaw(b1, b2)
+
+    assert(beforeChecksum == aChecksum + bChecksum)
+
+    ((a1, a2), (b1, b2))
+  }
+
+  def spaceSizeRaw(low: Part, high: Part): Long =
+    Dimension.All.map(d => high(d) - low(d) + 1).product
+
+  def part2(data: Input): Long = {
+    val rules = data.rules
+
+    def spaceSize2(low: Part, high: Part, criteria: List[Criterion]): Long =
+      criteria match {
+        case head :: tail =>
+          head match {
+            case Criterion.Accepted                => spaceSize(low, high, "A")
+            case Criterion.Rejected                => spaceSize(low, high, "R")
+            case Criterion.Forward(forwardTo)      => spaceSize(low, high, forwardTo)
+            case Criterion.LessThan(d, n, rule)    =>
+              val ((a1, a2), (b1, b2)) = splitAt(low, high, d, n - 1, n)
+              spaceSize(a1, a2, rule) +
+                spaceSize2(b1, b2, tail)
+            case Criterion.GreaterThan(d, n, rule) =>
+              val ((a1, a2), (b1, b2)) = splitAt(low, high, d, n, n + 1)
+              spaceSize2(a1, a2, tail) +
+                spaceSize(b1, b2, rule)
+          }
+
+        case Nil => "wtf".fail
+      }
+
+    def spaceSize(low: Part, high: Part, ruleName: RuleName): Long =
+      ruleName match {
+        case "A" =>
+          spaceSizeRaw(low, high)
+
+        case "R" =>
+          0
+
+        case other =>
+          val rule = rules(other)
+          spaceSize2(low, high, rule.criteria)
+      }
+
+    val startD = 1
+    val endD   = 4000
+    val low    = Part(
+      Map(
+        Dimension.X -> startD,
+        Dimension.M -> startD,
+        Dimension.A -> startD,
+        Dimension.S -> startD,
+      )
+    )
+    val high   = Part(
+      Map(
+        Dimension.X -> endD,
+        Dimension.M -> endD,
+        Dimension.A -> endD,
+        Dimension.S -> endD,
+      )
+    )
+
+    spaceSize(low, high, StartRuleName)
+  }
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
