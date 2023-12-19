@@ -65,23 +65,23 @@ object Advent19 {
   private val AcceptWorkflowName: WorkflowName = "A"
   private val RejectWorkflowName: WorkflowName = "R"
 
-  sealed trait Criterion
-  object Criterion {
-    case object Accepted                              extends Criterion
-    case object Rejected                              extends Criterion
-    final case class Forward(forwardTo: WorkflowName) extends Criterion
+  sealed trait Rule
+  object Rule {
+    case object Accepted                              extends Rule
+    case object Rejected                              extends Rule
+    final case class Forward(forwardTo: WorkflowName) extends Rule
     final case class LessThan(
       dimension: Dimension,
       compareWith: Long,
       workflow: WorkflowName,
-    ) extends Criterion
+    ) extends Rule
     final case class GreaterThan(
       dimension: Dimension,
       compareWith: Long,
       workflow: WorkflowName,
-    ) extends Criterion
+    ) extends Rule
 
-    def parse(input: String): Criterion =
+    def parse(input: String): Rule =
       input match {
         case s"$bef1>$bef2:$after" =>
           GreaterThan(Dimension.parse(bef1), bef2.toLong, after)
@@ -96,11 +96,11 @@ object Advent19 {
       }
   }
 
-  final case class Workflow(criteria: List[Criterion])
+  final case class Workflow(rules: List[Rule])
 
   object Workflow {
     def parse(input: String): Workflow =
-      Workflow(input.split(",").toList.map(Criterion.parse))
+      Workflow(input.split(",").toList.map(Rule.parse))
   }
 
   final case class Input(
@@ -109,17 +109,17 @@ object Advent19 {
   ) {
     def validPart(part: Part): Boolean = {
       @tailrec
-      def resolve2(criteria: List[Criterion]): Boolean =
-        criteria match {
+      def resolve2(rules: List[Rule]): Boolean =
+        rules match {
           case head :: tail =>
             head match {
-              case Criterion.Accepted                    => true
-              case Criterion.Rejected                    => false
-              case Criterion.Forward(forwardTo)          => resolve(forwardTo)
-              case Criterion.LessThan(a, b, workflow)    =>
+              case Rule.Accepted                    => true
+              case Rule.Rejected                    => false
+              case Rule.Forward(forwardTo)          => resolve(forwardTo)
+              case Rule.LessThan(a, b, workflow)    =>
                 if (part(a) < b) resolve(workflow)
                 else resolve2(tail)
-              case Criterion.GreaterThan(a, b, workflow) =>
+              case Rule.GreaterThan(a, b, workflow) =>
                 if (part(a) > b) resolve(workflow)
                 else resolve2(tail)
             }
@@ -132,7 +132,7 @@ object Advent19 {
           case RejectWorkflowName => false
           case other              =>
             val workflow = workflows(other)
-            resolve2(workflow.criteria)
+            resolve2(workflow.rules)
 
         }
 
@@ -184,18 +184,18 @@ object Advent19 {
   def part2(data: Input): Long = {
     val workflows = data.workflows
 
-    def spaceSize2(low: Part, high: Part, criteria: List[Criterion]): Long =
-      criteria match {
+    def spaceSize2(low: Part, high: Part, rules: List[Rule]): Long =
+      rules match {
         case head :: tail =>
           head match {
-            case Criterion.Accepted                    => spaceSize(low, high, AcceptWorkflowName)
-            case Criterion.Rejected                    => spaceSize(low, high, RejectWorkflowName)
-            case Criterion.Forward(forwardTo)          => spaceSize(low, high, forwardTo)
-            case Criterion.LessThan(d, n, workflow)    =>
+            case Rule.Accepted                    => spaceSize(low, high, AcceptWorkflowName)
+            case Rule.Rejected                    => spaceSize(low, high, RejectWorkflowName)
+            case Rule.Forward(forwardTo)          => spaceSize(low, high, forwardTo)
+            case Rule.LessThan(d, n, workflow)    =>
               val ((a1, a2), (b1, b2)) = splitAt(low, high, d, n - 1, n)
               spaceSize(a1, a2, workflow) +
                 spaceSize2(b1, b2, tail)
-            case Criterion.GreaterThan(d, n, workflow) =>
+            case Rule.GreaterThan(d, n, workflow) =>
               val ((a1, a2), (b1, b2)) = splitAt(low, high, d, n, n + 1)
               spaceSize2(a1, a2, tail) +
                 spaceSize(b1, b2, workflow)
@@ -214,7 +214,7 @@ object Advent19 {
 
         case other =>
           val workflow = workflows(other)
-          spaceSize2(low, high, workflow.criteria)
+          spaceSize2(low, high, workflow.rules)
       }
 
     val low  = Part(Dimension.All.map(_ -> 1L).toMap)

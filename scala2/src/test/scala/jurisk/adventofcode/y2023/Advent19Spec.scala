@@ -24,8 +24,8 @@ class Advent19Spec extends AnyFreeSpec {
         Input(
           workflows = Map(
             "in" -> Workflow(
-              Criterion.LessThan(Dimension.A, 2, "A") ::
-                Criterion.Forward("R")
+              Rule.LessThan(Dimension.A, 2, "A") ::
+                Rule.Forward("R")
                 :: Nil
             )
           ),
