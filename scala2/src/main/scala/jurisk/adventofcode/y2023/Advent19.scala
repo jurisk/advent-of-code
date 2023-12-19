@@ -6,22 +6,41 @@ import jurisk.utils.Parsing.StringOps
 import scala.annotation.tailrec
 
 object Advent19 {
-  final case class Part(x: Int, m: Int, a: Int, s: Int) {
-    def sum: Int                 = x + m + a + s
-    def getByChar(ch: Char): Int =
-      ch match {
-        case 'x' => x
-        case 'm' => m
-        case 'a' => a
-        case 's' => s
+  sealed trait Dimension
+  object Dimension {
+    case object X extends Dimension
+    case object M extends Dimension
+    case object A extends Dimension
+    case object S extends Dimension
+
+    def parse(input: String): Dimension = {
+      assert(input.length == 1)
+      input.head match {
+        case 'x' => X
+        case 'm' => M
+        case 'a' => A
+        case 's' => S
       }
+    }
+  }
+
+  final case class Part(values: Map[Dimension, Int]) {
+    def sum: Int                                  = values.values.sum
+    def getByDimension(dimension: Dimension): Int = values(dimension)
   }
 
   object Part {
     def parse(input: String): Part =
       input match {
         case s"{x=$x,m=$m,a=$a,s=$s}" =>
-          Part(x.toInt, m.toInt, a.toInt, s.toInt)
+          Part(
+            Map(
+              Dimension.X -> x.toInt,
+              Dimension.M -> m.toInt,
+              Dimension.A -> a.toInt,
+              Dimension.S -> s.toInt,
+            )
+          )
         case _                        => input.failedToParse
       }
   }
@@ -31,22 +50,21 @@ object Advent19 {
 
   sealed trait Criterion
   object Criterion {
-    case object Accepted                                       extends Criterion
-    case object Rejected                                       extends Criterion
-    final case class Forward(rule: RuleName)                   extends Criterion
-    final case class LessThan(a: Char, b: Int, rule: RuleName) extends Criterion
-    final case class GreaterThan(a: Char, b: Int, rule: RuleName)
+    case object Accepted                     extends Criterion
+    case object Rejected                     extends Criterion
+    final case class Forward(rule: RuleName) extends Criterion
+    final case class LessThan(a: Dimension, b: Int, rule: RuleName)
+        extends Criterion
+    final case class GreaterThan(a: Dimension, b: Int, rule: RuleName)
         extends Criterion
 
     def parse(input: String): Criterion =
       input match {
         case s"$bef1>$bef2:$after" =>
-          assert(bef1.length == 1)
-          GreaterThan(bef1.head, bef2.toInt, after)
+          GreaterThan(Dimension.parse(bef1), bef2.toInt, after)
 
         case s"$bef1<$bef2:$after" =>
-          assert(bef1.length == 1)
-          LessThan(bef1.head, bef2.toInt, after)
+          LessThan(Dimension.parse(bef1), bef2.toInt, after)
 
         case "A" => Accepted
         case "R" => Rejected
@@ -76,9 +94,11 @@ object Advent19 {
               case Criterion.Rejected                => false
               case Criterion.Forward(rule)           => resolve(rule)
               case Criterion.LessThan(a, b, rule)    =>
-                if (part.getByChar(a) < b) resolve(rule) else resolve2(tail)
+                if (part.getByDimension(a) < b) resolve(rule)
+                else resolve2(tail)
               case Criterion.GreaterThan(a, b, rule) =>
-                if (part.getByChar(a) > b) resolve(rule) else resolve2(tail)
+                if (part.getByDimension(a) > b) resolve(rule)
+                else resolve2(tail)
             }
           case Nil          => "wtf".fail
         }
@@ -111,7 +131,7 @@ object Advent19 {
     data.parts.filter(data.validPart).map(_.sum).sum
 
   def part2(data: Input): Int =
-    0
+    ???
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
