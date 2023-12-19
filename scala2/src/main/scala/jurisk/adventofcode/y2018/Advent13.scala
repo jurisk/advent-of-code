@@ -24,8 +24,7 @@ object Advent13 {
 
     private val rotations = List(Left90, NoRotation, Right90)
 
-    def coords: Coords2D               = at.coords
-    def direction: CardinalDirection2D = at.direction
+    def coords: Coords2D = at.coords
 
     def directionSymbol: Char = at.direction match {
       case N => '^'
@@ -36,7 +35,8 @@ object Advent13 {
     }
 
     def next(board: Field2D[Track]): Cart = {
-      val square = board.atOrElse(coords, Track.Empty)
+      val square    = board.atOrElse(coords, Track.Empty)
+      val direction = at.direction
 
       val newDirection = square match {
         case Track.Intersection =>

@@ -3,7 +3,7 @@ package jurisk.adventofcode.y2023
 import org.scalatest.freespec.AnyFreeSpec
 import Advent16._
 import cats.implicits._
-import jurisk.geometry.{Coords2D, Direction2D}
+import jurisk.geometry.{Coords2D, CoordsAndDirection2D, Direction2D}
 import org.scalatest.matchers.should.Matchers._
 
 class Advent16Spec extends AnyFreeSpec {
@@ -18,7 +18,7 @@ class Advent16Spec extends AnyFreeSpec {
 
     solveByOptimization(
       test,
-      (Coords2D.Zero, Direction2D.W).some,
+      CoordsAndDirection2D(Coords2D.Zero, Direction2D.W).some,
       MinimizeOrMaximize.Maximize,
       debug = true,
     ) shouldEqual 1

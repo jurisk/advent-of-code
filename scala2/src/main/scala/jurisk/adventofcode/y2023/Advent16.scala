@@ -6,6 +6,7 @@ import jurisk.adventofcode.y2023.Advent16.Square.Empty
 import jurisk.collections.BiMap
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
 import jurisk.geometry.Coords2D
+import jurisk.geometry.CoordsAndDirection2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
 import jurisk.geometry.Field2D
@@ -82,22 +83,25 @@ object Advent16 {
     )
 
   final case class State(
-    incomingQueue: Set[(Coords2D, CardinalDirection2D)],
-    outgoingQueue: Set[(Coords2D, CardinalDirection2D)],
-    incomingEdgesProcessed: Set[(Coords2D, CardinalDirection2D)],
+    incomingQueue: Set[CoordsAndDirection2D],
+    outgoingQueue: Set[CoordsAndDirection2D],
+    incomingEdgesProcessed: Set[CoordsAndDirection2D],
   ) {
     def next(field: Input): State = {
-      val newIncomingQueue = outgoingQueue.flatMap { case (c, dir) =>
-        val neighbourCoords = c + dir
-        field.isValidCoordinate(neighbourCoords) option {
-          neighbourCoords -> dir.invert
+      val newIncomingQueue = outgoingQueue.flatMap { next =>
+        val neighbour = next.nextStraight
+        field.isValidCoordinate(neighbour.coords) option {
+          neighbour.invertDirection
         }
       } -- incomingEdgesProcessed
 
       val newOutgoingQueue = for {
-        (c, dir) <- incomingQueue
-        outgoing <- field.at(c).toList.flatMap(_.incomingToOutgoing(dir))
-      } yield c -> outgoing
+        next     <- incomingQueue
+        outgoing <- field
+                      .at(next.coords)
+                      .toList
+                      .flatMap(_.incomingToOutgoing(next.direction))
+      } yield next.copy(direction = outgoing)
 
       State(
         newIncomingQueue,
@@ -109,10 +113,9 @@ object Advent16 {
 
   object State {
     def fromInitial(
-      initialSquare: Coords2D,
-      initialDirection: CardinalDirection2D,
+      initial: CoordsAndDirection2D
     ): State = {
-      val incomingQueue = Set(initialSquare -> initialDirection)
+      val incomingQueue = Set(initial)
       State(
         incomingQueue = incomingQueue,
         outgoingQueue = Set.empty,
@@ -123,12 +126,11 @@ object Advent16 {
 
   private def solveBySimulation(
     field: Input,
-    initialSquare: Coords2D,
-    initialDirection: CardinalDirection2D,
+    initial: CoordsAndDirection2D,
   ): Long = {
-    val initial  = State.fromInitial(initialSquare, initialDirection)
-    val endState = Simulation.runUntilStableState(initial)(_.next(field))
-    endState.incomingEdgesProcessed.map { case (c, _) => c }.size
+    val initialState = State.fromInitial(initial)
+    val endState     = Simulation.runUntilStableState(initialState)(_.next(field))
+    endState.incomingEdgesProcessed.map(_.coords).size
   }
 
   sealed trait MinimizeOrMaximize
@@ -139,7 +141,7 @@ object Advent16 {
 
   private[y2023] def solveByOptimization(
     field: Input,
-    initial: Option[(Coords2D, CardinalDirection2D)],
+    initial: Option[CoordsAndDirection2D],
     optimizationDirection: MinimizeOrMaximize,
     debug: Boolean = false,
   ): Long = {
@@ -202,8 +204,8 @@ object Advent16 {
     }
 
     // Exactly one of the incomings from the edge is 1
-    val allEdgeIncomings = edgeIncomings(field).map { case (c, d) =>
-      incomingBool(c, d).toInt
+    val allEdgeIncomings = edgeIncomings(field).map { edge =>
+      incomingBool(edge.coords, edge.direction).toInt
     }.toSeq
 
     assert(allEdgeIncomings.distinct.length == (field.height + field.width) * 2)
@@ -213,9 +215,9 @@ object Advent16 {
     )
 
     // Only for Part 1 - initialSquare incoming initialDirection is 1, others are 0
-    initial foreach { case (initialSquare, initialDirection) =>
+    initial foreach { initial =>
       addConstraints(
-        incomingBool(initialSquare, initialDirection) === True
+        incomingBool(initial.coords, initial.direction) === True
       )
     }
 
@@ -291,26 +293,25 @@ object Advent16 {
 
   private def edgeIncomings(
     field: Input
-  ): Iterable[(Coords2D, CardinalDirection2D)] =
-    field.topRowCoords.map(_ -> N) :::
-      field.rightColumnCoords.map(_ -> E) :::
-      field.bottomRowCoords.map(_ -> S) :::
-      field.leftColumnCoords.map(_ -> W)
+  ): Iterable[CoordsAndDirection2D] =
+    field.topRowCoords.map(CoordsAndDirection2D(_, N)) :::
+      field.rightColumnCoords.map(CoordsAndDirection2D(_, E)) :::
+      field.bottomRowCoords.map(CoordsAndDirection2D(_, S)) :::
+      field.leftColumnCoords.map(CoordsAndDirection2D(_, W))
 
   private[y2023] def part1Simulation(field: Input): Long =
-    solveBySimulation(field, Coords2D.Zero, Direction2D.W)
+    solveBySimulation(field, CoordsAndDirection2D(Coords2D.Zero, Direction2D.W))
 
   private[y2023] def part1Optimization(field: Input): Long =
     solveByOptimization(
       field,
-      (Coords2D.Zero, Direction2D.W).some,
+      CoordsAndDirection2D(Coords2D.Zero, Direction2D.W).some,
       MinimizeOrMaximize.Minimize,
     )
 
   private[y2023] def part2Simulation(field: Input): Long = {
-    val solutions = edgeIncomings(field) map {
-      case (initialSquare, initialDirection) =>
-        solveBySimulation(field, initialSquare, initialDirection)
+    val solutions = edgeIncomings(field) map { initial =>
+      solveBySimulation(field, initial)
     }
 
     solutions.max

@@ -14,4 +14,6 @@ final case class CoordsAndDirection2D(
       coords + newDirection,
       newDirection,
     )
+
+  def invertDirection: CoordsAndDirection2D = copy(direction = direction.invert)
 }
