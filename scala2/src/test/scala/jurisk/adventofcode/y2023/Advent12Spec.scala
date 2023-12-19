@@ -18,7 +18,7 @@ class Advent12Spec extends AsyncFreeSpec with AsyncIOSpec {
       Row.parse(input).expand(5).arrangements shouldEqual expected
     }
 
-  "part 1 arrangements" - {
+  "part 1 arrangements 1" - {
     testPart1("# 1", 1)
     testPart1("? 1", 1)
     testPart1(". 1", 0)
@@ -27,13 +27,16 @@ class Advent12Spec extends AsyncFreeSpec with AsyncIOSpec {
     testPart1("??? 1,1", 1)
     testPart1("???.### 1,1,3", 1)
     testPart1(".??..??...?##. 1,1,3", 4)
-    Row.parse("?#?#?#?#?#?#?#? 1,3,1,6").arrangements shouldEqual 1
-    Row.parse("????.#...#... 4,1,1").arrangements shouldEqual 1
-    Row.parse("????.######..#####. 1,6,5").arrangements shouldEqual 4
-    Row.parse("??????? 2,1").arrangements shouldEqual 10
-    Row.parse("?###? 3").arrangements shouldEqual 1
-    Row.parse("###? 3").arrangements shouldEqual 1
-    Row.parse("?###???????? 3,2,1").arrangements shouldEqual 10
+  }
+
+  "part 1 arrangements 2" - {
+    testPart1("?#?#?#?#?#?#?#? 1,3,1,6", 1)
+    testPart1("????.#...#... 4,1,1", 1)
+    testPart1("????.######..#####. 1,6,5", 4)
+    testPart1("??????? 2,1", 10)
+    testPart1("?###? 3", 1)
+    testPart1("###? 3", 1)
+    testPart1("?###???????? 3,2,1", 10)
   }
 
   "part 2 arrangements" - {

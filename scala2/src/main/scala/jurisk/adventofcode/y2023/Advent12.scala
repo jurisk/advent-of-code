@@ -1,14 +1,11 @@
 package jurisk.adventofcode.y2023
 
-import cats.effect.IO
-import cats.effect.IOApp
+import cats.effect.{IO, IOApp}
 import cats.implicits._
 import jurisk.adventofcode.y2023.Condition._
 import jurisk.math.Combinatorics
-import jurisk.utils.CollectionOps.ListListOps
 import jurisk.utils.CollectionOps.ListOps
 import jurisk.utils.FileInputIO.readFileText
-import jurisk.utils.Memoize
 import jurisk.utils.Memoize.memoize2
 import jurisk.utils.Parsing.StringOps
 
@@ -18,89 +15,19 @@ sealed trait Condition {
 }
 
 object Condition {
-  sealed trait NonOperational extends Condition
-
-  case object Operational extends Condition                     {
+  case object Operational extends Condition {
     override def symbol: Char = '.'
   }
-  case object Damaged     extends Condition with NonOperational {
+  case object Damaged     extends Condition {
     override def symbol: Char = '#'
   }
-  case object Unknown     extends Condition with NonOperational {
+  case object Unknown     extends Condition {
     override def symbol: Char = '?'
   }
 }
 
 object Advent12 extends IOApp.Simple {
   type Input = List[Row]
-
-  // Memoizing without a capacity limit was slightly faster, but let's leave this like this as an indirect test for the
-  // LRUCache
-  private val calculateArrangementsMemoized
-    : (List[List[NonOperational]], List[Int]) => Long =
-    memoize2(calculateArrangements, 1_000.some)
-
-  private def calculateArrangements(
-    springs: List[List[NonOperational]],
-    groups: List[Int],
-  ): Long = {
-    val maxPossibleDamaged = springs.map(_.size).sum
-    val groupSum           = groups.sum
-
-    if (groupSum > maxPossibleDamaged) {
-      // We don't have enough possible springs left in `springs` to cover all the groups in `groups`, it is hopeless
-      0
-    } else {
-      groups match {
-        case nextGroup :: otherGroups =>
-          springs match {
-            case nextSprings :: _ =>
-              val startingHereOptions = {
-                // Do we even have enough space to start the next group here?
-                val groupCanStartHere = nextSprings.length >= nextGroup
-
-                // If we start a group here, the next one has to be free
-                val validSpaceAfter =
-                  !nextSprings.lift(nextGroup).contains(Damaged)
-
-                if (groupCanStartHere && validSpaceAfter) {
-                  calculateArrangementsMemoized(
-                    springs.dropFromFirstEliminatingEmpty(nextGroup + 1),
-                    otherGroups,
-                  )
-                } else {
-                  0
-                }
-              }
-
-              val skippingNextOptions =
-                if (nextSprings.headOption.contains(Damaged)) {
-                  // Next is damaged, we cannot skip it and must start the group here
-                  0
-                } else {
-                  // What if we skip the next one?
-                  calculateArrangementsMemoized(
-                    springs.dropFromFirstEliminatingEmpty(1),
-                    nextGroup :: otherGroups,
-                  )
-                }
-
-              startingHereOptions + skippingNextOptions
-
-            case Nil => 0 // Group left but no matching springs
-          }
-
-        case Nil =>
-          if (springs.forall(_.forall(_ == Unknown))) {
-            // some springs left, but no groups left, but all those springs can be empty
-            1
-          } else {
-            // we have damaged springs remaining but no groups left to cover
-            0
-          }
-      }
-    }
-  }
 
   final case class Row(
     conditions: List[Condition],
@@ -120,15 +47,58 @@ object Advent12 extends IOApp.Simple {
         }
 
     def arrangements: Long = {
-      val grouped: List[List[NonOperational]] =
-        conditions.splitBySeparator(Operational).map { list =>
-          list.map {
-            case x: NonOperational => x
-            case x                 => s"Did not expect $x in split conditions".fail
-          }
+      lazy val fMemoized: (Int, Int) => Long = memoize2(f)
+
+      def f(at: Int, dropGroups: Int): Long = {
+        val springs    = conditions.drop(at)
+        val groupsLeft = groups.drop(dropGroups)
+
+        val result = groupsLeft match {
+          case nextGroup :: _ =>
+            val startingHereOptions = {
+              // Do we even have enough space to start the next group here?
+              val groupCanStartHere = springs.size >= nextGroup && !springs
+                .take(nextGroup)
+                .contains(Operational)
+
+              // If we start a group here, the next one has to be free
+              val validSpaceAfter =
+                !springs.lift(nextGroup).contains(Damaged)
+
+              if (groupCanStartHere && validSpaceAfter) {
+                fMemoized(at + nextGroup + 1, dropGroups + 1)
+              } else {
+                0
+              }
+            }
+
+            val skippingNextOptions =
+              springs.headOption match {
+                case Some(Damaged)                     => 0
+                // We cannot skip this one
+                case Some(Operational) | Some(Unknown) =>
+                  // What if we skip the next one?
+                  fMemoized(at + 1, dropGroups)
+                case None                              =>
+                  0
+              }
+
+            startingHereOptions + skippingNextOptions
+
+          case Nil =>
+            if (!springs.contains(Damaged)) {
+              // some springs left, but no groups left, but all those springs can be empty
+              1
+            } else {
+              // we have damaged springs remaining but no groups left to cover
+              0
+            }
         }
 
-      calculateArrangements(grouped, groups)
+        result
+      }
+
+      f(0, 0)
     }
   }
 
