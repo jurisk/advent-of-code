@@ -10,10 +10,10 @@ class Advent20Spec extends AnyFreeSpec {
   private def realData  = parseFile(fileName(""))
 
   "part 1" - {
-//    "justone" in {
-//      val result = solve1(testData1, 1)
-//      result.pulsesSent.values.product shouldEqual 32
-//    }
+    "simple" in {
+      val result = solve1(testData1, 1)
+      result.pulsesSent shouldEqual Map(Low -> 8, High -> 4)
+    }
 
     "test 1" in {
       part1(testData1) shouldEqual 32000000
@@ -30,7 +30,7 @@ class Advent20Spec extends AnyFreeSpec {
 
   "part 2" - {
     "real" in {
-      part2(realData) shouldEqual 0
+      part2(realData) shouldEqual 224602011344203L
     }
   }
 }

@@ -1,7 +1,12 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits.{catsSyntaxEitherId, catsSyntaxOptionId}
-import jurisk.adventofcode.y2023.Advent20.Command.{Conjunction, FlipFlop, Output}
+import jurisk.adventofcode.y2023.Advent20.Module.{
+  Broadcaster,
+  Conjunction,
+  FlipFlop,
+  Output,
+}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
@@ -19,11 +24,11 @@ object Advent20 {
   val High: Pulse = true
 
   sealed trait Module extends Product with Serializable
-  object Command {
+  object Module {
     final case class Broadcaster(sendTo: List[ModuleName]) extends Module
     final case class FlipFlop(sendTo: List[ModuleName])    extends Module
     final case class Conjunction(sendTo: List[ModuleName]) extends Module
-    final case object Output extends Module
+    final case object Output                               extends Module
 
     def parse(s: String): (ModuleName, Module) =
       s match {
@@ -45,18 +50,19 @@ object Advent20 {
     flipFlops: Map[ModuleName, Boolean],
     conjunctions: Map[ModuleName, ConjunctionState],
     buttonPresses: Long = 0,
-    rxHasLow: Boolean = false,
+    conjunctionsTriggered: Set[ModuleName],
   ) {
-    private def send(qe: QueueEntry): State = {
-      if (qe.to == "rx" && qe.pulse == Low) {
-        copy(rxHasLow = true)
-      } else {
-        copy(
-          pulsesQueue = pulsesQueue.appended(qe),
-          pulsesSent = pulsesSent + (qe.pulse -> (pulsesSent(qe.pulse) + 1)),
-        )
-      }
-    }
+    override def toString: String =
+      s"FF: ${flipFlops.filter(_._2).keys.toList.sorted.mkString(", ")}\nCJ: ${conjunctions
+          .map { case (k, v) =>
+            s"$k has on [${v.filter(_._2).keys.toList.sorted.mkString(", ")}]"
+          }}\n\n"
+
+    private def send(qe: QueueEntry): State =
+      copy(
+        pulsesQueue = pulsesQueue.appended(qe),
+        pulsesSent = pulsesSent + (qe.pulse -> (pulsesSent(qe.pulse) + 1)),
+      )
 
     private def process(module: Module, qe: QueueEntry): State = {
       val pulse = qe.pulse
@@ -64,11 +70,11 @@ object Advent20 {
       val to    = qe.to
 
       module match {
-        case Command.Broadcaster(sendTo) =>
+        case Module.Broadcaster(sendTo) =>
           sendTo.foldLeft(this) { case (acc, m) =>
             acc.send(QueueEntry(Start, m, pulse))
           }
-        case Command.FlipFlop(sendTo)    =>
+        case Module.FlipFlop(sendTo)    =>
           (pulse, flipFlops(to)) match {
             case (`High`, _) => this
             case (`Low`, b)  =>
@@ -78,17 +84,21 @@ object Advent20 {
               }
             case (a, b)      => s"$a $b".fail // TODO
           }
-        case Command.Conjunction(sendTo) =>
+        case Module.Conjunction(sendTo) =>
           val oldCs     = conjunctions(to)
           val updatedCs = oldCs + (from -> pulse)
           val next      = if (updatedCs.values.forall(_ == High)) Low else High
-
-          val updated = copy(conjunctions = conjunctions + (to -> updatedCs))
+          val b         = copy(conjunctions = conjunctions + (to -> updatedCs))
+          val updated   = if (next == Low) {
+            b.copy(
+              conjunctionsTriggered = conjunctionsTriggered + to
+            )
+          } else b
 
           sendTo.foldLeft(updated) { case (acc, m) =>
             acc.send(QueueEntry(to, m, next))
           }
-        case Command.Output =>
+        case Module.Output              =>
           this
       }
     }
@@ -97,13 +107,16 @@ object Advent20 {
     private def runToCompletion(data: Input): State =
       pulsesQueue.headOption match {
         case Some(e) =>
-          val result = copy(pulsesQueue = pulsesQueue.tail).process(data.getOrElse(e.to, Output), e)
+          val result = copy(pulsesQueue = pulsesQueue.tail)
+            .process(data.getOrElse(e.to, Output), e)
           result.runToCompletion(data)
         case None    => this
       }
 
     def next(data: Input): State =
-      copy(buttonPresses = buttonPresses + 1).send(QueueEntry("", Start, Low)).runToCompletion(data)
+      copy(buttonPresses = buttonPresses + 1)
+        .send(QueueEntry("", Start, Low))
+        .runToCompletion(data)
   }
 
   object State {
@@ -112,10 +125,10 @@ object Advent20 {
         data
           .filter { case (_, v) =>
             v match {
-              case Command.Broadcaster(sendTo) => sendTo.contains(n)
-              case FlipFlop(sendTo)            => sendTo.contains(n)
-              case Conjunction(sendTo)    => sendTo.contains(n)
-              case Output => false
+              case Module.Broadcaster(sendTo) => sendTo.contains(n)
+              case FlipFlop(sendTo)           => sendTo.contains(n)
+              case Conjunction(sendTo)        => sendTo.contains(n)
+              case Output                     => false
             }
           }
           .keys
@@ -130,12 +143,13 @@ object Advent20 {
         conjunctions = data.collect { case (s, _: Conjunction) =>
           s -> whoSendsTo(s).map(_ -> Low).toMap
         },
+        conjunctionsTriggered = Set.empty,
       )
     }
   }
 
   def parse(input: String): Input =
-    input.parseLines(Command.parse).toMap
+    input.parseLines(Module.parse).toMap
 
   def solve1(data: Input, times: Int): State = {
     data foreach println
@@ -152,14 +166,29 @@ object Advent20 {
     state.pulsesSent.values.product
   }
 
-  def part2(data: Input): Long = {
-    val result = Simulation.runWithIterationCount(State.initial(data)) { case (state, counter) =>
-      if (counter % 1_000_000 == 0) {
-        println(s"$counter: $state")
-      }
+  private def debugMap(map: Map[ModuleName, Boolean]): String =
+    map.filter(_._2).keys.toList.sorted.mkString(", ")
 
+  private def conjunctionsOfInterest(
+    state: State,
+    interest: List[ModuleName],
+  ): String =
+    state.conjunctions
+      .filter { case (k, v) =>
+        interest.contains(k) && v.values.forall(_ == true)
+      }
+      .keys
+      .toList
+      .sorted
+      .mkString(", ")
+
+  def runPatched(data: Input, seed: ModuleName, interest: ModuleName): Long = {
+    val patched = data + (Start -> Broadcaster(seed :: Nil))
+    val initial = State.initial(patched)
+
+    val result = Simulation.runWithIterationCount(initial) { case (state, _) =>
       val res = state.next(data)
-      if (state.rxHasLow) {
+      if (state.conjunctionsTriggered.contains(interest)) {
         state.asLeft
       } else {
         res.asRight
@@ -167,6 +196,15 @@ object Advent20 {
     }
 
     result.buttonPresses
+  }
+
+  def part2(data: Input): Long = {
+    val n1 = runPatched(data, "pt", "qq")
+    val n2 = runPatched(data, "tp", "fj")
+    val n3 = runPatched(data, "bv", "jc")
+    val n4 = runPatched(data, "gv", "vm")
+
+    n1 * n2 * n3 * n4
   }
 
   def parseFile(fileName: String): Input =
