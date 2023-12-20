@@ -1,12 +1,13 @@
 package jurisk.adventofcode.y2023
 
-import cats.implicits.{catsSyntaxEitherId, catsSyntaxOptionId}
-import jurisk.adventofcode.y2023.Advent20.Module.{
-  Broadcaster,
-  Conjunction,
-  FlipFlop,
-  Output,
-}
+import cats.implicits._
+import jurisk.adventofcode.y2023.Advent20.Module.Broadcaster
+import jurisk.adventofcode.y2023.Advent20.Module.Conjunction
+import jurisk.adventofcode.y2023.Advent20.Module.FlipFlop
+import jurisk.adventofcode.y2023.Advent20.Module.Output
+import jurisk.adventofcode.y2023.Advent20.Pulse.High
+import jurisk.adventofcode.y2023.Advent20.Pulse.Low
+import jurisk.math.lcmMany
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
@@ -15,89 +16,90 @@ import scala.annotation.tailrec
 import scala.collection.immutable.Queue
 
 object Advent20 {
-  type Input      = Map[ModuleName, Module]
-  type ModuleName = String
-  val Start: ModuleName = "broadcaster"
+  type Input              = Map[ModuleName, Module]
+  private type ModuleName = String
+  private val BroadcasterName: ModuleName = "broadcaster"
 
-  type Pulse = Boolean
-  val Low: Pulse  = false
-  val High: Pulse = true
+  sealed trait Pulse
+  object Pulse {
+    case object Low  extends Pulse
+    case object High extends Pulse
+  }
 
   sealed trait Module extends Product with Serializable
   object Module {
     final case class Broadcaster(sendTo: List[ModuleName]) extends Module
     final case class FlipFlop(sendTo: List[ModuleName])    extends Module
     final case class Conjunction(sendTo: List[ModuleName]) extends Module
-    final case object Output                               extends Module
+    case object Output                                     extends Module
 
     def parse(s: String): (ModuleName, Module) =
       s match {
         case s"broadcaster -> $list" =>
-          "broadcaster" -> Broadcaster(list.split(", ").toList)
-        case s"%$name -> $list"      => name -> FlipFlop(list.split(", ").toList)
-        case s"&$name -> $list"      => name -> Conjunction(list.split(", ").toList)
+          BroadcasterName -> Broadcaster(list.commaSeparatedList)
+        case s"%$name -> $list"      => name -> FlipFlop(list.commaSeparatedList)
+        case s"&$name -> $list"      => name -> Conjunction(list.commaSeparatedList)
         case _                       => s.failedToParse
       }
   }
 
-  type ConjunctionState = Map[ModuleName, Pulse]
+  private type ConjunctionState = Map[ModuleName, Pulse]
 
-  final case class QueueEntry(from: ModuleName, to: ModuleName, pulse: Pulse)
+  final case class Message(from: ModuleName, to: ModuleName, pulse: Pulse)
 
   final case class State(
-    pulsesQueue: Queue[QueueEntry],
+    messageQueue: Queue[Message],
     pulsesSent: Map[Pulse, Long],
     flipFlops: Map[ModuleName, Boolean],
     conjunctions: Map[ModuleName, ConjunctionState],
     buttonPresses: Long = 0,
     conjunctionsTriggered: Set[ModuleName],
   ) {
-    override def toString: String =
-      s"FF: ${flipFlops.filter(_._2).keys.toList.sorted.mkString(", ")}\nCJ: ${conjunctions
-          .map { case (k, v) =>
-            s"$k has on [${v.filter(_._2).keys.toList.sorted.mkString(", ")}]"
-          }}\n\n"
-
-    private def send(qe: QueueEntry): State =
+    private def send(qe: Message): State =
       copy(
-        pulsesQueue = pulsesQueue.appended(qe),
+        messageQueue = messageQueue.appended(qe),
         pulsesSent = pulsesSent + (qe.pulse -> (pulsesSent(qe.pulse) + 1)),
       )
 
-    private def process(module: Module, qe: QueueEntry): State = {
+    private def sendMany(
+      from: ModuleName,
+      to: List[ModuleName],
+      pulse: Pulse,
+    ): State =
+      to.foldLeft(this) { case (acc, m) =>
+        acc.send(Message(from, m, pulse))
+      }
+
+    private def process(module: Module, qe: Message): State = {
       val pulse = qe.pulse
       val from  = qe.from
       val to    = qe.to
 
       module match {
         case Module.Broadcaster(sendTo) =>
-          sendTo.foldLeft(this) { case (acc, m) =>
-            acc.send(QueueEntry(Start, m, pulse))
-          }
+          sendMany(BroadcasterName, sendTo, pulse)
         case Module.FlipFlop(sendTo)    =>
-          (pulse, flipFlops(to)) match {
-            case (`High`, _) => this
-            case (`Low`, b)  =>
-              val q = copy(flipFlops = flipFlops + (to -> !b))
-              sendTo.foldLeft(q) { case (acc, m) =>
-                acc.send(QueueEntry(to, m, !b))
-              }
-            case (a, b)      => s"$a $b".fail // TODO
+          pulse match {
+            case High =>
+              this
+            case Low  =>
+              val onOff = flipFlops(to)
+              copy(flipFlops = flipFlops + (to -> !onOff))
+                .sendMany(to, sendTo, if (onOff) Low else High)
           }
         case Module.Conjunction(sendTo) =>
-          val oldCs     = conjunctions(to)
-          val updatedCs = oldCs + (from -> pulse)
-          val next      = if (updatedCs.values.forall(_ == High)) Low else High
-          val b         = copy(conjunctions = conjunctions + (to -> updatedCs))
-          val updated   = if (next == Low) {
-            b.copy(
+          val updatedIncomingWires = conjunctions(to) + (from -> pulse)
+          val next                 =
+            if (updatedIncomingWires.values.forall(_ == High)) Low else High
+          val withUpdatedWires     =
+            copy(conjunctions = conjunctions + (to -> updatedIncomingWires))
+          val withUpdatedTriggered = if (next == Low) {
+            withUpdatedWires.copy(
               conjunctionsTriggered = conjunctionsTriggered + to
             )
-          } else b
+          } else withUpdatedWires
 
-          sendTo.foldLeft(updated) { case (acc, m) =>
-            acc.send(QueueEntry(to, m, next))
-          }
+          withUpdatedTriggered.sendMany(to, sendTo, next)
         case Module.Output              =>
           this
       }
@@ -105,17 +107,17 @@ object Advent20 {
 
     @tailrec
     private def runToCompletion(data: Input): State =
-      pulsesQueue.headOption match {
-        case Some(e) =>
-          val result = copy(pulsesQueue = pulsesQueue.tail)
-            .process(data.getOrElse(e.to, Output), e)
-          result.runToCompletion(data)
-        case None    => this
+      messageQueue.headOption match {
+        case Some(message) =>
+          copy(messageQueue = messageQueue.tail)
+            .process(data.getOrElse(message.to, Output), message)
+            .runToCompletion(data)
+        case None          => this
       }
 
     def next(data: Input): State =
       copy(buttonPresses = buttonPresses + 1)
-        .send(QueueEntry("", Start, Low))
+        .send(Message("", BroadcasterName, Low))
         .runToCompletion(data)
   }
 
@@ -135,7 +137,7 @@ object Advent20 {
           .toList
 
       State(
-        pulsesQueue = Queue.empty,
+        messageQueue = Queue.empty,
         pulsesSent = Map(Low -> 0, High -> 0),
         flipFlops = data.collect { case (s, _: FlipFlop) =>
           s -> false
@@ -151,60 +153,42 @@ object Advent20 {
   def parse(input: String): Input =
     input.parseLines(Module.parse).toMap
 
-  def solve1(data: Input, times: Int): State = {
-    data foreach println
-
-    Simulation.runNIterations(State.initial(data), times) {
-      case (state, counter) =>
-        println(s"$counter $state")
-        state.next(data)
+  def solve1(data: Input, times: Int): State =
+    Simulation.runNIterations(State.initial(data), times) { case (state, _) =>
+      state.next(data)
     }
-  }
 
   def part1(data: Input): Long = {
     val state = solve1(data, 1000)
     state.pulsesSent.values.product
   }
 
-  private def debugMap(map: Map[ModuleName, Boolean]): String =
-    map.filter(_._2).keys.toList.sorted.mkString(", ")
-
-  private def conjunctionsOfInterest(
-    state: State,
-    interest: List[ModuleName],
-  ): String =
-    state.conjunctions
-      .filter { case (k, v) =>
-        interest.contains(k) && v.values.forall(_ == true)
-      }
-      .keys
-      .toList
-      .sorted
-      .mkString(", ")
-
-  def runPatched(data: Input, seed: ModuleName, interest: ModuleName): Long = {
-    val patched = data + (Start -> Broadcaster(seed :: Nil))
+  private def runPatched(
+    data: Input,
+    seed: ModuleName,
+    interest: ModuleName,
+  ): Long = {
+    val patched = data + (BroadcasterName -> Broadcaster(seed :: Nil))
     val initial = State.initial(patched)
 
     val result = Simulation.runWithIterationCount(initial) { case (state, _) =>
-      val res = state.next(data)
-      if (state.conjunctionsTriggered.contains(interest)) {
-        state.asLeft
+      val next = state.next(data)
+      if (next.conjunctionsTriggered.contains(interest)) {
+        next.asLeft
       } else {
-        res.asRight
+        next.asRight
       }
     }
 
     result.buttonPresses
   }
 
-  def part2(data: Input): Long = {
-    val n1 = runPatched(data, "pt", "qq")
-    val n2 = runPatched(data, "tp", "fj")
-    val n3 = runPatched(data, "bv", "jc")
-    val n4 = runPatched(data, "gv", "vm")
+  def part2(data: Input, pairs: List[(ModuleName, ModuleName)]): Long = {
+    val results = pairs map { case (seed, input) =>
+      runPatched(data, seed, input)
+    }
 
-    n1 * n2 * n3 * n4
+    lcmMany(results)
   }
 
   def parseFile(fileName: String): Input =
@@ -213,10 +197,19 @@ object Advent20 {
   def fileName(suffix: String): String =
     s"2023/20$suffix.txt"
 
+  // The solution is not universal - you have to look at the nodes in the input and hand-craft this input data.
+  // The first ModuleNames are all of the ones that "broadcast" connects to.
+  // The second ModuleNames are at a distance 3 conjunction nodes from "rx", e.g. "qq" for "qq -> ft -> xm -> rx".
+  // The first and second ModuleNames in the tuple have to be reachable from each other.
+  // Note that the test data input format is quite close to DOT used by GraphViz - see `20.dot` and analyse at
+  // https://dreampuf.github.io/GraphvizOnline/.
+  private[y2023] val SeedToInterestNodes: List[(ModuleName, ModuleName)] =
+    ("pt", "qq") :: ("tp", "fj") :: ("bv", "jc") :: ("gv", "vm") :: Nil
+
   def main(args: Array[String]): Unit = {
     val realData: Input = parseFile(fileName(""))
 
     println(s"Part 1: ${part1(realData)}")
-    println(s"Part 2: ${part2(realData)}")
+    println(s"Part 2: ${part2(realData, SeedToInterestNodes)}")
   }
 }

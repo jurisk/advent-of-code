@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2023
 
 import org.scalatest.freespec.AnyFreeSpec
 import Advent20._
+import jurisk.adventofcode.y2023.Advent20.Pulse.{High, Low}
 import org.scalatest.matchers.should.Matchers._
 
 class Advent20Spec extends AnyFreeSpec {
@@ -30,7 +31,7 @@ class Advent20Spec extends AnyFreeSpec {
 
   "part 2" - {
     "real" in {
-      part2(realData) shouldEqual 224602011344203L
+      part2(realData, SeedToInterestNodes) shouldEqual 224602011344203L
     }
   }
 }
