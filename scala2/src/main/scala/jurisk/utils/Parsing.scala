@@ -52,6 +52,9 @@ object Parsing {
         s"Expected '$s' to start with '$prefix' but it did not".fail
       )
 
+    def commaSeparatedList: List[String] =
+      s.split(",").map(_.trim).toList
+
     def parseCoords2D: Coords2D = {
       val (x, y): (Int, Int) = s.parsePairUnsafe(",", _.trim.toInt)
       Coords2D.of(x, y)
