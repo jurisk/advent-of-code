@@ -9,6 +9,8 @@ import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
+import scala.collection.immutable
+
 object Advent21 {
   final case class Input(
     field: Field2D[Boolean],
@@ -175,7 +177,7 @@ object Advent21 {
 
   def part2Stacked(data: Input, steps: Int): Long = {
     // Let us build info about each pixel, at what time N it gets flipped on for each field, basically a sum of such pixels.
-    // It is very likely that such N may be a linear equation from which field it is.
+    // Can such N may be a linear equation from which field it is?
     // Then we can iterate through pixels (only 113x113) and solve this linear equation.
 
     final case class Knowledge(firstOn: Long) {
@@ -184,20 +186,20 @@ object Advent21 {
     }
 
     val field                               = data.field
-    val positions: Map[Coords2D, Knowledge] = Map(data.start -> Knowledge(-1))
+    val positions: Map[Coords2D, Knowledge] = Map(data.start -> Knowledge(0L))
     val results                             = Simulation.runNIterations(positions, steps) {
       case (current, counter) =>
 //        val dimensions = Coords2D(field.width, field.height)
 //        debugPrint(Area2D(dimensions * -1, dimensions * 2), current)
 
         val options = current.toList.flatMap { case (c, knowledge) =>
-          if (knowledge.guess(counter - 1)) {
+          if (knowledge.guess(counter)) {
             val validNeighbours = c.adjacent4.filter { neighbour =>
               val adjusted = wrapCoords(field, neighbour)
               field.at(adjusted).contains(false)
             }
 
-            validNeighbours map { _ -> counter }
+            validNeighbours map { _ -> (counter + 1L) }
           } else {
             Nil
           }
@@ -206,7 +208,7 @@ object Advent21 {
         var results = current
         options.foreach { case (k, v) =>
           current.get(k) match {
-            case Some(value) => assert(value.guess(counter - 1))
+            case Some(value) => assert(value.guess(counter + 1))
             case None        => results = results + (k -> Knowledge(v))
           }
         }
@@ -214,7 +216,15 @@ object Advent21 {
         results
     }
 
-    results.count { case (k, v) =>
+    val grouped: Map[Coords2D, List[Long]] =
+      results.groupBy { case (k, v) => wrapCoords(data.field, k) }.map {
+        case (k, v) =>
+          k -> v.values.map(_.firstOn).toList.sorted
+      }
+
+    println(grouped)
+
+    results.count { case (_, v) =>
       v.guess(steps)
     }
   }
