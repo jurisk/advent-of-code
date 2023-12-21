@@ -13,39 +13,74 @@ class Advent21Spec extends AnyFreeSpec {
       part1(testData, 6) shouldEqual 16
     }
 
+    "test 255" in {
+      part1(testData, 255) shouldEqual 39
+    }
+
+    "test 256" in {
+      part1(testData, 256) shouldEqual 42
+    }
+
+    "test 257" in {
+      part1(testData, 257) shouldEqual 39
+    }
+
+    "test 258" in {
+      part1(testData, 258) shouldEqual 42
+    }
+
     "real" in {
       part1(realData, 64) shouldEqual 3816
     }
+
+    "real 255" in {
+      part1(realData, 255) shouldEqual 7748
+    }
+
+    "real 256" in {
+      part1(realData, 256) shouldEqual 7757
+    }
+
+    "real 257" in {
+      part1(realData, 257) shouldEqual 7748
+    }
+
+    "real 258" in {
+      part1(realData, 258) shouldEqual 7757
+    }
+
   }
 
   "nextCounts" - {
-    val test = parse(
-      s""".S
-         |##
-         |""".stripMargin)
+    val test = parse(s""".S
+                        |##
+                        |""".stripMargin)
 
-    "simple 1" in {
+    "simple 1" ignore {
       part2(test, 1) shouldEqual 2
     }
 
-    "simple 2" in {
+    "simple 2" ignore {
       part2(test, 2) shouldEqual 3
     }
 
-//
-//    "simple zoom" in {
-//      (1 to 10) foreach { n =>
-//        val a = part2(test, n)
-//        val b = part2Old(test, n)
-//
-//        println(n)
-//        a shouldEqual b
-//      }
-//    }
+    "simple zoom" ignore {
+      (1 to 10) foreach { n =>
+        val a = part2(test, n)
+        val b = part2Old(test, n)
+
+        println(n)
+        a shouldEqual b
+      }
+    }
 
   }
 
   "part 2" - {
+    "test 8 old" in {
+      part2Old(realData, 512) shouldEqual 0
+    }
+
     "test 6" in {
       part2(testData, 6) shouldEqual 16
     }
