@@ -7,6 +7,7 @@ import jurisk.math.absForWrappingAround
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 object Advent21 {
   final case class Input(
@@ -140,14 +141,13 @@ object Advent21 {
   }
 
   def part2(data: Input, steps: Int): Long = {
-//    val a = part2Impulses(data, steps)
+    val a = part2Stacked(data, steps)
     val b = part2Old(data, steps)
-//    assert(a == b)
-//    a
-    b
+    a shouldEqual b
+    a
   }
 
-  def part2Interpolated(data: Input, steps: Int): Long = {
+  def part2Interpolated(data: Input, steps: Int): Long =
     // Do a flood-fill and for each pixel (in main field), calculate number of fields that have
     // Considering checkerboard, number of fields that have it on should be calculable
 
@@ -155,9 +155,8 @@ object Advent21 {
     // Then can iterate through pixels
 
     ???
-  }
 
-  def part2Impulses(data: Input, steps: Int): Long = {
+  def part2Impulses(data: Input, steps: Int): Long =
     // We define a concept of "impulse" which is a set of incoming squares that get flipped on
     // within a field, and a set of outgoing squares that get flipped outside of square
 
@@ -173,21 +172,51 @@ object Advent21 {
     // But how to avoid having to iterate through all fields?
 
     ???
-  }
 
   def part2Stacked(data: Input, steps: Int): Long = {
     // Let us build info about each pixel, at what time N it gets flipped on for each field, basically a sum of such pixels.
     // It is very likely that such N may be a linear equation from which field it is.
     // Then we can iterate through pixels (only 113x113) and solve this linear equation.
 
-    // Let us build first with floodfill!
-    // part2Floodfill !!!
-    // And then we know we can just work with flood-filling
+    final case class Knowledge(firstOn: Long) {
+      def guess(n: Long): Boolean =
+        if (n < firstOn) false else firstOn % 2 == n % 2
+    }
 
-    // Floodfill. Analyse deltas. Use small test case?
-    // Use small test case, analyse deltas?
+    val field                               = data.field
+    val positions: Map[Coords2D, Knowledge] = Map(data.start -> Knowledge(-1))
+    val results                             = Simulation.runNIterations(positions, steps) {
+      case (current, counter) =>
+//        val dimensions = Coords2D(field.width, field.height)
+//        debugPrint(Area2D(dimensions * -1, dimensions * 2), current)
 
-    ???
+        val options = current.toList.flatMap { case (c, knowledge) =>
+          if (knowledge.guess(counter - 1)) {
+            val validNeighbours = c.adjacent4.filter { neighbour =>
+              val adjusted = wrapCoords(field, neighbour)
+              field.at(adjusted).contains(false)
+            }
+
+            validNeighbours map { _ -> counter }
+          } else {
+            Nil
+          }
+        }
+
+        var results = current
+        options.foreach { case (k, v) =>
+          current.get(k) match {
+            case Some(value) => assert(value.guess(counter - 1))
+            case None        => results = results + (k -> Knowledge(v))
+          }
+        }
+
+        results
+    }
+
+    results.count { case (k, v) =>
+      v.guess(steps)
+    }
   }
 
   def parseFile(fileName: String): Input =
