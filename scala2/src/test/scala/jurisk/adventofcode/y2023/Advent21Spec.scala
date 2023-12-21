@@ -51,30 +51,30 @@ class Advent21Spec extends AnyFreeSpec {
 
   }
 
-  "nextCounts" - {
-    val test = parse(s""".S
-                        |##
-                        |""".stripMargin)
-
-    "simple 1" ignore {
-      part2(test, 1) shouldEqual 2
-    }
-
-    "simple 2" ignore {
-      part2(test, 2) shouldEqual 3
-    }
-
-    "simple zoom" ignore {
-      (1 to 10) foreach { n =>
-        val a = part2(test, n)
-        val b = part2Old(test, n)
-
-        println(n)
-        a shouldEqual b
-      }
-    }
-
-  }
+//  "nextCounts" - {
+//    val test = parse(s""".S
+//                        |##
+//                        |""".stripMargin)
+//
+//    "simple 1" ignore {
+//      part2(test, 1) shouldEqual 2
+//    }
+//
+//    "simple 2" ignore {
+//      part2(test, 2) shouldEqual 3
+//    }
+//
+//    "simple zoom" ignore {
+//      (1 to 10) foreach { n =>
+//        val a = part2(test, n)
+//        val b = part2Old(test, n)
+//
+//        println(n)
+//        a shouldEqual b
+//      }
+//    }
+//
+//  }
 
   "part 2" - {
     "test 8 old" in {

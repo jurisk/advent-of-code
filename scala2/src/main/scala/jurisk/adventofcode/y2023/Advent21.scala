@@ -24,6 +24,8 @@ object Advent21 {
       case '#' => true
     }
 
+    assert(field.allEdgeCoords.forall(c => field.at(c).contains(false)))
+
     Input(
       field,
       start,
@@ -137,125 +139,55 @@ object Advent21 {
     Coords2D(newX, newY)
   }
 
-  def nextCounts(
-    field: Field2D[Boolean],
-    counts: Field2D[Long],
-  ): Field2D[Long] = {
-    def debugPrint(field: Field2D[Boolean], counts: Field2D[Long]) = {
-      val chf = field.mapByCoordsWithValues { case (c, v) =>
-        if (v) {
-          '█'
-        } else {
-          val n = counts.at(c).get
-          if (n > 10) {
-            '*'
-          } else {
-            n.toString.head
-          }
-        }
-      }
-
-      Field2D.printCharField(chf)
-    }
-
-    println("Before")
-    debugPrint(field, counts)
-
-    var wraparoundQueue: List[(Coords2D, Long)] = List.empty
-
-    val within: Field2D[Long] = counts.mapByCoordsWithValues { case (c, v) =>
-      if (field.at(c).contains(false)) {
-        val neighbouring = c.adjacent4.flatMap { neighbour =>
-          val wrapped = wrapCoords(counts, neighbour)
-
-          if (wrapped == neighbour) {
-            // neighbour is within our plate
-            counts.at(neighbour)
-          } else {
-            // neighbour is outside of our plate
-            if (field.at(wrapped).contains(false)) {
-              wraparoundQueue = (wrapped -> v) :: wraparoundQueue
-            }
-
-            none
-          }
-        }
-
-        neighbouring.max
-      } else {
-        0L
-      }
-    }
-
-    val result = wraparoundQueue.foldLeft(within) { case (acc, (c, n)) =>
-      acc.modifyUnsafe(c, q => q + n)
-    }
-
-    println("After")
-    debugPrint(field, result)
-    println()
-
-    result
-  }
-
-  def part2UsingCounts(data: Input, steps: Int): Long = {
-    val field  = data.field
-    val counts = field
-      .map(_ => 0L)
-      .updatedAtUnsafe(data.start, 1L)
-
-    val results = Simulation.runNIterations(counts, steps) {
-      case (current, counter) =>
-        nextCounts(field, current)
-    }
-
-    results.values.sum
-  }
-
   def part2(data: Input, steps: Int): Long = {
-    val a = part2Impulses(data, steps)
+//    val a = part2Impulses(data, steps)
     val b = part2Old(data, steps)
-    assert(a == b)
-    a
+//    assert(a == b)
+//    a
+    b
   }
 
-  def part2Impulses(data: Input, steps: Int): Long =
+  def part2Interpolated(data: Input, steps: Int): Long = {
+    // Do a flood-fill and for each pixel (in main field), calculate number of fields that have
+    // Considering checkerboard, number of fields that have it on should be calculable
+
+    // Try to interpolate to algebraic formula that is f(pxCoords, time) -> fieldsReached
+    // Then can iterate through pixels
+
     ???
+  }
 
-  // Hopeless
-  def part2Dist(data: Input, steps: Int): Long = {
-    val Invalid = Int.MaxValue
+  def part2Impulses(data: Input, steps: Int): Long = {
+    // We define a concept of "impulse" which is a set of incoming squares that get flipped on
+    // within a field, and a set of outgoing squares that get flipped outside of square
 
-    val results = Dijkstra.dijkstraAll[Coords2D, Int](
-      data.start,
-      data.field
-        .createSuccessorsFunction({ case (a, b) => !a && !b }, false)
-        .map(_.map(_ -> 1)),
-    )
+    // These will likely be repeating in patterns.
 
-    val distances = results.foldLeft(data.field.map(_ => Invalid)) {
-      case (acc, (c, (_, n))) =>
-        acc.updatedAtUnsafe(c, n)
-    }
+    // These patterns determine the concept of "FieldType".
 
-    // TODO: bad
-    val all = for {
-      x <- -steps to steps
-      y <- -steps to steps
-    } yield Coords2D(data.start.x + x, data.start.y + y)
+    // These "FieldType"-s will repeat with some regularity.
 
-    def distanceToStart(c: Coords2D): Long =
-      distances.at(c) match {
-        case Some(value) => value
-        case None        =>
-          // TODO: bad
-          ???
-      }
+    // Thus we have one mapping which for each field determines "FieldType" and another which determines
+    // end-state.
 
-    all.count { c =>
-      val distance = distanceToStart(c)
-      steps >= distance && steps % 2 == distance % 2 && distance != Invalid
-    }
+    // But how to avoid having to iterate through all fields?
+
+    ???
+  }
+
+  def part2Stacked(data: Input, steps: Int): Long = {
+    // Let us build info about each pixel, at what time N it gets flipped on for each field, basically a sum of such pixels.
+    // It is very likely that such N may be a linear equation from which field it is.
+    // Then we can iterate through pixels (only 113x113) and solve this linear equation.
+
+    // Let us build first with floodfill!
+    // part2Floodfill !!!
+    // And then we know we can just work with flood-filling
+
+    // Floodfill. Analyse deltas. Use small test case?
+    // Use small test case, analyse deltas?
+
+    ???
   }
 
   def parseFile(fileName: String): Input =
