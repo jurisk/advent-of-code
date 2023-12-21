@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2023
 
-import cats.effect.{IO, IOApp}
+import cats.effect.IO
+import cats.effect.IOApp
 import cats.implicits._
 import jurisk.adventofcode.y2023.Condition._
 import jurisk.math.Combinatorics

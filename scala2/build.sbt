@@ -32,6 +32,7 @@ lazy val root = (project in file("."))
         ScalacOptions.warnNumericWiden,
         ScalacOptions.warnUnusedImports,
         ScalacOptions.warnNonUnitStatement,
+        ScalacOptions.warnUnusedPatVars,
       ),
   )
 

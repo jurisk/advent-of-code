@@ -7,7 +7,9 @@ import jurisk.adventofcode.y2023.Advent20.Module.FlipFlop
 import jurisk.adventofcode.y2023.Advent20.Module.Output
 import jurisk.adventofcode.y2023.Advent20.Pulse.High
 import jurisk.adventofcode.y2023.Advent20.Pulse.Low
+import jurisk.algorithms.pathfinding.Bfs
 import jurisk.math.lcmMany
+import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
@@ -26,12 +28,17 @@ object Advent20 {
     case object High extends Pulse
   }
 
-  sealed trait Module extends Product with Serializable
+  sealed trait Module extends Product with Serializable {
+    def sendTo: List[ModuleName]
+
+  }
   object Module {
     final case class Broadcaster(sendTo: List[ModuleName]) extends Module
     final case class FlipFlop(sendTo: List[ModuleName])    extends Module
     final case class Conjunction(sendTo: List[ModuleName]) extends Module
-    case object Output                                     extends Module
+    case object Output                                     extends Module {
+      override def sendTo: List[ModuleName] = Nil
+    }
 
     def parse(s: String): (ModuleName, Module) =
       s match {
@@ -53,7 +60,7 @@ object Advent20 {
     flipFlops: Map[ModuleName, Boolean],
     conjunctions: Map[ModuleName, ConjunctionState],
     buttonPresses: Long = 0,
-    conjunctionsTriggered: Set[ModuleName],
+    conjunctionsReceivedHighPulse: Set[ModuleName],
   ) {
     private def send(qe: Message): State =
       copy(
@@ -93,9 +100,9 @@ object Advent20 {
             if (updatedIncomingWires.values.forall(_ == High)) Low else High
           val withUpdatedWires     =
             copy(conjunctions = conjunctions + (to -> updatedIncomingWires))
-          val withUpdatedTriggered = if (next == Low) {
+          val withUpdatedTriggered = if (next == High) {
             withUpdatedWires.copy(
-              conjunctionsTriggered = conjunctionsTriggered + to
+              conjunctionsReceivedHighPulse = conjunctionsReceivedHighPulse + to
             )
           } else withUpdatedWires
 
@@ -121,21 +128,19 @@ object Advent20 {
         .runToCompletion(data)
   }
 
-  object State {
-    def initial(data: Input): State = {
-      def whoSendsTo(n: ModuleName): List[ModuleName] =
-        data
-          .filter { case (_, v) =>
-            v match {
-              case Module.Broadcaster(sendTo) => sendTo.contains(n)
-              case FlipFlop(sendTo)           => sendTo.contains(n)
-              case Conjunction(sendTo)        => sendTo.contains(n)
-              case Output                     => false
-            }
-          }
-          .keys
-          .toList
+  private def modulesConnectedTo(
+    data: Input,
+    target: ModuleName,
+  ): List[ModuleName] =
+    data
+      .filter { case (_, v) =>
+        v.sendTo.contains(target)
+      }
+      .keys
+      .toList
 
+  object State {
+    def initial(data: Input): State =
       State(
         messageQueue = Queue.empty,
         pulsesSent = Map(Low -> 0, High -> 0),
@@ -143,11 +148,10 @@ object Advent20 {
           s -> false
         },
         conjunctions = data.collect { case (s, _: Conjunction) =>
-          s -> whoSendsTo(s).map(_ -> Low).toMap
+          s -> modulesConnectedTo(data, s).map(_ -> Low).toMap
         },
-        conjunctionsTriggered = Set.empty,
+        conjunctionsReceivedHighPulse = Set.empty,
       )
-    }
   }
 
   def parse(input: String): Input =
@@ -171,20 +175,54 @@ object Advent20 {
     val patched = data + (BroadcasterName -> Broadcaster(seed :: Nil))
     val initial = State.initial(patched)
 
-    val result = Simulation.runWithIterationCount(initial) { case (state, _) =>
+    Simulation.runWithIterationCount(initial) { case (state, _) =>
       val next = state.next(data)
-      if (next.conjunctionsTriggered.contains(interest)) {
-        next.asLeft
+      if (next.conjunctionsReceivedHighPulse.contains(interest)) {
+        next.buttonPresses.asLeft
       } else {
         next.asRight
       }
     }
-
-    result.buttonPresses
   }
 
-  def part2(data: Input, pairs: List[(ModuleName, ModuleName)]): Long = {
-    val results = pairs map { case (seed, input) =>
+  def part2(data: Input): Long = {
+    // The solution is not universal - it depends on the input graph being in the format of N sub-circuits feeding into
+    // a conjunction module (`xm` in our case) which feeds into solely target module (`rx`).
+    // In `seedToInterestNodes`:
+    // The first ModuleNames are all of the ones that "broadcast" connects to.
+    // The second ModuleNames are at a distance 2 conjunction nodes from "rx", e.g. "ft" for "ft -> xm -> rx".
+    // The first and second ModuleNames in the tuple have to be reachable from each other.
+    // Note that the test data input format is quite close to DOT used by GraphViz - see `20.dot` and analyse at
+    // https://dreampuf.github.io/GraphvizOnline/.
+    // There can be other ways how to slice the circuit to focus on each sub-circuit separately, but this worked.
+    val TargetNodeName = "rx"
+
+    // This was `xm` in our test case
+    val beforeTarget =
+      modulesConnectedTo(data, TargetNodeName).singleElementUnsafe
+
+    val interestNodes = modulesConnectedTo(data, beforeTarget).toSet
+
+    val seedToInterestNodes: List[(ModuleName, ModuleName)] = data(
+      BroadcasterName
+    ) match {
+      case Broadcaster(sendTo) =>
+        sendTo map { starting =>
+          val reachables = Bfs
+            .bfsReachable[ModuleName](
+              starting,
+              data.getOrElse(_, Output).sendTo,
+            )
+            .toSet
+          val selection  = reachables intersect interestNodes
+          val selected   = selection.toList.singleResultUnsafe
+          starting -> selected
+        }
+      case other               => s"Wrong broadcaster module: $other".fail
+    }
+
+    val results = seedToInterestNodes map { case (seed, input) =>
+      println(s"Evaluating $seed $input")
       runPatched(data, seed, input)
     }
 
@@ -197,19 +235,10 @@ object Advent20 {
   def fileName(suffix: String): String =
     s"2023/20$suffix.txt"
 
-  // The solution is not universal - you have to look at the nodes in the input and hand-craft this input data.
-  // The first ModuleNames are all of the ones that "broadcast" connects to.
-  // The second ModuleNames are at a distance 3 conjunction nodes from "rx", e.g. "qq" for "qq -> ft -> xm -> rx".
-  // The first and second ModuleNames in the tuple have to be reachable from each other.
-  // Note that the test data input format is quite close to DOT used by GraphViz - see `20.dot` and analyse at
-  // https://dreampuf.github.io/GraphvizOnline/.
-  private[y2023] val SeedToInterestNodes: List[(ModuleName, ModuleName)] =
-    ("pt", "qq") :: ("tp", "fj") :: ("bv", "jc") :: ("gv", "vm") :: Nil
-
   def main(args: Array[String]): Unit = {
     val realData: Input = parseFile(fileName(""))
 
     println(s"Part 1: ${part1(realData)}")
-    println(s"Part 2: ${part2(realData, SeedToInterestNodes)}")
+    println(s"Part 2: ${part2(realData)}")
   }
 }
