@@ -4,12 +4,10 @@ import cats.implicits._
 import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
 import jurisk.geometry.{Area2D, Coords2D, Direction2D, Field2D}
 import jurisk.math.{IntOps, LongOps, absForWrappingAround}
-import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.CollectionOps.{IndexedSeqOps, IterableOps}
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-
-import scala.collection.immutable
 
 object Advent21 {
   final case class Input(
@@ -190,34 +188,73 @@ object Advent21 {
 
     val fieldCounts = calculateFieldCounts(steps, size)
 
-    // TODO: Manhattan Distance diffs from each corner / edge center, as well as field center
-    // TODO: Mapping from (Option[Direction2D], time: Long) to Long (squares covered)
+    val distanceFromCenter    = distancesFrom(field, data.start)
+    val distanceFromDirection = Map(
+      Direction2D.N  -> distancesFrom(
+        field,
+        field.topRowCoords.toVector.centerElementUnsafe,
+      ),
+      Direction2D.E  -> distancesFrom(
+        field,
+        field.rightColumnCoords.toVector.centerElementUnsafe,
+      ),
+      Direction2D.S  -> distancesFrom(
+        field,
+        field.bottomRowCoords.toVector.centerElementUnsafe,
+      ),
+      Direction2D.W  -> distancesFrom(
+        field,
+        field.leftColumnCoords.toVector.centerElementUnsafe,
+      ),
+      Direction2D.NE -> distancesFrom(field, field.topRightCornerCoords),
+      Direction2D.SE -> distancesFrom(field, field.bottomRightCornerCoords),
+      Direction2D.SW -> distancesFrom(field, field.bottomLeftCornerCoords),
+      Direction2D.NW -> distancesFrom(field, field.topLeftCornerCoords),
+    )
 
-    val distanceFromCenter = distancesFrom(data.field, data.start)
+    def countSquares(t: Long, distanceField: Field2D[Option[Long]]): Long =
+      distanceField.count {
+        case Some(n) => t >= n && n.parity == t.parity
+        case None    => false
+      }
+    val centerSquares                                                     = countSquares(steps, distanceFromCenter)
 
-    val centerSquares = distanceFromCenter.count {
-      case Some(n) => steps >= n && n.parity == steps.parity
-      case None    => false
+    val oddSquareCount = field.allCoords.count { c =>
+      if (field.at(c).contains(false)) {
+        c.manhattanDistanceToOrigin % 2 == 1
+      } else {
+        false
+      }
     }
 
-    val edgeSquaresFinalised = fieldCounts.edgeCenter.finalised * 123 // TODO
+    val evenSquareCount = field.allCoords.count { c =>
+      if (field.at(c).contains(false)) {
+        c.manhattanDistanceToOrigin % 2 == 0
+      } else {
+        false
+      }
+    }
+
+    // TODO: actually also use evenSquareCount
+    val edgeSquaresFinalised = fieldCounts.edgeCenter.finalised * oddSquareCount
 
     val edgeSquaresInProgress = fieldCounts.edgeCenter.inProgress.map {
       case (time, count) =>
         Direction2D.CardinalDirections.map { direction =>
-          println(direction)
-          val coveredAtThisTimeFromDirection: Long = 123 // TODO
+          val coveredAtThisTimeFromDirection: Long =
+            countSquares(time, distanceFromDirection(direction))
           coveredAtThisTimeFromDirection * time * count
         }.sum
     }.sum
 
-    val cornerSquaresFinalised = fieldCounts.corner.finalised * 123 // TODO
+    // TODO: actually also use oddSquareCount
+    val cornerSquaresFinalised = fieldCounts.corner.finalised * evenSquareCount
 
     val cornerSquaresInProgress = fieldCounts.corner.inProgress.map {
       case (time, count) =>
         Direction2D.DiagonalDirections.map { direction =>
-          println(direction)
-          val coveredAtThisTimeFromDirection: Long = 123 // TODO
+          val coveredAtThisTimeFromDirection: Long =
+            countSquares(time, distanceFromDirection(direction))
           coveredAtThisTimeFromDirection * time * count
         }.sum
     }.sum

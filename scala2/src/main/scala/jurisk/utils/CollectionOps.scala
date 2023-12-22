@@ -102,6 +102,11 @@ object CollectionOps {
       val adjusted = index % I.fromInt(seq.length)
       seq(adjusted.toInt)
     }
+
+    def centerElementUnsafe: T = {
+      assert(seq.length % 2 == 1)
+      seq(seq.length / 2)
+    }
   }
 
   implicit class ListListOps[T](listList: List[List[T]]) {
