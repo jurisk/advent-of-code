@@ -171,13 +171,28 @@ object Advent21 {
   )
 
   def calculateFieldCounts(time: Long, size: Long): FieldCounts = {
-    val p = time / size
-    val q = time % size
+    assert(size.parity == 1)
+    val halfRoundedDown = size / 2
+    val halfRoundedUp   = halfRoundedDown + 1
 
-    // TODO: implement
+    val completedEdgeCenter = (((time + 1) / size) - 1) max 0
+    val leftOverEdgeCenter  =
+      (time + 1) - (completedEdgeCenter * size) - halfRoundedUp
+    val edgeCenterMap       =
+      if (leftOverEdgeCenter <= 0) {
+        Map.empty[Long, Long]
+      } else if (leftOverEdgeCenter > size) {
+        Map(
+          leftOverEdgeCenter -> 1L,
+          (leftOverEdgeCenter % size) -> 1L,
+        )
+      } else {
+        Map(leftOverEdgeCenter -> 1L)
+      }
+
     FieldCounts(
-      edgeCenter = InnerCounts(Map.empty, 123),
-      corner = InnerCounts(Map.empty, 123),
+      edgeCenter = InnerCounts(edgeCenterMap, completedEdgeCenter),
+      corner = InnerCounts(Map.empty, 0), // TODO: implement corner
     )
   }
 
@@ -247,8 +262,8 @@ object Advent21 {
         }.sum
     }.sum
 
-    // TODO: actually also use oddSquareCount
-    val cornerSquaresFinalised = fieldCounts.corner.finalised * evenSquareCount
+    // TODO: actually also use evenSquareCount
+    val cornerSquaresFinalised = fieldCounts.corner.finalised * oddSquareCount
 
     val cornerSquaresInProgress = fieldCounts.corner.inProgress.map {
       case (time, count) =>
@@ -260,198 +275,6 @@ object Advent21 {
     }.sum
 
     centerSquares + edgeSquaresFinalised + edgeSquaresInProgress + cornerSquaresFinalised + cornerSquaresInProgress
-  }
-
-  def part2DistRec(data: Input, steps: Int): Long = {
-    val field = data.field
-
-    // Narrow cross should be empty
-    assert(field.column(field.width / 2).forall(b => !b))
-    assert(field.row(field.height / 2).forall(b => !b))
-
-    // Edges should be empty
-    assert(field.allEdgeCoords.forall(c => field.at(c).contains(false)))
-
-    val start     = data.start
-    val distances = distancesFrom(data.field, data.start)
-
-    val manhattanDiffs = distances.mapByCoordsWithValues { case (c, v) =>
-      v map { v =>
-        v - c.manhattanDistance(start)
-      }
-    }
-
-    assert(
-      manhattanDiffs.allEdgeCoords.forall(c =>
-        manhattanDiffs.at(c).flatten == 0.some
-      )
-    )
-
-    val printableManhattanDiffs = manhattanDiffs.map {
-      case None    => "R"
-      case Some(0) => ""
-      case Some(v) => v.toString
-    }
-
-    Field2D.printStringField(printableManhattanDiffs, 3)
-
-    def distance(c: Coords2D): Long = {
-      val brutal = distanceBrutal(c)
-      val smart  = distanceSmart(c)
-      brutal shouldEqual smart
-      brutal
-    }
-
-    def distanceBrutal(c: Coords2D): Long =
-      Dijkstra
-        .dijkstraWithIdenticalCosts[Coords2D, Long](
-          c,
-          c =>
-            c.adjacent4.filter { n: Coords2D =>
-              val w = wrapCoords(field, n)
-              field.at(w).contains(false)
-            },
-          _ == start,
-        )
-        .get
-        ._2
-
-    def distanceSmart(c: Coords2D): Long = {
-      // TODO:
-      // Is it in original field? Then we have the distance?
-      // Is it further out? Find the offset, take naive MD, adjust somehow?
-      // Or do we have to somehow check distances from corners / edge midpoints?
-      // It could be we have to treat the "on the narrow cross" fields separately (calc from edge midpoint) and the
-      // others separately (more naively)
-
-      val md      = c.manhattanDistance(start)
-      val wrapped = wrapCoords(field, c)
-
-      // TODO:  Not just the diff from center, diff from either the center of the edge (for narrow cross) or from the
-      //        corner closest to the start
-      val diff = manhattanDiffs.at(wrapped).flatten.get
-      md + diff
-//
-//      if (distances.isValidCoordinate(c)) {
-//        distances.at(c).flatten.get
-//      } else {
-//        val fieldOffset = Coords2D(
-//          c.x / field.width,
-//          c.y / field.height,
-//        )
-//
-//        println(s"field offset = $fieldOffset for coords $c")
-//        ???
-//      }
-    }
-
-    // TODO: Can we just iterate the width x height, and for each pixel, based on `steps`, decide in how many
-    //       fields it is "on"? Binary search as a last resort?
-
-    def isOn(c: Coords2D): Boolean = {
-      val wrapped = wrapCoords(field, c)
-      if (field.at(wrapped).contains(false)) {
-        val d = distance(c)
-        d <= steps && d.parity == steps.parity
-      } else {
-        false
-      }
-    }
-
-    // TODO: we iterate too much, we should just iterate the diamond shape, not a square
-    val result =
-      (-steps to +steps)
-        .flatMap { x =>
-          (-steps to +steps)
-            .map { y =>
-              Coords2D(x, y) + data.start
-            }
-        }
-        .count { c =>
-          isOn(c)
-        }
-
-    result
-  }
-
-  def part2Interpolated(data: Input, steps: Int): Long =
-    // Do a flood-fill and for each pixel (in main field), calculate number of fields that have
-    // Considering checkerboard, number of fields that have it on should be calculable
-
-    // Try to interpolate to algebraic formula that is f(pxCoords, time) -> fieldsReached
-    // Then can iterate through pixels
-
-    ???
-
-  def part2Impulses(data: Input, steps: Int): Long =
-    // We define a concept of "impulse" which is a set of incoming squares that get flipped on
-    // within a field, and a set of outgoing squares that get flipped outside of square
-
-    // These will likely be repeating in patterns.
-
-    // These patterns determine the concept of "FieldType".
-
-    // These "FieldType"-s will repeat with some regularity.
-
-    // Thus we have one mapping which for each field determines "FieldType" and another which determines
-    // end-state.
-
-    // But how to avoid having to iterate through all fields?
-
-    ???
-
-  def part2Stacked(data: Input, steps: Int): Long = {
-    // Let us build info about each pixel, at what time N it gets flipped on for each field, basically a sum of such pixels.
-    // Can such N may be a linear equation from which field it is?
-    // Then we can iterate through pixels (only 113x113) and solve this linear equation.
-
-    final case class Knowledge(firstOn: Long) {
-      def guess(n: Long): Boolean =
-        if (n < firstOn) false else firstOn.parity == n.parity
-    }
-
-    val field                               = data.field
-    val positions: Map[Coords2D, Knowledge] = Map(data.start -> Knowledge(0L))
-    val results                             = Simulation.runNIterations(positions, steps) {
-      case (current, counter) =>
-//        val dimensions = Coords2D(field.width, field.height)
-//        debugPrint(Area2D(dimensions * -1, dimensions * 2), current)
-
-        val options = current.toList.flatMap { case (c, knowledge) =>
-          if (knowledge.guess(counter)) {
-            val validNeighbours = c.adjacent4.filter { neighbour =>
-              val adjusted = wrapCoords(field, neighbour)
-              field.at(adjusted).contains(false)
-            }
-
-            validNeighbours map { _ -> (counter + 1L) }
-          } else {
-            Nil
-          }
-        }
-
-        var results = current
-        options.foreach { case (k, v) =>
-          current.get(k) match {
-            case Some(value) => assert(value.guess(counter + 1))
-            case None        => results = results + (k -> Knowledge(v))
-          }
-        }
-
-        results
-    }
-
-    val grouped: Map[Coords2D, List[Long]] =
-      results.groupBy { case (k, v) => wrapCoords(data.field, k) }.map {
-        case (k, v) =>
-          k -> v.values.map(_.firstOn).toList.sorted
-      }
-
-//    println(grouped)
-
-    results.count { case (_, v) =>
-      v.guess(steps)
-    }
   }
 
   def parseFile(fileName: String): Input =
