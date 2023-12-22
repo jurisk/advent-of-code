@@ -54,35 +54,11 @@ class Advent21Spec extends AnyFreeSpec {
 //
 //  }
 
-//  "nextCounts" - {
-//    val test = parse(s""".S
-//                        |##
-//                        |""".stripMargin)
-//
-//    "simple 1" ignore {
-//      part2(test, 1) shouldEqual 2
-//    }
-//
-//    "simple 2" ignore {
-//      part2(test, 2) shouldEqual 3
-//    }
-//
-//    "simple zoom" ignore {
-//      (1 to 10) foreach { n =>
-//        val a = part2(test, n)
-//        val b = part2Old(test, n)
-//
-//        println(n)
-//        a shouldEqual b
-//      }
-//    }
-//
-//  }
-
   "FieldCounts" - {
+    val emptyCounts = InnerCounts(Map.empty, 0)
+
     "3" - {
-      val size        = 3
-      val emptyCounts = InnerCounts(Map.empty, 0)
+      val size = 3
 
       "0" in {
         calculateFieldCounts(0, size) shouldEqual FieldCounts(
@@ -130,6 +106,59 @@ class Advent21Spec extends AnyFreeSpec {
         calculateFieldCounts(6, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(2L -> 1L), 1),
           corner = InnerCounts(Map(3L -> 1L), 0),
+        )
+      }
+
+      "7" in {
+        calculateFieldCounts(7, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(3L -> 1L), 1),
+          corner = InnerCounts(Map(1L -> 2L, 4L -> 1L), 0),
+        )
+      }
+    }
+
+    "5" - {
+      val size = 5
+
+      "3" in {
+        calculateFieldCounts(3, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(1L -> 1L), 0),
+          corner = emptyCounts,
+        )
+      }
+
+      "4" in {
+        calculateFieldCounts(4, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(2L -> 1L), 0),
+          corner = emptyCounts,
+        )
+      }
+
+      "5" in {
+        calculateFieldCounts(5, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(3L -> 1L), 0),
+          corner = emptyCounts,
+        )
+      }
+
+      "8" in {
+        calculateFieldCounts(8, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(6L -> 1L, 1L -> 1L), 0),
+          corner = InnerCounts(Map(3L -> 1L), 0),
+        )
+      }
+
+      "26" in {
+        calculateFieldCounts(26, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(4L -> 1L), 4),
+          corner = InnerCounts(Map(6L -> 4L), 6),
+        )
+      }
+
+      "28" in {
+        calculateFieldCounts(28, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(6L -> 1L, 1L -> 1L), 4),
+          corner = InnerCounts(Map(3L -> 5L, 8L -> 4L), 6),
         )
       }
     }
