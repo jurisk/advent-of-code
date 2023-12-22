@@ -20,7 +20,7 @@ object Advent22 {
       s"$name: ${blocks.min} -> ${blocks.max}"
   }
 
-  def parseBrick(s: String, id: BrickId): Brick =
+  private def parseBrick(s: String, id: BrickId): Brick =
     s match {
       case s"$x1,$y1,$z1~$x2,$y2,$z2" =>
         Brick(
@@ -56,7 +56,7 @@ object Advent22 {
     println()
 
     landed.zipWithIndex count { case (brick, index) =>
-      print(s"Considering $brick ")
+      print(s"Considering $brick...")
 
       val withoutThis = landed.removeAt(index)
       val packedAgain = landBricks(withoutThis)
@@ -66,7 +66,7 @@ object Advent22 {
     }
   }
 
-  def landBricks(data: Input): Input = {
+  private def landBricks(data: Input): Input = {
     var landed: Vector[Brick] = Vector.empty
     val sorted                = data.sortBy(_.blocks.min.z)
 
@@ -93,7 +93,7 @@ object Advent22 {
       }
 
       assert(zDiffs.forall(_ >= 0))
-      val canFall  = zDiffs.min // TODO: really?
+      val canFall  = zDiffs.min
       val adjusted =
         brick.copy(blocks = brick.blocks moveBy Coords3D(0, 0, -canFall))
 
@@ -110,8 +110,27 @@ object Advent22 {
     landed.reverse
   }
 
-  def part2(data: Input): Int =
-    ???
+  def part2(data: Input): Int = {
+    println(s"${data.length} blocks")
+
+    data foreach println
+    println()
+    val landed = landBricks(data)
+    landed foreach println
+    println()
+
+    landed.zipWithIndex.map { case (brick, index) =>
+      print(s"Considering $brick...")
+
+      val withoutThis = landed.removeAt(index)
+      val packedAgain = landBricks(withoutThis)
+
+      (withoutThis.sortBy(_.id) zip packedAgain.sortBy(_.id)).count {
+        case (a, b) =>
+          a != b
+      }
+    }.sum
+  }
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))

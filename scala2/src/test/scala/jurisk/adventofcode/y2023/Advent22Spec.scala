@@ -20,11 +20,11 @@ class Advent22Spec extends AnyFreeSpec {
 
   "part 2" - {
     "test" in {
-      part2(testData) shouldEqual 0
+      part2(testData) shouldEqual 7
     }
 
     "real" in {
-      part2(realData) shouldEqual 0
+      part2(realData) shouldEqual 98167
     }
   }
 }
