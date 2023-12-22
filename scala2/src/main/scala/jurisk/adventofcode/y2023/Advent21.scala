@@ -1,8 +1,8 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
-import jurisk.algorithms.pathfinding.Dijkstra
-import jurisk.geometry.{Area2D, Coords2D, Field2D}
+import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
+import jurisk.geometry.{Area2D, Coords2D, Direction2D, Field2D}
 import jurisk.math.{IntOps, LongOps, absForWrappingAround}
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
@@ -125,8 +125,8 @@ object Advent21 {
     val positions: Set[Coords2D] = Set(data.start)
     val results                  = Simulation.runNIterations(positions, steps) {
       case (current, counter) =>
-        val dimensions = Coords2D(field.width, field.height)
-        debugPrint(Area2D(dimensions * -1, dimensions * 2), current)
+//        val dimensions = Coords2D(field.width, field.height)
+//        debugPrint(Area2D(dimensions * -1, dimensions * 2), current)
 
         val options = current.toList.flatMap { c =>
           val validNeighbours = c.adjacent4.filter { neighbour =>
@@ -151,16 +151,77 @@ object Advent21 {
 
   def part2(data: Input, steps: Int): Long = {
     val a = part2Old(data, steps)
-    val b = part2DistRec(data, steps)
+    val b = part2FieldClassification(data, steps)
     println(s"$a, $b")
     a shouldEqual b
     a
   }
 
-  def part2DistRec(data: Advent21.Input, steps: Int): Long = {
-    // TODO: Synthetic test with edge MD diffs at 0, make it work! Or a few - one with just 1 square, 1 with more squares, 1 with squares that force going back!
+  // TODO: classify each field into categories - E, N, S, W (for narrow cross) and NE, SW, SE, NW (for those that flow
+  //        from diagonal). They all develop similarly and we can calculate how many there are. Plus the one special part1 (from center / start) field.
+  final case class FieldCounts(
+    // for each type of field, how many fields are at each "time"
+    counts: Map[Option[Direction2D], Map[Long, Long]]
+  )
 
-    val field     = data.field
+  // TODO: this can be tested separately
+  def calculateFieldCounts(time: Int, size: Int): FieldCounts = {
+    val p = time / size
+    val q = time % size
+
+    val center: Map[Option[Direction2D], Map[Long, Long]] = Map(
+      none -> Map(time -> 1)
+    )
+
+    val cardinal: Map[Option[Direction2D], Map[Long, Long]] =
+      Direction2D.CardinalDirections.map { d =>
+        d.some -> ???
+      }.toMap
+
+    val diagonal: Map[Option[Direction2D], Map[Long, Long]] =
+      Direction2D.DiagonalDirections.map { d =>
+        d.some -> ???
+      }.toMap
+
+    FieldCounts(center ++ cardinal ++ diagonal)
+  }
+
+  def part2FieldClassification(data: Input, steps: Int): Long = {
+    val field = data.field
+    assert(field.width == field.height)
+    val size  = field.width
+
+    val fieldCounts = calculateFieldCounts(steps, size)
+
+    // TODO: Manhattan Distance diffs from each corner / edge center, as well as field center
+    // TODO: Mapping from (Option[Direction2D], time: Long) to Long (squares covered)
+
+    fieldCounts.counts.map { case (d, times) =>
+      times.map { case (time, fieldCount) =>
+        val result = d match {
+          case Some(d) =>
+            // TODO: invoke for edge or corner, see how many are covered at time `time`
+            0
+          case None    =>
+            // TODO: invoke for center, like Part 1 - though actually we can just handle it similarly as the `Some(d)` case
+            0
+        }
+
+        result * time * fieldCount
+      }.sum
+    }.sum
+  }
+
+  def part2DistRec(data: Input, steps: Int): Long = {
+    val field = data.field
+
+    // Narrow cross should be empty
+    assert(field.column(field.width / 2).forall(b => !b))
+    assert(field.row(field.height / 2).forall(b => !b))
+
+    // Edges should be empty
+    assert(field.allEdgeCoords.forall(c => field.at(c).contains(false)))
+
     val start     = data.start
     val distances = distancesFrom(data.field, data.start)
 
@@ -184,7 +245,28 @@ object Advent21 {
 
     Field2D.printStringField(printableManhattanDiffs, 3)
 
-    def distance(c: Coords2D): Long =
+    def distance(c: Coords2D): Long = {
+      val brutal = distanceBrutal(c)
+      val smart  = distanceSmart(c)
+      brutal shouldEqual smart
+      brutal
+    }
+
+    def distanceBrutal(c: Coords2D): Long =
+      Dijkstra
+        .dijkstraWithIdenticalCosts[Coords2D, Long](
+          c,
+          c =>
+            c.adjacent4.filter { n: Coords2D =>
+              val w = wrapCoords(field, n)
+              field.at(w).contains(false)
+            },
+          _ == start,
+        )
+        .get
+        ._2
+
+    def distanceSmart(c: Coords2D): Long = {
       // TODO:
       // Is it in original field? Then we have the distance?
       // Is it further out? Find the offset, take naive MD, adjust somehow?
@@ -192,20 +274,41 @@ object Advent21 {
       // It could be we have to treat the "on the narrow cross" fields separately (calc from edge midpoint) and the
       // others separately (more naively)
 
-      if (c == start) {
-        0
-      } else {
-        0 // TODO
-      }
+      val md      = c.manhattanDistance(start)
+      val wrapped = wrapCoords(field, c)
 
-    // TODO: Can we just iterate the width x height, and for each pixel, based on `steps`, decide in how many
-    //       fields it is "on"?
-
-    def isOn(c: Coords2D): Boolean = {
-      val d = distance(c)
-      d <= steps && d % 2 == steps % 2
+      // TODO:  Not just the diff from center, diff from either the center of the edge (for narrow cross) or from the
+      //        corner closest to the start
+      val diff = manhattanDiffs.at(wrapped).flatten.get
+      md + diff
+//
+//      if (distances.isValidCoordinate(c)) {
+//        distances.at(c).flatten.get
+//      } else {
+//        val fieldOffset = Coords2D(
+//          c.x / field.width,
+//          c.y / field.height,
+//        )
+//
+//        println(s"field offset = $fieldOffset for coords $c")
+//        ???
+//      }
     }
 
+    // TODO: Can we just iterate the width x height, and for each pixel, based on `steps`, decide in how many
+    //       fields it is "on"? Binary search as a last resort?
+
+    def isOn(c: Coords2D): Boolean = {
+      val wrapped = wrapCoords(field, c)
+      if (field.at(wrapped).contains(false)) {
+        val d = distance(c)
+        d <= steps && d % 2 == steps % 2
+      } else {
+        false
+      }
+    }
+
+    // TODO: we iterate too much, we should just iterate the diamond shape, not a square
     val result =
       (-steps to +steps)
         .flatMap { x =>
@@ -294,7 +397,7 @@ object Advent21 {
           k -> v.values.map(_.firstOn).toList.sorted
       }
 
-    println(grouped)
+//    println(grouped)
 
     results.count { case (_, v) =>
       v.guess(steps)
