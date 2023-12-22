@@ -164,6 +164,12 @@ class Advent21Spec extends AnyFreeSpec {
     }
   }
 
+  "temp" in {
+    val result = part2FieldClassification(testEmpty, 10)
+    println(result)
+    result shouldEqual part2Old(testEmpty, 10)
+  }
+
   "comparison" - {
     Map(
       "empty"       -> testEmpty,
