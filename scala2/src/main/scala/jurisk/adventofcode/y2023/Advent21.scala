@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
-import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
+import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.geometry.{Area2D, Coords2D, Direction2D, Field2D}
 import jurisk.math.{IntOps, LongOps, absForWrappingAround}
 import jurisk.utils.CollectionOps.{IndexedSeqOps, IterableOps}
@@ -159,7 +159,8 @@ object Advent21 {
   // `inProgress` is Map[time -> counts]
   final case class InnerCounts(
     inProgress: Map[Long, Long],
-    finalised: Long,
+    evenCorneredFinalised: Long,
+    oddCorneredFinalised: Long,
   )
 
   // Classify each field into categories - E, N, S, W (for "narrow cross" / "edge center") and NE, SW, SE, NW
@@ -196,7 +197,13 @@ object Advent21 {
           }
         }
 
-        InnerCounts(edgeCenterMap, completedEdgeCenter)
+        val (evenCorneredCompleted, oddCorneredCompleted) =
+          if (completedEdgeCenter % 2 == 0) {
+            (completedEdgeCenter / 2, completedEdgeCenter / 2)
+          } else {
+            (completedEdgeCenter / 2, (completedEdgeCenter / 2) + 1)
+          }
+        InnerCounts(edgeCenterMap, evenCorneredCompleted, oddCorneredCompleted)
       }
 
       val corner = {
@@ -213,9 +220,11 @@ object Advent21 {
             (leftOver % size) -> (coversInOneDirection + 2L),
           )
         } else {
-          Map(leftOver -> 1L)
+          Map(leftOver -> (coversInOneDirection + 1L))
         }
 
+        // TODO:  There is some formula how to tell how many are even and how many are odd cornered
+        //        from those `completed` corner fields
         InnerCounts(map, completed)
       }
 
@@ -232,6 +241,7 @@ object Advent21 {
     val size  = field.width
 
     val fieldCounts = FieldCounts.make(steps, size)
+    import fieldCounts._
     println(fieldCounts)
 
     val distanceFromCenter    = distancesFrom(field, data.start)
@@ -278,7 +288,7 @@ object Advent21 {
 
     val oddSquareCount = field.allCoords.count { c =>
       if (field.at(c).contains(false)) {
-        c.manhattanDistanceToOrigin % 2 == 0
+        c.manhattanDistanceToOrigin % 2 == 1
       } else {
         false
       }
@@ -286,13 +296,13 @@ object Advent21 {
 
     val evenSquareCount = field.allCoords.count { c =>
       if (field.at(c).contains(false)) {
-        c.manhattanDistanceToOrigin % 2 == 1
+        c.manhattanDistanceToOrigin % 2 == 0
       } else {
         false
       }
     }
 
-    def splitEdgeFinalised(n: Long): (Long, Long) = {
+    def splitFinalised(n: Long): (Long, Long) = {
       val half = n / 2
       if (n % 2 == 0) {
         (half, half)
@@ -301,12 +311,11 @@ object Advent21 {
       }
     }
 
-    val (edgeOddFinalised, edgeEvenFinalised) = splitEdgeFinalised(
-      fieldCounts.edgeCenter.finalised
-    )
-
-    val edgeSquaresFinalised =
-      (edgeEvenFinalised * evenSquareCount + edgeOddFinalised * oddSquareCount) * 4
+    val edgeSquaresFinalised = if (steps.parity == 0) {
+      (fieldCounts.edgeCenter.evenCorneredFinalised * evenSquareCount + fieldCounts.edgeCenter.oddCorneredFinalised * oddSquareCount) * 4
+    } else {
+      (fieldCounts.edgeCenter.evenCorneredFinalised * oddSquareCount + fieldCounts.edgeCenter.oddCorneredFinalised * evenSquareCount) * 4
+    }
 
     val edgeSquaresInProgress = fieldCounts.edgeCenter.inProgress.map {
       case (time, count) =>
@@ -321,8 +330,13 @@ object Advent21 {
         }.sum
     }.sum
 
-    // TODO: Or is it oddSquareCount?
-    val cornerSquaresFinalised = fieldCounts.corner.finalised * evenSquareCount
+    val cornerSquaresFinalised = if (steps.parity == 0) {
+      (corner.oddCorneredFinalised * oddSquareCount + corner.evenCorneredFinalised * evenSquareCount) * 4
+    } else {
+      (corner.oddCorneredFinalised * evenSquareCount + corner.evenCorneredFinalised * oddSquareCount) * 4
+    }
+//
+//    val cornerSquaresFinalised = (cornerOddFinalised * oddSquareCount + cornerEvenFinalised * evenSquareCount) * 4
 
     val cornerSquaresInProgress = fieldCounts.corner.inProgress.map {
       case (time, count) =>

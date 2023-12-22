@@ -55,7 +55,7 @@ class Advent21Spec extends AnyFreeSpec {
 //  }
 
   "FieldCounts" - {
-    val emptyCounts = InnerCounts(Map.empty, 0)
+    val emptyCounts = InnerCounts(Map.empty, 0, 0)
 
     "3" - {
       val size = 3
@@ -76,43 +76,43 @@ class Advent21Spec extends AnyFreeSpec {
 
       "2" in {
         FieldCounts.make(2, size) shouldEqual FieldCounts(
-          edgeCenter = InnerCounts(Map(1L -> 1L), 0),
+          edgeCenter = InnerCounts(Map(1L -> 1L), 0, 0),
           corner = emptyCounts,
         )
       }
 
       "3" in {
         FieldCounts.make(3, size) shouldEqual FieldCounts(
-          edgeCenter = InnerCounts(Map(2L -> 1L), 0),
+          edgeCenter = InnerCounts(Map(2L -> 1L), 0, 0),
           corner = emptyCounts,
         )
       }
 
       "4" in {
         FieldCounts.make(4, size) shouldEqual FieldCounts(
-          edgeCenter = InnerCounts(Map(3L -> 1L), 0),
-          corner = InnerCounts(Map(1L -> 1L), 0),
+          edgeCenter = InnerCounts(Map(3L -> 1L), 0, 0),
+          corner = InnerCounts(Map(1L -> 1L), 0, 0),
         )
       }
 
       "5" in {
         FieldCounts.make(5, size) shouldEqual FieldCounts(
-          edgeCenter = InnerCounts(Map(1L -> 1L), 1),
-          corner = InnerCounts(Map(2L -> 1L), 0),
+          edgeCenter = InnerCounts(Map(1L -> 1L), 0, 1),
+          corner = InnerCounts(Map(2L -> 1L), 0, 0),
         )
       }
 
       "6" in {
         FieldCounts.make(6, size) shouldEqual FieldCounts(
-          edgeCenter = InnerCounts(Map(2L -> 1L), 1),
-          corner = InnerCounts(Map(3L -> 1L), 0),
+          edgeCenter = InnerCounts(Map(2L -> 1L), 0, 1),
+          corner = InnerCounts(Map(3L -> 1L), 0, 0),
         )
       }
 
       "7" in {
         FieldCounts.make(7, size) shouldEqual FieldCounts(
-          edgeCenter = InnerCounts(Map(3L -> 1L), 1),
-          corner = InnerCounts(Map(1L -> 2L, 4L -> 1L), 0),
+          edgeCenter = InnerCounts(Map(3L -> 1L), 0, 1),
+          corner = InnerCounts(Map(1L -> 2L, 4L -> 1L), 0, 0),
         )
       }
     }
@@ -122,52 +122,59 @@ class Advent21Spec extends AnyFreeSpec {
 
       "3" in {
         FieldCounts.make(3, size) shouldEqual FieldCounts(
-          edgeCenter = InnerCounts(Map(1L -> 1L), 0),
+          edgeCenter = InnerCounts(Map(1L -> 1L), 0, 0),
           corner = emptyCounts,
         )
       }
 
       "4" in {
         FieldCounts.make(4, size) shouldEqual FieldCounts(
-          edgeCenter = InnerCounts(Map(2L -> 1L), 0),
+          edgeCenter = InnerCounts(Map(2L -> 1L), 0, 0),
           corner = emptyCounts,
         )
       }
 
       "5" in {
         FieldCounts.make(5, size) shouldEqual FieldCounts(
-          edgeCenter = InnerCounts(Map(3L -> 1L), 0),
+          edgeCenter = InnerCounts(Map(3L -> 1L), 0, 0),
           corner = emptyCounts,
         )
       }
 
       "8" in {
         FieldCounts.make(8, size) shouldEqual FieldCounts(
-          edgeCenter = InnerCounts(Map(6L -> 1L, 1L -> 1L), 0),
-          corner = InnerCounts(Map(3L -> 1L), 0),
+          edgeCenter = InnerCounts(Map(6L -> 1L, 1L -> 1L), 0, 0),
+          corner = InnerCounts(Map(3L -> 1L), 0, 0),
+        )
+      }
+
+      "14" in {
+        FieldCounts.make(14, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(2L -> 1L), 1L, 1L),
+          corner = InnerCounts(Map(4L -> 2L), 1L, 0L),
         )
       }
 
       "26" in {
         FieldCounts.make(26, size) shouldEqual FieldCounts(
-          edgeCenter = InnerCounts(Map(4L -> 1L), 4),
-          corner = InnerCounts(Map(6L -> 4L, 1L -> 5L), 6),
+          edgeCenter = InnerCounts(Map(4L -> 1L), 2L, 2L),
+          corner = InnerCounts(Map(6L -> 4L, 1L -> 5L), 4L, 2L),
         )
       }
 
       "28" in {
         FieldCounts.make(28, size) shouldEqual FieldCounts(
-          edgeCenter = InnerCounts(Map(6L -> 1L, 1L -> 1L), 4),
-          corner = InnerCounts(Map(3L -> 5L, 8L -> 4L), 6),
+          edgeCenter = InnerCounts(Map(6L -> 1L, 1L -> 1L), 2L, 2L),
+          corner = InnerCounts(Map(3L -> 5L, 8L -> 4L), 4L, 2L),
         )
       }
     }
   }
 
   "temp" in {
-    val result = part2FieldClassification(testEmpty, 10)
+    val result = part2FieldClassification(testEmpty, 19)
     println(result)
-    result shouldEqual part2Old(testEmpty, 10)
+    result shouldEqual part2Old(testEmpty, 19)
   }
 
   "comparison" - {
@@ -195,10 +202,14 @@ class Advent21Spec extends AnyFreeSpec {
 //    }
 
     "real 130" in {
-      part2(realData, 130) shouldEqual 15497
+      part2FieldClassification(realData, 130) shouldEqual 15497
     }
 
-//    "test 1" in {
+    "real 400" in {
+      part2FieldClassification(realData, 400) shouldEqual 145254
+    }
+
+    //    "test 1" in {
 //      part2(testData, 1) shouldEqual 2
 //    }
 //
@@ -238,8 +249,9 @@ class Advent21Spec extends AnyFreeSpec {
 //      part2(testData, 5000) shouldEqual 16733044
 //    }
 //
-//    "real" in {
-//      part2(realData, 26501365) shouldEqual 0
-//    }
+    "real" in {
+      // Not 634631632364544, too high
+      part2FieldClassification(realData, 26501365) shouldEqual 0
+    }
   }
 }
