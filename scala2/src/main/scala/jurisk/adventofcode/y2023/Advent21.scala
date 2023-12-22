@@ -232,6 +232,7 @@ object Advent21 {
     val size  = field.width
 
     val fieldCounts = FieldCounts.make(steps, size)
+    println(fieldCounts)
 
     val distanceFromCenter    = distancesFrom(field, data.start)
     val distanceFromDirection = Map(
@@ -257,22 +258,25 @@ object Advent21 {
       Direction2D.NW -> distancesFrom(field, field.topLeftCornerCoords),
     )
 
-    def countSquares(t: Long, distanceField: Field2D[Option[Long]]): Long =
-      distanceField.count {
-        case Some(n) => t >= n && n.parity == t.parity
+    def countSquares(
+      t: Long,
+      distanceField: Field2D[Option[Long]],
+      expectedParity: Long,
+    ): Long = {
+      val result = distanceField.count {
+        case Some(n) => t >= n && n.parity == expectedParity
         case None    => false
       }
-    val centerSquares                                                     = countSquares(steps, distanceFromCenter)
 
-    val oddSquareCount = field.allCoords.count { c =>
-      if (field.at(c).contains(false)) {
-        c.manhattanDistanceToOrigin % 2 == 1
-      } else {
-        false
-      }
+//      distanceField.rows foreach println
+//      println(s"t = $t, expectedPartiy = $expectedParity, result  $result")
+
+      result
     }
 
-    val evenSquareCount = field.allCoords.count { c =>
+    val centerSquares = countSquares(steps, distanceFromCenter, steps.parity)
+
+    val oddSquareCount = field.allCoords.count { c =>
       if (field.at(c).contains(false)) {
         c.manhattanDistanceToOrigin % 2 == 0
       } else {
@@ -280,29 +284,64 @@ object Advent21 {
       }
     }
 
-    // TODO: Or is it evenSquareCount?
-    val edgeSquaresFinalised = fieldCounts.edgeCenter.finalised * oddSquareCount
+    val evenSquareCount = field.allCoords.count { c =>
+      if (field.at(c).contains(false)) {
+        c.manhattanDistanceToOrigin % 2 == 1
+      } else {
+        false
+      }
+    }
+
+    def splitEdgeFinalised(n: Long): (Long, Long) = {
+      val half = n / 2
+      if (n % 2 == 0) {
+        (half, half)
+      } else {
+        (half + 1, half)
+      }
+    }
+
+    val (edgeOddFinalised, edgeEvenFinalised) = splitEdgeFinalised(
+      fieldCounts.edgeCenter.finalised
+    )
+
+    val edgeSquaresFinalised =
+      (edgeEvenFinalised * evenSquareCount + edgeOddFinalised * oddSquareCount) * 4
 
     val edgeSquaresInProgress = fieldCounts.edgeCenter.inProgress.map {
       case (time, count) =>
         Direction2D.CardinalDirections.map { direction =>
           val coveredAtThisTimeFromDirection: Long =
-            countSquares(time, distanceFromDirection(direction))
-          coveredAtThisTimeFromDirection * time * count
+            countSquares(
+              time - 1,
+              distanceFromDirection(direction),
+              (time + 1).parity,
+            )
+          coveredAtThisTimeFromDirection * count
         }.sum
     }.sum
 
-    // TODO: Or is it evenSquareCount?
-    val cornerSquaresFinalised = fieldCounts.corner.finalised * oddSquareCount
+    // TODO: Or is it oddSquareCount?
+    val cornerSquaresFinalised = fieldCounts.corner.finalised * evenSquareCount
 
     val cornerSquaresInProgress = fieldCounts.corner.inProgress.map {
       case (time, count) =>
         Direction2D.DiagonalDirections.map { direction =>
           val coveredAtThisTimeFromDirection: Long =
-            countSquares(time, distanceFromDirection(direction))
-          coveredAtThisTimeFromDirection * time * count
+            countSquares(
+              time - 1,
+              distanceFromDirection(direction),
+              (time + 1).parity,
+            )
+          coveredAtThisTimeFromDirection * count
         }.sum
     }.sum
+
+    println(s"centerSquares = $centerSquares")
+    println(s"edgeSquaresFinalised = $edgeSquaresFinalised")
+    println(s"edgeSquaresInProgress = $edgeSquaresInProgress")
+    println(s"cornerSquaresFinalised = $cornerSquaresFinalised")
+    println(s"cornerSquaresInProgress = $cornerSquaresInProgress")
 
     centerSquares + edgeSquaresFinalised + edgeSquaresInProgress + cornerSquaresFinalised + cornerSquaresInProgress
   }
