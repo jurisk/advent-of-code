@@ -3,7 +3,7 @@ package jurisk.adventofcode.y2023
 import cats.implicits._
 import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.geometry.{Area2D, Coords2D, Field2D}
-import jurisk.math.absForWrappingAround
+import jurisk.math.{IntOps, LongOps, absForWrappingAround}
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
@@ -28,6 +28,7 @@ object Advent21 {
     }
 
     assert(field.allEdgeCoords.forall(c => field.at(c).contains(false)))
+    assert(field.centerCoordsUnsafe == start)
 
     Input(
       field,
@@ -35,23 +36,29 @@ object Advent21 {
     )
   }
 
-  def part1Dist(data: Input, steps: Int): Long = {
+  def distancesFrom(
+    field: Field2D[Boolean],
+    from: Coords2D,
+  ): Field2D[Option[Long]] = {
     val results = Dijkstra.dijkstraAll[Coords2D, Int](
-      data.start,
-      data.field
+      from,
+      field
         .createSuccessorsFunction({ case (a, b) => !a && !b }, false)
         .map(_.map(_ -> 1)),
     )
 
-    val distances = results.foldLeft(data.field.map(_ => Int.MaxValue)) {
-      case (acc, (c, (_, n))) =>
-        acc.updatedAtUnsafe(c, n)
+    val empty: Field2D[Option[Long]] = field.map(_ => none)
+    results.foldLeft(empty) { case (acc, (c, (_, n))) =>
+      acc.updatedAtUnsafe(c, n.toLong.some)
     }
+  }
 
-    val canReach =
-      distances.map(n => steps >= n && n % 2 == steps % 2 && n != Int.MaxValue)
-
-    canReach.count(identity)
+  def part1Dist(data: Input, steps: Int): Long = {
+    val distances = distancesFrom(data.field, data.start)
+    distances.count {
+      case Some(n) => steps >= n && n.parity == steps.parity
+      case None    => false
+    }
   }
 
   def part1(data: Input, steps: Int): Long = {
@@ -81,10 +88,10 @@ object Advent21 {
     val positions = Set(data.start)
     val results   = Simulation.runNIterations(positions, steps) {
       case (current, counter) =>
-        println(counter)
-        debugPrint(current)
-        println()
-
+//        println(counter)
+//        debugPrint(current)
+//        println()
+//
         current flatMap { c =>
           data.field.adjacent4Where(c, _ == false)
         }
@@ -143,10 +150,75 @@ object Advent21 {
   }
 
   def part2(data: Input, steps: Int): Long = {
-    val a = part2Stacked(data, steps)
-    val b = part2Old(data, steps)
+    val a = part2Old(data, steps)
+    val b = part2DistRec(data, steps)
+    println(s"$a, $b")
     a shouldEqual b
     a
+  }
+
+  def part2DistRec(data: Advent21.Input, steps: Int): Long = {
+    // TODO: Synthetic test with edge MD diffs at 0, make it work! Or a few - one with just 1 square, 1 with more squares, 1 with squares that force going back!
+
+    val field     = data.field
+    val start     = data.start
+    val distances = distancesFrom(data.field, data.start)
+
+    val manhattanDiffs = distances.mapByCoordsWithValues { case (c, v) =>
+      v map { v =>
+        v - c.manhattanDistance(start)
+      }
+    }
+
+    assert(
+      manhattanDiffs.allEdgeCoords.forall(c =>
+        manhattanDiffs.at(c).flatten == 0.some
+      )
+    )
+
+    val printableManhattanDiffs = manhattanDiffs.map {
+      case None    => "R"
+      case Some(0) => ""
+      case Some(v) => v.toString
+    }
+
+    Field2D.printStringField(printableManhattanDiffs, 3)
+
+    def distance(c: Coords2D): Long =
+      // TODO:
+      // Is it in original field? Then we have the distance?
+      // Is it further out? Find the offset, take naive MD, adjust somehow?
+      // Or do we have to somehow check distances from corners / edge midpoints?
+      // It could be we have to treat the "on the narrow cross" fields separately (calc from edge midpoint) and the
+      // others separately (more naively)
+
+      if (c == start) {
+        0
+      } else {
+        0 // TODO
+      }
+
+    // TODO: Can we just iterate the width x height, and for each pixel, based on `steps`, decide in how many
+    //       fields it is "on"?
+
+    def isOn(c: Coords2D): Boolean = {
+      val d = distance(c)
+      d <= steps && d % 2 == steps % 2
+    }
+
+    val result =
+      (-steps to +steps)
+        .flatMap { x =>
+          (-steps to +steps)
+            .map { y =>
+              Coords2D(x, y) + data.start
+            }
+        }
+        .count { c =>
+          isOn(c)
+        }
+
+    result
   }
 
   def part2Interpolated(data: Input, steps: Int): Long =

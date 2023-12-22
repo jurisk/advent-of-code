@@ -273,6 +273,12 @@ final case class Field2D[T] private (
 
   def contractOneSquareInAllDirections: Field2D[T] =
     Field2D(data.tail.init.map(_.tail.init))
+
+  def centerCoordsUnsafe: Coords2D = {
+    assert(width  % 2 == 1)
+    assert(height % 2 == 1)
+    Coords2D(width / 2, height / 2)
+  }
 }
 
 object Field2D {
@@ -379,6 +385,24 @@ object Field2D {
     val charField      = field.map(toChar)
     val representation = toDebugRepresentation(charField)
     println(representation)
+    println()
+  }
+
+  def printStringField(field: Field2D[String], cellWidth: Int): Unit = {
+    val adjusted = field map { s =>
+      if (s.length > cellWidth) {
+        "*" * cellWidth
+      } else {
+        val left  = (cellWidth - s.length) / 2
+        val right = cellWidth - left - s.length
+        (" " * left) + s + (" " * right)
+      }
+    }
+
+    val sep = " | "
+    adjusted.data foreach { row =>
+      println((sep + row.mkString(sep) + sep).trim)
+    }
     println()
   }
 

@@ -5,6 +5,14 @@ import scala.math.Integral.Implicits.infixIntegralOps
 import scala.math.abs
 
 package object math {
+  implicit class IntOps(n: Int) {
+    def parity: Int = n % 2
+  }
+
+  implicit class LongOps(n: Long) {
+    def parity: Long = n % 2
+  }
+
   def absForWrappingAround[N: Integral](x: N, y: N): N =
     ((x % y) + y) % y
 
