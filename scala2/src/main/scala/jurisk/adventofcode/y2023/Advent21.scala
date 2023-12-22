@@ -155,45 +155,75 @@ object Advent21 {
     a
   }
 
+  // For each type of non-center field, how many fields of such type are at each "time"
   // `inProgress` is Map[time -> counts]
   final case class InnerCounts(
     inProgress: Map[Long, Long],
     finalised: Long,
   )
 
-  // TODO:  Classify each field into categories - E, N, S, W (for narrow cross) and NE, SW, SE, NW (for those that flow
-  //        from diagonal). They all develop similarly and we can calculate how many there are.
-  //        Plus the one special part1 (from center / start) field.
+  // Classify each field into categories - E, N, S, W (for "narrow cross" / "edge center") and NE, SW, SE, NW
+  // (for those that flow from diagonal). They all develop similarly and we can calculate how many there are.
+  //
+  // Plus the one special part1 (from center / start) field (but we already know how to count it from Part 1).
   final case class FieldCounts(
-    // For each type of non-center field, how many fields of such type are at each "time"
     edgeCenter: InnerCounts,
     corner: InnerCounts,
   )
 
-  def calculateFieldCounts(time: Long, size: Long): FieldCounts = {
-    assert(size.parity == 1)
-    val halfRoundedDown = size / 2
-    val halfRoundedUp   = halfRoundedDown + 1
+  object FieldCounts {
+    def make(time: Long, size: Long): FieldCounts = {
+      val squares         = time + 1
+      assert(size.parity == 1)
+      val halfRoundedDown = size / 2
+      val halfRoundedUp   = halfRoundedDown + 1
 
-    val completedEdgeCenter = (((time + 1) / size) - 1) max 0
-    val leftOverEdgeCenter  =
-      (time + 1) - (completedEdgeCenter * size) - halfRoundedUp
-    val edgeCenterMap       =
-      if (leftOverEdgeCenter <= 0) {
-        Map.empty[Long, Long]
-      } else if (leftOverEdgeCenter > size) {
-        Map(
-          leftOverEdgeCenter -> 1L,
-          (leftOverEdgeCenter % size) -> 1L,
-        )
-      } else {
-        Map(leftOverEdgeCenter -> 1L)
+      val edgeCenter = {
+        val completedEdgeCenter = ((squares / size) - 1) max 0
+        val edgeCenterMap       = {
+          val leftOverEdgeCenter =
+            squares - (completedEdgeCenter * size) - halfRoundedUp
+
+          if (leftOverEdgeCenter <= 0) {
+            Map.empty[Long, Long]
+          } else if (leftOverEdgeCenter > size) {
+            Map(
+              leftOverEdgeCenter -> 1L,
+              (leftOverEdgeCenter % size) -> 1L,
+            )
+          } else {
+            Map(leftOverEdgeCenter -> 1L)
+          }
+        }
+
+        InnerCounts(edgeCenterMap, completedEdgeCenter)
       }
 
-    FieldCounts(
-      edgeCenter = InnerCounts(edgeCenterMap, completedEdgeCenter),
-      corner = InnerCounts(Map.empty, 0), // TODO: implement corner
-    )
+      val corner = {
+        val outsideCenterField   = (squares - size - 1) max 0
+        val coversInOneDirection = (outsideCenterField - size + 1) / size
+        val completed            = (coversInOneDirection * (coversInOneDirection + 1)) / 2
+        val leftOver             = outsideCenterField - (coversInOneDirection * size)
+
+        val map = if (leftOver <= 0) {
+          Map.empty[Long, Long]
+        } else if (leftOver > size) {
+          Map(
+            leftOver -> (coversInOneDirection + 1L),
+            (leftOver % size) -> (coversInOneDirection + 2L),
+          )
+        } else {
+          Map(leftOver -> 1L)
+        }
+
+        InnerCounts(map, completed)
+      }
+
+      FieldCounts(
+        edgeCenter = edgeCenter,
+        corner = corner,
+      )
+    }
   }
 
   def part2FieldClassification(data: Input, steps: Int): Long = {
@@ -201,7 +231,7 @@ object Advent21 {
     assert(field.width == field.height)
     val size  = field.width
 
-    val fieldCounts = calculateFieldCounts(steps, size)
+    val fieldCounts = FieldCounts.make(steps, size)
 
     val distanceFromCenter    = distancesFrom(field, data.start)
     val distanceFromDirection = Map(
@@ -250,7 +280,7 @@ object Advent21 {
       }
     }
 
-    // TODO: actually also use evenSquareCount
+    // TODO: Or is it evenSquareCount?
     val edgeSquaresFinalised = fieldCounts.edgeCenter.finalised * oddSquareCount
 
     val edgeSquaresInProgress = fieldCounts.edgeCenter.inProgress.map {
@@ -262,7 +292,7 @@ object Advent21 {
         }.sum
     }.sum
 
-    // TODO: actually also use evenSquareCount
+    // TODO: Or is it evenSquareCount?
     val cornerSquaresFinalised = fieldCounts.corner.finalised * oddSquareCount
 
     val cornerSquaresInProgress = fieldCounts.corner.inProgress.map {

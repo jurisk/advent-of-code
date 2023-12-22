@@ -61,56 +61,56 @@ class Advent21Spec extends AnyFreeSpec {
       val size = 3
 
       "0" in {
-        calculateFieldCounts(0, size) shouldEqual FieldCounts(
+        FieldCounts.make(0, size) shouldEqual FieldCounts(
           edgeCenter = emptyCounts,
           corner = emptyCounts,
         )
       }
 
       "1" in {
-        calculateFieldCounts(1, size) shouldEqual FieldCounts(
+        FieldCounts.make(1, size) shouldEqual FieldCounts(
           edgeCenter = emptyCounts,
           corner = emptyCounts,
         )
       }
 
       "2" in {
-        calculateFieldCounts(2, size) shouldEqual FieldCounts(
+        FieldCounts.make(2, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(1L -> 1L), 0),
           corner = emptyCounts,
         )
       }
 
       "3" in {
-        calculateFieldCounts(3, size) shouldEqual FieldCounts(
+        FieldCounts.make(3, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(2L -> 1L), 0),
           corner = emptyCounts,
         )
       }
 
       "4" in {
-        calculateFieldCounts(4, size) shouldEqual FieldCounts(
+        FieldCounts.make(4, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(3L -> 1L), 0),
           corner = InnerCounts(Map(1L -> 1L), 0),
         )
       }
 
       "5" in {
-        calculateFieldCounts(5, size) shouldEqual FieldCounts(
+        FieldCounts.make(5, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(1L -> 1L), 1),
           corner = InnerCounts(Map(2L -> 1L), 0),
         )
       }
 
       "6" in {
-        calculateFieldCounts(6, size) shouldEqual FieldCounts(
+        FieldCounts.make(6, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(2L -> 1L), 1),
           corner = InnerCounts(Map(3L -> 1L), 0),
         )
       }
 
       "7" in {
-        calculateFieldCounts(7, size) shouldEqual FieldCounts(
+        FieldCounts.make(7, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(3L -> 1L), 1),
           corner = InnerCounts(Map(1L -> 2L, 4L -> 1L), 0),
         )
@@ -121,42 +121,42 @@ class Advent21Spec extends AnyFreeSpec {
       val size = 5
 
       "3" in {
-        calculateFieldCounts(3, size) shouldEqual FieldCounts(
+        FieldCounts.make(3, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(1L -> 1L), 0),
           corner = emptyCounts,
         )
       }
 
       "4" in {
-        calculateFieldCounts(4, size) shouldEqual FieldCounts(
+        FieldCounts.make(4, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(2L -> 1L), 0),
           corner = emptyCounts,
         )
       }
 
       "5" in {
-        calculateFieldCounts(5, size) shouldEqual FieldCounts(
+        FieldCounts.make(5, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(3L -> 1L), 0),
           corner = emptyCounts,
         )
       }
 
       "8" in {
-        calculateFieldCounts(8, size) shouldEqual FieldCounts(
+        FieldCounts.make(8, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(6L -> 1L, 1L -> 1L), 0),
           corner = InnerCounts(Map(3L -> 1L), 0),
         )
       }
 
       "26" in {
-        calculateFieldCounts(26, size) shouldEqual FieldCounts(
+        FieldCounts.make(26, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(4L -> 1L), 4),
-          corner = InnerCounts(Map(6L -> 4L), 6),
+          corner = InnerCounts(Map(6L -> 4L, 1L -> 5L), 6),
         )
       }
 
       "28" in {
-        calculateFieldCounts(28, size) shouldEqual FieldCounts(
+        FieldCounts.make(28, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(Map(6L -> 1L, 1L -> 1L), 4),
           corner = InnerCounts(Map(3L -> 5L, 8L -> 4L), 6),
         )
