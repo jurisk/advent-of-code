@@ -79,6 +79,62 @@ class Advent21Spec extends AnyFreeSpec {
 //
 //  }
 
+  "FieldCounts" - {
+    "3" - {
+      val size        = 3
+      val emptyCounts = InnerCounts(Map.empty, 0)
+
+      "0" in {
+        calculateFieldCounts(0, size) shouldEqual FieldCounts(
+          edgeCenter = emptyCounts,
+          corner = emptyCounts,
+        )
+      }
+
+      "1" in {
+        calculateFieldCounts(1, size) shouldEqual FieldCounts(
+          edgeCenter = emptyCounts,
+          corner = emptyCounts,
+        )
+      }
+
+      "2" in {
+        calculateFieldCounts(2, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(1L -> 1L), 0),
+          corner = emptyCounts,
+        )
+      }
+
+      "3" in {
+        calculateFieldCounts(3, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(2L -> 1L), 0),
+          corner = emptyCounts,
+        )
+      }
+
+      "4" in {
+        calculateFieldCounts(4, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(3L -> 1L), 0),
+          corner = InnerCounts(Map(1L -> 1L), 0),
+        )
+      }
+
+      "5" in {
+        calculateFieldCounts(5, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(1L -> 1L), 1),
+          corner = InnerCounts(Map(2L -> 1L), 0),
+        )
+      }
+
+      "6" in {
+        calculateFieldCounts(6, size) shouldEqual FieldCounts(
+          edgeCenter = InnerCounts(Map(2L -> 1L), 1),
+          corner = InnerCounts(Map(3L -> 1L), 0),
+        )
+      }
+    }
+  }
+
   "comparison" - {
     Map(
       "empty"       -> testEmpty,

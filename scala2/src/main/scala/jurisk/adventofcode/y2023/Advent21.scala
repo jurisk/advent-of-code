@@ -157,33 +157,30 @@ object Advent21 {
     a
   }
 
-  // TODO: classify each field into categories - E, N, S, W (for narrow cross) and NE, SW, SE, NW (for those that flow
-  //        from diagonal). They all develop similarly and we can calculate how many there are. Plus the one special part1 (from center / start) field.
-  final case class FieldCounts(
-    // for each type of field, how many fields are at each "time"
-    counts: Map[Option[Direction2D], Map[Long, Long]]
+  // `inProgress` is Map[time -> counts]
+  final case class InnerCounts(
+    inProgress: Map[Long, Long],
+    finalised: Long,
   )
 
-  // TODO: this can be tested separately
-  def calculateFieldCounts(time: Int, size: Int): FieldCounts = {
+  // TODO:  Classify each field into categories - E, N, S, W (for narrow cross) and NE, SW, SE, NW (for those that flow
+  //        from diagonal). They all develop similarly and we can calculate how many there are.
+  //        Plus the one special part1 (from center / start) field.
+  final case class FieldCounts(
+    // For each type of non-center field, how many fields of such type are at each "time"
+    edgeCenter: InnerCounts,
+    corner: InnerCounts,
+  )
+
+  def calculateFieldCounts(time: Long, size: Long): FieldCounts = {
     val p = time / size
     val q = time % size
 
-    val center: Map[Option[Direction2D], Map[Long, Long]] = Map(
-      none -> Map(time -> 1)
+    // TODO: implement
+    FieldCounts(
+      edgeCenter = InnerCounts(Map.empty, 123),
+      corner = InnerCounts(Map.empty, 123),
     )
-
-    val cardinal: Map[Option[Direction2D], Map[Long, Long]] =
-      Direction2D.CardinalDirections.map { d =>
-        d.some -> ???
-      }.toMap
-
-    val diagonal: Map[Option[Direction2D], Map[Long, Long]] =
-      Direction2D.DiagonalDirections.map { d =>
-        d.some -> ???
-      }.toMap
-
-    FieldCounts(center ++ cardinal ++ diagonal)
   }
 
   def part2FieldClassification(data: Input, steps: Int): Long = {
@@ -196,20 +193,36 @@ object Advent21 {
     // TODO: Manhattan Distance diffs from each corner / edge center, as well as field center
     // TODO: Mapping from (Option[Direction2D], time: Long) to Long (squares covered)
 
-    fieldCounts.counts.map { case (d, times) =>
-      times.map { case (time, fieldCount) =>
-        val result = d match {
-          case Some(d) =>
-            // TODO: invoke for edge or corner, see how many are covered at time `time`
-            0
-          case None    =>
-            // TODO: invoke for center, like Part 1 - though actually we can just handle it similarly as the `Some(d)` case
-            0
-        }
+    val distanceFromCenter = distancesFrom(data.field, data.start)
 
-        result * time * fieldCount
-      }.sum
+    val centerSquares = distanceFromCenter.count {
+      case Some(n) => steps >= n && n.parity == steps.parity
+      case None    => false
+    }
+
+    val edgeSquaresFinalised = fieldCounts.edgeCenter.finalised * 123 // TODO
+
+    val edgeSquaresInProgress = fieldCounts.edgeCenter.inProgress.map {
+      case (time, count) =>
+        Direction2D.CardinalDirections.map { direction =>
+          println(direction)
+          val coveredAtThisTimeFromDirection: Long = 123 // TODO
+          coveredAtThisTimeFromDirection * time * count
+        }.sum
     }.sum
+
+    val cornerSquaresFinalised = fieldCounts.corner.finalised * 123 // TODO
+
+    val cornerSquaresInProgress = fieldCounts.corner.inProgress.map {
+      case (time, count) =>
+        Direction2D.DiagonalDirections.map { direction =>
+          println(direction)
+          val coveredAtThisTimeFromDirection: Long = 123 // TODO
+          coveredAtThisTimeFromDirection * time * count
+        }.sum
+    }.sum
+
+    centerSquares + edgeSquaresFinalised + edgeSquaresInProgress + cornerSquaresFinalised + cornerSquaresInProgress
   }
 
   def part2DistRec(data: Input, steps: Int): Long = {
@@ -302,7 +315,7 @@ object Advent21 {
       val wrapped = wrapCoords(field, c)
       if (field.at(wrapped).contains(false)) {
         val d = distance(c)
-        d <= steps && d % 2 == steps % 2
+        d <= steps && d.parity == steps.parity
       } else {
         false
       }
@@ -357,7 +370,7 @@ object Advent21 {
 
     final case class Knowledge(firstOn: Long) {
       def guess(n: Long): Boolean =
-        if (n < firstOn) false else firstOn % 2 == n % 2
+        if (n < firstOn) false else firstOn.parity == n.parity
     }
 
     val field                               = data.field
