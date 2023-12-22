@@ -46,54 +46,40 @@ object Advent22 {
       parseBrick(s, idx)
     }
 
-  def part1(data: Input): Int = {
-    println(s"${data.length} blocks")
-
-    data foreach println
-    println()
-    val landed = landBricks(data)
-    landed foreach println
-    println()
-
-    landed.zipWithIndex count { case (brick, index) =>
-      print(s"Considering $brick...")
-
-      val withoutThis = landed.removeAt(index)
-      val packedAgain = landBricks(withoutThis)
-      val result      = withoutThis.toSet == packedAgain.toSet
-      println(result)
-      result
-    }
-  }
-
   private def landBricks(data: Input): Input = {
+    val bottomArea = {
+      val allBlocks = data.map(_.blocks)
+      val allX      = allBlocks.map(_.min.x) ++ allBlocks.map(_.max.x)
+      val allY      = allBlocks.map(_.min.y) ++ allBlocks.map(_.max.y)
+      val minX      = allX.min
+      val maxX      = allX.max
+
+      val minY = allY.min
+      val maxY = allY.max
+
+      assert(minX == 0)
+      assert(minY == 0)
+
+      Area2D(Coords2D(minX, minY), Coords2D(maxX, maxY))
+    }
+
     var landed: Vector[Brick] = Vector.empty
-    val sorted                = data.sortBy(_.blocks.min.z)
+    var bottom                =
+      Field2D.forArea(bottomArea, 0)
 
-    val allBlocks = data.map(_.blocks)
-    val allX      = allBlocks.map(_.min.x) ++ allBlocks.map(_.max.x)
-    val allY      = allBlocks.map(_.min.y) ++ allBlocks.map(_.max.y)
-    val minX      = allX.min
-    val maxX      = allX.max
-
-    val minY = allY.min
-    val maxY = allY.max
-
-    assert(minX == 0)
-    assert(minY == 0)
-
-    var bottom =
-      Field2D.forArea(Area2D(Coords2D(minX, minY), Coords2D(maxX, maxY)), 0)
-
+    val sorted = data.sortBy(_.blocks.min.z)
     sorted foreach { brick =>
-      val zDiffs = brick.blocks.points.map { point =>
-        val bottomLevel = bottom.atOrElse(Coords2D(point.x, point.y), 0)
-        val possibleZ   = bottomLevel + 1
-        point.z - possibleZ
+      val canFall = {
+        val zDiffs = brick.blocks.points.map { point =>
+          val bottomLevel = bottom.atOrElse(Coords2D(point.x, point.y), 0)
+          val possibleZ   = bottomLevel + 1
+          point.z - possibleZ
+        }
+
+        zDiffs.min
       }
 
-      assert(zDiffs.forall(_ >= 0))
-      val canFall  = zDiffs.min
+      assert(canFall >= 0)
       val adjusted =
         brick.copy(blocks = brick.blocks moveBy Coords3D(0, 0, -canFall))
 
@@ -104,13 +90,13 @@ object Advent22 {
         )
       }
 
-      landed = adjusted +: landed
+      landed = landed :+ adjusted
     }
 
-    landed.reverse
+    landed
   }
 
-  def part2(data: Input): Int = {
+  def solve(data: Input): Vector[Int] = {
     println(s"${data.length} blocks")
 
     data foreach println
@@ -125,12 +111,23 @@ object Advent22 {
       val withoutThis = landed.removeAt(index)
       val packedAgain = landBricks(withoutThis)
 
-      (withoutThis.sortBy(_.id) zip packedAgain.sortBy(_.id)).count {
-        case (a, b) =>
-          a != b
-      }
-    }.sum
+      val result =
+        (withoutThis.sortBy(_.id) zip packedAgain.sortBy(_.id)).count {
+          case (a, b) =>
+            a != b
+        }
+
+      println(s"causes $result to fall")
+
+      result
+    }
   }
+
+  def part1(data: Input): Int =
+    solve(data) count { _ == 0 }
+
+  def part2(data: Input): Int =
+    solve(data).sum
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
