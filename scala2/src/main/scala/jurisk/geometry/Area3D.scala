@@ -17,6 +17,12 @@ final case class Area3D(min: Coords3D, max: Coords3D) {
     min - Coords3D(n, n, n),
     max + Coords3D(n, n, n),
   )
+
+  def moveBy(c: Coords3D): Area3D =
+    Area3D(
+      min = min + c,
+      max = max + c,
+    )
 }
 
 object Area3D {
