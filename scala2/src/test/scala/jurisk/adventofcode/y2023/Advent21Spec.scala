@@ -77,8 +77,16 @@ class Advent21Spec extends AnyFreeSpec {
 //  }
 
   "part 2" - {
+    "real 1" in {
+      part2(realData, 1) shouldEqual 4
+    }
+
     "test 8 old" ignore {
       part2Old(realData, 512) shouldEqual 0
+    }
+
+    "test 1" in {
+      part2(testData, 1) shouldEqual 2
     }
 
     "test 6" in {
