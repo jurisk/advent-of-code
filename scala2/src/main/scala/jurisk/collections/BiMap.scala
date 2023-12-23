@@ -14,7 +14,7 @@ class BiMap[A, B] private (
   def rightToLeftUnsafe(right: B): A =
     rightToLeft(right).getOrElse(s"Failed to find $right".fail)
 
-  def leftKeys: Iterable[A] = leftToRightUnderlying.keys
+  def leftKeys: Iterable[A]  = leftToRightUnderlying.keys
   def rightKeys: Iterable[B] = rightToLeftUnderlying.keys
 }
 

@@ -5,9 +5,9 @@ import Advent23._
 import org.scalatest.matchers.should.Matchers._
 
 class Advent23Spec extends AnyFreeSpec {
-  private def testData = parseFile(fileName("-test"))
+  private def testData   = parseFile(fileName("-test"))
   private def simpleData = parseFile(fileName("-test-simple"))
-  private def realData = parseFile(fileName(""))
+  private def realData   = parseFile(fileName(""))
 
   "part 1" - {
     "test" in {
@@ -33,7 +33,7 @@ class Advent23Spec extends AnyFreeSpec {
     }
 
     "real" in {
-      part2(realData) shouldEqual 0
+      part2(realData) shouldEqual 6286
     }
   }
 }
