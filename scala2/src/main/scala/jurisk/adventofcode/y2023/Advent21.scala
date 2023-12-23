@@ -3,7 +3,7 @@ package jurisk.adventofcode.y2023
 import cats.implicits._
 import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.geometry.{Area2D, Coords2D, Direction2D, Field2D}
-import jurisk.math.{IntOps, LongOps, absForWrappingAround}
+import jurisk.math.{ArithmeticProgression, IntOps, LongOps, absForWrappingAround}
 import jurisk.utils.CollectionOps.{IndexedSeqOps, IterableOps}
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
@@ -223,9 +223,14 @@ object Advent21 {
           Map(leftOver -> (coversInOneDirection + 1L))
         }
 
-        // TODO:  There is some formula how to tell how many are even and how many are odd cornered
-        //        from those `completed` corner fields
-        InnerCounts(map, completed)
+        val completed2 = ArithmeticProgression(1, 1).S_n(coversInOneDirection)
+        completed2 shouldEqual completed
+
+        val completedEven = ArithmeticProgression(1, 2).S_n(coversInOneDirection.halfRoundingUp)
+        val completedOdd = ArithmeticProgression(2, 2).S_n(coversInOneDirection.halfRoundingDown)
+        completedEven + completedOdd shouldEqual completed
+
+        InnerCounts(map, completedEven, completedOdd)
       }
 
       FieldCounts(

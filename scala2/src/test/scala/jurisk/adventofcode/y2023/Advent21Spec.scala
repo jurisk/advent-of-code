@@ -184,7 +184,7 @@ class Advent21Spec extends AnyFreeSpec {
       "simple-wall" -> testSimpleWall,
     ) map { case (name, test) =>
       name - {
-        val MaxN = 20 // TODO: 100?
+        val MaxN = 100
         1 to MaxN map { n =>
           s"$name - $n" in {
             val old                     = part2Old(test, n)
@@ -206,7 +206,7 @@ class Advent21Spec extends AnyFreeSpec {
     }
 
     "real 400" in {
-      part2FieldClassification(realData, 400) shouldEqual 145254
+      part2(realData, 400) shouldEqual 145254
     }
 
     //    "test 1" in {
