@@ -3,11 +3,18 @@ package jurisk.adventofcode.y2023
 import cats.implicits._
 import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.geometry.{Area2D, Coords2D, Direction2D, Field2D}
-import jurisk.math.{ArithmeticProgression, IntOps, LongOps, absForWrappingAround}
+import jurisk.math.{
+  ArithmeticProgression,
+  IntOps,
+  LongOps,
+  absForWrappingAround,
+}
 import jurisk.utils.CollectionOps.{IndexedSeqOps, IterableOps}
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+
+import scala.collection.mutable
 
 object Advent21 {
   final case class Input(
@@ -86,10 +93,6 @@ object Advent21 {
     val positions = Set(data.start)
     val results   = Simulation.runNIterations(positions, steps) {
       case (current, counter) =>
-//        println(counter)
-//        debugPrint(current)
-//        println()
-//
         current flatMap { c =>
           data.field.adjacent4Where(c, _ == false)
         }
@@ -102,29 +105,47 @@ object Advent21 {
 
   // Working but slow
   def part2Old(data: Input, steps: Int): Long = {
-    def debugPrint(area: Area2D, set: Set[Coords2D]): Unit = {
-      val chf = Field2D.forArea(area, ' ').mapByCoords { c =>
+    def debugPrint(area: Area2D, map: mutable.HashMap[Coords2D, Long]): Long = {
+      var results = 0
+
+      val stringField = Field2D.forArea(area, ' ').mapByCoords { c =>
         val normalized = wrapCoords(data.field, c)
         if (data.field.at(normalized).contains(true)) {
-          '█'
+          "███"
         } else {
-          if (set.contains(c)) {
-            '░'
-          } else {
-            ' '
+          map.get(c) match {
+            case Some(value) =>
+              if (value.parity == steps.parity) {
+                results += 1
+              }
+              value.toString
+            case None        => "···"
           }
         }
       }
 
-      Field2D.printCharField(chf)
+      Field2D.printStringField(stringField, 3)
+
+      println(s"Results = $results")
+      results
     }
 
-    val field                    = data.field
-    val positions: Set[Coords2D] = Set(data.start)
-    val results                  = Simulation.runNIterations(positions, steps) {
+    val field                                      = data.field
+    val positions: Set[Coords2D]                   = Set(data.start)
+    val firstSeen: mutable.HashMap[Coords2D, Long] =
+      mutable.HashMap(data.start -> 0)
+
+    def updateMap(set: Set[Coords2D], counter: Long): Unit =
+      set foreach { c =>
+        firstSeen.updateWith(c) {
+          case Some(v) => v.some
+          case None    => counter.some
+        }
+      }
+
+    val results = Simulation.runNIterations(positions, steps) {
       case (current, counter) =>
-//        val dimensions = Coords2D(field.width, field.height)
-//        debugPrint(Area2D(dimensions * -1, dimensions * 2), current)
+        updateMap(current, counter)
 
         val options = current.toList.flatMap { c =>
           val validNeighbours = c.adjacent4.filter { neighbour =>
@@ -136,6 +157,37 @@ object Advent21 {
         }
 
         options.toSet
+    }
+
+    updateMap(results, steps)
+
+    val debug = false
+    if (debug) {
+      val size        = field.width
+      val min         = Coords2D(0, 0)
+      val centerField = Area2D(min, Coords2D(size - 1, size - 1))
+      println(
+        s"Center: $centerField (${centerField.width} x ${centerField.height})"
+      )
+      debugPrint(centerField, firstSeen)
+
+      Direction2D.CardinalDirections foreach { d =>
+        val area = centerField + (d.diff * size)
+        println(s"$d: $area (${area.width} x ${area.height})")
+        debugPrint(area, firstSeen)
+      }
+
+      Direction2D.CardinalDirections foreach { d =>
+        val area = centerField + (d.diff * 2 * size)
+        println(s"$d $d: $area (${area.width} x ${area.height})")
+        debugPrint(area, firstSeen)
+      }
+
+      Direction2D.DiagonalDirections foreach { d =>
+        val area = centerField + (d.diff * size)
+        println(s"$d: $area (${area.width} x ${area.height})")
+        debugPrint(area, firstSeen)
+      }
     }
 
     results.size
@@ -164,9 +216,12 @@ object Advent21 {
     oddCorneredFinalised: Long,
   ) {
     override def toString: String = {
-      val incomplete = inProgress.toList.sortBy(_._1).map { case (k, v) =>
-        s"$v fields with $k protrusion"
-      }.mkString(", ")
+      val incomplete = inProgress.toList
+        .sortBy(_._1)
+        .map { case (k, v) =>
+          s"$v fields with $k protrusion"
+        }
+        .mkString(", ")
 
       s"$evenCorneredFinalised completed even-cornered, $oddCorneredFinalised completed odd-cornered, $incomplete"
     }
@@ -180,7 +235,8 @@ object Advent21 {
     edgeCenter: InnerCounts,
     corner: InnerCounts,
   ) {
-    override def toString: String = s"Edge-center: $edgeCenter\nCorner: $corner\n\n"
+    override def toString: String =
+      s"Edge-center: $edgeCenter\nCorner: $corner\n\n"
   }
 
   object FieldCounts {
@@ -237,8 +293,10 @@ object Advent21 {
         val completed2 = ArithmeticProgression(1, 1).S_n(coversInOneDirection)
         completed2 shouldEqual completed
 
-        val completedEven = ArithmeticProgression(1, 2).S_n(coversInOneDirection.halfRoundingUp)
-        val completedOdd = ArithmeticProgression(2, 2).S_n(coversInOneDirection.halfRoundingDown)
+        val completedEven =
+          ArithmeticProgression(1, 2).S_n(coversInOneDirection.halfRoundingUp)
+        val completedOdd  =
+          ArithmeticProgression(2, 2).S_n(coversInOneDirection.halfRoundingDown)
         completedEven + completedOdd shouldEqual completed
 
         InnerCounts(map, completedEven, completedOdd)
@@ -295,30 +353,17 @@ object Advent21 {
         case None    => false
       }
 
-//      distanceField.rows foreach println
-//      println(s"t = $t, expectedPartiy = $expectedParity, result  $result")
-
       result
     }
 
     val centerSquares = countSquares(steps, distanceFromCenter, steps.parity)
 
-    val oddSquareCount = field.allCoords.count { c =>
-      if (field.at(c).contains(false)) {
-        c.manhattanDistanceToOrigin % 2 == 1
-      } else {
-        false
-      }
-    }
+    val oddSquareCount  = countSquares(steps, distanceFromCenter, 1)
+    val evenSquareCount = countSquares(steps, distanceFromCenter, 0)
 
-    val evenSquareCount = field.allCoords.count { c =>
-      if (field.at(c).contains(false)) {
-        c.manhattanDistanceToOrigin % 2 == 0
-      } else {
-        false
-      }
-    }
-
+    println(
+      s"evenSquareCount = $evenSquareCount, oddSquareCount = $oddSquareCount"
+    )
     val edgeSquaresFinalised = if (steps.parity == 0) {
       (fieldCounts.edgeCenter.evenCorneredFinalised * evenSquareCount + fieldCounts.edgeCenter.oddCorneredFinalised * oddSquareCount) * 4
     } else {
@@ -343,8 +388,6 @@ object Advent21 {
     } else {
       (corner.oddCorneredFinalised * evenSquareCount + corner.evenCorneredFinalised * oddSquareCount) * 4
     }
-
-//    val cornerSquaresFinalised = (cornerOddFinalised * oddSquareCount + cornerEvenFinalised * evenSquareCount) * 4
 
     val cornerSquaresInProgress = fieldCounts.corner.inProgress.map {
       case (time, count) =>

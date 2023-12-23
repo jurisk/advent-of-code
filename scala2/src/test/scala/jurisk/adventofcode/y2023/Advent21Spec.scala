@@ -5,10 +5,10 @@ import Advent21._
 import org.scalatest.matchers.should.Matchers._
 
 class Advent21Spec extends AnyFreeSpec {
-  private def testData       = parseFile(fileName("-test"))
-  private def realData       = parseFile(fileName(""))
-  private def test131Empty       = parseFile(fileName("-test-131-empty"))
-  private def test131SingleRock       = parseFile(fileName("-test-131-single-rock"))
+  private def testData          = parseFile(fileName("-test"))
+  private def realData          = parseFile(fileName(""))
+  private def test131Empty      = parseFile(fileName("-test-131-empty"))
+  private def test131SingleRock = parseFile(fileName("-test-131-single-rock"))
 
   //
 //  "part 1" - {
@@ -63,10 +63,14 @@ class Advent21Spec extends AnyFreeSpec {
       "259" in {
         FieldCounts.make(259, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(
-            Map(63L -> 1L, 63L + size -> 1L), 0, 0,
+            Map(63L -> 1L, 63L + size -> 1L),
+            0,
+            0,
           ),
           corner = InnerCounts(
-            Map(128L -> 1L), 0, 0,
+            Map(128L -> 1L),
+            0,
+            0,
           ),
         )
       }
@@ -74,10 +78,14 @@ class Advent21Spec extends AnyFreeSpec {
       "261" in {
         FieldCounts.make(261, size) shouldEqual FieldCounts(
           edgeCenter = InnerCounts(
-            Map(65L -> 1L), 0, 1L,
+            Map(65L -> 1L),
+            0,
+            1L,
           ),
           corner = InnerCounts(
-            Map(130L -> 1L), 0, 0,
+            Map(130L -> 1L),
+            0,
+            0,
           ),
         )
       }
@@ -199,10 +207,10 @@ class Advent21Spec extends AnyFreeSpec {
 
   "comparison" - {
     List(
-//      "empty",
-//      "single-rock",
-//      "simple-wall",
-//      "another-wall",
+      "empty",
+      "single-rock",
+      "simple-wall",
+      "unpassable",
       "9-another-wall",
     ) map { name =>
       val test = parseFile(fileName(s"-test-$name"))
@@ -350,9 +358,7 @@ class Advent21Spec extends AnyFreeSpec {
     }
 
     "real" in {
-      // Not 634631632364544, too high
-      // Not 634631634589836, too high
-      part2FieldClassification(realData, 26501365) shouldEqual 0
+      part2FieldClassification(realData, 26501365) shouldEqual 634549784009844L
     }
   }
 }
