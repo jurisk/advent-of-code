@@ -126,7 +126,7 @@ object Advent23 {
           }
         }
       } else {
-        graph.edgesFor(current) foreach { case (to, distance) =>
+        graph.outgoingEdges(current) foreach { case (to, distance) =>
           if (!visited.contains(to)) {
             visited.add(to)
             backtrack(to, steps + distance)
@@ -178,6 +178,7 @@ object Advent23 {
     result
   }
 
+  // TODO: This can take a function as a parameter and actually move to some other place
   private def fieldToGraph(field: Input): Graph[Coords2D] = {
     var edges: Set[(SetOfTwo[Coords2D], Long)] = Set.empty
 

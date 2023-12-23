@@ -12,7 +12,7 @@ import scala.reflect.ClassTag
 
 trait Graph[L] {
   def allVertices: Seq[VertexId]
-  def edgesFor(v: VertexId): Set[(VertexId, Distance)]
+  def outgoingEdges(v: VertexId): Set[(VertexId, Distance)]
   def labelFor(v: VertexId): L
   def labelToVertex(label: L): VertexId
   def simplify(doNotTouch: Set[VertexId]): Graph[L]
@@ -26,7 +26,7 @@ final class GraphImpl[L: Ordering: ClassTag](
 ) extends Graph[L] {
   def allVertices: Seq[VertexId] = adjacency.indices
 
-  def edgesFor(v: VertexId): Set[(VertexId, Distance)] =
+  def outgoingEdges(v: VertexId): Set[(VertexId, Distance)] =
     adjacency.lift(v).getOrElse(Set.empty)
 
   def labelFor(v: VertexId): L = labels(v)
@@ -35,12 +35,12 @@ final class GraphImpl[L: Ordering: ClassTag](
     labelIndices(label)
 
   def verticesReachableFrom(from: VertexId): Set[VertexId] =
-    edgesFor(from).map { case (n, _) => n }
+    outgoingEdges(from).map { case (n, _) => n }
 
-  // TODO: This is really crude, improve it
+  // TODO: This is really crude, improve it. Also it was written assuming an undirected graph.
   def simplify(doNotTouch: Set[VertexId]): Graph[L] = {
     val nonOptimisibleVertices: Iterable[VertexId] =
-      allVertices.filter(v => edgesFor(v).size != 2)
+      allVertices.filter(v => outgoingEdges(v).size != 2)
 
     val connectors = nonOptimisibleVertices.toSet ++ doNotTouch
 
@@ -117,7 +117,7 @@ object Graph {
     )
 
     val edges = graph.allVertices.flatMap { v =>
-      graph.edgesFor(v).map { case (n, d) =>
+      graph.outgoingEdges(v).map { case (n, d) =>
         s"""  ${vertexName(v)} -> ${vertexName(n)} [ label="$d" ]"""
       }
     }
