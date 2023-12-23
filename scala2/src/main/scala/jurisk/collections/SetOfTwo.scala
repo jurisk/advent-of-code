@@ -1,12 +1,14 @@
 package jurisk.collections
 
-final case class SetOfTwo[T](underlying: Set[T]) {
+final case class SetOfTwo[T](private val underlying: Set[T]) {
   def tupleInArbitraryOrder: (T, T) = {
     val List(a, b) = underlying.toList
     (a, b)
   }
 
   def contains(elem: T): Boolean = underlying.contains(elem)
+
+  def toSet: Set[T] = underlying
 
   override def toString: String = tupleInArbitraryOrder.toString()
 }
