@@ -41,7 +41,7 @@ object Advent21 {
     )
   }
 
-  def distancesFrom(
+  private def distancesFrom(
     field: Field2D[Boolean],
     from: Coords2D,
   ): Field2D[Option[Long]] = {
@@ -58,7 +58,7 @@ object Advent21 {
     }
   }
 
-  def part1Dist(data: Input, steps: Int): Long = {
+  private def part1Dist(data: Input, steps: Int): Long = {
     val distances = distancesFrom(data.field, data.start)
     distances.count {
       case Some(n) => steps >= n && n.parity == steps.parity
@@ -73,23 +73,7 @@ object Advent21 {
     a
   }
 
-  def part1Simulate(data: Input, steps: Int): Long = {
-    def debugPrint(set: Set[Coords2D]) = {
-      val chf = data.field.mapByCoordsWithValues { case (c, v) =>
-        if (v) {
-          '█'
-        } else {
-          if (set.contains(c)) {
-            '░'
-          } else {
-            ' '
-          }
-        }
-      }
-
-      Field2D.printCharField(chf)
-    }
-
+  private def part1Simulate(data: Input, steps: Int): Long = {
     val positions = Set(data.start)
     val results   = Simulation.runNIterations(positions, steps) {
       case (current, counter) =>
@@ -98,13 +82,11 @@ object Advent21 {
         }
     }
 
-    debugPrint(results)
-
     results.size
   }
 
   // Working but slow
-  def part2Old(data: Input, steps: Int): Long = {
+  def part2Simulation(data: Input, steps: Int): Long = {
     def debugPrint(area: Area2D, map: mutable.HashMap[Coords2D, Long]): Long = {
       var results = 0
 
@@ -200,7 +182,7 @@ object Advent21 {
   }
 
   def part2(data: Input, steps: Int): Long = {
-    val a = part2Old(data, steps)
+    val a = part2Simulation(data, steps)
     val b = part2FieldClassification(data, steps)
     println(s"slow but accurate = $a, new = $b")
     println(s"Diff is ${b - a}")

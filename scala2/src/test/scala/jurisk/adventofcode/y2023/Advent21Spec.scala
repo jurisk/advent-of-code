@@ -10,49 +10,49 @@ class Advent21Spec extends AnyFreeSpec {
   private def test131Empty      = parseFile(fileName("-test-131-empty"))
   private def test131SingleRock = parseFile(fileName("-test-131-single-rock"))
 
-  //
-//  "part 1" - {
-//    "test" in {
-//      part1(testData, 6) shouldEqual 16
-//    }
-//
-//    "test 255" in {
-//      part1(testData, 255) shouldEqual 39
-//    }
-//
-//    "test 256" in {
-//      part1(testData, 256) shouldEqual 42
-//    }
-//
-//    "test 257" in {
-//      part1(testData, 257) shouldEqual 39
-//    }
-//
-//    "test 258" in {
-//      part1(testData, 258) shouldEqual 42
-//    }
-//
-//    "real" in {
-//      part1(realData, 64) shouldEqual 3816
-//    }
-//
-//    "real 255" in {
-//      part1(realData, 255) shouldEqual 7748
-//    }
-//
-//    "real 256" in {
-//      part1(realData, 256) shouldEqual 7757
-//    }
-//
-//    "real 257" in {
-//      part1(realData, 257) shouldEqual 7748
-//    }
-//
-//    "real 258" in {
-//      part1(realData, 258) shouldEqual 7757
-//    }
-//
-//  }
+
+  "part 1" - {
+    "test" in {
+      part1(testData, 6) shouldEqual 16
+    }
+
+    "test 255" in {
+      part1(testData, 255) shouldEqual 39
+    }
+
+    "test 256" in {
+      part1(testData, 256) shouldEqual 42
+    }
+
+    "test 257" in {
+      part1(testData, 257) shouldEqual 39
+    }
+
+    "test 258" in {
+      part1(testData, 258) shouldEqual 42
+    }
+
+    "real" in {
+      part1(realData, 64) shouldEqual 3816
+    }
+
+    "real 255" in {
+      part1(realData, 255) shouldEqual 7748
+    }
+
+    "real 256" in {
+      part1(realData, 256) shouldEqual 7757
+    }
+
+    "real 257" in {
+      part1(realData, 257) shouldEqual 7748
+    }
+
+    "real 258" in {
+      part1(realData, 258) shouldEqual 7757
+    }
+
+  }
 
   "FieldCounts" - {
     val emptyCounts = InnerCounts(Map.empty, 0, 0)
@@ -219,7 +219,7 @@ class Advent21Spec extends AnyFreeSpec {
         val MaxN = 100
         1 to MaxN map { n =>
           s"$name - $n" in {
-            val old                     = part2Old(test, n)
+            val old                     = part2Simulation(test, n)
             val distFieldClassification = part2FieldClassification(test, n)
             distFieldClassification shouldEqual old
           }
@@ -228,10 +228,36 @@ class Advent21Spec extends AnyFreeSpec {
     }
   }
 
+  "part 2 simulation" - {
+    "test 1" in {
+      part2Simulation(testData, 1) shouldEqual 2
+    }
+
+    "test 6" in {
+      part2Simulation(testData, 6) shouldEqual 16
+    }
+
+    "test 7" in {
+      part2Simulation(testData, 7) shouldEqual 22
+    }
+
+    "test 8" in {
+      part2Simulation(testData, 8) shouldEqual 30
+    }
+
+    "test 10" in {
+      part2Simulation(testData, 10) shouldEqual 50
+    }
+
+    "test 50" in {
+      part2Simulation(testData, 50) shouldEqual 1594
+    }
+  }
+
   "part 2" - {
-//    "real 1" in {
-//      part2(realData, 1) shouldEqual 4
-//    }
+    "real 1" in {
+      part2(realData, 1) shouldEqual 4
+    }
 
     "real 130" in {
       part2(realData, 130) shouldEqual 15497
@@ -315,46 +341,6 @@ class Advent21Spec extends AnyFreeSpec {
 
     "real 400" in {
       part2(realData, 400) shouldEqual 145254
-    }
-
-    "test 1" in {
-      part2Old(testData, 1) shouldEqual 2
-    }
-
-    "test 6" in {
-      part2Old(testData, 6) shouldEqual 16
-    }
-
-    "test 7" in {
-      part2Old(testData, 7) shouldEqual 22
-    }
-
-    "test 8" in {
-      part2Old(testData, 8) shouldEqual 30
-    }
-
-    "test 10" in {
-      part2Old(testData, 10) shouldEqual 50
-    }
-
-    "test 50" in {
-      part2Old(testData, 50) shouldEqual 1594
-    }
-
-    "test 100" in {
-      part2Old(testData, 100) shouldEqual 6536
-    }
-
-    "test 500" ignore {
-      part2Old(testData, 500) shouldEqual 167004
-    }
-
-    "test 1000" ignore {
-      part2Old(testData, 1000) shouldEqual 668697
-    }
-
-    "test 5000" ignore {
-      part2Old(testData, 5000) shouldEqual 16733044
     }
 
     "real" in {
