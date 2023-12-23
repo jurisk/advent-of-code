@@ -150,7 +150,7 @@ object Advent21 {
   def part2(data: Input, steps: Int): Long = {
     val a = part2Old(data, steps)
     val b = part2FieldClassification(data, steps)
-    println(s"$a, $b")
+    println(s"slow but accurate = $a, new = $b")
     a shouldEqual b
     a
   }
@@ -161,7 +161,15 @@ object Advent21 {
     inProgress: Map[Long, Long],
     evenCorneredFinalised: Long,
     oddCorneredFinalised: Long,
-  )
+  ) {
+    override def toString: String = {
+      val incomplete = inProgress.toList.sortBy(_._1).map { case (k, v) =>
+        s"$v fields with $k protrusion"
+      }.mkString(", ")
+
+      s"$evenCorneredFinalised completed even-cornered, $oddCorneredFinalised completed odd-cornered, $incomplete"
+    }
+  }
 
   // Classify each field into categories - E, N, S, W (for "narrow cross" / "edge center") and NE, SW, SE, NW
   // (for those that flow from diagonal). They all develop similarly and we can calculate how many there are.
@@ -170,7 +178,9 @@ object Advent21 {
   final case class FieldCounts(
     edgeCenter: InnerCounts,
     corner: InnerCounts,
-  )
+  ) {
+    override def toString: String = s"Edge-center: $edgeCenter\nCorner: $corner\n\n"
+  }
 
   object FieldCounts {
     def make(time: Long, size: Long): FieldCounts = {
@@ -244,6 +254,7 @@ object Advent21 {
     val field = data.field
     assert(field.width == field.height)
     val size  = field.width
+    println(s"Field of $size x $size")
 
     val fieldCounts = FieldCounts.make(steps, size)
     import fieldCounts._
