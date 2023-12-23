@@ -7,10 +7,14 @@ import scala.math.abs
 package object math {
   implicit class IntOps(n: Int) {
     def parity: Int = n % 2
+    def halfRoundingUp: Int = n - halfRoundingDown
+    def halfRoundingDown: Int = n / 2
   }
 
   implicit class LongOps(n: Long) {
     def parity: Long = n % 2
+    def halfRoundingUp: Long = n - halfRoundingDown
+    def halfRoundingDown: Long = n / 2
   }
 
   def absForWrappingAround[N: Integral](x: N, y: N): N =
