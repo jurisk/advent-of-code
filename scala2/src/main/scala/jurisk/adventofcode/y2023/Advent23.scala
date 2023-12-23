@@ -45,13 +45,13 @@ object Advent23 {
     )
 
   final case class State(
-    visited: List[Coords2D],
+    visited: Set[Coords2D],
     steps: Int,
     current: Coords2D,
   ) {
     def next(field: Input): List[State] = {
       val candidates = field.atOrElse(current, Forest) match {
-        case Square.Forest    => "wtf".fail
+        case Square.Forest    => "Current location should not be forest".fail
         case Square.Path      => field.adjacent4(current)
         case Slope(direction) =>
           val n = current + direction
@@ -67,7 +67,7 @@ object Advent23 {
 
       valid map { c =>
         State(
-          visited = c :: visited,
+          visited = visited + c,
           steps = steps + 1,
           current = c,
         )
@@ -81,7 +81,7 @@ object Advent23 {
       data.bottomRowCoords.find(c => data.at(c).contains(Path)).get
 
     val startState = State(
-      visited = List(startCoords),
+      visited = Set(startCoords),
       steps = 0,
       current = startCoords,
     )
@@ -92,17 +92,14 @@ object Advent23 {
     )
 
     val best = reachable.filter(_.current == goalCoords).maxBy(_.steps)
-    println(best.visited.length)
-    assert(best.visited.allDistinct)
-    best.visited.reverse.foreach(println)
-    best.steps
+
+   best.steps
   }
 
   def part1(data: Input): Long = solve1(data)
 
-  def part2Crude(data: Input): Long = {
+  def part2UsingPart1(data: Input): Long = {
     val updated = convertPart1ToPart2(data)
-
     solve1(updated)
   }
 
@@ -138,18 +135,6 @@ object Advent23 {
     backtrack(start, 0)
 
     best
-  }
-
-  def solve2(
-    graph: UndirectedGraph[Coords2D],
-    start: VertexId,
-    goal: VertexId,
-  ): Long = {
-    val simplified = graph.simplify(Set(start, goal))
-
-    println(UndirectedGraph.toDot(simplified, start, goal))
-
-    solve2Backtracking(simplified, start, goal)
   }
 
   // TODO:  Move out - and I think the UndirectedGraph constructor should just get a Seq[(SetOfTwo[L], distance)],
@@ -189,16 +174,17 @@ object Advent23 {
     val field = convertPart1ToPart2(data)
 
     val startCoords =
-      field.topRowCoords.find(c => field.at(c).contains(Path)).get
+      field.topRowCoords.find(c => field.at(c).contains(Path)).getOrElse("Start not found".fail)
     val goalCoords  =
-      field.bottomRowCoords.find(c => field.at(c).contains(Path)).get
+      field.bottomRowCoords.find(c => field.at(c).contains(Path)).getOrElse("Goal not found".fail)
 
     val graph = fieldToGraph(field)
-    solve2(
-      graph,
-      graph.labelToIndexMap.leftToRightUnsafe(startCoords),
-      graph.labelToIndexMap.leftToRightUnsafe(goalCoords),
-    )
+    val start = graph.labelToVertex(startCoords)
+    val goal = graph.labelToVertex(goalCoords)
+
+    val simplified = graph.simplify(Set(start, goal))
+    println(UndirectedGraph.toDot(simplified, start, goal))
+    solve2Backtracking(simplified, start, goal)
   }
 
   def parseFile(fileName: String): Input =

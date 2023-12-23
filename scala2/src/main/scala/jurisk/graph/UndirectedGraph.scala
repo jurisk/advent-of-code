@@ -14,23 +14,27 @@ final case class Edge(vertices: SetOfTwo[VertexId], distance: Long) {
 
 // TODO: Improve this
 final case class UndirectedGraph[L](
-  labelToIndexMap: BiMap[L, VertexId],
-  edges: Set[Edge],
+  private val labelToIndexMap: BiMap[L, VertexId],
+  private val edges: Set[Edge],
 ) {
-  val allVertices: Seq[VertexId]         = labelToIndexMap.rightKeys.toSeq
+  private val allVertices: Seq[VertexId]         = labelToIndexMap.rightKeys.toSeq
   val edgesFor: Map[VertexId, Set[Edge]] = allVertices.map { vertex =>
     vertex -> edges.filter(_.vertices.contains(vertex))
   }.toMap
 
+  def labelToVertex(label: L): VertexId = {
+    labelToIndexMap.leftToRightUnsafe(label)
+  }
+
   def connectedTo(vertexId: VertexId): Seq[VertexId] =
     edges.filter(_.vertices.contains(vertexId)).toList.map(_.other(vertexId))
 
-  private def verticesWithMoreThanTwoEdges: Iterable[VertexId] =
-    labelToIndexMap.rightKeys.filter(v => edgesFor(v).size > 2)
-
   // TODO: This is terrible, improve it, possibly rename
   def simplify(doNotTouch: Set[VertexId]): UndirectedGraph[L] = {
-    val connectors = verticesWithMoreThanTwoEdges.toSet ++ doNotTouch
+    val nonOptimisibleVertices: Iterable[VertexId] =
+      labelToIndexMap.rightKeys.filter(v => edgesFor(v).size != 2)
+
+    val connectors = nonOptimisibleVertices.toSet ++ doNotTouch
     println(connectors.size)
 
     println(connectors.map(labelToIndexMap.rightToLeftUnsafe))
