@@ -20,12 +20,12 @@ class Advent23Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
-    "test simple" in {
-      part2Crude(simpleData) shouldEqual part2(simpleData)
+    "simple test using part 1" in {
+      part2UsingPart1(simpleData) shouldEqual part2(simpleData)
     }
 
-    "test crude" in {
-      part2Crude(testData) shouldEqual 154
+    "test using part 1" in {
+      part2UsingPart1(testData) shouldEqual 154
     }
 
     "test" in {
