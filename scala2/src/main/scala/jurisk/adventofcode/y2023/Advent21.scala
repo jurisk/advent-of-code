@@ -182,7 +182,10 @@ object Advent21 {
     Coords2D(newX, newY)
   }
 
-  def part2CompareClassificationWithSimulation(data: Input, steps: Int): Long = {
+  def part2CompareClassificationWithSimulation(
+    data: Input,
+    steps: Int,
+  ): Long = {
     val a = part2Simulation(data, steps)
     val b = part2FieldClassification(data, steps)
     println(s"simulation = $a, classification = $b")
@@ -191,7 +194,9 @@ object Advent21 {
   }
 
   // For each type of non-center field, how many fields of such type are at each "time"
-  // `inProgress` is Map[time -> counts]
+  // `inProgress` is Map[time -> counts].
+  // Note that for `edgeCenter` fields, the count is always `1` (which, effectively, means 4 - one for each cardinal
+  // direction), but we left it like this for consistency with corner fields.
   final case class InnerCounts(
     inProgress: Map[Long, Long],
     evenCorneredFinalised: Long,
@@ -212,7 +217,8 @@ object Advent21 {
   // Classify each field into categories - E, N, S, W (for "narrow cross" / "edge center") and NE, SW, SE, NW
   // (for those that flow from diagonal). They all develop similarly and we can calculate how many there are.
   //
-  // Plus the one special part1 (from center / start) field (but we already know how to count it from Part 1).
+  // Plus there is one special part1 (from center / start) field (but we already know how to count it from Part 1, so
+  // we don't have to track it here).
   final case class FieldCounts(
     edgeCenter: InnerCounts,
     corner: InnerCounts,
@@ -247,7 +253,7 @@ object Advent21 {
         }
 
         val (evenCorneredCompleted, oddCorneredCompleted) =
-          if (completedEdgeCenter % 2 == 0) {
+          if (completedEdgeCenter.parity == 0) {
             (completedEdgeCenter / 2, completedEdgeCenter / 2)
           } else {
             (completedEdgeCenter / 2, (completedEdgeCenter / 2) + 1)
@@ -390,7 +396,7 @@ object Advent21 {
     println(s"cornerSquaresFinalised = $cornerSquaresFinalised")
     println(s"cornerSquaresInProgress = $cornerSquaresInProgress")
 
-    centerSquares + edgeSquaresFinalised * 4 + edgeSquaresInProgress + cornerSquaresFinalised * 4 + cornerSquaresInProgress
+    centerSquares + edgeSquaresInProgress + cornerSquaresInProgress + (edgeSquaresFinalised + cornerSquaresFinalised) * 4
   }
 
   def parseFile(fileName: String): Input =

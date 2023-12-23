@@ -2,7 +2,6 @@ package jurisk
 
 import scala.annotation.tailrec
 import scala.math.Integral.Implicits.infixIntegralOps
-import scala.math.abs
 
 package object math {
   implicit class IntOps(n: Int) {
