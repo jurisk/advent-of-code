@@ -5,6 +5,7 @@ import cats.implicits._
 import jurisk.utils.Parsing.StringOps
 
 import scala.annotation.tailrec
+import scala.collection.immutable.ArraySeq
 import scala.math.Integral.Implicits.infixIntegralOps
 
 object CollectionOps {
@@ -93,6 +94,14 @@ object CollectionOps {
     def differences: Seq[N] =
       seq.sliding2 map { case (a, b) =>
         b - a
+      }
+  }
+
+  implicit class ArraySeqOps[T](seq: ArraySeq[T]) {
+    def updatedWith(index: Int)(modify: T => T): ArraySeq[T] =
+      seq.lift(index) match {
+        case Some(currentValue) => seq.updated(index, modify(currentValue))
+        case None               => seq
       }
   }
 

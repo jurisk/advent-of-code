@@ -3,47 +3,42 @@ package jurisk.graph
 import jurisk.algorithms.pathfinding.Bfs
 import jurisk.collections.{BiMap, SetOfTwo}
 import jurisk.geometry.Coords2D
-import jurisk.graph.Graph.{Edge, VertexId}
-import jurisk.utils.CollectionOps.IterableOps
+import jurisk.graph.Graph.{Distance, VertexId}
+import jurisk.utils.CollectionOps.ArraySeqOps
 
-// TODO:  Improve this, use a better adjacencySets: IndexedSeq[Set[VertexId]]
-//        and also extract trait.
+import scala.collection.immutable.ArraySeq
+
 final class Graph[L](
   private val labelToIndexMap: BiMap[L, VertexId],
-  private val edges: Set[Edge],
+  // TODO: labelIndices: Map[L, VertexId]
+  // TODO: labels: ArraySeq[Label]
+  private val adjacency: ArraySeq[Set[(VertexId, Distance)]],
 ) {
-  private val allVertices: Seq[VertexId]            = labelToIndexMap.rightKeys.toSeq
-  private val vertexEdges: Map[VertexId, Set[Edge]] = allVertices.map {
-    vertex =>
-      vertex -> edges.filter(_.vertices.contains(vertex))
-  }.toMap
+  def allVertices: Seq[VertexId] = adjacency.indices
 
-  def edgesFor(v: VertexId): Seq[(VertexId, Long)] =
-    vertexEdges(v).map { e =>
-      e.other(v) -> e.distance
-    }.toSeq
+  def edgesFor(v: VertexId): Set[(VertexId, Distance)] =
+    adjacency.lift(v).getOrElse(Set.empty)
 
   def labelToVertex(label: L): VertexId =
     labelToIndexMap.leftToRightUnsafe(label)
 
-  def connectedTo(vertexId: VertexId): Seq[VertexId] =
-    edges.filter(_.vertices.contains(vertexId)).toList.map(_.other(vertexId))
+  def reachableFrom(from: VertexId): Set[VertexId] =
+    edgesFor(from).map { case (n, _) => n }
 
   // TODO: This is terrible, improve it, possibly rename
-  def simplify(doNotTouch: Set[VertexId]): Graph[L] = {
+  def simplify(doNotTouch: Set[L]): Graph[L] = {
     val nonOptimisibleVertices: Iterable[VertexId] =
-      labelToIndexMap.rightKeys.filter(v => vertexEdges(v).size != 2)
+      labelToIndexMap.rightKeys.filter(v => edgesFor(v).size != 2)
 
-    val connectors = nonOptimisibleVertices.toSet ++ doNotTouch
-    println(connectors.size)
+    val connectors = nonOptimisibleVertices.toSet ++ doNotTouch.map(
+      labelToIndexMap.leftToRightUnsafe
+    )
 
-    println(connectors.map(labelToIndexMap.rightToLeftUnsafe))
-
-    var newEdges = Set.empty[Edge]
+    var newEdges = Set.empty[(SetOfTwo[L], Long)]
 
     connectors foreach { connector =>
       def helper(v: VertexId) = if (v == connector || !connectors.contains(v)) {
-        connectedTo(v).toList
+        reachableFrom(v).toList
       } else {
         Nil
       }
@@ -52,68 +47,74 @@ final class Graph[L](
 
       reachable.filterNot(_ == connector) foreach { n =>
         if (connectors.contains(n)) {
-          val distance =
+          val distance: Long =
             Bfs.bfsLength[VertexId](connector, helper, _ == n).get
-          val edge     = Edge(SetOfTwo(connector, n), distance)
+          val edge           = (
+            SetOfTwo(
+              labelToIndexMap.rightToLeftUnsafe(connector),
+              labelToIndexMap.rightToLeftUnsafe(n),
+            ),
+            distance,
+          )
           newEdges += edge
         }
       }
     }
 
-    val filteredLabelMap = connectors.map { connector =>
-      labelToIndexMap.rightToLeftUnsafe(connector) -> connector
-    }
-
-    new Graph[L](BiMap.from(filteredLabelMap), newEdges)
+    Graph.undirected(newEdges)
   }
 }
 
 object Graph {
   type VertexId = Int
-
-  final private case class Edge(vertices: SetOfTwo[VertexId], distance: Long) {
-    def other(vertexId: VertexId): VertexId =
-      (vertices.underlying - vertexId).toList.singleResultUnsafe
-  }
+  type Distance = Long
 
   def undirected[L](edges: Set[(SetOfTwo[L], Long)]): Graph[L] = {
     val labelToIndexMap: Map[L, VertexId] = edges
       .flatMap { case (s, _) =>
-        s.underlying
+        s.toSet
       }
       .toList
       .zipWithIndex
       .toMap
 
-    val newEdges: Set[Edge] = edges.map { case (s, d) =>
+    val e = edges.foldLeft(
+      ArraySeq.fill(labelToIndexMap.size)(Set.empty[(VertexId, Distance)])
+    ) { case (acc, (s, d)) =>
       val (a, b) = s.tupleInArbitraryOrder
-      Edge(SetOfTwo(labelToIndexMap(a), labelToIndexMap(b)), d)
+      val aIdx   = labelToIndexMap(a)
+      val bIdx   = labelToIndexMap(b)
+      acc
+        .updatedWith(aIdx)(set => set + (bIdx -> d))
+        .updatedWith(bIdx)(set => set + (aIdx -> d))
     }
 
-    new Graph[L](BiMap.from(labelToIndexMap), newEdges)
+    new Graph[L](BiMap.from(labelToIndexMap), e)
   }
 
-  def toDot(
+  def toDotDigraph(
     graph: Graph[Coords2D],
-    start: VertexId,
-    goal: VertexId,
+    start: Coords2D,
+    goal: Coords2D,
   ): String = {
-    def vertexName(v: VertexId): String = {
-      val c = graph.labelToIndexMap.rightToLeftUnsafe(v)
-      s"x${c.x}y${c.y}"
+    def coordsName(c: Coords2D): String = s"x${c.x}y${c.y}"
+
+    def vertexName(v: VertexId): String = coordsName(
+      graph.labelToIndexMap.rightToLeftUnsafe(v)
+    )
+
+    val edges = graph.allVertices.flatMap { v =>
+      graph.edgesFor(v).map { case (n, d) =>
+        s"""  ${vertexName(v)} -> ${vertexName(n)} [ label="$d" ]"""
+      }
     }
 
-    val vertices = graph.edges.map { e =>
-      val (a, b) = e.vertices.tupleInArbitraryOrder
-      s"""${vertexName(a)} -- ${vertexName(b)} [ label="${e.distance}" ]"""
-    }
-
-    s"""graph G {
+    s"""digraph G {
        |
-       |${vertexName(start)} [color="green"]
-       |${vertexName(goal)} [color="red"]
+       |${coordsName(start)} [color="green"]
+       |${coordsName(goal)} [color="red"]
        |
-       |${vertices.toList.sorted.mkString("\n")}
+       |${edges.toList.sorted.mkString("\n")}
        |}
        |""".stripMargin
   }

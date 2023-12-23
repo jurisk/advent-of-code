@@ -8,7 +8,7 @@ import jurisk.collections.BiMap.BiDirectionalArrowAssociation
 import jurisk.geometry.Direction2D.CardinalDirection2D
 import jurisk.geometry.{Coords2D, Direction2D, Field2D}
 import jurisk.graph.Graph
-import jurisk.graph.Graph.{Edge, VertexId}
+import jurisk.graph.Graph.VertexId
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -104,6 +104,8 @@ object Advent23 {
     var best    = 0L
     val visited = mutable.BitSet.fromSpecific(start :: Nil)
 
+    val debug = false
+
     // TODO: Can you make the backtracking logic more generic and extract it out?
     // TODO: Make it stack safe?
     // Not stack safe, but the search tree is not that deep
@@ -111,7 +113,10 @@ object Advent23 {
       if (current == goal) {
         if (steps > best) {
           best = steps
-          println(s"Found better $best")
+
+          if (debug) {
+            println(s"Found better $best")
+          }
         }
       } else {
         graph.edgesFor(current) foreach { case (to, distance) =>
@@ -148,11 +153,14 @@ object Advent23 {
         .getOrElse("Goal not found".fail)
 
     val graph = fieldToGraph(field)
-    val start = graph.labelToVertex(startCoords)
-    val goal  = graph.labelToVertex(goalCoords)
 
-    val simplified = graph.simplify(Set(start, goal))
-    println(Graph.toDot(simplified, start, goal))
+    val simplified = graph.simplify(Set(startCoords, goalCoords))
+
+    println(Graph.toDotDigraph(simplified, startCoords, goalCoords))
+
+    val start = simplified.labelToVertex(startCoords)
+    val goal  = simplified.labelToVertex(goalCoords)
+
     solve2Backtracking(simplified, start, goal)
   }
 
