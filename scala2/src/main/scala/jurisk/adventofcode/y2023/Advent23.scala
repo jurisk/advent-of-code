@@ -125,6 +125,7 @@ object Advent23 {
     private def verticesWithMoreThanTwoEdges: Iterable[VertexId] =
       labelToIndexMap.rightKeys.filter(v => edgesFor(v).size > 2)
 
+    // TODO: This is terrible, improve it, possibly rename
     def simplify(doNotTouch: Set[VertexId]): UndirectedGraph[L] = {
       val connectors = verticesWithMoreThanTwoEdges.toSet ++ doNotTouch
       println(connectors.size)
