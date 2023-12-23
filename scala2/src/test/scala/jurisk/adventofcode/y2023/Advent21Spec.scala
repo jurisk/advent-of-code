@@ -336,23 +336,38 @@ class Advent21Spec extends AnyFreeSpec {
     }
 
     "131-empty 263" in {
-      part2CompareClassificationWithSimulation(test131Empty, 263) shouldEqual 69696
+      part2CompareClassificationWithSimulation(
+        test131Empty,
+        263,
+      ) shouldEqual 69696
     }
 
     "131-single-rock 261" in {
-      part2CompareClassificationWithSimulation(test131SingleRock, 261) shouldEqual 68640
+      part2CompareClassificationWithSimulation(
+        test131SingleRock,
+        261,
+      ) shouldEqual 68640
     }
 
     "131-single-rock 400" in {
-      part2CompareClassificationWithSimulation(test131SingleRock, 400) shouldEqual 160789
+      part2CompareClassificationWithSimulation(
+        test131SingleRock,
+        400,
+      ) shouldEqual 160789
     }
 
     "131-single-rock 401" in {
-      part2CompareClassificationWithSimulation(test131SingleRock, 401) shouldEqual 161592
+      part2CompareClassificationWithSimulation(
+        test131SingleRock,
+        401,
+      ) shouldEqual 161592
     }
 
     "131-single-rock 263" in {
-      part2CompareClassificationWithSimulation(test131SingleRock, 263) shouldEqual 69692
+      part2CompareClassificationWithSimulation(
+        test131SingleRock,
+        263,
+      ) shouldEqual 69692
     }
 
     "real 400" in {

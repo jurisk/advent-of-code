@@ -1,6 +1,10 @@
 package jurisk.adventofcode.y2023
 
-import jurisk.geometry.{Area2D, Area3D, Coords2D, Coords3D, Field2D}
+import jurisk.geometry.Area2D
+import jurisk.geometry.Area3D
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Coords3D
+import jurisk.geometry.Field2D
 import jurisk.utils.CollectionOps.VectorOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps

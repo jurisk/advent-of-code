@@ -2,14 +2,16 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits._
 import jurisk.algorithms.pathfinding.Dijkstra
-import jurisk.geometry.{Area2D, Coords2D, Direction2D, Field2D}
-import jurisk.math.{
-  ArithmeticProgression,
-  IntOps,
-  LongOps,
-  absForWrappingAround,
-}
-import jurisk.utils.CollectionOps.{IndexedSeqOps, IterableOps}
+import jurisk.geometry.Area2D
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
+import jurisk.geometry.Field2D
+import jurisk.math.ArithmeticProgression
+import jurisk.math.IntOps
+import jurisk.math.LongOps
+import jurisk.math.absForWrappingAround
+import jurisk.utils.CollectionOps.IndexedSeqOps
+import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Simulation
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
