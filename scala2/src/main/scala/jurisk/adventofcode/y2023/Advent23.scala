@@ -1,28 +1,21 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits.toFunctorOps
-import jurisk.adventofcode.y2023.Advent23.Square.Forest
-import jurisk.adventofcode.y2023.Advent23.Square.Path
-import jurisk.adventofcode.y2023.Advent23.Square.Slope
+import jurisk.adventofcode.y2023.Advent23.Square.{Forest, Path, Slope}
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.collections.BiMap
+import jurisk.collections.{BiMap, SetOfTwo}
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
-import jurisk.collections.SetOfTwo
-import jurisk.geometry.Coords2D
-import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.CardinalDirection2D
-import jurisk.geometry.Field2D
-import jurisk.graph.Edge
-import jurisk.graph.UndirectedGraph
-import jurisk.graph.UndirectedGraph.VertexId
-import jurisk.utils.CollectionOps.IterableOps
+import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.graph.Graph
+import jurisk.graph.Graph.{Edge, VertexId}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 import scala.collection.mutable
 
 object Advent23 {
-  type Input = Field2D[Square]
+  private type Input = Field2D[Square]
 
   sealed trait Square extends Product with Serializable
   object Square {
@@ -93,7 +86,7 @@ object Advent23 {
 
     val best = reachable.filter(_.current == goalCoords).maxBy(_.steps)
 
-   best.steps
+    best.steps
   }
 
   def part1(data: Input): Long = solve1(data)
@@ -104,7 +97,7 @@ object Advent23 {
   }
 
   def solve2Backtracking(
-    graph: UndirectedGraph[Coords2D],
+    graph: Graph[Coords2D],
     start: VertexId,
     goal: VertexId,
   ): Long = {
@@ -121,46 +114,18 @@ object Advent23 {
           println(s"Found better $best")
         }
       } else {
-        graph.edgesFor(current) foreach { candidate =>
-          val to = candidate.other(current)
+        graph.edgesFor(current) foreach { case (to, distance) =>
           if (!visited.contains(to)) {
             visited.add(to)
-            backtrack(to, steps + candidate.distance)
+            backtrack(to, steps + distance)
             visited.remove(to)
           }
         }
-
       }
 
     backtrack(start, 0)
 
     best
-  }
-
-  // TODO:  Move out - and I think the UndirectedGraph constructor should just get a Seq[(SetOfTwo[L], distance)],
-  //        so this could even be split into two parts.
-  def fieldToGraph(field: Input): UndirectedGraph[Coords2D] = {
-    var nextIndex                                = 0
-    var labelToIndexMap: Map[Coords2D, VertexId] = Map.empty
-    field.allCoords.foreach { c =>
-      field.at(c).foreach {
-        case Square.Forest =>
-        case _             =>
-          labelToIndexMap = labelToIndexMap + (c -> nextIndex)
-          nextIndex += 1
-      }
-    }
-
-    var edges: Set[Edge] = Set.empty
-
-    field.allConnectionsDirectional foreach { case (a, _, b) =>
-      if (field.at(a).contains(Path) && field.at(b).contains(Path)) {
-        val vertices = SetOfTwo(labelToIndexMap(a), labelToIndexMap(b))
-        edges += Edge(vertices, 1)
-      }
-    }
-
-    UndirectedGraph(BiMap.from(labelToIndexMap), edges)
   }
 
   private def convertPart1ToPart2(data: Input): Input =
@@ -174,17 +139,34 @@ object Advent23 {
     val field = convertPart1ToPart2(data)
 
     val startCoords =
-      field.topRowCoords.find(c => field.at(c).contains(Path)).getOrElse("Start not found".fail)
+      field.topRowCoords
+        .find(c => field.at(c).contains(Path))
+        .getOrElse("Start not found".fail)
     val goalCoords  =
-      field.bottomRowCoords.find(c => field.at(c).contains(Path)).getOrElse("Goal not found".fail)
+      field.bottomRowCoords
+        .find(c => field.at(c).contains(Path))
+        .getOrElse("Goal not found".fail)
 
     val graph = fieldToGraph(field)
     val start = graph.labelToVertex(startCoords)
-    val goal = graph.labelToVertex(goalCoords)
+    val goal  = graph.labelToVertex(goalCoords)
 
     val simplified = graph.simplify(Set(start, goal))
-    println(UndirectedGraph.toDot(simplified, start, goal))
+    println(Graph.toDot(simplified, start, goal))
     solve2Backtracking(simplified, start, goal)
+  }
+
+  private def fieldToGraph(field: Input): Graph[Coords2D] = {
+    var edges: Set[(SetOfTwo[Coords2D], Long)] = Set.empty
+
+    field.allConnectionsDirectional foreach { case (a, _, b) =>
+      if (field.at(a).contains(Path) && field.at(b).contains(Path)) {
+        val vertices = SetOfTwo(a, b)
+        edges = edges + (vertices -> 1L)
+      }
+    }
+
+    Graph.undirected(edges)
   }
 
   def parseFile(fileName: String): Input =
