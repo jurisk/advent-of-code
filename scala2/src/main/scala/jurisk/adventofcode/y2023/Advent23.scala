@@ -12,6 +12,9 @@ import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.CardinalDirection2D
 import jurisk.geometry.Field2D
+import jurisk.graph.Edge
+import jurisk.graph.UndirectedGraph
+import jurisk.graph.UndirectedGraph.VertexId
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -103,93 +106,6 @@ object Advent23 {
     solve1(updated)
   }
 
-  final case class Edge(vertices: SetOfTwo[VertexId], distance: Long) {
-    def other(vertexId: VertexId): VertexId =
-      (vertices.underlying - vertexId).toList.singleResultUnsafe
-  }
-
-  // TODO: Move to library & optimise it.
-  private type VertexId = Int
-  final case class UndirectedGraph[L](
-    labelToIndexMap: BiMap[L, VertexId],
-    edges: Set[Edge],
-  ) {
-    val allVertices: Seq[VertexId]         = labelToIndexMap.rightKeys.toSeq
-    val edgesFor: Map[VertexId, Set[Edge]] = allVertices.map { vertex =>
-      vertex -> edges.filter(_.vertices.contains(vertex))
-    }.toMap
-
-    def connectedTo(vertexId: VertexId): Seq[VertexId] =
-      edges.filter(_.vertices.contains(vertexId)).toList.map(_.other(vertexId))
-
-    private def verticesWithMoreThanTwoEdges: Iterable[VertexId] =
-      labelToIndexMap.rightKeys.filter(v => edgesFor(v).size > 2)
-
-    // TODO: This is terrible, improve it, possibly rename
-    def simplify(doNotTouch: Set[VertexId]): UndirectedGraph[L] = {
-      val connectors = verticesWithMoreThanTwoEdges.toSet ++ doNotTouch
-      println(connectors.size)
-
-      println(connectors.map(labelToIndexMap.rightToLeftUnsafe))
-
-      var newEdges = Set.empty[Edge]
-
-      connectors foreach { connector =>
-        def helper(v: VertexId) = if (
-          v == connector || !connectors.contains(v)
-        ) {
-          connectedTo(v).toList
-        } else {
-          Nil
-        }
-
-        val reachable = Bfs.bfsReachable[VertexId](connector, helper)
-
-        reachable.filterNot(_ == connector) foreach { n =>
-          if (connectors.contains(n)) {
-            val distance =
-              Bfs.bfsLength[VertexId](connector, helper, _ == n).get
-            val edge     = Edge(SetOfTwo(connector, n), distance)
-            newEdges += edge
-          }
-        }
-      }
-
-      val filteredLabelMap = connectors.map { connector =>
-        labelToIndexMap.rightToLeftUnsafe(connector) -> connector
-      }
-
-      UndirectedGraph[L](BiMap.from(filteredLabelMap), newEdges)
-    }
-  }
-
-  // TODO: move out
-  private def printDot(
-    graph: UndirectedGraph[Coords2D],
-    start: VertexId,
-    goal: VertexId,
-  ): Unit = {
-    def vertexName(v: VertexId): String = {
-      val c = graph.labelToIndexMap.rightToLeftUnsafe(v)
-      s"x${c.x}y${c.y}"
-    }
-
-    println("graph G {")
-    println()
-    println(s"""${vertexName(start)} [color="green"]""")
-    println(s"""${vertexName(goal)} [color="red"]""")
-
-    graph.edges.foreach { e =>
-      val (a, b) = e.vertices.tupleInArbitraryOrder
-      println(
-        s"""${vertexName(a)} -- ${vertexName(b)} [ label="${e.distance}" ]"""
-      )
-    }
-
-    println("}")
-    println()
-  }
-
   def solve2Backtracking(
     graph: UndirectedGraph[Coords2D],
     start: VertexId,
@@ -231,7 +147,7 @@ object Advent23 {
   ): Long = {
     val simplified = graph.simplify(Set(start, goal))
 
-    printDot(simplified, start, goal)
+    println(UndirectedGraph.toDot(simplified, start, goal))
 
     solve2Backtracking(simplified, start, goal)
   }
