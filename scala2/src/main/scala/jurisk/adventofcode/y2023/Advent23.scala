@@ -198,6 +198,7 @@ object Advent23 {
     val visited = mutable.BitSet.fromSpecific(start :: Nil)
 
     // TODO: Can you make the backtracking logic more generic and extract it out?
+    // TODO: Make it stack safe?
     // Not stack safe, but the search tree is not that deep
     def backtrack(current: VertexId, steps: Long): Unit =
       if (current == goal) {
