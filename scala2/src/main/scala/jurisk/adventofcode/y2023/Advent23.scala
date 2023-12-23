@@ -68,6 +68,8 @@ object Advent23 {
     }
   }
 
+  // TODO:  Could you use both the generic `backtracking` logic to solve this, and also convert to the `Graph` and use
+  //        that to solve Part 1?
   def solve1(data: Input): Int = {
     val startCoords = data.topRowCoords.find(c => data.at(c).contains(Path)).get
     val goalCoords  =
@@ -154,14 +156,21 @@ object Advent23 {
 
     val graph = fieldToGraph(field)
 
-    val simplified = graph.simplify(Set(startCoords, goalCoords))
+    val simplified = {
+      val start = graph.labelToVertex(startCoords)
+      val goal = graph.labelToVertex(goalCoords)
+      graph.simplify(Set(start, goal))
+    }
+
+    val result = {
+      val start = simplified.labelToVertex(startCoords)
+      val goal  = simplified.labelToVertex(goalCoords)
+      solve2Backtracking(simplified, start, goal)
+    }
 
     println(Graph.toDotDigraph(simplified, startCoords, goalCoords))
 
-    val start = simplified.labelToVertex(startCoords)
-    val goal  = simplified.labelToVertex(goalCoords)
-
-    solve2Backtracking(simplified, start, goal)
+    result
   }
 
   private def fieldToGraph(field: Input): Graph[Coords2D] = {
