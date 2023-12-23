@@ -151,6 +151,7 @@ object Advent21 {
     val a = part2Old(data, steps)
     val b = part2FieldClassification(data, steps)
     println(s"slow but accurate = $a, new = $b")
+    println(s"Diff is ${b - a}")
     a shouldEqual b
     a
   }
@@ -318,15 +319,6 @@ object Advent21 {
       }
     }
 
-    def splitFinalised(n: Long): (Long, Long) = {
-      val half = n / 2
-      if (n % 2 == 0) {
-        (half, half)
-      } else {
-        (half + 1, half)
-      }
-    }
-
     val edgeSquaresFinalised = if (steps.parity == 0) {
       (fieldCounts.edgeCenter.evenCorneredFinalised * evenSquareCount + fieldCounts.edgeCenter.oddCorneredFinalised * oddSquareCount) * 4
     } else {
@@ -351,7 +343,7 @@ object Advent21 {
     } else {
       (corner.oddCorneredFinalised * evenSquareCount + corner.evenCorneredFinalised * oddSquareCount) * 4
     }
-//
+
 //    val cornerSquaresFinalised = (cornerOddFinalised * oddSquareCount + cornerEvenFinalised * evenSquareCount) * 4
 
     val cornerSquaresInProgress = fieldCounts.corner.inProgress.map {
