@@ -7,11 +7,13 @@ import jurisk.collections.{BiMap, SetOfTwo}
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
 import jurisk.geometry.Direction2D.CardinalDirection2D
 import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.optimization.Optimizer
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 import scala.collection.immutable.ArraySeq
+import scala.collection.mutable
 
 object Advent23 {
   type Part1Input = Field2D[Square]
@@ -108,8 +110,12 @@ object Advent23 {
     labelToIndexMap: BiMap[L, VertexId],
     edges: Set[Edge],
   ) {
-    def areConnected(a: VertexId, b: VertexId): Option[Edge] = edges.find(_.vertices == SetOfTwo(a, b))
-    def edgesFor(vertexId: VertexId): Set[Edge] = edges.filter(_.vertices.contains(vertexId))
+    val allVertices: Seq[VertexId] = labelToIndexMap.rightKeys.toSeq
+    val edgesFor: Map[VertexId, Set[Edge]] = allVertices.map { vertex =>
+      vertex -> edges.filter(_.vertices.contains(vertex))
+    }.toMap
+
+//    def areConnected(a: VertexId, b: VertexId): Option[Edge] = edges.find(_.vertices == SetOfTwo(a, b))
     def connectedTo(vertexId: VertexId): Seq[VertexId] = edges.filter(_.vertices.contains(vertexId)).toList.map(_.other(vertexId))
 
     def connectors: Iterable[VertexId] = labelToIndexMap.rightKeys.filter(v => edgesFor(v).size > 2)
@@ -191,12 +197,7 @@ object Advent23 {
       }.toList
     }
   }
-
-  def solve2(graph: UndirectedGraph[Coords2D], start: VertexId, goal: VertexId): Long = {
-    val simplified = simplifyGraph(graph, start, goal)
-
-    printDot(simplified, start, goal)
-
+  def solveState2Method(graph: UndirectedGraph[Coords2D], start: VertexId, goal: VertexId): Long = {
     val startState = State2(
       visited = Set(start),
       steps = 0,
@@ -206,7 +207,7 @@ object Advent23 {
     var best = 0L
     Bfs.bfsVisitAll[State2](
       startState,
-      _.next(simplified),
+      _.next(graph),
       state => {
         if (state.current == goal) {
           if (state.steps > best) {
@@ -217,6 +218,53 @@ object Advent23 {
       }
     )
     best
+  }
+
+  def solve2Backtracking(graph: UndirectedGraph[Coords2D], start: VertexId, goal: VertexId): Long = {
+    var best = 0L
+    var visited = mutable.BitSet.fromSpecific(start :: Nil)
+
+    def backtrack(current: VertexId, steps: Long): Unit = {
+      if (current == goal) {
+        if (steps > best) {
+          best = steps
+          println(s"Found better $best")
+        }
+      } else {
+        graph.edgesFor(current) foreach { candidate =>
+          val to = candidate.other(current)
+          if (!visited.contains(to)) {
+            visited.add(to)
+            backtrack(to, steps + candidate.distance)
+            visited.remove(to)
+          }
+        }
+
+      }
+    }
+
+    backtrack(start, 0)
+
+    best
+  }
+
+  def solve2Optimizer() = {
+//
+//    implicit val o = Optimizer.z3()
+//    import o._
+//
+//    graph.edges foreach { edge =>
+//
+//    }
+    ???
+  }
+
+  def solve2(graph: UndirectedGraph[Coords2D], start: VertexId, goal: VertexId): Long = {
+    val simplified = simplifyGraph(graph, start, goal)
+
+    printDot(simplified, start, goal)
+
+    solve2Backtracking(simplified, start, goal)
   }
 
   def part2(data: Part1Input): Long = {
