@@ -235,7 +235,8 @@ object Advent23 {
     solve2Backtracking(simplified, start, goal)
   }
 
-  // TODO: Move out
+  // TODO:  Move out - and I think the UndirectedGraph constructor should just get a Seq[(SetOfTwo[L], distance)],
+  //        so this could even be split into two parts.
   def fieldToGraph(field: Input): UndirectedGraph[Coords2D] = {
     var nextIndex                                = 0
     var labelToIndexMap: Map[Coords2D, VertexId] = Map.empty
