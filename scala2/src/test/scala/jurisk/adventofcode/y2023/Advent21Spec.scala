@@ -7,10 +7,10 @@ import org.scalatest.matchers.should.Matchers._
 class Advent21Spec extends AnyFreeSpec {
   private def testData       = parseFile(fileName("-test"))
   private def realData       = parseFile(fileName(""))
-  private def testEmpty      = parseFile(fileName("-test-empty"))
-  private def testSingleRock = parseFile(fileName("-test-single-rock"))
-  private def testSimpleWall = parseFile(fileName("-test-simple-wall"))
-//
+  private def test131Empty       = parseFile(fileName("-test-131-empty"))
+
+
+  //
 //  "part 1" - {
 //    "test" in {
 //      part1(testData, 6) shouldEqual 16
@@ -171,18 +171,16 @@ class Advent21Spec extends AnyFreeSpec {
     }
   }
 
-  "temp" in {
-    val result = part2FieldClassification(testEmpty, 19)
-    println(result)
-    result shouldEqual part2Old(testEmpty, 19)
-  }
-
   "comparison" - {
-    Map(
-      "empty"       -> testEmpty,
-      "single-rock" -> testSingleRock,
-      "simple-wall" -> testSimpleWall,
-    ) map { case (name, test) =>
+    List(
+//      "empty",
+//      "single-rock",
+//      "simple-wall",
+//      "another-wall",
+      "9-another-wall",
+    ) map { name =>
+      val test = parseFile(fileName(s"-test-$name"))
+
       name - {
         val MaxN = 100
         1 to MaxN map { n =>
@@ -202,53 +200,74 @@ class Advent21Spec extends AnyFreeSpec {
 //    }
 
     "real 130" in {
-      part2FieldClassification(realData, 130) shouldEqual 15497
+      part2(realData, 130) shouldEqual 15497
     }
 
-    "real 400" in {
-      part2(realData, 400) shouldEqual 145254
+    "real 262" in {
+      part2(realData, 262) shouldEqual 62457
     }
 
-    //    "test 1" in {
-//      part2(testData, 1) shouldEqual 2
+    "real 263" in {
+      part2(realData, 263) shouldEqual 62930
+    }
+
+    "real 264" in {
+      part2(realData, 264) shouldEqual 63390
+    }
+
+    "real 265" in {
+      part2(realData, 265) shouldEqual 63904
+    }
+
+
+    "131-empty 263" in {
+      part2(test131Empty, 263) shouldEqual 69696
+    }
+
+//    "real 400" in {
+//      part2(realData, 400) shouldEqual 145254
 //    }
-//
-//    "test 6" in {
-//      part2(testData, 6) shouldEqual 16
-//    }
-//
-//    "test 7" in {
-//      part2(testData, 7) shouldEqual 22
-//    }
-//
-//    "test 8" in {
-//      part2(testData, 8) shouldEqual 30
-//    }
-//
-//    "test 10" in {
-//      part2(testData, 10) shouldEqual 50
-//    }
-//
-//    "test 50" in {
-//      part2(testData, 50) shouldEqual 1594
-//    }
-//
-//    "test 100" in {
-//      part2(testData, 100) shouldEqual 6536
-//    }
-//
-//    "test 500" in {
-//      part2(testData, 500) shouldEqual 167004
-//    }
-//
-//    "test 1000" in {
-//      part2(testData, 1000) shouldEqual 668697
-//    }
-//
-//    "test 5000" in {
-//      part2(testData, 5000) shouldEqual 16733044
-//    }
-//
+
+    "test 1" in {
+      part2Old(testData, 1) shouldEqual 2
+    }
+
+    "test 6" in {
+      part2Old(testData, 6) shouldEqual 16
+    }
+
+    "test 7" in {
+      part2Old(testData, 7) shouldEqual 22
+    }
+
+    "test 8" in {
+      part2Old(testData, 8) shouldEqual 30
+    }
+
+    "test 10" in {
+      part2Old(testData, 10) shouldEqual 50
+    }
+
+    "test 50" in {
+      part2Old(testData, 50) shouldEqual 1594
+    }
+
+    "test 100" in {
+      part2Old(testData, 100) shouldEqual 6536
+    }
+
+    "test 500" ignore {
+      part2Old(testData, 500) shouldEqual 167004
+    }
+
+    "test 1000" ignore {
+      part2Old(testData, 1000) shouldEqual 668697
+    }
+
+    "test 5000" ignore {
+      part2Old(testData, 5000) shouldEqual 16733044
+    }
+
     "real" in {
       // Not 634631632364544, too high
       part2FieldClassification(realData, 26501365) shouldEqual 0
