@@ -1,38 +1,38 @@
 package jurisk.graph
 
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.collections.BiMap
-import jurisk.collections.SetOfTwo
+import jurisk.collections.{BiMap, SetOfTwo}
 import jurisk.geometry.Coords2D
-import jurisk.graph.UndirectedGraph.VertexId
+import jurisk.graph.Graph.{Edge, VertexId}
 import jurisk.utils.CollectionOps.IterableOps
 
-final case class Edge(vertices: SetOfTwo[VertexId], distance: Long) {
-  def other(vertexId: VertexId): VertexId =
-    (vertices.underlying - vertexId).toList.singleResultUnsafe
-}
-
-// TODO: Improve this
-final case class UndirectedGraph[L](
+// TODO:  Improve this, use a better adjacencySets: IndexedSeq[Set[VertexId]]
+//        and also extract trait.
+final class Graph[L](
   private val labelToIndexMap: BiMap[L, VertexId],
   private val edges: Set[Edge],
 ) {
-  private val allVertices: Seq[VertexId]         = labelToIndexMap.rightKeys.toSeq
-  val edgesFor: Map[VertexId, Set[Edge]] = allVertices.map { vertex =>
-    vertex -> edges.filter(_.vertices.contains(vertex))
+  private val allVertices: Seq[VertexId]            = labelToIndexMap.rightKeys.toSeq
+  private val vertexEdges: Map[VertexId, Set[Edge]] = allVertices.map {
+    vertex =>
+      vertex -> edges.filter(_.vertices.contains(vertex))
   }.toMap
 
-  def labelToVertex(label: L): VertexId = {
+  def edgesFor(v: VertexId): Seq[(VertexId, Long)] =
+    vertexEdges(v).map { e =>
+      e.other(v) -> e.distance
+    }.toSeq
+
+  def labelToVertex(label: L): VertexId =
     labelToIndexMap.leftToRightUnsafe(label)
-  }
 
   def connectedTo(vertexId: VertexId): Seq[VertexId] =
     edges.filter(_.vertices.contains(vertexId)).toList.map(_.other(vertexId))
 
   // TODO: This is terrible, improve it, possibly rename
-  def simplify(doNotTouch: Set[VertexId]): UndirectedGraph[L] = {
+  def simplify(doNotTouch: Set[VertexId]): Graph[L] = {
     val nonOptimisibleVertices: Iterable[VertexId] =
-      labelToIndexMap.rightKeys.filter(v => edgesFor(v).size != 2)
+      labelToIndexMap.rightKeys.filter(v => vertexEdges(v).size != 2)
 
     val connectors = nonOptimisibleVertices.toSet ++ doNotTouch
     println(connectors.size)
@@ -64,15 +64,37 @@ final case class UndirectedGraph[L](
       labelToIndexMap.rightToLeftUnsafe(connector) -> connector
     }
 
-    UndirectedGraph[L](BiMap.from(filteredLabelMap), newEdges)
+    new Graph[L](BiMap.from(filteredLabelMap), newEdges)
   }
 }
 
-object UndirectedGraph {
+object Graph {
   type VertexId = Int
 
+  final private case class Edge(vertices: SetOfTwo[VertexId], distance: Long) {
+    def other(vertexId: VertexId): VertexId =
+      (vertices.underlying - vertexId).toList.singleResultUnsafe
+  }
+
+  def undirected[L](edges: Set[(SetOfTwo[L], Long)]): Graph[L] = {
+    val labelToIndexMap: Map[L, VertexId] = edges
+      .flatMap { case (s, _) =>
+        s.underlying
+      }
+      .toList
+      .zipWithIndex
+      .toMap
+
+    val newEdges: Set[Edge] = edges.map { case (s, d) =>
+      val (a, b) = s.tupleInArbitraryOrder
+      Edge(SetOfTwo(labelToIndexMap(a), labelToIndexMap(b)), d)
+    }
+
+    new Graph[L](BiMap.from(labelToIndexMap), newEdges)
+  }
+
   def toDot(
-    graph: UndirectedGraph[Coords2D],
+    graph: Graph[Coords2D],
     start: VertexId,
     goal: VertexId,
   ): String = {
