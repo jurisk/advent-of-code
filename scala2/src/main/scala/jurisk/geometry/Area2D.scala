@@ -12,6 +12,9 @@ final case class Area2D(min: Coords2D, max: Coords2D) {
     }
   }.toList
 
+  def +(c: Coords2D): Area2D =
+    Area2D(min + c, max + c)
+
   def topLeft: Coords2D     = min
   def bottomRight: Coords2D = max
 
