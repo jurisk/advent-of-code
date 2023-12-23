@@ -1,12 +1,17 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits.toFunctorOps
-import jurisk.adventofcode.y2023.Advent23.Square.{Forest, Path, Slope}
+import jurisk.adventofcode.y2023.Advent23.Square.Forest
+import jurisk.adventofcode.y2023.Advent23.Square.Path
+import jurisk.adventofcode.y2023.Advent23.Square.Slope
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.collections.{BiMap, SetOfTwo}
+import jurisk.collections.BiMap
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
+import jurisk.collections.SetOfTwo
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.CardinalDirection2D
-import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.geometry.Field2D
 import jurisk.graph.Graph
 import jurisk.graph.Graph.VertexId
 import jurisk.utils.FileInput._
@@ -158,7 +163,7 @@ object Advent23 {
 
     val simplified = {
       val start = graph.labelToVertex(startCoords)
-      val goal = graph.labelToVertex(goalCoords)
+      val goal  = graph.labelToVertex(goalCoords)
       graph.simplify(Set(start, goal))
     }
 
