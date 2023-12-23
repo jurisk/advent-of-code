@@ -1,7 +1,7 @@
 package jurisk.math
 
 // 1-based indexing, like in https://en.wikipedia.org/wiki/Arithmetic_progression
-case class ArithmeticProgression(
+final case class ArithmeticProgression(
   a_1: Long,
   d: Long,
 ) {
