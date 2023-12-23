@@ -76,7 +76,7 @@ object Advent21 {
   private def part1Simulate(data: Input, steps: Int): Long = {
     val positions = Set(data.start)
     val results   = Simulation.runNIterations(positions, steps) {
-      case (current, counter) =>
+      case (current, _) =>
         current flatMap { c =>
           data.field.adjacent4Where(c, _ == false)
         }
@@ -113,7 +113,6 @@ object Advent21 {
     }
 
     val field                                      = data.field
-    val positions: Set[Coords2D]                   = Set(data.start)
     val firstSeen: mutable.HashMap[Coords2D, Long] =
       mutable.HashMap(data.start -> 0)
 
@@ -125,20 +124,20 @@ object Advent21 {
         }
       }
 
-    val results = Simulation.runNIterations(positions, steps) {
-      case (current, counter) =>
-        updateMap(current, counter)
-
-        val options = current.toList.flatMap { c =>
+    val results = Simulation.runNIterations(Set(data.start), steps) {
+      case (frontier, counter) =>
+        val options = frontier.toList.flatMap { c =>
           val validNeighbours = c.adjacent4.filter { neighbour =>
             val adjusted = wrapCoords(field, neighbour)
-            field.at(adjusted).contains(false)
+            field.at(adjusted).contains(false) && !firstSeen.contains(neighbour)
           }
 
           validNeighbours
         }
 
-        options.toSet
+        val results = options.toSet
+        updateMap(results, counter + 1)
+        results
     }
 
     updateMap(results, steps)
@@ -172,7 +171,9 @@ object Advent21 {
       }
     }
 
-    results.size
+    firstSeen.count { case (_, n) =>
+      n.parity == steps.parity
+    }
   }
 
   private def wrapCoords[T](field: Field2D[T], c: Coords2D): Coords2D = {
@@ -181,11 +182,10 @@ object Advent21 {
     Coords2D(newX, newY)
   }
 
-  def part2(data: Input, steps: Int): Long = {
+  def part2CompareClassificationWithSimulation(data: Input, steps: Int): Long = {
     val a = part2Simulation(data, steps)
     val b = part2FieldClassification(data, steps)
-    println(s"slow but accurate = $a, new = $b")
-    println(s"Diff is ${b - a}")
+    println(s"simulation = $a, classification = $b")
     a shouldEqual b
     a
   }
@@ -347,9 +347,9 @@ object Advent21 {
       s"evenSquareCount = $evenSquareCount, oddSquareCount = $oddSquareCount"
     )
     val edgeSquaresFinalised = if (steps.parity == 0) {
-      (fieldCounts.edgeCenter.evenCorneredFinalised * evenSquareCount + fieldCounts.edgeCenter.oddCorneredFinalised * oddSquareCount) * 4
+      fieldCounts.edgeCenter.evenCorneredFinalised * evenSquareCount + fieldCounts.edgeCenter.oddCorneredFinalised * oddSquareCount
     } else {
-      (fieldCounts.edgeCenter.evenCorneredFinalised * oddSquareCount + fieldCounts.edgeCenter.oddCorneredFinalised * evenSquareCount) * 4
+      fieldCounts.edgeCenter.evenCorneredFinalised * oddSquareCount + fieldCounts.edgeCenter.oddCorneredFinalised * evenSquareCount
     }
 
     val edgeSquaresInProgress = fieldCounts.edgeCenter.inProgress.map {
@@ -366,9 +366,9 @@ object Advent21 {
     }.sum
 
     val cornerSquaresFinalised = if (steps.parity == 0) {
-      (corner.oddCorneredFinalised * oddSquareCount + corner.evenCorneredFinalised * evenSquareCount) * 4
+      corner.oddCorneredFinalised * oddSquareCount + corner.evenCorneredFinalised * evenSquareCount
     } else {
-      (corner.oddCorneredFinalised * evenSquareCount + corner.evenCorneredFinalised * oddSquareCount) * 4
+      corner.oddCorneredFinalised * evenSquareCount + corner.evenCorneredFinalised * oddSquareCount
     }
 
     val cornerSquaresInProgress = fieldCounts.corner.inProgress.map {
@@ -390,7 +390,7 @@ object Advent21 {
     println(s"cornerSquaresFinalised = $cornerSquaresFinalised")
     println(s"cornerSquaresInProgress = $cornerSquaresInProgress")
 
-    centerSquares + edgeSquaresFinalised + edgeSquaresInProgress + cornerSquaresFinalised + cornerSquaresInProgress
+    centerSquares + edgeSquaresFinalised * 4 + edgeSquaresInProgress + cornerSquaresFinalised * 4 + cornerSquaresInProgress
   }
 
   def parseFile(fileName: String): Input =
@@ -403,6 +403,6 @@ object Advent21 {
     val realData: Input = parseFile(fileName(""))
 
     println(s"Part 1: ${part1(realData, 64)}")
-    println(s"Part 2: ${part2(realData, 26501365)}")
+    println(s"Part 2: ${part2FieldClassification(realData, 26501365)}")
   }
 }
