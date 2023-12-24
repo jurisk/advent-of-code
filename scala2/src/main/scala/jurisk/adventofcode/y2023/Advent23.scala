@@ -1,24 +1,20 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits.toFunctorOps
-import jurisk.adventofcode.y2023.Advent23.Square.Forest
-import jurisk.adventofcode.y2023.Advent23.Square.Path
-import jurisk.adventofcode.y2023.Advent23.Square.Slope
+import jurisk.adventofcode.y2023.Advent23.Square.{Forest, Path, Slope}
 import jurisk.algorithms.pathfinding.Bfs
+import jurisk.algorithms.{Backtracker, Backtracking}
 import jurisk.collections.BiMap
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
-import jurisk.collections.SetOfTwo
-import jurisk.geometry.Coords2D
-import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.CardinalDirection2D
-import jurisk.geometry.Field2D
+import jurisk.geometry.{Coords2D, Direction2D, Field2D}
 import jurisk.graph.Graph
-import jurisk.graph.Graph.VertexId
+import jurisk.graph.Graph.{Distance, VertexId}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import mouse.all.booleanSyntaxMouse
 
-import scala.collection.mutable
+import scala.collection.immutable
 
 object Advent23 {
   private type Input = Field2D[Square]
@@ -104,39 +100,71 @@ object Advent23 {
     solve1(updated)
   }
 
-  def solve2Backtracking(
+  // This was slower than `solve2Backtracking` so remains just a unit test for `Backtracker`
+  private def solve2BacktrackingUsingBacktracker(
     graph: Graph[Coords2D],
     start: VertexId,
     goal: VertexId,
   ): Long = {
-    var best    = 0L
-    val visited = mutable.BitSet.fromSpecific(start :: Nil)
+    var best = 0L
 
-    val debug = false
+    final case class BacktrackingState(
+      current: VertexId,
+      visited: immutable.BitSet,
+      steps: Distance,
+    )
 
-    // TODO: Can you make the backtracking logic more generic and extract it out?
-    // TODO: Make it stack safe?
-    // Not stack safe, but the search tree is not that deep
-    def backtrack(current: VertexId, steps: Long): Unit =
-      if (current == goal) {
-        if (steps > best) {
-          best = steps
-
-          if (debug) {
-            println(s"Found better $best")
+    Backtracker.solve(new Backtracking[Graph[Coords2D], BacktrackingState] {
+      override def root(p: Graph[Coords2D]): BacktrackingState               =
+        BacktrackingState(start, immutable.BitSet.empty, 0)
+      override def reject(p: Graph[Coords2D], c: BacktrackingState): Boolean =
+        c.visited.contains(c.current)
+      override def accept(p: Graph[Coords2D], c: BacktrackingState): Boolean =
+        false
+      override def extensions(
+        p: Graph[Coords2D],
+        c: BacktrackingState,
+      ): Seq[BacktrackingState] =
+        if (c.current == goal) {
+          best = best max c.steps
+          Nil
+        } else {
+          graph.outgoingEdges(c.current).toSeq.map { case (to, distance) =>
+            BacktrackingState(to, c.visited + c.current, c.steps + distance)
           }
         }
+    })(graph)
+
+    best
+  }
+
+  private def solve2Backtracking(
+    graph: Graph[Coords2D],
+    start: VertexId,
+    goal: VertexId,
+  ): Distance = {
+    var best = 0L
+
+    def backtrack(
+      current: VertexId,
+      visited: immutable.BitSet,
+      steps: Distance,
+    ): Unit =
+      if (visited.contains(current)) {
+        // reject
       } else {
-        graph.outgoingEdges(current) foreach { case (to, distance) =>
-          if (!visited.contains(to)) {
-            visited.add(to)
-            backtrack(to, steps + distance)
-            visited.remove(to)
+        if (current == goal) {
+          if (steps > best) {
+            best = steps
+          }
+        } else {
+          graph.outgoingEdges(current) foreach { case (to, distance) =>
+            backtrack(to, visited + current, steps + distance)
           }
         }
       }
 
-    backtrack(start, 0)
+    backtrack(start, immutable.BitSet.empty, 0)
 
     best
   }
