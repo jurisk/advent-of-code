@@ -1,15 +1,21 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits.toFunctorOps
-import jurisk.adventofcode.y2023.Advent23.Square.{Forest, Path, Slope}
+import jurisk.adventofcode.y2023.Advent23.Square.Forest
+import jurisk.adventofcode.y2023.Advent23.Square.Path
+import jurisk.adventofcode.y2023.Advent23.Square.Slope
+import jurisk.algorithms.Backtracker
+import jurisk.algorithms.Backtracking
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.algorithms.{Backtracker, Backtracking}
 import jurisk.collections.BiMap
 import jurisk.collections.BiMap.BiDirectionalArrowAssociation
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.CardinalDirection2D
-import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.geometry.Field2D
 import jurisk.graph.Graph
-import jurisk.graph.Graph.{Distance, VertexId}
+import jurisk.graph.Graph.Distance
+import jurisk.graph.Graph.VertexId
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import mouse.all.booleanSyntaxMouse
@@ -35,10 +41,10 @@ object Advent23 {
 
     val start = field.topRowCoords
       .find(c => field.at(c).contains(Path))
-      .getOrElse(s"Start not found".fail)
+      .getOrElse("Start not found".fail)
     val goal  = field.bottomRowCoords
       .find(c => field.at(c).contains(Path))
-      .getOrElse(s"Goal not found".fail)
+      .getOrElse("Goal not found".fail)
 
     Input(
       field,
@@ -120,8 +126,8 @@ object Advent23 {
 
   // This was slower than `solve2Backtracking` so remains just a unit test and a usage example for `Backtracker`
   private[y2023] def solve2BacktrackingUsingBacktracker(
-    graph: Graph[Coords2D],
     start: VertexId,
+    graph: Graph[Coords2D],
     goal: VertexId,
   ): Long = {
     var best = 0L
@@ -157,8 +163,8 @@ object Advent23 {
   }
 
   private[y2023] def solve2Backtracking(
-    graph: Graph[Coords2D],
     start: VertexId,
+    graph: Graph[Coords2D],
     goal: VertexId,
   ): Distance = {
     var best = 0L
@@ -198,12 +204,10 @@ object Advent23 {
   private[y2023] def convertToSimplified(
     input: Input
   ): (VertexId, Graph[Coords2D], VertexId) = {
-    val graph = fieldToGraph(input.field)
+    val (start1, graph, goal1) = inputToGraph(input)
 
     val (start, simplified, goal) = {
-      val start      = graph.labelToVertex(input.start)
-      val goal       = graph.labelToVertex(input.goal)
-      val simplified = graph.simplify(Set(start, goal))
+      val simplified = graph.simplify(Set(start1, goal1))
       (
         simplified.labelToVertex(input.start),
         simplified,
@@ -219,18 +223,23 @@ object Advent23 {
 
     val (start, simplified, goal) = convertToSimplified(converted)
 
-    val result = solve2Backtracking(simplified, start, goal)
+    val result = solve2Backtracking(start, simplified, goal)
 
     println(Graph.toDotDigraph(simplified, converted.start, converted.goal))
 
     result
   }
 
-  private def fieldToGraph(field: Field2D[Square]): Graph[Coords2D] =
-    Field2D.toGraphCardinalDirections(field) {
+  private[y2023] def inputToGraph(
+    input: Input
+  ): (VertexId, Graph[Coords2D], VertexId) = {
+    val graph = Field2D.toGraphCardinalDirections(input.field) {
       case ((fromC, fromV), d, (toC, toV)) =>
         Set(fromV, toV).forall(_ == Path).option(1L)
     }
+
+    (graph.labelToVertex(input.start), graph, graph.labelToVertex(input.goal))
+  }
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))

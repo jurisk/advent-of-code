@@ -20,10 +20,16 @@ class Advent23Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
-    "solve2BacktrackingUsingBacktracker" in {
-      val converted = convertPart1ToPart2(testData)
+    "solve2BacktrackingUsingBacktracker1 " in {
+      val converted            = convertPart1ToPart2(testData)
+      val (start, graph, goal) = inputToGraph(converted)
+      solve2BacktrackingUsingBacktracker(start, graph, goal) shouldEqual 154
+    }
+
+    "solve2BacktrackingUsingBacktracker 2" in {
+      val converted            = convertPart1ToPart2(testData)
       val (start, graph, goal) = convertToSimplified(converted)
-      solve2BacktrackingUsingBacktracker(graph, start, goal) shouldEqual 154
+      solve2BacktrackingUsingBacktracker(start, graph, goal) shouldEqual 154
     }
 
     "simple test using part 1" in {
