@@ -116,6 +116,17 @@ object Graph {
     directed(adapted)
   }
 
+  // TODO: Implement, reusing code with `toDotDigraph`
+  def toDotUndirectedGraph(
+    graph: Graph[Coords2D],
+    start: Coords2D,
+    goal: Coords2D,
+  ): String =
+    // TODO: Start by asserting it is indeed undirected
+
+    ???
+
+  // TODO: Instead of special `start` and `goal` nodes, you can just have a map of "colors"?
   def toDotDigraph(
     graph: Graph[Coords2D],
     start: Coords2D,

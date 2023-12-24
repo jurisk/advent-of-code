@@ -91,8 +91,9 @@ object Advent23 {
     }
   }
 
-  // TODO:  Could you use both the generic `backtracking` logic to solve this, and also convert to the `Graph` and use
-  //        that to solve Part 1?
+  // TODO:  Try two more things (likely together):
+  //        1) Use Backtracking to solve
+  //        2) Convert to the `Graph` (this one will be directed) and use that to solve Part 1
   def solve1(data: Input): Int = {
     val startState = State(
       visited = Set(data.start),
@@ -117,7 +118,7 @@ object Advent23 {
     solve1(updated)
   }
 
-  // This was slower than `solve2Backtracking` so remains just a unit test and usage example for `Backtracker`
+  // This was slower than `solve2Backtracking` so remains just a unit test and a usage example for `Backtracker`
   private[y2023] def solve2BacktrackingUsingBacktracker(
     graph: Graph[Coords2D],
     start: VertexId,
@@ -162,6 +163,7 @@ object Advent23 {
   ): Distance = {
     var best = 0L
 
+    // Not stack safe, but the depth is not deep
     def backtrack(
       current: VertexId,
       visited: immutable.BitSet,
@@ -193,14 +195,20 @@ object Advent23 {
       case Slope(_)      => Square.Path
     })
 
-  private[y2023] def convertToSimplified(input: Input): (VertexId, Graph[Coords2D], VertexId) = {
+  private[y2023] def convertToSimplified(
+    input: Input
+  ): (VertexId, Graph[Coords2D], VertexId) = {
     val graph = fieldToGraph(input.field)
 
     val (start, simplified, goal) = {
-      val start = graph.labelToVertex(input.start)
-      val goal  = graph.labelToVertex(input.goal)
+      val start      = graph.labelToVertex(input.start)
+      val goal       = graph.labelToVertex(input.goal)
       val simplified = graph.simplify(Set(start, goal))
-      (simplified.labelToVertex(input.start), simplified, simplified.labelToVertex(input.goal))
+      (
+        simplified.labelToVertex(input.start),
+        simplified,
+        simplified.labelToVertex(input.goal),
+      )
     }
 
     (start, simplified, goal)
