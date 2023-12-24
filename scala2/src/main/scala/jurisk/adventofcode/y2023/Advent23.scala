@@ -117,8 +117,8 @@ object Advent23 {
     solve1(updated)
   }
 
-  // This was slower than `solve2Backtracking` so remains just a unit test for `Backtracker`
-  private def solve2BacktrackingUsingBacktracker(
+  // This was slower than `solve2Backtracking` so remains just a unit test and usage example for `Backtracker`
+  private[y2023] def solve2BacktrackingUsingBacktracker(
     graph: Graph[Coords2D],
     start: VertexId,
     goal: VertexId,
@@ -155,7 +155,7 @@ object Advent23 {
     best
   }
 
-  private def solve2Backtracking(
+  private[y2023] def solve2Backtracking(
     graph: Graph[Coords2D],
     start: VertexId,
     goal: VertexId,
@@ -186,29 +186,32 @@ object Advent23 {
     best
   }
 
-  private def convertPart1ToPart2(input: Input): Input =
+  private[y2023] def convertPart1ToPart2(input: Input): Input =
     input.copy(field = input.field.map {
       case Square.Forest => Square.Forest
       case Square.Path   => Square.Path
       case Slope(_)      => Square.Path
     })
 
+  private[y2023] def convertToSimplified(input: Input): (VertexId, Graph[Coords2D], VertexId) = {
+    val graph = fieldToGraph(input.field)
+
+    val (start, simplified, goal) = {
+      val start = graph.labelToVertex(input.start)
+      val goal  = graph.labelToVertex(input.goal)
+      val simplified = graph.simplify(Set(start, goal))
+      (simplified.labelToVertex(input.start), simplified, simplified.labelToVertex(input.goal))
+    }
+
+    (start, simplified, goal)
+  }
+
   def part2(data: Input): Long = {
     val converted = convertPart1ToPart2(data)
 
-    val graph = fieldToGraph(converted.field)
+    val (start, simplified, goal) = convertToSimplified(converted)
 
-    val simplified = {
-      val start = graph.labelToVertex(converted.start)
-      val goal  = graph.labelToVertex(converted.goal)
-      graph.simplify(Set(start, goal))
-    }
-
-    val result = {
-      val start = simplified.labelToVertex(converted.start)
-      val goal  = simplified.labelToVertex(converted.goal)
-      solve2Backtracking(simplified, start, goal)
-    }
+    val result = solve2Backtracking(simplified, start, goal)
 
     println(Graph.toDotDigraph(simplified, converted.start, converted.goal))
 

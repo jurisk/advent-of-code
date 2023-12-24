@@ -20,6 +20,12 @@ class Advent23Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
+    "solve2BacktrackingUsingBacktracker" in {
+      val converted = convertPart1ToPart2(testData)
+      val (start, graph, goal) = convertToSimplified(converted)
+      solve2BacktrackingUsingBacktracker(graph, start, goal) shouldEqual 154
+    }
+
     "simple test using part 1" in {
       part2UsingPart1(simpleData) shouldEqual part2(simpleData)
     }
