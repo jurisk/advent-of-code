@@ -4,9 +4,12 @@ import cats.Eval
 import cats.Foldable
 import cats.Functor
 import cats.implicits._
+import jurisk.adventofcode.y2023.Advent23.Square.Path
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.collections.BiMap
+import jurisk.collections.{BiMap, SetOfTwo}
 import jurisk.geometry.Direction2D.CardinalDirection2D
+import jurisk.graph.Graph
+import jurisk.graph.Graph.Distance
 import jurisk.utils.Parsing.StringOps
 
 import scala.collection.immutable.ArraySeq
@@ -155,6 +158,14 @@ final case class Field2D[T] private (
     to    = from + dir
     if isValidCoordinate(to)
   } yield (from, dir, to)
+
+  def allConnectionsAndValuesDirectional
+    : Seq[((Coords2D, T), CardinalDirection2D, (Coords2D, T))] = for {
+    (fromC, fromV) <- valuesAndCoords
+    dir            <- Direction2D.CardinalDirections
+    toC             = fromC + dir
+    toV            <- at(toC)
+  } yield ((fromC, fromV), dir, (toC, toV))
 
   def values: Iterable[T] = data.flatten
 
@@ -459,5 +470,25 @@ object Field2D {
         ArraySeq.from(paddedLine.map(parser))
       }
     )
+  }
+
+  // TODO: Refactor some existing solutions to use this
+  def toGraphCardinalDirections[T](field: Field2D[T])(
+    edgeDistance: (
+      (Coords2D, T),
+      CardinalDirection2D,
+      (Coords2D, T),
+    ) => Option[Distance]
+  ): Graph[Coords2D] = {
+    var edges: Set[(Coords2D, Distance, Coords2D)] = Set.empty
+
+    field.allConnectionsAndValuesDirectional.foreach {
+      case ((fromC, fromV), d, (toC, toV)) =>
+        edgeDistance((fromC, fromV), d, (toC, toV)).foreach { distance =>
+          edges = edges + ((fromC, distance, toC))
+        }
+    }
+
+    Graph.directed(edges)
   }
 }

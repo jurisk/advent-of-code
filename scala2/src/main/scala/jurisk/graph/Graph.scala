@@ -79,12 +79,12 @@ object Graph {
   type VertexId = Int
   type Distance = Long
 
-  def undirected[L: Ordering: ClassTag](
-    edges: Set[(SetOfTwo[L], Long)]
+  def directed[L: Ordering: ClassTag](
+    edges: Set[(L, Distance, L)]
   ): Graph[L] = {
     val labels = edges
-      .flatMap { case (s, _) =>
-        s.toSet
+      .flatMap { case (from, d, to) =>
+        Set(from, to)
       }
       .toSeq
       .sorted
@@ -93,16 +93,27 @@ object Graph {
 
     val e = edges.foldLeft(
       ArraySeq.fill(labelIndices.size)(Set.empty[(VertexId, Distance)])
-    ) { case (acc, (s, d)) =>
-      val (a, b) = s.tupleInArbitraryOrder
-      val aIdx   = labelIndices(a)
-      val bIdx   = labelIndices(b)
-      acc
-        .updatedWith(aIdx)(set => set + (bIdx -> d))
-        .updatedWith(bIdx)(set => set + (aIdx -> d))
+    ) { case (acc, (from, d, to)) =>
+      val a = labelIndices(from)
+      val b = labelIndices(to)
+      acc.updatedWith(a)(set => set + (b -> d))
     }
 
     new GraphImpl[L](ArraySeq.from(labels), labelIndices, e)
+  }
+
+  def undirected[L: Ordering: ClassTag](
+    edges: Set[(SetOfTwo[L], Long)]
+  ): Graph[L] = {
+    val adapted = edges.flatMap { case (v, d) =>
+      val (a, b) = v.tupleInArbitraryOrder
+      Set(
+        (a, d, b),
+        (b, d, a),
+      )
+    }
+
+    directed(adapted)
   }
 
   def toDotDigraph(
