@@ -80,22 +80,22 @@ object Advent24 {
   def dotProduct(a: Coordinates3D, b: Coordinates3D): Long =
     a.x * b.x + a.y * b.y + a.z * b.z
 
-  def textually(data: List[PositionAndVelocity3D]): String = {
-//    val vx = "a"
-//    val vy = "b"
-//    val vz = "c"
+  def textually(data: List[PositionAndVelocity3D], num: Boolean): String = {
+    val vx = "A"
+    val vy = "B"
+    val vz = "C"
+
+    val px = "X"
+    val py = "Y"
+    val pz = "Z"
+
+//    val vx = "vx"
+//    val vy = "vy"
+//    val vz = "vz"
 //
-//    val px = "d"
-//    val py = "e"
-//    val pz = "f"
-
-    val vx = "vx"
-    val vy = "vy"
-    val vz = "vz"
-
-    val px = "px"
-    val py = "py"
-    val pz = "pz"
+//    val px = "px"
+//    val py = "py"
+//    val pz = "pz"
 
     def cp(
       a: (String, String, String),
@@ -140,29 +140,93 @@ object Advent24 {
 
     data
       .map { rock =>
-        if (false) println(rock)
-//        s"${dp(cp(extractStrings(rock.velocity), (vx, vy, vz)), sb(extractStrings(rock.position), (px, py, pz)))} = 0"
-        s"${dp(cp(("rvx", "rvy", "rvz"), (vx, vy, vz)), sb(("rpx", "rpy", "rpz"), (px, py, pz)))} = 0"
+        if (num) {
+          s"${dp(cp(extractStrings(rock.velocity), (vx, vy, vz)), sb(extractStrings(rock.position), (px, py, pz)))} = 0"
+        } else {
+//          s"${dp(cp(("rvx", "rvy", "rvz"), (vx, vy, vz)), sb(("rpx", "rpy", "rpz"), (px, py, pz)))} = 0"
+          s"${dp(cp(("d", "f", "g"), (vx, vy, vz)), sb(("h", "j", "k"), (px, py, pz)))} = 0"
+        }
       }
       .mkString("\n")
 
   }
 
-  def solvePart2(data: List[PositionAndVelocity3D]): Long = {
-    println(textually(data))
+  def areVectorsParallel(a: Coordinates3D, b: Coordinates3D): Boolean = {
+    val ax = BigDecimal(a.x)
+    val ay = BigDecimal(a.y)
+    val az = BigDecimal(a.z)
+
+    val bx = BigDecimal(b.x)
+    val by = BigDecimal(b.y)
+    val bz = BigDecimal(b.z)
+
+    List(ax / bx, ay / by, az / bz).distinct.size == 1
+  }
+
+  def normaliseToAvg(data: List[PositionAndVelocity3D]): Unit = {
+    val xs = data.map(_.position.x)
+    val ys = data.map(_.position.y)
+    val zs = data.map(_.position.z)
+
+    val xAvg = xs.sum / xs.length
+    val yAvg = ys.sum / ys.length
+    val zAvg = zs.sum / zs.length
+
     println()
+    data foreach { r =>
+      val q = r.copy(position =
+        Coordinates3D(
+          r.position.x - xAvg,
+          r.position.y - yAvg,
+          r.position.z - zAvg,
+        )
+      )
+      println(s"${q.p.x}, ${q.p.y}, ${q.p.z} @ ${q.v.x}, ${q.v.y}, ${q.v.z}")
+    }
+    println()
+  }
+
+  def solvePart2(data: List[PositionAndVelocity3D]): PositionAndVelocity3D = {
+    anyoneIntersecting(data)
+
+//    println(textually(data, num = true))
+//    println()
+//    println(textually(data, num = false))
+//    println()
 
     // For all rocks "r"
     // (rvy * vz - rvz * vy) * (rpx - px) + (rvz * vx - rvx * vz) * (rpy - py) + (rvx * vy - rvy * vx) * (rpz - pz) = 0
 
-    implicit val o: Optimizer = Optimizer.z3()
-    import o._
+    // (rvy * C - rvz * B) * (rpx - X) + (rvz * A - rvx * C) * (rpy - Y) + (rvx * B - rvy * A) * (rpz - Z) = 0
 
-    ???
+    solvePart2CrudeOptimize(data)
+//    solvePart2DotCrossProducts(data.take(3), 100_000_000_000L)
+
   }
 
-  def solvePart2Fail(data: List[PositionAndVelocity3D]): Coordinates3D = {
-    println(textually(data))
+  def anyoneParallel(data: List[PositionAndVelocity3D]): Unit =
+    data.combinations(2).foreach { list =>
+      val List(a, b) = list
+      if (areVectorsParallel(a.velocity, b.velocity)) {
+        println(s"Parallel $a and $b")
+      }
+    }
+
+  def anyoneIntersecting(data: List[PositionAndVelocity3D]): Unit =
+    data.combinations(2).foreach { list =>
+      val List(a, b) = list
+      if (linesIntersect(a, b)) {
+        println(s"Intersect $a and $b")
+      }
+    }
+
+  def solvePart2DotCrossProducts(
+    data: List[PositionAndVelocity3D],
+    limit: Long,
+  ): PositionAndVelocity3D = {
+    println(textually(data, num = true))
+    println()
+    println(textually(data, num = false))
     println()
 
     // Find such px, py, pz, vx, vy, vz that for all rocks
@@ -180,20 +244,20 @@ object Advent24 {
     val vz = o.labeledInt(s"vz")
 
 //    val Limit = 25
-    val Limit = 1_000_000_000_000L
+//    val Limit = 1_000_000_000_000L
     o.addConstraints(
-      px <= o.constant(Limit),
-      py <= o.constant(Limit),
-      pz <= o.constant(Limit),
-      px >= o.constant(-Limit),
-      py >= o.constant(-Limit),
-      pz >= o.constant(-Limit),
-      vx <= o.constant(Limit),
-      vy <= o.constant(Limit),
-      vz <= o.constant(Limit),
-      vx >= o.constant(-Limit),
-      vy >= o.constant(-Limit),
-      vz >= o.constant(-Limit),
+      px <= o.constant(limit),
+      py <= o.constant(limit),
+      pz <= o.constant(limit),
+      px >= o.constant(-limit),
+      py >= o.constant(-limit),
+      pz >= o.constant(-limit),
+      vx <= o.constant(limit),
+      vy <= o.constant(limit),
+      vz <= o.constant(limit),
+      vx >= o.constant(-limit),
+      vy >= o.constant(-limit),
+      vz >= o.constant(-limit),
     )
 
     def cp(
@@ -250,13 +314,16 @@ object Advent24 {
 
     val velocity =
       Coordinates3D(o.extractInt(vx), o.extractInt(vy), o.extractInt(vz))
-    println(s"velocity = $velocity")
+    println(s"Velocity = $velocity")
 
-    val result =
+    val position =
       Coordinates3D(o.extractInt(px), o.extractInt(py), o.extractInt(pz))
-    println(s"Result = $result")
+    println(s"Position = $position")
 
-    result
+    // Note that this can find not just the exact solution but also some others that are collinear vectors (reversed),
+    // but may technically not be valid solutions because they have intersections at t < 0
+
+    PositionAndVelocity3D(position, velocity)
   }
 
   // https://math.stackexchange.com/a/697278
@@ -430,7 +497,63 @@ object Advent24 {
   def solvePart2CrudeOptimize(
     data: List[PositionAndVelocity3D]
   ): PositionAndVelocity3D = {
-    data foreach println
+    def sgn(n: Long): String =
+      if (n < 0) {
+        s"- ${-n}"
+      } else {
+        s"+ $n"
+      }
+
+    data.zipWithIndex foreach { case (r, idx) =>
+      println(s"x + t$idx * a = ${r.p.x} ${sgn(r.v.x)} * t$idx")
+      println(s"y + t$idx * b = ${r.p.y} ${sgn(r.v.y)} * t$idx")
+      println(s"z + t$idx * c = ${r.p.z} ${sgn(r.v.z)} * t$idx")
+    }
+
+    println()
+    println(s"x + t_n * a = rpx + rvx * t_n")
+    println(s"y + t_n * b = rpy + rvy * t_n")
+    println(s"z + t_n * c = rpz + rvz * t_n")
+
+    // (t_n * a) - (rvx * t_n) = rpx - x
+    // t_n * (a - rvx) = rpx - x
+    // t_n = (rpx - x) / (a - rvx)
+    // t_n = (rpx - x) / (a - rvx) = (rpy - y) / (b - rvy) = (rpz - z) / (c - rvz)
+
+    // x = 24, y = 13, z = 10, a = -3, b = 1, c = 2
+
+    val x = 24
+    val y = 13
+    val z = 10
+    val a = -3
+    val b = 1
+    val c = 2
+
+    // (19 - x) / (a + 2) = (13 - y) / (b - 1) = (30 - z) / (c + 2)
+    // (18 - x) / (a + 1) = (19 - y) / (b + 1) = (22 - z) / (c + 2)
+    // (20 - x) / (a + 2) = (25 - y) / (b + 2) = (34 - z) / (c + 4)
+    // (12 - x) / (a + 1) = (31 - y) / (b + 2) = (28 - z) / (c + 1)
+    // (20 - x) / (a - 1) = (19 - y) / (b + 5) = (15 - z) / (c + 3)
+
+    data foreach { r =>
+      if ((a != r.v.x) && (b != r.v.y) && (c != r.v.z)) {
+        val e1 = (r.p.x - x).toDouble / (a - r.v.x)
+        val e2 = (r.p.y - y).toDouble / (b - r.v.y)
+        val e3 = (r.p.z - z).toDouble / (c - r.v.z)
+
+        println(s"$e1, $e2, $e3")
+      }
+
+      println(s"(${r.p.x} - x) / (a ${sgn(-r.v.x)}) = (${r.p.y} - y) / (b ${sgn(
+          -r.v.y
+        )}) = (${r.p.z} - z) / (c ${sgn(-r.v.z)})")
+      println()
+    }
+
+    println(s"${3 + 3 + data.length} variables")
+    println(s"${data.length * 3} equations")
+
+    println()
 
     // Find a "result" PositionAndVelocity3D for which integer t exists where "position at t" for both
     // "result" and all of "data" is identical
@@ -510,16 +633,20 @@ object Advent24 {
 
     println(model)
 
-    PositionAndVelocity3D(
+    val result = PositionAndVelocity3D(
       Coordinates3D(o.extractInt(px), o.extractInt(py), o.extractInt(pz)),
       Coordinates3D(o.extractInt(vx), o.extractInt(vy), o.extractInt(vz)),
     )
+
+    println(result)
+
+    result
   }
 
   def part2(data: InputPart2): Long = {
-    val result = solvePart2(data)
-//    result.x + result.y + result.z
-    result
+    val result = solvePart2(data).position
+    result.x + result.y + result.z
+//    result
   }
 
   def parseFile(fileName: String): InputPart2 =
