@@ -17,7 +17,11 @@ import mouse.all.booleanSyntaxMouse
 import scala.collection.immutable
 
 object Advent23 {
-  private type Input = Field2D[Square]
+  final case class Input(
+    field: Field2D[Square],
+    start: Coords2D,
+    goal: Coords2D,
+  )
 
   sealed trait Square extends Product with Serializable
   object Square {
@@ -26,7 +30,24 @@ object Advent23 {
     final case class Slope(direction: CardinalDirection2D) extends Square
   }
 
-  def parse(input: String): Input =
+  def parse(input: String): Input = {
+    val field = parseField(input)
+
+    val start = field.topRowCoords
+      .find(c => field.at(c).contains(Path))
+      .getOrElse(s"Start not found".fail)
+    val goal  = field.bottomRowCoords
+      .find(c => field.at(c).contains(Path))
+      .getOrElse(s"Goal not found".fail)
+
+    Input(
+      field,
+      start,
+      goal,
+    )
+  }
+
+  private def parseField(input: String): Field2D[Square] =
     Field2D.parseFromBiMap(
       input,
       BiMap(
@@ -44,7 +65,7 @@ object Advent23 {
     steps: Int,
     current: Coords2D,
   ) {
-    def next(field: Input): List[State] = {
+    def next(field: Field2D[Square]): List[State] = {
       val candidates = field.atOrElse(current, Forest) match {
         case Square.Forest    => "Current location should not be forest".fail
         case Square.Path      => field.adjacent4(current)
@@ -73,22 +94,18 @@ object Advent23 {
   // TODO:  Could you use both the generic `backtracking` logic to solve this, and also convert to the `Graph` and use
   //        that to solve Part 1?
   def solve1(data: Input): Int = {
-    val startCoords = data.topRowCoords.find(c => data.at(c).contains(Path)).get
-    val goalCoords  =
-      data.bottomRowCoords.find(c => data.at(c).contains(Path)).get
-
     val startState = State(
-      visited = Set(startCoords),
+      visited = Set(data.start),
       steps = 0,
-      current = startCoords,
+      current = data.start,
     )
 
     val reachable = Bfs.bfsReachable[State](
       startState,
-      _.next(data),
+      _.next(data.field),
     )
 
-    val best = reachable.filter(_.current == goalCoords).maxBy(_.steps)
+    val best = reachable.filter(_.current == data.goal).maxBy(_.steps)
 
     best.steps
   }
@@ -169,45 +186,36 @@ object Advent23 {
     best
   }
 
-  private def convertPart1ToPart2(data: Input): Input =
-    data.map {
+  private def convertPart1ToPart2(input: Input): Input =
+    input.copy(field = input.field.map {
       case Square.Forest => Square.Forest
       case Square.Path   => Square.Path
       case Slope(_)      => Square.Path
-    }
+    })
 
   def part2(data: Input): Long = {
-    val field = convertPart1ToPart2(data)
+    val converted = convertPart1ToPart2(data)
 
-    val startCoords =
-      field.topRowCoords
-        .find(c => field.at(c).contains(Path))
-        .getOrElse("Start not found".fail)
-    val goalCoords  =
-      field.bottomRowCoords
-        .find(c => field.at(c).contains(Path))
-        .getOrElse("Goal not found".fail)
-
-    val graph = fieldToGraph(field)
+    val graph = fieldToGraph(converted.field)
 
     val simplified = {
-      val start = graph.labelToVertex(startCoords)
-      val goal  = graph.labelToVertex(goalCoords)
+      val start = graph.labelToVertex(converted.start)
+      val goal  = graph.labelToVertex(converted.goal)
       graph.simplify(Set(start, goal))
     }
 
     val result = {
-      val start = simplified.labelToVertex(startCoords)
-      val goal  = simplified.labelToVertex(goalCoords)
+      val start = simplified.labelToVertex(converted.start)
+      val goal  = simplified.labelToVertex(converted.goal)
       solve2Backtracking(simplified, start, goal)
     }
 
-    println(Graph.toDotDigraph(simplified, startCoords, goalCoords))
+    println(Graph.toDotDigraph(simplified, converted.start, converted.goal))
 
     result
   }
 
-  private def fieldToGraph(field: Input): Graph[Coords2D] =
+  private def fieldToGraph(field: Field2D[Square]): Graph[Coords2D] =
     Field2D.toGraphCardinalDirections(field) {
       case ((fromC, fromV), d, (toC, toV)) =>
         Set(fromV, toV).forall(_ == Path).option(1L)
