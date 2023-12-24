@@ -22,7 +22,12 @@ class Advent24Spec extends AnyFreeSpec {
 
   "part 2" - {
     "test" in {
-      part2(testData) shouldEqual 0
+      val valid = PositionAndVelocity3D(
+        Coordinates3D(24, 13, 10),
+        Coordinates3D(-3, 1, 2),
+      )
+      solvePart2(testData) shouldEqual valid
+      part2(testData) shouldEqual 47
     }
 
     "real" in {
