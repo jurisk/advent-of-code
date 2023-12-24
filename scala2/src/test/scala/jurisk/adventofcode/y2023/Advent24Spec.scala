@@ -2,8 +2,7 @@ package jurisk.adventofcode.y2023
 
 import org.scalatest.freespec.AnyFreeSpec
 import Advent24._
-import cats.implicits.{catsSyntaxOptionId, none}
-import jurisk.geometry.{Area2D, Coords2D}
+import cats.implicits._
 import org.scalatest.matchers.should.Matchers._
 
 class Advent24Spec extends AnyFreeSpec {
@@ -32,14 +31,20 @@ class Advent24Spec extends AnyFreeSpec {
       Coordinates3D(2, 3, 4),
       Coordinates3D(5, 6, 7),
     ) shouldEqual Coordinates3D(
-      -3, 6, -3
+      -3,
+      6,
+      -3,
     )
   }
 
   "linesIntersect" in {
     testData foreach { rock =>
       linesIntersect(rock, expectedTestAnswer) shouldEqual true
-      linesIntersect(rock, PositionAndVelocity3D(Coordinates3D(-3, -4, -1), Coordinates3D(1, 2, 3))) shouldEqual false
+//      linesIntersect(rock, PositionAndVelocity3D(Coordinates3D(0, 0, 0), Coordinates3D(0, 0, 0))) shouldEqual false
+      linesIntersect(
+        rock,
+        PositionAndVelocity3D(Coordinates3D(-3, -4, -1), Coordinates3D(1, 2, 3)),
+      ) shouldEqual false
     }
   }
 
@@ -48,15 +53,27 @@ class Advent24Spec extends AnyFreeSpec {
     "from webpage" - {
       "1" in {
         lineIntersection3D(
-          PositionAndVelocity3D(Coordinates3D(1, -4, 8), Coordinates3D(2, 1, -2)),
-          PositionAndVelocity3D(Coordinates3D(5, 1, 8), Coordinates3D(1, -1, -3)),
+          PositionAndVelocity3D(
+            Coordinates3D(1, -4, 8),
+            Coordinates3D(2, 1, -2),
+          ),
+          PositionAndVelocity3D(
+            Coordinates3D(5, 1, 8),
+            Coordinates3D(1, -1, -3),
+          ),
         ) shouldEqual (3, 2, Coordinates3D(7, -1, 2)).some
       }
 
       "2" in {
         lineIntersection3D(
-          PositionAndVelocity3D(Coordinates3D(0, -4, 8), Coordinates3D(1, 1, -2)),
-          PositionAndVelocity3D(Coordinates3D(2, -1, 3), Coordinates3D(2, 1, -2)),
+          PositionAndVelocity3D(
+            Coordinates3D(0, -4, 8),
+            Coordinates3D(1, 1, -2),
+          ),
+          PositionAndVelocity3D(
+            Coordinates3D(2, -1, 3),
+            Coordinates3D(2, 1, -2),
+          ),
         ) shouldEqual none
       }
     }
@@ -64,7 +81,10 @@ class Advent24Spec extends AnyFreeSpec {
     "first rock" in {
       lineIntersection3D(
         expectedTestAnswer,
-        PositionAndVelocity3D(Coordinates3D(19, 13, 30), Coordinates3D(-2, 1, -2)),
+        PositionAndVelocity3D(
+          Coordinates3D(19, 13, 30),
+          Coordinates3D(-2, 1, -2),
+        ),
       ) shouldEqual (5, 1234, Coordinates3D(9, 18, 20)).some
     }
 
@@ -77,7 +97,7 @@ class Advent24Spec extends AnyFreeSpec {
 
   "part 2" - {
     "test" in {
-      solvePart2(testData) shouldEqual expectedTestAnswer
+      solvePart2(testData) shouldEqual expectedTestAnswer.position
       part2(testData) shouldEqual 47
     }
 
