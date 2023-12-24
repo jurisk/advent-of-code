@@ -2,6 +2,8 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits.catsSyntaxOptionId
 import cats.implicits.none
+import jurisk.optimization.ImplicitConversions.{RichArithExprIntSort, RichExpr}
+import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -157,8 +159,82 @@ object Advent24 {
     solve1(input, min, max)
   }
 
-  def part2(data: InputPart2): Int =
-    0
+  def solvePart2(data: List[PositionAndVelocity3D]): PositionAndVelocity3D = {
+    data foreach println
+
+    // Find a "result" PositionAndVelocity3D for which integer t exists where "position at t" for both
+    // "result" and all of "data" is identical
+
+    // t[n] - collision time with rock n
+
+    // find (px, py, pz) and (vx, vy, vz) and such t[] so that for all rocks:
+    //    px + t[n] * vz == px[n] + t[n] * vx[n]
+    //    py + t[n] * vy == py[n] + t[n] * vy[n]
+    //    pz + t[n] * vz == pz[n] + t[n] * vz[n]
+
+    implicit val o = Optimizer.z3()
+    import o._
+
+    val px = o.labeledInt(s"px")
+    val py = o.labeledInt(s"py")
+    val pz = o.labeledInt(s"pz")
+
+    val vx = o.labeledInt(s"vx")
+    val vy = o.labeledInt(s"vy")
+    val vz = o.labeledInt(s"vz")
+
+    val Limit = 300
+    o.addConstraints(
+      px <= o.constant(Limit),
+      py <= o.constant(Limit),
+      pz <= o.constant(Limit),
+      px >= o.constant(-Limit),
+      py >= o.constant(-Limit),
+      pz >= o.constant(-Limit),
+      vx <= o.constant(Limit),
+      vy <= o.constant(Limit),
+      vz <= o.constant(Limit),
+      vx >= o.constant(-Limit),
+      vy >= o.constant(-Limit),
+      vz >= o.constant(-Limit),
+    )
+
+    data.zipWithIndex.foreach { case (rock, idx) =>
+      val t_n  = o.labeledInt(s"t_$idx")
+      val px_n = o.constant(rock.position.x)
+      val py_n = o.constant(rock.position.y)
+      val pz_n = o.constant(rock.position.z)
+
+      val vx_n = o.constant(rock.velocity.x)
+      val vy_n = o.constant(rock.velocity.y)
+      val vz_n = o.constant(rock.velocity.z)
+
+      o.addConstraints(
+        px + t_n * vx === px_n + t_n * vx_n,
+        py + t_n * vy === py_n + t_n * vy_n,
+        pz + t_n * vz === pz_n + t_n * vz_n,
+        t_n <= constant(Limit),
+        t_n >= constant(-Limit),
+      )
+    }
+
+    println(o.optimize)
+
+    val model = o.checkAndGetModel()
+
+    println(model)
+
+    PositionAndVelocity3D(
+      Coordinates3D(o.extractInt(px), o.extractInt(py), o.extractInt(pz)),
+      Coordinates3D(o.extractInt(vx), o.extractInt(vy), o.extractInt(vz)),
+    )
+
+  }
+
+  def part2(data: InputPart2): Long = {
+    val result = solvePart2(data)
+    result.position.x + result.position.y + result.position.z
+  }
 
   def parseFile(fileName: String): InputPart2 =
     parse(readFileText(fileName))
