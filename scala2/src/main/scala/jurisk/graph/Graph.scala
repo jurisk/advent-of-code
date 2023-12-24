@@ -37,7 +37,8 @@ final class GraphImpl[L: Ordering: ClassTag](
   def verticesReachableFrom(from: VertexId): Set[VertexId] =
     outgoingEdges(from).map { case (n, _) => n }
 
-  // TODO: This is really crude, improve it. Also it was written assuming an undirected graph.
+  // TODO:  This is really crude, improve it. Also it was written assuming an undirected graph. Either assert this,
+  //        or make it work with directed ones (and then test with `Advent 2023-23-1`).
   def simplify(doNotTouch: Set[VertexId]): Graph[L] = {
     val nonOptimisibleVertices: Iterable[VertexId] =
       allVertices.filter(v => outgoingEdges(v).size != 2)
