@@ -6,6 +6,7 @@ import cats.implicits._
 import org.scalatest.matchers.should.Matchers._
 
 class Advent24Spec extends AnyFreeSpec {
+  // https://www.math3d.org/1XG5CNDSK
   private def testData = parseFile(fileName("-test"))
   private def realData = parseFile(fileName(""))
 
@@ -35,6 +36,13 @@ class Advent24Spec extends AnyFreeSpec {
       6,
       -3,
     )
+  }
+
+  "areVectorsParallel" in {
+    val a = Coordinates3D(5, 2, -1)
+    val b = Coordinates3D(-10, -4, 2)
+    areVectorsParallel(a, b) shouldEqual true
+    areVectorsParallel(a, expectedTestAnswer.velocity) shouldEqual false
   }
 
   "linesIntersect" in {
@@ -97,7 +105,7 @@ class Advent24Spec extends AnyFreeSpec {
 
   "part 2" - {
     "test" in {
-//      solvePart2(testData) shouldEqual expectedTestAnswer.position
+      solvePart2(testData).position shouldEqual expectedTestAnswer.position
       part2(testData) shouldEqual 47
     }
 
