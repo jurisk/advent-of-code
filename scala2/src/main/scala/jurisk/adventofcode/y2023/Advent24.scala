@@ -2,7 +2,12 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits.catsSyntaxOptionId
 import cats.implicits.none
-import jurisk.optimization.ImplicitConversions.{RichArithExprIntSort, RichExpr}
+import com.microsoft.z3.{ArithExpr, IntExpr, IntSort}
+import jurisk.optimization.ImplicitConversions.{
+  RichArithExprIntSort,
+  RichExpr,
+  RichLong,
+}
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -14,16 +19,17 @@ object Advent24 {
   )
 
   final case class PositionAndVelocity2D(
-                                          position: Coordinates2D[BigDecimal],
-                                          velocity: Coordinates2D[BigDecimal],
-                                        )
+    position: Coordinates2D[BigDecimal],
+    velocity: Coordinates2D[BigDecimal],
+  )
 
   final case class Coordinates3D(
     x: Long,
     y: Long,
     z: Long,
   ) {
-    def -(other: Coordinates3D): Coordinates3D = Coordinates3D(x - other.x, y - other.y, z - other.z)
+    def -(other: Coordinates3D): Coordinates3D =
+      Coordinates3D(x - other.x, y - other.y, z - other.z)
   }
 
   object Coordinates3D {
@@ -54,23 +60,181 @@ object Advent24 {
   def parse(input: String): InputPart2 =
     input.parseLines(parse3D)
 
-  def approximatelyEquals(a: Double, b: Double, tolerance: Double = 1e-6): Boolean = {
+  def approximatelyEquals(
+    a: Double,
+    b: Double,
+    tolerance: Double = 1e-6,
+  ): Boolean =
     math.abs(a - b) < tolerance
-  }
 
-  def crossProduct(a: Coordinates3D, b: Coordinates3D): Coordinates3D = {
+  def crossProduct(a: Coordinates3D, b: Coordinates3D): Coordinates3D =
     Coordinates3D(
-      a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x
+      a.y * b.z - a.z * b.y,
+      a.z * b.x - a.x * b.z,
+      a.x * b.y - a.y * b.x,
     )
+
+  def dotProduct(a: Coordinates3D, b: Coordinates3D): Long =
+    a.x * b.x + a.y * b.y + a.z * b.z
+
+  def textually(data: List[PositionAndVelocity3D]): String = {
+    val vx = "a"
+    val vy = "b"
+    val vz = "c"
+
+    val px = "d"
+    val py = "e"
+    val pz = "f"
+
+//    val vx = "vx"
+//    val vy = "vy"
+//    val vz = "vz"
+//
+//    val px = "px"
+//    val py = "py"
+//    val pz = "pz"
+
+    def cp(
+      a: Coordinates3D,
+      bx: String,
+      by: String,
+      bz: String,
+    ): (String, String, String) =
+      (
+        s"(${a.y}) * $bz - (${a.z}) * $by",
+        s"(${a.z}) * $bx - (${a.x}) * $bz",
+        s"(${a.x}) * $by - (${a.y}) * $bx",
+      )
+
+    def sb(
+      a: Coordinates3D,
+      bx: String,
+      by: String,
+      bz: String,
+    ): (String, String, String) =
+      (
+        s"(${a.x}) - $bx",
+        s"(${a.y}) - $by",
+        s"(${a.z}) - $bz",
+      )
+
+    def dp(a: (String, String, String), b: (String, String, String)) = {
+      val (ax, ay, az) = a
+      val (bx, by, bz) = b
+      s"$ax * $bx + $ay * $by + $az * $bz"
+    }
+
+    data
+      .map { rock =>
+        s"${dp(cp(rock.velocity, vx, vy, vz), sb(rock.position, px, py, pz))} = 0"
+      }
+      .mkString("\n")
   }
 
-  def dotProduct(a: Coordinates3D, b: Coordinates3D): Long = {
-    a.x * b.x + a.y * b.y + a.z * b.z
+  def solvePart2(data: List[PositionAndVelocity3D]): Coordinates3D = {
+    println(textually(data))
+    println()
+
+    // Find such px, py, pz, vx, vy, vz that for all rocks
+    // dotProduct(crossProduct(rock.velocity, p.velocity), rock.position - v.position) == 0
+
+    implicit val o: Optimizer = Optimizer.z3()
+    import o._
+
+    val px = o.labeledInt(s"px")
+    val py = o.labeledInt(s"py")
+    val pz = o.labeledInt(s"pz")
+
+    val vx = o.labeledInt(s"vx")
+    val vy = o.labeledInt(s"vy")
+    val vz = o.labeledInt(s"vz")
+
+    val Limit = 25
+//    val Limit = 1_000_000_000_000L
+    o.addConstraints(
+      px <= o.constant(Limit),
+      py <= o.constant(Limit),
+      pz <= o.constant(Limit),
+      px >= o.constant(-Limit),
+      py >= o.constant(-Limit),
+      pz >= o.constant(-Limit),
+      vx <= o.constant(Limit),
+      vy <= o.constant(Limit),
+      vz <= o.constant(Limit),
+      vx >= o.constant(-Limit),
+      vy >= o.constant(-Limit),
+      vz >= o.constant(-Limit),
+    )
+
+    def cp(
+      a: Coordinates3D,
+      bx: IntExpr,
+      by: IntExpr,
+      bz: IntExpr,
+    ): (ArithExpr[IntSort], ArithExpr[IntSort], ArithExpr[IntSort]) =
+      (
+        a.y.constant * bz - a.z.constant * by,
+        a.z.constant * bx - a.x.constant * bz,
+        a.x.constant * by - a.y.constant * bx,
+      )
+
+    def sb(
+      a: Coordinates3D,
+      bx: IntExpr,
+      by: IntExpr,
+      bz: IntExpr,
+    ): (ArithExpr[IntSort], ArithExpr[IntSort], ArithExpr[IntSort]) =
+      (
+        constant(a.x) - bx,
+        constant(a.y) - by,
+        constant(a.z) - bz,
+      )
+
+    def dp(
+      a: (ArithExpr[IntSort], ArithExpr[IntSort], ArithExpr[IntSort]),
+      b: (ArithExpr[IntSort], ArithExpr[IntSort], ArithExpr[IntSort]),
+    ) = {
+      val (ax, ay, az) = a
+      val (bx, by, bz) = b
+      ax * bx + ay * by + az * bz
+    }
+
+    data foreach { rock =>
+      o.addConstraints(
+        dp(
+          cp(rock.velocity, vx, vy, vz),
+          sb(rock.position, px, py, pz),
+        ) === Zero
+      )
+    }
+
+    o.addConstraints(
+      vx * vx + vy * vy + vz * vz > Zero
+    )
+
+    println(o.optimize)
+
+    val model = o.checkAndGetModel()
+
+    println(model)
+
+    val velocity =
+      Coordinates3D(o.extractInt(vx), o.extractInt(vy), o.extractInt(vz))
+    println(s"velocity = $velocity")
+
+    val result =
+      Coordinates3D(o.extractInt(px), o.extractInt(py), o.extractInt(pz))
+    println(s"Result = $result")
+
+    result
   }
 
   // https://math.stackexchange.com/a/697278
-  def linesIntersect(a: PositionAndVelocity3D, b: PositionAndVelocity3D): Boolean = {
-    val cp = crossProduct(a.velocity, b.velocity)
+  def linesIntersect(
+    a: PositionAndVelocity3D,
+    b: PositionAndVelocity3D,
+  ): Boolean = {
+    val cp    = crossProduct(a.velocity, b.velocity)
     val pDiff = a.position - b.position
 
     dotProduct(cp, pDiff) == 0
@@ -100,7 +264,7 @@ object Advent24 {
     // a.velocity.y * t - b.velocity.y * s == b.position.y - a.position.y
     // a.velocity.z * t - b.velocity.z * s == b.position.z - a.position.z
 
-    val cp = crossProduct(a.velocity, b.velocity)
+    val cp    = crossProduct(a.velocity, b.velocity)
     val pDiff = a.position - b.position
 
     val intersect = dotProduct(cp, pDiff)
@@ -111,9 +275,15 @@ object Advent24 {
     val t = 3
     val s = 2
 
-    println(s"${a.velocity.x} * t - ${b.velocity.x} * s = ${b.position.x - a.position.x}")
-    println(s"${a.velocity.y} * t - ${b.velocity.y} * s = ${b.position.y - a.position.y}")
-    println(s"${a.velocity.z} * t - ${b.velocity.z} * s = ${b.position.z - a.position.z}")
+    println(
+      s"${a.velocity.x} * t - ${b.velocity.x} * s = ${b.position.x - a.position.x}"
+    )
+    println(
+      s"${a.velocity.y} * t - ${b.velocity.y} * s = ${b.position.y - a.position.y}"
+    )
+    println(
+      s"${a.velocity.z} * t - ${b.velocity.z} * s = ${b.position.z - a.position.z}"
+    )
 
     assert(a.velocity.x * t - b.velocity.x * s == b.position.x - a.position.x)
     assert(a.velocity.y * t - b.velocity.y * s == b.position.y - a.position.y)
@@ -227,9 +397,6 @@ object Advent24 {
     solve1(input, min, max)
   }
 
-  def solvePart2(data: List[PositionAndVelocity3D]): PositionAndVelocity3D =
-    ???
-
   def solvePart2CrudeOptimize(
     data: List[PositionAndVelocity3D]
   ): PositionAndVelocity3D = {
@@ -321,7 +488,7 @@ object Advent24 {
 
   def part2(data: InputPart2): Long = {
     val result = solvePart2(data)
-    result.position.x + result.position.y + result.position.z
+    result.x + result.y + result.z
   }
 
   def parseFile(fileName: String): InputPart2 =

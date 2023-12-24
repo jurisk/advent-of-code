@@ -51,6 +51,12 @@ trait Optimizer {
     a: Expr[A],
     b: Expr[B],
   ): BoolExpr
+
+  def greater[A <: ArithSort, B <: ArithSort](
+    a: Expr[A],
+    b: Expr[B],
+  ): BoolExpr
+
   def lessOrEqual[A <: ArithSort, B <: ArithSort](
     a: Expr[A],
     b: Expr[B],
@@ -96,6 +102,12 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
   def equal(a: Expr[_], b: Expr[_]): BoolExpr =
     context.mkEq(a, b)
 
+  def greater[A <: ArithSort, B <: ArithSort](
+    a: Expr[A],
+    b: Expr[B],
+  ): BoolExpr =
+    context.mkGt(a, b)
+
   def greaterOrEqual[A <: ArithSort, B <: ArithSort](
     a: Expr[A],
     b: Expr[B],
@@ -119,7 +131,7 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
 
   def checkAndGetModel(): Model = {
     val status = optimize.Check()
-    assert(status == Status.SATISFIABLE)
+    assert(status == Status.SATISFIABLE, "Model is not satisfiable")
     optimize.getModel
   }
 
@@ -225,6 +237,11 @@ object ImplicitConversions {
     def >=(other: Expr[B])(implicit
       optimizer: Optimizer
     ): BoolExpr = optimizer.greaterOrEqual(expr, other)
+
+    def >(other: Expr[B])(implicit
+      optimizer: Optimizer
+    ): BoolExpr = optimizer.greater(expr, other)
+
     def <=(other: Expr[B])(implicit
       optimizer: Optimizer
     ): BoolExpr = optimizer.lessOrEqual(expr, other)
