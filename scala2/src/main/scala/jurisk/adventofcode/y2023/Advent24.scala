@@ -13,11 +13,18 @@ object Advent24 {
     y: T,
   )
 
+  final case class PositionAndVelocity2D(
+                                          position: Coordinates2D[BigDecimal],
+                                          velocity: Coordinates2D[BigDecimal],
+                                        )
+
   final case class Coordinates3D(
     x: Long,
     y: Long,
     z: Long,
-  )
+  ) {
+    def -(other: Coordinates3D): Coordinates3D = Coordinates3D(x - other.x, y - other.y, z - other.z)
+  }
 
   object Coordinates3D {
     def parse(s: String): Coordinates3D = s match {
@@ -26,11 +33,6 @@ object Advent24 {
       case _           => s.failedToParse("Coordinates3D")
     }
   }
-
-  final case class PositionAndVelocity2D(
-    position: Coordinates2D[BigDecimal],
-    velocity: Coordinates2D[BigDecimal],
-  )
 
   final case class PositionAndVelocity3D(
     position: Coordinates3D,
@@ -52,7 +54,75 @@ object Advent24 {
   def parse(input: String): InputPart2 =
     input.parseLines(parse3D)
 
-  def lineIntersection(
+  def approximatelyEquals(a: Double, b: Double, tolerance: Double = 1e-6): Boolean = {
+    math.abs(a - b) < tolerance
+  }
+
+  def crossProduct(a: Coordinates3D, b: Coordinates3D): Coordinates3D = {
+    Coordinates3D(
+      a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x
+    )
+  }
+
+  def dotProduct(a: Coordinates3D, b: Coordinates3D): Long = {
+    a.x * b.x + a.y * b.y + a.z * b.z
+  }
+
+  // https://math.stackexchange.com/a/697278
+  def linesIntersect(a: PositionAndVelocity3D, b: PositionAndVelocity3D): Boolean = {
+    val cp = crossProduct(a.velocity, b.velocity)
+    val pDiff = a.position - b.position
+
+    dotProduct(cp, pDiff) == 0
+  }
+
+  type Time = Long
+  def lineIntersection3D(
+    a: PositionAndVelocity3D,
+    b: PositionAndVelocity3D,
+  ): Option[(Time, Time, Coordinates3D)] = {
+    // x_a = a.position.x + a.velocity.x * t
+    // y_a = a.position.y + a.velocity.y * t
+    // z_a = a.position.z + a.velocity.z * t
+
+    // x_b = b.position.x + b.velocity.x * s
+    // y_b = b.position.y + b.velocity.y * s
+    // z_b = b.position.z + b.velocity.z * s
+
+    // Find s and t so that:
+    // x_a == x_b
+    // y_a == y_b
+    // z_a == z_b
+
+    // a.position.x + a.velocity.x * t = b.position.x + b.velocity.x * s
+    //    ==>
+    // a.velocity.x * t - b.velocity.x * s == b.position.x - a.position.x
+    // a.velocity.y * t - b.velocity.y * s == b.position.y - a.position.y
+    // a.velocity.z * t - b.velocity.z * s == b.position.z - a.position.z
+
+    val cp = crossProduct(a.velocity, b.velocity)
+    val pDiff = a.position - b.position
+
+    val intersect = dotProduct(cp, pDiff)
+
+    println(s"cp = $cp, pDiff = $pDiff, intersect = $intersect")
+
+    // TODO: could calculate these
+    val t = 3
+    val s = 2
+
+    println(s"${a.velocity.x} * t - ${b.velocity.x} * s = ${b.position.x - a.position.x}")
+    println(s"${a.velocity.y} * t - ${b.velocity.y} * s = ${b.position.y - a.position.y}")
+    println(s"${a.velocity.z} * t - ${b.velocity.z} * s = ${b.position.z - a.position.z}")
+
+    assert(a.velocity.x * t - b.velocity.x * s == b.position.x - a.position.x)
+    assert(a.velocity.y * t - b.velocity.y * s == b.position.y - a.position.y)
+    assert(a.velocity.z * t - b.velocity.z * s == b.position.z - a.position.z)
+
+    ???
+  }
+
+  def vectorIntersection2D(
     a: PositionAndVelocity2D,
     b: PositionAndVelocity2D,
   ): Option[Coordinates2D[BigDecimal]] = {
@@ -101,18 +171,17 @@ object Advent24 {
       } else {
         none
       }
-
     }
   }
 
-  def doIntersect(
+  def intersectWithinBounds2D(
     a: PositionAndVelocity2D,
     b: PositionAndVelocity2D,
     min: Coordinates2D[Long],
     max: Coordinates2D[Long],
   ): Boolean = {
     println(s"a = $a, b= $b")
-    val result = lineIntersection(a, b)
+    val result = vectorIntersection2D(a, b)
     println(s"result = $result\n")
 
     result match {
@@ -132,11 +201,10 @@ object Advent24 {
     input.combinations(2).count { list =>
       list match {
         case List(a, b) =>
-          val result = doIntersect(a, b, min, max)
-//          println(s"$a\n$b\n$result")
-          result
+          intersectWithinBounds2D(a, b, min, max)
 
-        case _ => list.toString.fail
+        case _ =>
+          list.toString.fail
       }
     }
 
@@ -159,16 +227,21 @@ object Advent24 {
     solve1(input, min, max)
   }
 
-  def solvePart2(data: List[PositionAndVelocity3D]): PositionAndVelocity3D = {
+  def solvePart2(data: List[PositionAndVelocity3D]): PositionAndVelocity3D =
+    ???
+
+  def solvePart2CrudeOptimize(
+    data: List[PositionAndVelocity3D]
+  ): PositionAndVelocity3D = {
     data foreach println
 
     // Find a "result" PositionAndVelocity3D for which integer t exists where "position at t" for both
     // "result" and all of "data" is identical
 
-    // t[n] - collision time with rock n
+    // t[n] - collision time with rock n, > 0
 
     // find (px, py, pz) and (vx, vy, vz) and such t[] so that for all rocks:
-    //    px + t[n] * vz == px[n] + t[n] * vx[n]
+    //    px + t[n] * vx == px[n] + t[n] * vx[n]
     //    py + t[n] * vy == py[n] + t[n] * vy[n]
     //    pz + t[n] * vz == pz[n] + t[n] * vz[n]
 
@@ -183,7 +256,8 @@ object Advent24 {
     val vy = o.labeledInt(s"vy")
     val vz = o.labeledInt(s"vz")
 
-    val Limit = 300
+//    val Limit = 1_000_000_000
+    val Limit = 25
     o.addConstraints(
       px <= o.constant(Limit),
       py <= o.constant(Limit),
@@ -199,8 +273,18 @@ object Advent24 {
       vz >= o.constant(-Limit),
     )
 
+    val t = data.indices map { idx =>
+      o.labeledInt(s"t_$idx")
+    }
+
+    t foreach { t_n =>
+      o.addConstraints(
+        t_n >= Zero
+      )
+    }
+
     data.zipWithIndex.foreach { case (rock, idx) =>
-      val t_n  = o.labeledInt(s"t_$idx")
+      val t_n  = t(idx)
       val px_n = o.constant(rock.position.x)
       val py_n = o.constant(rock.position.y)
       val pz_n = o.constant(rock.position.z)
@@ -218,6 +302,11 @@ object Advent24 {
       )
     }
 
+    // Note - we technically don't NEED to minimize, but it seemed to speed things up
+    o.minimize(
+      px + py + pz + vz + vy + vz + o.sum(t: _*)
+    )
+
     println(o.optimize)
 
     val model = o.checkAndGetModel()
@@ -228,7 +317,6 @@ object Advent24 {
       Coordinates3D(o.extractInt(px), o.extractInt(py), o.extractInt(pz)),
       Coordinates3D(o.extractInt(vx), o.extractInt(vy), o.extractInt(vz)),
     )
-
   }
 
   def part2(data: InputPart2): Long = {

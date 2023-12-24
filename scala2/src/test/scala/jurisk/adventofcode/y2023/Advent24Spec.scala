@@ -2,12 +2,18 @@ package jurisk.adventofcode.y2023
 
 import org.scalatest.freespec.AnyFreeSpec
 import Advent24._
+import cats.implicits.{catsSyntaxOptionId, none}
 import jurisk.geometry.{Area2D, Coords2D}
 import org.scalatest.matchers.should.Matchers._
 
 class Advent24Spec extends AnyFreeSpec {
   private def testData = parseFile(fileName("-test"))
   private def realData = parseFile(fileName(""))
+
+  val expectedTestAnswer: PositionAndVelocity3D = PositionAndVelocity3D(
+    Coordinates3D(24, 13, 10),
+    Coordinates3D(-3, 1, 2),
+  )
 
   "part 1" - {
     "test" in {
@@ -20,13 +26,58 @@ class Advent24Spec extends AnyFreeSpec {
     }
   }
 
+  // https://www.mathsisfun.com/algebra/vectors-cross-product.html
+  "crossProduct" - {
+    crossProduct(
+      Coordinates3D(2, 3, 4),
+      Coordinates3D(5, 6, 7),
+    ) shouldEqual Coordinates3D(
+      -3, 6, -3
+    )
+  }
+
+  "linesIntersect" in {
+    testData foreach { rock =>
+      linesIntersect(rock, expectedTestAnswer) shouldEqual true
+      linesIntersect(rock, PositionAndVelocity3D(Coordinates3D(-3, -4, -1), Coordinates3D(1, 2, 3))) shouldEqual false
+    }
+  }
+
+  "lineIntersection3D" - {
+    // https://emedia.rmit.edu.au/learninglab/content/v7-intersecting-lines-3d
+    "from webpage" - {
+      "1" in {
+        lineIntersection3D(
+          PositionAndVelocity3D(Coordinates3D(1, -4, 8), Coordinates3D(2, 1, -2)),
+          PositionAndVelocity3D(Coordinates3D(5, 1, 8), Coordinates3D(1, -1, -3)),
+        ) shouldEqual (3, 2, Coordinates3D(7, -1, 2)).some
+      }
+
+      "2" in {
+        lineIntersection3D(
+          PositionAndVelocity3D(Coordinates3D(0, -4, 8), Coordinates3D(1, 1, -2)),
+          PositionAndVelocity3D(Coordinates3D(2, -1, 3), Coordinates3D(2, 1, -2)),
+        ) shouldEqual none
+      }
+    }
+
+    "first rock" in {
+      lineIntersection3D(
+        expectedTestAnswer,
+        PositionAndVelocity3D(Coordinates3D(19, 13, 30), Coordinates3D(-2, 1, -2)),
+      ) shouldEqual (5, 1234, Coordinates3D(9, 18, 20)).some
+    }
+
+    "all test rocks" in {
+      testData foreach { rock =>
+        lineIntersection3D(expectedTestAnswer, rock).isDefined shouldEqual true
+      }
+    }
+  }
+
   "part 2" - {
     "test" in {
-      val valid = PositionAndVelocity3D(
-        Coordinates3D(24, 13, 10),
-        Coordinates3D(-3, 1, 2),
-      )
-      solvePart2(testData) shouldEqual valid
+      solvePart2(testData) shouldEqual expectedTestAnswer
       part2(testData) shouldEqual 47
     }
 
