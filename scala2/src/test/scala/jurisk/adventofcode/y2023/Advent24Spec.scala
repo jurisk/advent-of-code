@@ -97,7 +97,7 @@ class Advent24Spec extends AnyFreeSpec {
 
   "part 2" - {
     "test" in {
-      solvePart2(testData) shouldEqual expectedTestAnswer.position
+//      solvePart2(testData) shouldEqual expectedTestAnswer.position
       part2(testData) shouldEqual 47
     }
 

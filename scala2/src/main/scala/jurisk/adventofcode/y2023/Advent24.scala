@@ -43,7 +43,10 @@ object Advent24 {
   final case class PositionAndVelocity3D(
     position: Coordinates3D,
     velocity: Coordinates3D,
-  )
+  ) {
+    def v: Coordinates3D = velocity
+    def p: Coordinates3D = position
+  }
 
   type InputPart2 = List[PositionAndVelocity3D]
 
@@ -78,45 +81,49 @@ object Advent24 {
     a.x * b.x + a.y * b.y + a.z * b.z
 
   def textually(data: List[PositionAndVelocity3D]): String = {
-    val vx = "a"
-    val vy = "b"
-    val vz = "c"
-
-    val px = "d"
-    val py = "e"
-    val pz = "f"
-
-//    val vx = "vx"
-//    val vy = "vy"
-//    val vz = "vz"
+//    val vx = "a"
+//    val vy = "b"
+//    val vz = "c"
 //
-//    val px = "px"
-//    val py = "py"
-//    val pz = "pz"
+//    val px = "d"
+//    val py = "e"
+//    val pz = "f"
+
+    val vx = "vx"
+    val vy = "vy"
+    val vz = "vz"
+
+    val px = "px"
+    val py = "py"
+    val pz = "pz"
 
     def cp(
-      a: Coordinates3D,
-      bx: String,
-      by: String,
-      bz: String,
-    ): (String, String, String) =
+      a: (String, String, String),
+      b: (String, String, String),
+    ): (String, String, String) = {
+      val (ax, ay, az) = a
+      val (bx, by, bz) = b
       (
-        s"(${a.y}) * $bz - (${a.z}) * $by",
-        s"(${a.z}) * $bx - (${a.x}) * $bz",
-        s"(${a.x}) * $by - (${a.y}) * $bx",
+        s"($ay * $bz - $az * $by)",
+        s"($az * $bx - $ax * $bz)",
+        s"($ax * $by - $ay * $bx)",
       )
+    }
 
     def sb(
-      a: Coordinates3D,
-      bx: String,
-      by: String,
-      bz: String,
-    ): (String, String, String) =
+      a: (String, String, String),
+      b: (String, String, String),
+    ): (String, String, String) = {
+
+      val (ax, ay, az) = a
+      val (bx, by, bz) = b
+
       (
-        s"(${a.x}) - $bx",
-        s"(${a.y}) - $by",
-        s"(${a.z}) - $bz",
+        s"($ax - $bx)",
+        s"($ay - $by)",
+        s"($az - $bz)",
       )
+    }
 
     def dp(a: (String, String, String), b: (String, String, String)) = {
       val (ax, ay, az) = a
@@ -124,14 +131,37 @@ object Advent24 {
       s"$ax * $bx + $ay * $by + $az * $bz"
     }
 
+    def extractStrings(c: Coordinates3D): (String, String, String) =
+      (
+        s"${c.x}",
+        s"${c.y}",
+        s"${c.z}",
+      )
+
     data
       .map { rock =>
-        s"${dp(cp(rock.velocity, vx, vy, vz), sb(rock.position, px, py, pz))} = 0"
+        if (false) println(rock)
+//        s"${dp(cp(extractStrings(rock.velocity), (vx, vy, vz)), sb(extractStrings(rock.position), (px, py, pz)))} = 0"
+        s"${dp(cp(("rvx", "rvy", "rvz"), (vx, vy, vz)), sb(("rpx", "rpy", "rpz"), (px, py, pz)))} = 0"
       }
       .mkString("\n")
+
   }
 
-  def solvePart2(data: List[PositionAndVelocity3D]): Coordinates3D = {
+  def solvePart2(data: List[PositionAndVelocity3D]): Long = {
+    println(textually(data))
+    println()
+
+    // For all rocks "r"
+    // (rvy * vz - rvz * vy) * (rpx - px) + (rvz * vx - rvx * vz) * (rpy - py) + (rvx * vy - rvy * vx) * (rpz - pz) = 0
+
+    implicit val o: Optimizer = Optimizer.z3()
+    import o._
+
+    ???
+  }
+
+  def solvePart2Fail(data: List[PositionAndVelocity3D]): Coordinates3D = {
     println(textually(data))
     println()
 
@@ -149,8 +179,8 @@ object Advent24 {
     val vy = o.labeledInt(s"vy")
     val vz = o.labeledInt(s"vz")
 
-    val Limit = 25
-//    val Limit = 1_000_000_000_000L
+//    val Limit = 25
+    val Limit = 1_000_000_000_000L
     o.addConstraints(
       px <= o.constant(Limit),
       py <= o.constant(Limit),
@@ -488,7 +518,8 @@ object Advent24 {
 
   def part2(data: InputPart2): Long = {
     val result = solvePart2(data)
-    result.x + result.y + result.z
+//    result.x + result.y + result.z
+    result
   }
 
   def parseFile(fileName: String): InputPart2 =
