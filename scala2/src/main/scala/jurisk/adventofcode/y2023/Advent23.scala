@@ -16,6 +16,7 @@ import jurisk.graph.Graph
 import jurisk.graph.Graph.VertexId
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+import mouse.all.booleanSyntaxMouse
 
 import scala.collection.mutable
 
@@ -178,19 +179,11 @@ object Advent23 {
     result
   }
 
-  // TODO: This can take a function as a parameter and actually move to some other place
-  private def fieldToGraph(field: Input): Graph[Coords2D] = {
-    var edges: Set[(SetOfTwo[Coords2D], Long)] = Set.empty
-
-    field.allConnectionsDirectional foreach { case (a, _, b) =>
-      if (field.at(a).contains(Path) && field.at(b).contains(Path)) {
-        val vertices = SetOfTwo(a, b)
-        edges = edges + (vertices -> 1L)
-      }
+  private def fieldToGraph(field: Input): Graph[Coords2D] =
+    Field2D.toGraphCardinalDirections(field) {
+      case ((fromC, fromV), d, (toC, toV)) =>
+        Set(fromV, toV).forall(_ == Path).option(1L)
     }
-
-    Graph.undirected(edges)
-  }
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
