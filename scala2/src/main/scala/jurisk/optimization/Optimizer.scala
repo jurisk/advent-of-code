@@ -1,19 +1,7 @@
 package jurisk.optimization
 
 import cats.implicits.catsSyntaxOptionId
-import com.microsoft.z3.ArithExpr
-import com.microsoft.z3.ArithSort
-import com.microsoft.z3.BoolExpr
-import com.microsoft.z3.BoolSort
-import com.microsoft.z3.Context
-import com.microsoft.z3.Expr
-import com.microsoft.z3.IntExpr
-import com.microsoft.z3.IntNum
-import com.microsoft.z3.IntSort
-import com.microsoft.z3.Model
-import com.microsoft.z3.Optimize
-import com.microsoft.z3.Sort
-import com.microsoft.z3.Status
+import com.microsoft.z3.{ArithExpr, ArithSort, BoolExpr, BoolSort, Context, Expr, IntExpr, IntNum, IntSort, Model, Optimize, RatNum, RealExpr, Sort, Status}
 import com.microsoft.z3.enumerations.Z3_lbool
 import jurisk.utils.Parsing.StringOps
 
@@ -40,10 +28,14 @@ trait Optimizer {
   def maximize[R <: Sort](expr: Expr[R]): Optimize.Handle[R]
   def minimize[R <: Sort](expr: Expr[R]): Optimize.Handle[R]
 
+  def realConstant(n: Int): RatNum
   def constant(n: Int): IntNum
   def constant(n: Long): IntNum
 
+  def intToReal(n: Expr[IntSort]): RealExpr
+
   def labeledBool(label: String): BoolExpr
+  def labeledReal(label: String): RealExpr
   def labeledInt(label: String): IntExpr
 
   def equal(a: Expr[_], b: Expr[_]): BoolExpr
@@ -87,11 +79,22 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
   val False: BoolExpr = context.mkBool(false)
   val True: BoolExpr  = context.mkBool(true)
 
+  def realConstant(n: Int): RatNum =
+    context.mkReal(n)
+
   def constant(n: Int): IntNum =
     context.mkInt(n)
 
-  def constant(n: Long): IntNum =
+  def constant(n: Long): IntNum = {
     context.mkInt(n)
+  }
+
+  def intToReal(n: Expr[IntSort]): RealExpr = {
+    context.mkInt2Real(n)
+  }
+
+  def labeledReal(label: String): RealExpr =
+    context.mkRealConst(label)
 
   def labeledInt(label: String): IntExpr =
     context.mkIntConst(label)

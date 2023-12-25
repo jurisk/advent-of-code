@@ -187,7 +187,7 @@ object Advent24 {
   }
 
   def solvePart2(data: List[PositionAndVelocity3D]): PositionAndVelocity3D = {
-    anyoneIntersecting(data)
+//    anyoneIntersecting(data)
 
 //    println(textually(data, num = true))
 //    println()
@@ -504,11 +504,22 @@ object Advent24 {
         s"+ $n"
       }
 
-    data.zipWithIndex foreach { case (r, idx) =>
-      println(s"x + t$idx * a = ${r.p.x} ${sgn(r.v.x)} * t$idx")
-      println(s"y + t$idx * b = ${r.p.y} ${sgn(r.v.y)} * t$idx")
-      println(s"z + t$idx * c = ${r.p.z} ${sgn(r.v.z)} * t$idx")
+//    data.zipWithIndex foreach { case (r, idx) =>
+//      println(s"x + t$idx * a = ${r.p.x} ${sgn(r.v.x)} * t$idx")
+//      println(s"y + t$idx * b = ${r.p.y} ${sgn(r.v.y)} * t$idx")
+//      println(s"z + t$idx * c = ${r.p.z} ${sgn(r.v.z)} * t$idx")
+//    }
+
+
+    data.zipWithIndex foreach { case (r, id) =>
+      val idx = id + 1
+      println(s"px + t$idx * vx = ${r.p.x} ${sgn(r.v.x)} * t$idx")
+      println(s"py + t$idx * vy = ${r.p.y} ${sgn(r.v.y)} * t$idx")
+      println(s"pz + t$idx * vz = ${r.p.z} ${sgn(r.v.z)} * t$idx")
     }
+
+    println(s"${3 + 3 + data.length} variables")
+    println(s"${data.length * 3} equations")
 
     println()
     println(s"x + t_n * a = rpx + rvx * t_n")
@@ -576,8 +587,8 @@ object Advent24 {
     val vy = o.labeledInt(s"vy")
     val vz = o.labeledInt(s"vz")
 
-//    val Limit = 1_000_000_000
-    val Limit = 25
+    val Limit = 100_000_000_000_000L
+//    val Limit = 25
     o.addConstraints(
       px <= o.constant(Limit),
       py <= o.constant(Limit),
@@ -594,12 +605,12 @@ object Advent24 {
     )
 
     val t = data.indices map { idx =>
-      o.labeledInt(s"t_$idx")
+      o.labeledReal(s"t_$idx")
     }
 
     t foreach { t_n =>
       o.addConstraints(
-        t_n >= Zero
+        t_n >= o.realConstant(0)
       )
     }
 
@@ -614,17 +625,17 @@ object Advent24 {
       val vz_n = o.constant(rock.velocity.z)
 
       o.addConstraints(
-        px + t_n * vx === px_n + t_n * vx_n,
-        py + t_n * vy === py_n + t_n * vy_n,
-        pz + t_n * vz === pz_n + t_n * vz_n,
-        t_n <= constant(Limit),
-        t_n >= constant(-Limit),
+        o.intToReal(px) + t_n * o.intToReal(vx) === o.intToReal(px_n) + t_n * o.intToReal(vx_n),
+        o.intToReal(py) + t_n * o.intToReal(vy) === o.intToReal(py_n) + t_n * o.intToReal(vy_n),
+        o.intToReal(pz) + t_n * o.intToReal(vz) === o.intToReal(pz_n) + t_n * o.intToReal(vz_n),
+//        t_n <= realConstant(Limit),
+//        t_n >= realConstant(-Limit),
       )
     }
 
     // Note - we technically don't NEED to minimize, but it seemed to speed things up
     o.minimize(
-      px + py + pz + vz + vy + vz + o.sum(t: _*)
+      px + py + pz + vz + vy + vz// + o.sum(t: _*)
     )
 
     println(o.optimize)
