@@ -174,36 +174,6 @@ object Advent24 {
     List(ax / bx, ay / by, az / bz).distinct.size == 1
   }
 
-  private def normaliseToPosition(
-    data: List[PositionAndVelocity3D],
-    diff: Coordinates3D,
-  ): Unit = {
-    println()
-    data foreach { r =>
-      val q = r.copy(position =
-        Coordinates3D(
-          r.position.x - diff.x,
-          r.position.y - diff.y,
-          r.position.z - diff.z,
-        )
-      )
-      println(s"${q.p.x}, ${q.p.y}, ${q.p.z} @ ${q.v.x}, ${q.v.y}, ${q.v.z}")
-    }
-    println()
-  }
-
-  def normaliseToAvg(data: List[PositionAndVelocity3D]): Unit = {
-    val xs = data.map(_.position.x)
-    val ys = data.map(_.position.y)
-    val zs = data.map(_.position.z)
-
-    val xAvg = xs.sum / xs.length
-    val yAvg = ys.sum / ys.length
-    val zAvg = zs.sum / zs.length
-
-    normaliseToPosition(data, Coordinates3D(xAvg, yAvg, zAvg))
-  }
-
   def solvePart2(data: List[PositionAndVelocity3D]): PositionAndVelocity3D = {
     printEquations(data)
 
@@ -679,55 +649,6 @@ object Advent24 {
     println(dotCrossProductTextually(data, num = false))
     println()
 
-    // (t_n * a) - (rvx * t_n) = rpx - x
-    // t_n * (a - rvx) = rpx - x
-    // t_n = (rpx - x) / (a - rvx)
-    // t_n = (rpx - x) / (a - rvx) = (rpy - y) / (b - rvy) = (rpz - z) / (c - rvz)
-
-    // x = 24, y = 13, z = 10, a = -3, b = 1, c = 2
-//
-//    val px = 24
-//    val py = 13
-//    val pz = 10
-//    val vx = -3
-//    val vy = 1
-//    val vz = 2
-//
-//    List(
-//      (1 * vz - -2 * vy) * (19 - px) + (-2 * vx - -2 * vz) * (13 - py) + (-2 * vy - 1 * vx) * (30 - pz) == 0,
-//      (-1 * vz - -2 * vy) * (18 - px) + (-2 * vx - -1 * vz) * (19 - py) + (-1 * vy - -1 * vx) * (22 - pz) == 0,
-//      (-2 * vz - -4 * vy) * (20 - px) + (-4 * vx - -2 * vz) * (25 - py) + (-2 * vy - -2 * vx) * (34 - pz) == 0,
-//      (-2 * vz - -1 * vy) * (12 - px) + (-1 * vx - -1 * vz) * (31 - py) + (-1 * vy - -2 * vx) * (28 - pz) == 0,
-//      (-5 * vz - -3 * vy) * (20 - px) + (-3 * vx - 1 * vz) * (19 - py) + (1 * vy - -5 * vx) * (15 - pz) == 0,
-//    ) foreach { b =>
-//      assert(b)
-//    }
-
-    // (19 - x) / (a + 2) = (13 - y) / (b - 1) = (30 - z) / (c + 2)
-    // (18 - x) / (a + 1) = (19 - y) / (b + 1) = (22 - z) / (c + 2)
-    // (20 - x) / (a + 2) = (25 - y) / (b + 2) = (34 - z) / (c + 4)
-    // (12 - x) / (a + 1) = (31 - y) / (b + 2) = (28 - z) / (c + 1)
-    // (20 - x) / (a - 1) = (19 - y) / (b + 5) = (15 - z) / (c + 3)
-
-//    data foreach { r =>
-//      if ((a != r.v.x) && (b != r.v.y) && (c != r.v.z)) {
-//        val e1 = (r.p.x - x).toDouble / (a - r.v.x)
-//        val e2 = (r.p.y - y).toDouble / (b - r.v.y)
-//        val e3 = (r.p.z - z).toDouble / (c - r.v.z)
-//
-//        println(s"$e1, $e2, $e3")
-//      }
-//
-//      println(s"(${r.p.x} - x) / (a ${sgn(-r.v.x)}) = (${r.p.y} - y) / (b ${sgn(
-//          -r.v.y
-//        )}) = (${r.p.z} - z) / (c ${sgn(-r.v.z)})")
-//      println()
-//    }
-//
-//    println(s"${3 + 3 + data.length} variables")
-//    println(s"${data.length * 3} equations")
-//
-//    println()
   }
 
   def solvePart2CrudeOptimize(
@@ -834,7 +755,6 @@ object Advent24 {
   def part2(data: InputPart2): Long = {
     val result = solvePart2(data).position
     result.x + result.y + result.z
-//    result
   }
 
   def parseFile(fileName: String): InputPart2 =
