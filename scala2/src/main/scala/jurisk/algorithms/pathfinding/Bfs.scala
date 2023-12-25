@@ -7,7 +7,7 @@ import scala.collection.mutable
 object Bfs {
   def bfsReachable[N](
     start: N,
-    successors: N => List[N],
+    successors: N => Seq[N],
   ): List[N] = {
     var results: Vector[N] = Vector.empty
 
@@ -18,7 +18,7 @@ object Bfs {
 
   def bfsVisitAll[N](
     start: N,
-    successors: N => List[N],
+    successors: N => Seq[N],
     visit: N => Unit,
   ): Unit = {
     val visited: mutable.Set[N] = mutable.Set()

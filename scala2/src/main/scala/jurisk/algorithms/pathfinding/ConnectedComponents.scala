@@ -2,8 +2,8 @@ package jurisk.algorithms.pathfinding
 
 object ConnectedComponents {
   def connectedComponents[N](
-    starts: List[N],
-    successors: N => List[N],
+    starts: Seq[N],
+    successors: N => Seq[N],
   ): Set[Set[N]] = {
     var results: Set[Set[N]] = Set.empty
     var visited: Set[N]      = Set.empty

@@ -117,7 +117,7 @@ object Graph {
     directed(adapted)
   }
 
-  // TODO: Implement, reusing code with `toDotDigraph`
+  // TODO: Implement, reusing code with `toDotDigraph`, not tying to Coords2D
   def toDotUndirectedGraph(
     graph: Graph[Coords2D],
     start: Coords2D,
@@ -128,6 +128,7 @@ object Graph {
     ???
 
   // TODO: Instead of special `start` and `goal` nodes, you can just have a map of "colors"?
+  // TODO: Don't tie to Coords2D
   def toDotDigraph(
     graph: Graph[Coords2D],
     start: Coords2D,
@@ -147,8 +148,8 @@ object Graph {
 
     s"""digraph G {
        |
-       |${coordsName(start)} [color="green"]
-       |${coordsName(goal)} [color="red"]
+       |    ${coordsName(start)} [color="green"]
+       |    ${coordsName(goal)} [color="red"]
        |
        |${edges.toList.sorted.mkString("\n")}
        |}
