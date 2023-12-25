@@ -69,7 +69,7 @@ object Advent23 {
         nanobot.position.y,
         nanobot.position.z,
         nanobot.radius,
-      ).map(constant)
+      ).map(intConstant)
 
       val inRange = (x - nx).abs + (y - ny).abs + (z - nz).abs <= nr
 
