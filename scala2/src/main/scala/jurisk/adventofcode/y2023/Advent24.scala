@@ -1,6 +1,6 @@
 package jurisk.adventofcode.y2023
 
-import cats.implicits.{catsSyntaxOptionId, none}
+import cats.implicits._
 import com.microsoft.z3.Version
 import jurisk.math.divisors
 import jurisk.optimization.ImplicitConversions.{RichArithExprIntSort, RichExpr}
@@ -113,6 +113,7 @@ object Advent24 {
     dotProduct(cp, pDiff) == 0
   }
 
+  // TODO: You can rewrite using determinants, possibly change the signature too
   private def vectorIntersection2D(
     a: PositionAndVelocity2D,
     b: PositionAndVelocity2D,
@@ -375,13 +376,13 @@ object Advent24 {
 
     data.zipWithIndex.foreach { case (rock, idx) =>
       val t_n  = o.labeledInt(s"t_$idx")
-      val px_n = o.constant(rock.position.x)
-      val py_n = o.constant(rock.position.y)
-      val pz_n = o.constant(rock.position.z)
+      val px_n = o.longConstant(rock.position.x)
+      val py_n = o.longConstant(rock.position.y)
+      val pz_n = o.longConstant(rock.position.z)
 
-      val vx_n = o.constant(rock.velocity.x)
-      val vy_n = o.constant(rock.velocity.y)
-      val vz_n = o.constant(rock.velocity.z)
+      val vx_n = o.longConstant(rock.velocity.x)
+      val vy_n = o.longConstant(rock.velocity.y)
+      val vz_n = o.longConstant(rock.velocity.z)
 
       o.addConstraints(
         t_n >= Zero,

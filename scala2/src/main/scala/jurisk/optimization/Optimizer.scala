@@ -37,6 +37,8 @@ trait Optimizer {
 
   def addConstraints(expressions: Expr[BoolSort]*): Unit
 
+  // TODO:  Should probably discontinue this, at least deprecate, as it was not working well compared to the command
+  //        line version
   def checkAndGetModel(): Model
 
   def debugPrint(): Unit
@@ -45,8 +47,8 @@ trait Optimizer {
   def minimize[R <: Sort](expr: Expr[R]): Optimize.Handle[R]
 
   def realConstant(n: Int): RatNum
-  def constant(n: Int): IntNum
-  def constant(n: Long): IntNum
+  def intConstant(n: Int): IntNum
+  def longConstant(n: Long): IntNum
 
   def intToReal(n: Expr[IntSort]): RealExpr
 
@@ -88,9 +90,9 @@ trait Optimizer {
 
 private class Z3Optimizer(val context: Context, val optimize: Optimize)
     extends Optimizer {
-  val Zero: IntNum     = constant(0)
-  val One: IntNum      = constant(1)
-  val MinusOne: IntNum = constant(-1)
+  val Zero: IntNum     = intConstant(0)
+  val One: IntNum      = intConstant(1)
+  val MinusOne: IntNum = intConstant(-1)
 
   val False: BoolExpr = context.mkBool(false)
   val True: BoolExpr  = context.mkBool(true)
@@ -98,10 +100,10 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
   def realConstant(n: Int): RatNum =
     context.mkReal(n)
 
-  def constant(n: Int): IntNum =
+  def intConstant(n: Int): IntNum =
     context.mkInt(n)
 
-  def constant(n: Long): IntNum =
+  def longConstant(n: Long): IntNum =
     context.mkInt(n)
 
   def intToReal(n: Expr[IntSort]): RealExpr =
@@ -226,12 +228,12 @@ object Optimizer {
 object ImplicitConversions {
   implicit class RichInt(val int: Int) {
     def constant(implicit optimizer: Optimizer): IntExpr =
-      optimizer.constant(int)
+      optimizer.intConstant(int)
   }
 
   implicit class RichLong(val long: Long) {
     def constant(implicit optimizer: Optimizer): IntExpr =
-      optimizer.constant(long)
+      optimizer.longConstant(long)
   }
 
   implicit class RichString(val string: String) {
