@@ -1,7 +1,23 @@
 package jurisk.optimization
 
 import cats.implicits.catsSyntaxOptionId
-import com.microsoft.z3.{ArithExpr, ArithSort, BoolExpr, BoolSort, Context, Expr, IntExpr, IntNum, IntSort, Model, Optimize, RatNum, RealExpr, Sort, Status}
+import com.microsoft.z3.{
+  ArithExpr,
+  ArithSort,
+  BoolExpr,
+  BoolSort,
+  Context,
+  Expr,
+  IntExpr,
+  IntNum,
+  IntSort,
+  Model,
+  Optimize,
+  RatNum,
+  RealExpr,
+  Sort,
+  Status,
+}
 import com.microsoft.z3.enumerations.Z3_lbool
 import jurisk.utils.Parsing.StringOps
 
@@ -85,13 +101,11 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
   def constant(n: Int): IntNum =
     context.mkInt(n)
 
-  def constant(n: Long): IntNum = {
+  def constant(n: Long): IntNum =
     context.mkInt(n)
-  }
 
-  def intToReal(n: Expr[IntSort]): RealExpr = {
+  def intToReal(n: Expr[IntSort]): RealExpr =
     context.mkInt2Real(n)
-  }
 
   def labeledReal(label: String): RealExpr =
     context.mkRealConst(label)

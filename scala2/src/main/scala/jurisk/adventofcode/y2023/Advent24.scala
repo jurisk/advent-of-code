@@ -163,6 +163,24 @@ object Advent24 {
     List(ax / bx, ay / by, az / bz).distinct.size == 1
   }
 
+  def normaliseToPosition(
+    data: List[PositionAndVelocity3D],
+    diff: Coordinates3D,
+  ): Unit = {
+    println()
+    data foreach { r =>
+      val q = r.copy(position =
+        Coordinates3D(
+          r.position.x - diff.x,
+          r.position.y - diff.y,
+          r.position.z - diff.z,
+        )
+      )
+      println(s"${q.p.x}, ${q.p.y}, ${q.p.z} @ ${q.v.x}, ${q.v.y}, ${q.v.z}")
+    }
+    println()
+  }
+
   def normaliseToAvg(data: List[PositionAndVelocity3D]): Unit = {
     val xs = data.map(_.position.x)
     val ys = data.map(_.position.y)
@@ -172,21 +190,12 @@ object Advent24 {
     val yAvg = ys.sum / ys.length
     val zAvg = zs.sum / zs.length
 
-    println()
-    data foreach { r =>
-      val q = r.copy(position =
-        Coordinates3D(
-          r.position.x - xAvg,
-          r.position.y - yAvg,
-          r.position.z - zAvg,
-        )
-      )
-      println(s"${q.p.x}, ${q.p.y}, ${q.p.z} @ ${q.v.x}, ${q.v.y}, ${q.v.z}")
-    }
-    println()
+    normaliseToPosition(data, Coordinates3D(xAvg, yAvg, zAvg))
   }
 
   def solvePart2(data: List[PositionAndVelocity3D]): PositionAndVelocity3D = {
+//    normaliseToPosition(data, Coordinates3D(24, 13, 10))
+
 //    anyoneIntersecting(data)
 
 //    println(textually(data, num = true))
@@ -199,10 +208,16 @@ object Advent24 {
 
     // (rvy * C - rvz * B) * (rpx - X) + (rvz * A - rvx * C) * (rpy - Y) + (rvx * B - rvy * A) * (rpz - Z) = 0
 
-    solvePart2CrudeOptimize(data)
-//    solvePart2DotCrossProducts(data.take(3), 100_000_000_000L)
-
+//    val limit = 1_000_000_000
+    val limit = 25
+    Axis.All foreach { axes =>
+      println(
+        s"Only by $axes: ${solvePart2CrudeOptimize(data, Set(axes), limit)}"
+      )
+    }
+    solvePart2CrudeOptimize(data, Axis.All, limit)
   }
+  //    solvePart2DotCrossProducts(data.take(3), 100_000_000_000L)
 
   def anyoneParallel(data: List[PositionAndVelocity3D]): Unit =
     data.combinations(2).foreach { list =>
@@ -494,9 +509,16 @@ object Advent24 {
     solve1(input, min, max)
   }
 
-  def solvePart2CrudeOptimize(
-    data: List[PositionAndVelocity3D]
-  ): PositionAndVelocity3D = {
+  sealed trait Axis
+  object Axis {
+    case object X extends Axis
+    case object Y extends Axis
+    case object Z extends Axis
+
+    val All: Set[Axis] = Set(X, Y, Z)
+  }
+
+  def printEquations(data: List[PositionAndVelocity3D]): Unit = {
     def sgn(n: Long): String =
       if (n < 0) {
         s"- ${-n}"
@@ -504,12 +526,11 @@ object Advent24 {
         s"+ $n"
       }
 
-//    data.zipWithIndex foreach { case (r, idx) =>
-//      println(s"x + t$idx * a = ${r.p.x} ${sgn(r.v.x)} * t$idx")
-//      println(s"y + t$idx * b = ${r.p.y} ${sgn(r.v.y)} * t$idx")
-//      println(s"z + t$idx * c = ${r.p.z} ${sgn(r.v.z)} * t$idx")
-//    }
-
+    //    data.zipWithIndex foreach { case (r, idx) =>
+    //      println(s"x + t$idx * a = ${r.p.x} ${sgn(r.v.x)} * t$idx")
+    //      println(s"y + t$idx * b = ${r.p.y} ${sgn(r.v.y)} * t$idx")
+    //      println(s"z + t$idx * c = ${r.p.z} ${sgn(r.v.z)} * t$idx")
+    //    }
 
     data.zipWithIndex foreach { case (r, id) =>
       val idx = id + 1
@@ -565,7 +586,13 @@ object Advent24 {
     println(s"${data.length * 3} equations")
 
     println()
+  }
 
+  def solvePart2CrudeOptimize(
+    data: List[PositionAndVelocity3D],
+    axes: Set[Axis],
+    limit: Long,
+  ): PositionAndVelocity3D = {
     // Find a "result" PositionAndVelocity3D for which integer t exists where "position at t" for both
     // "result" and all of "data" is identical
 
@@ -587,21 +614,19 @@ object Advent24 {
     val vy = o.labeledInt(s"vy")
     val vz = o.labeledInt(s"vz")
 
-    val Limit = 100_000_000_000_000L
-//    val Limit = 25
     o.addConstraints(
-      px <= o.constant(Limit),
-      py <= o.constant(Limit),
-      pz <= o.constant(Limit),
-      px >= o.constant(-Limit),
-      py >= o.constant(-Limit),
-      pz >= o.constant(-Limit),
-      vx <= o.constant(Limit),
-      vy <= o.constant(Limit),
-      vz <= o.constant(Limit),
-      vx >= o.constant(-Limit),
-      vy >= o.constant(-Limit),
-      vz >= o.constant(-Limit),
+      px <= o.constant(limit),
+      px >= o.constant(-limit),
+      vx <= o.constant(limit),
+      vx >= o.constant(-limit),
+      py <= o.constant(limit),
+      py >= o.constant(-limit),
+      vy <= o.constant(limit),
+      vy >= o.constant(-limit),
+      pz <= o.constant(limit),
+      pz >= o.constant(-limit),
+      vz <= o.constant(limit),
+      vz >= o.constant(-limit),
     )
 
     val t = data.indices map { idx =>
@@ -624,18 +649,34 @@ object Advent24 {
       val vy_n = o.constant(rock.velocity.y)
       val vz_n = o.constant(rock.velocity.z)
 
-      o.addConstraints(
-        o.intToReal(px) + t_n * o.intToReal(vx) === o.intToReal(px_n) + t_n * o.intToReal(vx_n),
-        o.intToReal(py) + t_n * o.intToReal(vy) === o.intToReal(py_n) + t_n * o.intToReal(vy_n),
-        o.intToReal(pz) + t_n * o.intToReal(vz) === o.intToReal(pz_n) + t_n * o.intToReal(vz_n),
-//        t_n <= realConstant(Limit),
-//        t_n >= realConstant(-Limit),
-      )
+      if (axes.contains(Axis.X)) {
+        o.addConstraints(
+          o.intToReal(px) + t_n * o.intToReal(vx) === o.intToReal(
+            px_n
+          ) + t_n * o.intToReal(vx_n)
+        )
+      }
+
+      if (axes.contains(Axis.Y)) {
+        o.addConstraints(
+          o.intToReal(py) + t_n * o.intToReal(vy) === o.intToReal(
+            py_n
+          ) + t_n * o.intToReal(vy_n)
+        )
+      }
+
+      if (axes.contains(Axis.Z)) {
+        o.addConstraints(
+          o.intToReal(pz) + t_n * o.intToReal(vz) === o.intToReal(
+            pz_n
+          ) + t_n * o.intToReal(vz_n)
+        )
+      }
     }
 
     // Note - we technically don't NEED to minimize, but it seemed to speed things up
     o.minimize(
-      px + py + pz + vz + vy + vz// + o.sum(t: _*)
+      px * px + py * py + pz * pz + vz * vz + vy * vy + vz * vz // + o.sum(t: _*)
     )
 
     println(o.optimize)
