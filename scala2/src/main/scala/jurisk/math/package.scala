@@ -51,6 +51,20 @@ package object math {
   def pow(a: Int, b: Int): Long =
     Math.pow(a, b).toLong
 
+  def divisors(n: Long): Seq[Long] =
+    (1L to Math.sqrt(n.toDouble).toLong)
+      .flatMap(i =>
+        if (n % i == 0) {
+          if (i * i == n) {
+            // Avoid duplicates when n is a perfect square
+            Seq(i)
+          } else {
+            Seq(i, n / i)
+          }
+        } else Seq.empty[Long]
+      )
+      .sorted // Optional: sort the sequence
+
   def countLongsBetweenExclusive(low: Double, high: Double): Long = {
     def floorExclusive(x: Double): Long = {
       val result = x.floor

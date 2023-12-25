@@ -3,6 +3,7 @@ package jurisk.adventofcode.y2023
 import cats.implicits.catsSyntaxOptionId
 import cats.implicits.none
 import com.microsoft.z3.{ArithExpr, IntExpr, IntSort}
+import jurisk.math.divisors
 import jurisk.optimization.ImplicitConversions.{
   RichArithExprIntSort,
   RichExpr,
@@ -28,6 +29,12 @@ object Advent24 {
     y: Long,
     z: Long,
   ) {
+    def get(axis: Axis): Long = axis match {
+      case Axis.X => x
+      case Axis.Y => y
+      case Axis.Z => z
+    }
+
     def -(other: Coordinates3D): Coordinates3D =
       Coordinates3D(x - other.x, y - other.y, z - other.z)
   }
@@ -509,11 +516,19 @@ object Advent24 {
     solve1(input, min, max)
   }
 
-  sealed trait Axis
-  object Axis {
-    case object X extends Axis
-    case object Y extends Axis
-    case object Z extends Axis
+  sealed trait Axis {
+    def toChar: Char
+  }
+  object Axis       {
+    case object X extends Axis {
+      override def toChar: Char = 'x'
+    }
+    case object Y extends Axis {
+      override def toChar: Char = 'y'
+    }
+    case object Z extends Axis {
+      override def toChar: Char = 'z'
+    }
 
     val All: Set[Axis] = Set(X, Y, Z)
   }
@@ -540,21 +555,48 @@ object Advent24 {
       println()
     }
 
-    def printNice(r: PositionAndVelocity3D, idx: String, axis: Axis): String =
-      axis match {
-        case Axis.X => s"px ${sgn(-r.p.x)} = t$idx * (${r.v.x} - vx)"
-        case Axis.Y => s"py ${sgn(-r.p.y)} = t$idx * (${r.v.y} - vy)"
-        case Axis.Z => s"pz ${sgn(-r.p.z)} = t$idx * (${r.v.z} - vz)"
-      }
+    def printNice(r: PositionAndVelocity3D, idx: String, axis: Axis): String = {
+      val rp = r.p.get(axis)
+      val rv = r.v.get(axis)
+      val a  = axis.toChar
+
+      s"p$a ${sgn(-rp)} = t$idx * ($rv - v$a)"
+    }
+
+    var validXes: Option[Set[Long]] = None
 
     println(s"Same r.v.x: ")
-    data.groupBy(_.v.x).values.filter(_.size >= 2).foreach { list =>
+    data.groupBy(_.v.x).filter(_._2.size >= 2).foreach { case (n, list) =>
       println(s"r.v.x equal:")
       list foreach { r =>
         println(printNice(r, "?", Axis.X))
       }
+
+      list.combinations(2) foreach { list2 =>
+        val List(a, b) = list2
+        val rpDiff     = (a.p.x - b.p.x).abs
+
+        assert(n == a.v.x)
+        assert(n == b.v.x)
+
+        val temp   = divisors(rpDiff)
+        val divs   = temp ++ temp.map(-_)
+        println(s"($n - vx) is one of $divs, thus...")
+        val validX = divs.map(n - _)
+        println(s"vx is one of $validX")
+
+        validXes match {
+          case Some(filtered) =>
+            val n = filtered intersect validX.toSet
+            validXes = n.some
+          case None           => validXes = validX.toSet.some
+        }
+      }
       println()
     }
+
+    println(s"Outcome: Valid vx-es: $validXes")
+    println()
 
     println(s"Same r.v.y: ")
     data.groupBy(_.v.y).values.filter(_.size >= 2).foreach { list =>
