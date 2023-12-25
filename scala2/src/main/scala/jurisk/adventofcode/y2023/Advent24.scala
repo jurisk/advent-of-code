@@ -554,11 +554,11 @@ object Advent24 {
       println()
     }
 
-    // This is linear now so you can use Gaussian reduction to get:
-    // t1 = 94255352940 and t2 = 810431007754 and t3 = 857431055888
+  // This is linear now so you can use Gaussian reduction to get:
+  // t1 = 94255352940 and t2 = 810431007754 and t3 = 857431055888
 
-    // Now just plug it in:
-    // 191146615936494 + 342596108503183 + 131079628110881 = 664822352550558
+  // Now just plug it in:
+  // 191146615936494 + 342596108503183 + 131079628110881 = 664822352550558
 
   def printEquations(data: List[PositionAndVelocity3D]): Unit = {
     solveAssumingV(data, Coordinates3D(139, -93, 245))
@@ -592,14 +592,9 @@ object Advent24 {
     def deriveV(axis: Axis): Long = {
       var candidates: Option[Set[Long]] = None
 
-      println(s"Same r.v.x: ")
+      println(s"Same r.v.${axis.toChar}: ")
       data.groupBy(_.v.get(axis)).filter(_._2.size >= 2).foreach {
         case (n, list) =>
-//        println(s"r.v.${axis.toChar} equal:")
-//        list foreach { r =>
-//          println(printNice(r, "?", axis))
-//        }
-
           list.combinations(2) foreach { list2 =>
             val List(a, b) = list2
             val rpDiff     = (a.p.get(axis) - b.p.get(axis)).abs
@@ -607,17 +602,17 @@ object Advent24 {
             assert(n == a.v.get(axis))
             assert(n == b.v.get(axis))
 
-            val temp   = divisors(rpDiff)
-            val divs   = temp ++ temp.map(-_)
-//          println(s"($n - v${axis.toChar}) is one of $divs, thus...")
-            val validX = divs.map(n - _)
-//          println(s"v${axis.toChar} is one of $validX")
+            val temp        = divisors(rpDiff)
+            val divs        = temp ++ temp.map(-_)
+            println(s"($n - v${axis.toChar}) is one of $divs, thus...")
+            val validValues = divs.map(n - _)
+            println(s"v${axis.toChar} is one of $validValues")
 
             candidates match {
               case Some(filtered) =>
-                val n = filtered intersect validX.toSet
+                val n = filtered intersect validValues.toSet
                 candidates = n.some
-              case None           => candidates = validX.toSet.some
+              case None           => candidates = validValues.toSet.some
             }
           }
           println()

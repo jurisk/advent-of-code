@@ -7,8 +7,7 @@ import org.scalatest.matchers.should.Matchers._
 
 class Advent24Spec extends AnyFreeSpec {
   // https://www.math3d.org/G5JHCaIly
-  private def testData           = parseFile(fileName("-test"))
-  private def testNormalisedData = parseFile(fileName("-test-normalised"))
+  private def testData = parseFile(fileName("-test"))
 
   private def realData = parseFile(fileName(""))
 
@@ -106,20 +105,17 @@ class Advent24Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
-    "test normalised" in {
-      solvePart2(
-        testNormalisedData
-      ).velocity shouldEqual expectedTestAnswer.velocity
-      part2(testNormalisedData) shouldEqual 0
-    }
-
     "test" in {
       solvePart2(testData).position shouldEqual expectedTestAnswer.position
       part2(testData) shouldEqual 47
     }
 
     "real" in {
-      part2(realData) shouldEqual 0
+      solvePart2(realData) shouldEqual PositionAndVelocity3D(
+        Coordinates3D(191146615936494L, 342596108503183L, 131079628110881L),
+        Coordinates3D(139, -93, 245),
+      )
+      part2(realData) shouldEqual 664822352550558L
     }
   }
 }
