@@ -80,22 +80,25 @@ object Advent24 {
   def dotProduct(a: Coordinates3D, b: Coordinates3D): Long =
     a.x * b.x + a.y * b.y + a.z * b.z
 
-  def textually(data: List[PositionAndVelocity3D], num: Boolean): String = {
-    val vx = "A"
-    val vy = "B"
-    val vz = "C"
-
-    val px = "X"
-    val py = "Y"
-    val pz = "Z"
-
-//    val vx = "vx"
-//    val vy = "vy"
-//    val vz = "vz"
+  def dotCrossProductTextually(
+    data: List[PositionAndVelocity3D],
+    num: Boolean,
+  ): String = {
+//    val vx = "A"
+//    val vy = "B"
+//    val vz = "C"
 //
-//    val px = "px"
-//    val py = "py"
-//    val pz = "pz"
+//    val px = "X"
+//    val py = "Y"
+//    val pz = "Z"
+
+    val vx = "vx"
+    val vy = "vy"
+    val vz = "vz"
+
+    val px = "px"
+    val py = "py"
+    val pz = "pz"
 
     def cp(
       a: (String, String, String),
@@ -143,8 +146,8 @@ object Advent24 {
         if (num) {
           s"${dp(cp(extractStrings(rock.velocity), (vx, vy, vz)), sb(extractStrings(rock.position), (px, py, pz)))} = 0"
         } else {
-//          s"${dp(cp(("rvx", "rvy", "rvz"), (vx, vy, vz)), sb(("rpx", "rpy", "rpz"), (px, py, pz)))} = 0"
-          s"${dp(cp(("d", "f", "g"), (vx, vy, vz)), sb(("h", "j", "k"), (px, py, pz)))} = 0"
+          s"${dp(cp(("rvx", "rvy", "rvz"), (vx, vy, vz)), sb(("rpx", "rpy", "rpz"), (px, py, pz)))} = 0"
+//          s"${dp(cp(("d", "f", "g"), (vx, vy, vz)), sb(("h", "j", "k"), (px, py, pz)))} = 0"
         }
       }
       .mkString("\n")
@@ -163,7 +166,7 @@ object Advent24 {
     List(ax / bx, ay / by, az / bz).distinct.size == 1
   }
 
-  def normaliseToPosition(
+  private def normaliseToPosition(
     data: List[PositionAndVelocity3D],
     diff: Coordinates3D,
   ): Unit = {
@@ -194,14 +197,11 @@ object Advent24 {
   }
 
   def solvePart2(data: List[PositionAndVelocity3D]): PositionAndVelocity3D = {
+    printEquations(data)
+
 //    normaliseToPosition(data, Coordinates3D(24, 13, 10))
 
 //    anyoneIntersecting(data)
-
-//    println(textually(data, num = true))
-//    println()
-//    println(textually(data, num = false))
-//    println()
 
     // For all rocks "r"
     // (rvy * vz - rvz * vy) * (rpx - px) + (rvz * vx - rvx * vz) * (rpy - py) + (rvx * vy - rvy * vx) * (rpz - pz) = 0
@@ -210,11 +210,11 @@ object Advent24 {
 
 //    val limit = 1_000_000_000
     val limit = 25
-    Axis.All foreach { axes =>
-      println(
-        s"Only by $axes: ${solvePart2CrudeOptimize(data, Set(axes), limit)}"
-      )
-    }
+//    Axis.All foreach { axes =>
+//      println(
+//        s"Only by $axes: ${solvePart2CrudeOptimize(data, Set(axes), limit)}"
+//      )
+//    }
     solvePart2CrudeOptimize(data, Axis.All, limit)
   }
   //    solvePart2DotCrossProducts(data.take(3), 100_000_000_000L)
@@ -239,9 +239,9 @@ object Advent24 {
     data: List[PositionAndVelocity3D],
     limit: Long,
   ): PositionAndVelocity3D = {
-    println(textually(data, num = true))
+    println(dotCrossProductTextually(data, num = true))
     println()
-    println(textually(data, num = false))
+    println(dotCrossProductTextually(data, num = false))
     println()
 
     // Find such px, py, pz, vx, vy, vz that for all rocks
@@ -537,15 +537,73 @@ object Advent24 {
       println(s"px + t$idx * vx = ${r.p.x} ${sgn(r.v.x)} * t$idx")
       println(s"py + t$idx * vy = ${r.p.y} ${sgn(r.v.y)} * t$idx")
       println(s"pz + t$idx * vz = ${r.p.z} ${sgn(r.v.z)} * t$idx")
+      println()
     }
+
+    def printNice(r: PositionAndVelocity3D, idx: String, axis: Axis): String =
+      axis match {
+        case Axis.X => s"px ${sgn(-r.p.x)} = t$idx * (${r.v.x} - vx)"
+        case Axis.Y => s"py ${sgn(-r.p.y)} = t$idx * (${r.v.y} - vy)"
+        case Axis.Z => s"pz ${sgn(-r.p.z)} = t$idx * (${r.v.z} - vz)"
+      }
+
+    println(s"Same r.v.x: ")
+    data.groupBy(_.v.x).values.filter(_.size >= 2).foreach { list =>
+      println(s"r.v.x equal:")
+      list foreach { r =>
+        println(printNice(r, "?", Axis.X))
+      }
+      println()
+    }
+
+    println(s"Same r.v.y: ")
+    data.groupBy(_.v.y).values.filter(_.size >= 2).foreach { list =>
+      println(s"r.v.y equal:")
+      list foreach { r =>
+        println(printNice(r, "?", Axis.Y))
+      }
+      println()
+    }
+
+    println(s"Same r.v.z: ")
+    data.groupBy(_.v.z).values.filter(_.size >= 2).foreach { list =>
+      println(s"r.v.z equal:")
+      list foreach { r =>
+        println(printNice(r, "?", Axis.Z))
+      }
+      println()
+    }
+
+    data.zipWithIndex foreach { case (r, id) =>
+      val idx = id + 1
+      println(s"px ${sgn(-r.p.x)} = t$idx * (${r.v.x} - vx)")
+      println(s"py ${sgn(-r.p.y)} = t$idx * (${r.v.y} - vy)")
+      println(s"pz ${sgn(-r.p.z)} = t$idx * (${r.v.z} - vz)")
+      println()
+    }
+
+    println()
 
     println(s"${3 + 3 + data.length} variables")
     println(s"${data.length * 3} equations")
 
     println()
-    println(s"x + t_n * a = rpx + rvx * t_n")
-    println(s"y + t_n * b = rpy + rvy * t_n")
-    println(s"z + t_n * c = rpz + rvz * t_n")
+    println(s"px + t_n * vx = rpx + rvx * t_n")
+    println(s"py + t_n * vy = rpy + rvy * t_n")
+    println(s"pz + t_n * vz = rpz + rvz * t_n")
+
+    println()
+
+//    println(s"Line equations:")
+//    data.foreach { r =>
+//      println(s"(x ${sgn(-r.p.x)}) / ${r.v.x} == (y ${sgn(-r.p.y)}) / ${r.v.y} == (z ${sgn(-r.p.z)}) / ${r.v.z}")
+//    }
+//    println()
+
+    println(dotCrossProductTextually(data, num = true))
+    println()
+    println(dotCrossProductTextually(data, num = false))
+    println()
 
     // (t_n * a) - (rvx * t_n) = rpx - x
     // t_n * (a - rvx) = rpx - x
@@ -554,12 +612,22 @@ object Advent24 {
 
     // x = 24, y = 13, z = 10, a = -3, b = 1, c = 2
 
-    val x = 24
-    val y = 13
-    val z = 10
-    val a = -3
-    val b = 1
-    val c = 2
+    val px = 24
+    val py = 13
+    val pz = 10
+    val vx = -3
+    val vy = 1
+    val vz = 2
+
+    List(
+      (1 * vz - -2 * vy) * (19 - px) + (-2 * vx - -2 * vz) * (13 - py) + (-2 * vy - 1 * vx) * (30 - pz) == 0,
+      (-1 * vz - -2 * vy) * (18 - px) + (-2 * vx - -1 * vz) * (19 - py) + (-1 * vy - -1 * vx) * (22 - pz) == 0,
+      (-2 * vz - -4 * vy) * (20 - px) + (-4 * vx - -2 * vz) * (25 - py) + (-2 * vy - -2 * vx) * (34 - pz) == 0,
+      (-2 * vz - -1 * vy) * (12 - px) + (-1 * vx - -1 * vz) * (31 - py) + (-1 * vy - -2 * vx) * (28 - pz) == 0,
+      (-5 * vz - -3 * vy) * (20 - px) + (-3 * vx - 1 * vz) * (19 - py) + (1 * vy - -5 * vx) * (15 - pz) == 0,
+    ) foreach { b =>
+      assert(b)
+    }
 
     // (19 - x) / (a + 2) = (13 - y) / (b - 1) = (30 - z) / (c + 2)
     // (18 - x) / (a + 1) = (19 - y) / (b + 1) = (22 - z) / (c + 2)
@@ -567,25 +635,25 @@ object Advent24 {
     // (12 - x) / (a + 1) = (31 - y) / (b + 2) = (28 - z) / (c + 1)
     // (20 - x) / (a - 1) = (19 - y) / (b + 5) = (15 - z) / (c + 3)
 
-    data foreach { r =>
-      if ((a != r.v.x) && (b != r.v.y) && (c != r.v.z)) {
-        val e1 = (r.p.x - x).toDouble / (a - r.v.x)
-        val e2 = (r.p.y - y).toDouble / (b - r.v.y)
-        val e3 = (r.p.z - z).toDouble / (c - r.v.z)
-
-        println(s"$e1, $e2, $e3")
-      }
-
-      println(s"(${r.p.x} - x) / (a ${sgn(-r.v.x)}) = (${r.p.y} - y) / (b ${sgn(
-          -r.v.y
-        )}) = (${r.p.z} - z) / (c ${sgn(-r.v.z)})")
-      println()
-    }
-
-    println(s"${3 + 3 + data.length} variables")
-    println(s"${data.length * 3} equations")
-
-    println()
+//    data foreach { r =>
+//      if ((a != r.v.x) && (b != r.v.y) && (c != r.v.z)) {
+//        val e1 = (r.p.x - x).toDouble / (a - r.v.x)
+//        val e2 = (r.p.y - y).toDouble / (b - r.v.y)
+//        val e3 = (r.p.z - z).toDouble / (c - r.v.z)
+//
+//        println(s"$e1, $e2, $e3")
+//      }
+//
+//      println(s"(${r.p.x} - x) / (a ${sgn(-r.v.x)}) = (${r.p.y} - y) / (b ${sgn(
+//          -r.v.y
+//        )}) = (${r.p.z} - z) / (c ${sgn(-r.v.z)})")
+//      println()
+//    }
+//
+//    println(s"${3 + 3 + data.length} variables")
+//    println(s"${data.length * 3} equations")
+//
+//    println()
   }
 
   def solvePart2CrudeOptimize(
@@ -630,12 +698,12 @@ object Advent24 {
     )
 
     val t = data.indices map { idx =>
-      o.labeledReal(s"t_$idx")
+      o.labeledInt(s"t_$idx")
     }
 
     t foreach { t_n =>
       o.addConstraints(
-        t_n >= o.realConstant(0)
+        t_n >= o.constant(0)
       )
     }
 
@@ -651,25 +719,19 @@ object Advent24 {
 
       if (axes.contains(Axis.X)) {
         o.addConstraints(
-          o.intToReal(px) + t_n * o.intToReal(vx) === o.intToReal(
-            px_n
-          ) + t_n * o.intToReal(vx_n)
+          px + t_n * vx === px_n + t_n * vx_n
         )
       }
 
       if (axes.contains(Axis.Y)) {
         o.addConstraints(
-          o.intToReal(py) + t_n * o.intToReal(vy) === o.intToReal(
-            py_n
-          ) + t_n * o.intToReal(vy_n)
+          py + t_n * vy === py_n + t_n * vy_n
         )
       }
 
       if (axes.contains(Axis.Z)) {
         o.addConstraints(
-          o.intToReal(pz) + t_n * o.intToReal(vz) === o.intToReal(
-            pz_n
-          ) + t_n * o.intToReal(vz_n)
+          pz + t_n * vz === pz_n + t_n * vz_n
         )
       }
     }

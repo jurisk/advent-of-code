@@ -7,7 +7,9 @@ import org.scalatest.matchers.should.Matchers._
 
 class Advent24Spec extends AnyFreeSpec {
   // https://www.math3d.org/G5JHCaIly
-  private def testData = parseFile(fileName("-test"))
+  private def testData           = parseFile(fileName("-test"))
+  private def testNormalisedData = parseFile(fileName("-test-normalised"))
+
   private def realData = parseFile(fileName(""))
 
   val expectedTestAnswer: PositionAndVelocity3D = PositionAndVelocity3D(
@@ -104,6 +106,13 @@ class Advent24Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
+    "test normalised" in {
+      solvePart2(
+        testNormalisedData
+      ).velocity shouldEqual expectedTestAnswer.velocity
+      part2(testNormalisedData) shouldEqual 0
+    }
+
     "test" in {
       solvePart2(testData).position shouldEqual expectedTestAnswer.position
       part2(testData) shouldEqual 47
