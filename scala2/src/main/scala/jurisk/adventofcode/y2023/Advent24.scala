@@ -10,6 +10,7 @@ import jurisk.optimization.ImplicitConversions.{
   RichLong,
 }
 import jurisk.optimization.Optimizer
+import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -216,13 +217,14 @@ object Advent24 {
     // (rvy * C - rvz * B) * (rpx - X) + (rvz * A - rvx * C) * (rpy - Y) + (rvx * B - rvy * A) * (rpz - Z) = 0
 
 //    val limit = 1_000_000_000
-    val limit = 25
+//    val limit = 25
 //    Axis.All foreach { axes =>
 //      println(
 //        s"Only by $axes: ${solvePart2CrudeOptimize(data, Set(axes), limit)}"
 //      )
 //    }
-    solvePart2CrudeOptimize(data, Axis.All, limit)
+//    solvePart2CrudeOptimize(data, Axis.All, limit)
+    ???
   }
   //    solvePart2DotCrossProducts(data.take(3), 100_000_000_000L)
 
@@ -533,13 +535,37 @@ object Advent24 {
     val All: Set[Axis] = Set(X, Y, Z)
   }
 
+  private def sgn(n: Long): String =
+    if (n < 0) {
+      s"- ${-n}"
+    } else {
+      s"+ $n"
+    }
+
+  def solveAssumingV(
+    data: List[PositionAndVelocity3D],
+    v: Coordinates3D,
+  ): Unit =
+    data.zipWithIndex foreach { case (r, id) =>
+      val idx = id + 1
+      println(s"px  = ${r.p.x} ${sgn(r.v.x - v.x)} * t$idx")
+      println(s"py = ${r.p.y} ${sgn(r.v.y - v.y)} * t$idx")
+      println(s"pz = ${r.p.z} ${sgn(r.v.z - v.z)} * t$idx")
+      println()
+    }
+
+    // This is linear now so you can use Gaussian reduction to get:
+    // t1 = 94255352940 and t2 = 810431007754 and t3 = 857431055888
+
+    // Now just plug it in:
+    // 191146615936494 + 342596108503183 + 131079628110881 = 664822352550558
+
   def printEquations(data: List[PositionAndVelocity3D]): Unit = {
-    def sgn(n: Long): String =
-      if (n < 0) {
-        s"- ${-n}"
-      } else {
-        s"+ $n"
-      }
+    solveAssumingV(data, Coordinates3D(139, -93, 245))
+
+    if (data.nonEmpty) {
+      ???
+    }
 
     //    data.zipWithIndex foreach { case (r, idx) =>
     //      println(s"x + t$idx * a = ${r.p.x} ${sgn(r.v.x)} * t$idx")
@@ -563,58 +589,69 @@ object Advent24 {
       s"p$a ${sgn(-rp)} = t$idx * ($rv - v$a)"
     }
 
-    var validXes: Option[Set[Long]] = None
+    def deriveV(axis: Axis): Long = {
+      var candidates: Option[Set[Long]] = None
 
-    println(s"Same r.v.x: ")
-    data.groupBy(_.v.x).filter(_._2.size >= 2).foreach { case (n, list) =>
-      println(s"r.v.x equal:")
-      list foreach { r =>
-        println(printNice(r, "?", Axis.X))
+      println(s"Same r.v.x: ")
+      data.groupBy(_.v.get(axis)).filter(_._2.size >= 2).foreach {
+        case (n, list) =>
+//        println(s"r.v.${axis.toChar} equal:")
+//        list foreach { r =>
+//          println(printNice(r, "?", axis))
+//        }
+
+          list.combinations(2) foreach { list2 =>
+            val List(a, b) = list2
+            val rpDiff     = (a.p.get(axis) - b.p.get(axis)).abs
+
+            assert(n == a.v.get(axis))
+            assert(n == b.v.get(axis))
+
+            val temp   = divisors(rpDiff)
+            val divs   = temp ++ temp.map(-_)
+//          println(s"($n - v${axis.toChar}) is one of $divs, thus...")
+            val validX = divs.map(n - _)
+//          println(s"v${axis.toChar} is one of $validX")
+
+            candidates match {
+              case Some(filtered) =>
+                val n = filtered intersect validX.toSet
+                candidates = n.some
+              case None           => candidates = validX.toSet.some
+            }
+          }
+          println()
       }
 
-      list.combinations(2) foreach { list2 =>
-        val List(a, b) = list2
-        val rpDiff     = (a.p.x - b.p.x).abs
-
-        assert(n == a.v.x)
-        assert(n == b.v.x)
-
-        val temp   = divisors(rpDiff)
-        val divs   = temp ++ temp.map(-_)
-        println(s"($n - vx) is one of $divs, thus...")
-        val validX = divs.map(n - _)
-        println(s"vx is one of $validX")
-
-        validXes match {
-          case Some(filtered) =>
-            val n = filtered intersect validX.toSet
-            validXes = n.some
-          case None           => validXes = validX.toSet.some
-        }
-      }
+      println(s"Outcome: Valid v${axis.toChar}-es: $candidates")
       println()
+
+      candidates.get.toSeq.singleResultUnsafe
     }
 
-    println(s"Outcome: Valid vx-es: $validXes")
-    println()
+    val vx = deriveV(Axis.X)
+    val vy = deriveV(Axis.Y)
+    val vz = deriveV(Axis.Z)
 
-    println(s"Same r.v.y: ")
-    data.groupBy(_.v.y).values.filter(_.size >= 2).foreach { list =>
-      println(s"r.v.y equal:")
-      list foreach { r =>
-        println(printNice(r, "?", Axis.Y))
-      }
-      println()
-    }
-
-    println(s"Same r.v.z: ")
-    data.groupBy(_.v.z).values.filter(_.size >= 2).foreach { list =>
-      println(s"r.v.z equal:")
-      list foreach { r =>
-        println(printNice(r, "?", Axis.Z))
-      }
-      println()
-    }
+    println(s"v = $vx, $vy, $vz")
+//
+//    println(s"Same r.v.y: ")
+//    data.groupBy(_.v.y).values.filter(_.size >= 2).foreach { list =>
+//      println(s"r.v.y equal:")
+//      list foreach { r =>
+//        println(printNice(r, "?", Axis.Y))
+//      }
+//      println()
+//    }
+//
+//    println(s"Same r.v.z: ")
+//    data.groupBy(_.v.z).values.filter(_.size >= 2).foreach { list =>
+//      println(s"r.v.z equal:")
+//      list foreach { r =>
+//        println(printNice(r, "?", Axis.Z))
+//      }
+//      println()
+//    }
 
     data.zipWithIndex foreach { case (r, id) =>
       val idx = id + 1
@@ -653,23 +690,23 @@ object Advent24 {
     // t_n = (rpx - x) / (a - rvx) = (rpy - y) / (b - rvy) = (rpz - z) / (c - rvz)
 
     // x = 24, y = 13, z = 10, a = -3, b = 1, c = 2
-
-    val px = 24
-    val py = 13
-    val pz = 10
-    val vx = -3
-    val vy = 1
-    val vz = 2
-
-    List(
-      (1 * vz - -2 * vy) * (19 - px) + (-2 * vx - -2 * vz) * (13 - py) + (-2 * vy - 1 * vx) * (30 - pz) == 0,
-      (-1 * vz - -2 * vy) * (18 - px) + (-2 * vx - -1 * vz) * (19 - py) + (-1 * vy - -1 * vx) * (22 - pz) == 0,
-      (-2 * vz - -4 * vy) * (20 - px) + (-4 * vx - -2 * vz) * (25 - py) + (-2 * vy - -2 * vx) * (34 - pz) == 0,
-      (-2 * vz - -1 * vy) * (12 - px) + (-1 * vx - -1 * vz) * (31 - py) + (-1 * vy - -2 * vx) * (28 - pz) == 0,
-      (-5 * vz - -3 * vy) * (20 - px) + (-3 * vx - 1 * vz) * (19 - py) + (1 * vy - -5 * vx) * (15 - pz) == 0,
-    ) foreach { b =>
-      assert(b)
-    }
+//
+//    val px = 24
+//    val py = 13
+//    val pz = 10
+//    val vx = -3
+//    val vy = 1
+//    val vz = 2
+//
+//    List(
+//      (1 * vz - -2 * vy) * (19 - px) + (-2 * vx - -2 * vz) * (13 - py) + (-2 * vy - 1 * vx) * (30 - pz) == 0,
+//      (-1 * vz - -2 * vy) * (18 - px) + (-2 * vx - -1 * vz) * (19 - py) + (-1 * vy - -1 * vx) * (22 - pz) == 0,
+//      (-2 * vz - -4 * vy) * (20 - px) + (-4 * vx - -2 * vz) * (25 - py) + (-2 * vy - -2 * vx) * (34 - pz) == 0,
+//      (-2 * vz - -1 * vy) * (12 - px) + (-1 * vx - -1 * vz) * (31 - py) + (-1 * vy - -2 * vx) * (28 - pz) == 0,
+//      (-5 * vz - -3 * vy) * (20 - px) + (-3 * vx - 1 * vz) * (19 - py) + (1 * vy - -5 * vx) * (15 - pz) == 0,
+//    ) foreach { b =>
+//      assert(b)
+//    }
 
     // (19 - x) / (a + 2) = (13 - y) / (b - 1) = (30 - z) / (c + 2)
     // (18 - x) / (a + 1) = (19 - y) / (b + 1) = (22 - z) / (c + 2)
