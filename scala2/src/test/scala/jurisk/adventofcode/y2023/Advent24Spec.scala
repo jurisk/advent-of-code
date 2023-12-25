@@ -6,7 +6,7 @@ import cats.implicits._
 import org.scalatest.matchers.should.Matchers._
 
 class Advent24Spec extends AnyFreeSpec {
-  // https://www.math3d.org/1XG5CNDSK
+  // https://www.math3d.org/G5JHCaIly
   private def testData = parseFile(fileName("-test"))
   private def realData = parseFile(fileName(""))
 
