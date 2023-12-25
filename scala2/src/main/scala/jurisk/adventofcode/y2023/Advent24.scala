@@ -1,20 +1,16 @@
 package jurisk.adventofcode.y2023
 
-import cats.implicits.catsSyntaxOptionId
-import cats.implicits.none
-import com.microsoft.z3.{ArithExpr, IntExpr, IntSort}
+import cats.implicits.{catsSyntaxOptionId, none}
+import com.microsoft.z3.Version
 import jurisk.math.divisors
-import jurisk.optimization.ImplicitConversions.{
-  RichArithExprIntSort,
-  RichExpr,
-  RichLong,
-}
+import jurisk.optimization.ImplicitConversions.{RichArithExprIntSort, RichExpr}
 import jurisk.optimization.Optimizer
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent24 {
+  // TODO: Move to Coords2D
   final case class Coordinates2D[T](
     x: T,
     y: T,
@@ -25,6 +21,7 @@ object Advent24 {
     velocity: Coordinates2D[BigDecimal],
   )
 
+  // TODO: Move / merge to Coords3D
   final case class Coordinates3D(
     x: Long,
     y: Long,
@@ -265,7 +262,6 @@ object Advent24 {
   }
 
   def calculateVelocity(data: List[PositionAndVelocity3D]): Coordinates3D = {
-
     def deriveV(axis: Axis): Long = {
       val debug                         = false
       var candidates: Option[Set[Long]] = None
@@ -313,7 +309,6 @@ object Advent24 {
   }
 
   def printEquations(data: List[PositionAndVelocity3D]): Unit = {
-
     data.zipWithIndex foreach { case (r, id) =>
       val idx = id + 1
       println(s"px + t$idx * vx = ${r.p.x} ${sgn(r.v.x)} * t$idx")
@@ -322,7 +317,7 @@ object Advent24 {
       println()
     }
 
-    def printNice(r: PositionAndVelocity3D, idx: String, axis: Axis): String = {
+    def printNice(r: PositionAndVelocity3D, idx: Int, axis: Axis): String = {
       val rp = r.p.get(axis)
       val rv = r.v.get(axis)
       val a  = axis.toChar
@@ -332,9 +327,10 @@ object Advent24 {
 
     data.zipWithIndex foreach { case (r, id) =>
       val idx = id + 1
-      println(s"px ${sgn(-r.p.x)} = t$idx * (${r.v.x} - vx)")
-      println(s"py ${sgn(-r.p.y)} = t$idx * (${r.v.y} - vy)")
-      println(s"pz ${sgn(-r.p.z)} = t$idx * (${r.v.z} - vz)")
+      Axis.All foreach { axes =>
+        printNice(r, idx, axes)
+      }
+
       println()
     }
 
@@ -351,9 +347,9 @@ object Advent24 {
     println()
   }
 
+  // TODO: `z3-turnkey` doesn't work here, switch to the command line version
   def solvePart2Optimizer(
-    data: List[PositionAndVelocity3D],
-    vLimit: Int,
+    data: List[PositionAndVelocity3D]
   ): PositionAndVelocity3D = {
     // Find a "result" PositionAndVelocity3D for which integer t exists where "position at t" for both
     // "result" and all of "data" is identical
@@ -366,6 +362,7 @@ object Advent24 {
     //    pz + t[n] * vz == pz[n] + t[n] * vz[n]
 
     implicit val o = Optimizer.z3()
+    println(Version.getFullVersion)
     import o._
 
     val px = o.labeledInt(s"px")
@@ -375,21 +372,6 @@ object Advent24 {
     val vx = o.labeledInt(s"vx")
     val vy = o.labeledInt(s"vy")
     val vz = o.labeledInt(s"vz")
-
-    o.addConstraints(
-//      px <= o.constant(limit),
-//      px >= o.constant(-limit),
-      vx <= o.constant(vLimit),
-      vx >= o.constant(-vLimit),
-//      py <= o.constant(limit),
-//      py >= o.constant(-limit),
-      vy <= o.constant(vLimit),
-      vy >= o.constant(-vLimit),
-//      pz <= o.constant(limit),
-//      pz >= o.constant(-limit),
-      vz <= o.constant(vLimit),
-      vz >= o.constant(-vLimit),
-    )
 
     data.zipWithIndex.foreach { case (rock, idx) =>
       val t_n  = o.labeledInt(s"t_$idx")
@@ -410,6 +392,17 @@ object Advent24 {
     }
 
     println(o.optimize)
+
+    println(s"""
+               |(echo "position:")
+               |(eval px) (eval py) (eval pz)
+               |
+               |(echo "velocity:")
+               |(eval vx) (eval vy) (eval vz)
+               |
+               |(echo "answer:")
+               |(eval (+ px py pz))
+               |""".stripMargin)
 
     val model = o.checkAndGetModel()
 
