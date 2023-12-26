@@ -2,12 +2,13 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits._
 import com.microsoft.z3.Version
-import jurisk.math.divisors
+import jurisk.math.{positiveAndNegativeDivisors, positiveDivisors}
 import jurisk.optimization.ImplicitConversions.{RichArithExprIntSort, RichExpr}
 import jurisk.optimization.Optimizer
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+import org.scalatest.matchers.should.Matchers._
 
 object Advent24 {
   // TODO: Move to Coords2D
@@ -90,10 +91,34 @@ object Advent24 {
     List(ax / bx, ay / by, az / bz).distinct.size == 1
   }
 
-  def solvePart2(data: List[PositionAndVelocity3D]): PositionAndVelocity3D = {
+  def solve2UsingChineseRemainderTheorem(
+    data: List[PositionAndVelocity3D]
+  ): Long = {
+    println(s"For getting to Chinese Remainder Theorem:")
+    println(s"v = vx + vy + vz")
+    println(s"p = px + py + pz")
+    println()
+
+    data.zipWithIndex foreach { case (r, id) =>
+      val idx = id + 1
+      val rp  = r.p.x + r.p.y + r.p.z
+      val rv  = r.v.x + r.v.y + r.v.z
+      println(s"p ${sgn(-rp)} = (${sgn(rv)} -v) * t$idx")
+      println(" ==> ")
+      // https://en.wikipedia.org/wiki/Modular_arithmetic#Congruence
+      println(s"a ≡ $rp (mod ($rv - v))")
+      println()
+    }
+
+    ???
+  }
+
+  def solve2InferringVelocity(
+    data: List[PositionAndVelocity3D]
+  ): PositionAndVelocity3D = {
     printEquations(data)
 
-    val velocity = calculateVelocity(data)
+    val velocity = inferVelocity(data)
     val position = solveAssumingV(data, velocity)
 
     PositionAndVelocity3D(
@@ -174,9 +199,11 @@ object Advent24 {
       min: Coordinates2D[Long],
       max: Coordinates2D[Long],
     ): Boolean = {
-      println(s"a = $a, b= $b")
+      val debug = false
+
+      if (debug) println(s"a = $a, b= $b")
       val result = vectorIntersection2D(a, b)
-      println(s"result = $result\n")
+      if (debug) println(s"result = $result\n")
 
       result match {
         case Some(c) =>
@@ -245,6 +272,9 @@ object Advent24 {
     data: List[PositionAndVelocity3D],
     v: Coordinates3D,
   ): Coordinates3D = {
+    println(
+      s"Now that we know (vx, vy, vz) == $v it becomes a much simpler task"
+    )
     data.zipWithIndex foreach { case (r, id) =>
       val idx = id + 1
       println(s"px  = ${r.p.x} ${sgn(r.v.x - v.x)} * t$idx")
@@ -252,6 +282,8 @@ object Advent24 {
       println(s"pz = ${r.p.z} ${sgn(r.v.z - v.z)} * t$idx")
       println()
     }
+
+    // TODO: Implement Gaussian reduction (just first 3 equations should be enough)
 
     // This is linear now so you can use Gaussian reduction to get:
     // t1 = 94255352940 and t2 = 810431007754 and t3 = 857431055888
@@ -262,14 +294,34 @@ object Advent24 {
     ???
   }
 
-  def calculateVelocity(data: List[PositionAndVelocity3D]): Coordinates3D = {
+  private def toBasicEquation(
+    r: PositionAndVelocity3D,
+    idx: String,
+    axis: Axis,
+  ): String = {
+    val rp = r.p.get(axis)
+    val rv = r.v.get(axis)
+    val a  = axis.toChar
+
+    s"p$a ${sgn(-rp)} = t$idx * ($rv - v$a)"
+  }
+
+  private def inferVelocity(
+    data: List[PositionAndVelocity3D]
+  ): Coordinates3D = {
     def deriveV(axis: Axis): Long = {
-      val debug                         = false
+      val debug                         = true
       var candidates: Option[Set[Long]] = None
 
       if (debug) println(s"Same r.v.${axis.toChar}: ")
-      data.groupBy(_.v.get(axis)).filter(_._2.size >= 2).foreach {
-        case (n, list) =>
+      data
+        .groupBy(_.v.get(axis))
+        .filter { case (_, equations) => equations.size >= 2 }
+        .foreach { case (n, list) =>
+          list.zipWithIndex.foreach { case (r, idx) =>
+            println(toBasicEquation(r, ('a' + idx).toString, axis))
+          }
+
           list.combinations(2) foreach { list2 =>
             val List(a, b) = list2
             val rpDiff     = (a.p.get(axis) - b.p.get(axis)).abs
@@ -277,11 +329,10 @@ object Advent24 {
             assert(n == a.v.get(axis))
             assert(n == b.v.get(axis))
 
-            val temp        = divisors(rpDiff)
-            val divs        = temp ++ temp.map(-_)
+            val divisors    = positiveAndNegativeDivisors(rpDiff)
             if (debug)
-              println(s"($n - v${axis.toChar}) is one of $divs, thus...")
-            val validValues = divs.map(n - _)
+              println(s"($n - v${axis.toChar}) is one of $divisors, thus...")
+            val validValues = divisors.map(n - _)
             if (debug) println(s"v${axis.toChar} is one of $validValues")
 
             candidates match {
@@ -292,7 +343,7 @@ object Advent24 {
             }
           }
           if (debug) println()
-      }
+        }
 
       println(s"Outcome: Valid v${axis.toChar}-es: $candidates")
       println()
@@ -310,6 +361,7 @@ object Advent24 {
   }
 
   def printEquations(data: List[PositionAndVelocity3D]): Unit = {
+    println(s"Basic equations:")
     data.zipWithIndex foreach { case (r, id) =>
       val idx = id + 1
       println(s"px + t$idx * vx = ${r.p.x} ${sgn(r.v.x)} * t$idx")
@@ -318,18 +370,10 @@ object Advent24 {
       println()
     }
 
-    def printNice(r: PositionAndVelocity3D, idx: Int, axis: Axis): String = {
-      val rp = r.p.get(axis)
-      val rv = r.v.get(axis)
-      val a  = axis.toChar
-
-      s"p$a ${sgn(-rp)} = t$idx * ($rv - v$a)"
-    }
-
     data.zipWithIndex foreach { case (r, id) =>
       val idx = id + 1
       Axis.All foreach { axes =>
-        printNice(r, idx, axes)
+        println(toBasicEquation(r, idx.toString, axes))
       }
 
       println()
@@ -420,8 +464,11 @@ object Advent24 {
   }
 
   def part2(data: InputPart2): Long = {
-    val result = solvePart2(data).position
-    result.x + result.y + result.z
+    val result        = solve2InferringVelocity(data)
+    val answerFromCRT = solve2UsingChineseRemainderTheorem(data)
+    val answer        = result.position.x + result.position.y + result.position.z
+    answer shouldEqual answerFromCRT
+    answer
   }
 
   def parseFile(fileName: String): InputPart2 =

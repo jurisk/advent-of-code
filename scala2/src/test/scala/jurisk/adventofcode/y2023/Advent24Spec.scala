@@ -74,8 +74,10 @@ class Advent24Spec extends AnyFreeSpec {
 
   "part 2" - {
     "real" in {
-      solvePart2(realData) shouldEqual expectedRealAnswer
-      part2(realData) shouldEqual 664822352550558L
+      solve2InferringVelocity(realData) shouldEqual expectedRealAnswer
+      val expectedResult = 664822352550558L
+      solve2UsingChineseRemainderTheorem(realData) shouldEqual expectedResult
+      part2(realData) shouldEqual expectedResult
     }
   }
 }
