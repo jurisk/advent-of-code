@@ -25,8 +25,8 @@ object Advent24 {
     position: Coords3D[Long],
     velocity: Coords3D[Long],
   ) {
-    def v: Coords3D[Long] = velocity
     def p: Coords3D[Long] = position
+    def v: Coords3D[Long] = velocity
   }
 
   type InputPart2 = List[PositionAndVelocity3D]
@@ -94,6 +94,35 @@ object Advent24 {
     if (debug) printEquations(data)
 
     val velocity = inferVelocity(data)
+
+    def solveAssumingV(
+      data: List[PositionAndVelocity3D],
+      v: Coords3D[Long],
+    ): Coords3D[Long] = {
+      if (debug) {
+        println(
+          s"Now that we know (vx, vy, vz) == $v it becomes a much simpler task"
+        )
+        data.zipWithIndex foreach { case (r, id) =>
+          val idx = id + 1
+          println(s"px = ${r.p.x} ${sgn(r.v.x - v.x)} * t$idx")
+          println(s"py = ${r.p.y} ${sgn(r.v.y - v.y)} * t$idx")
+          println(s"pz = ${r.p.z} ${sgn(r.v.z - v.z)} * t$idx")
+          println()
+        }
+      }
+
+      // TODO: Implement Gaussian reduction (just first 3 equations should be enough)
+
+      // This is linear now so you can use Gaussian reduction to get:
+      // t1 = 94255352940 and t2 = 810431007754 and t3 = 857431055888
+
+      // Now just plug it in:
+      // 191146615936494 + 342596108503183 + 131079628110881 = 664822352550558
+
+      ???
+    }
+
     val position = solveAssumingV(data, velocity)
 
     PositionAndVelocity3D(
@@ -163,38 +192,6 @@ object Advent24 {
     }
   }
 
-  def solve1(
-    input: List[PositionAndVelocity2D],
-    area: Area2D[BigDecimal],
-  ): Long = {
-    def intersectWithinBounds2D(
-      a: PositionAndVelocity2D,
-      b: PositionAndVelocity2D,
-    ): Boolean = {
-      val debug = false
-
-      if (debug) println(s"a = $a, b= $b")
-      val result = vectorIntersection2D(a, b)
-      if (debug) println(s"result = $result\n")
-
-      result match {
-        case Some(c) =>
-          area.contains(c)
-        case None    => false
-      }
-    }
-
-    input.combinations(2).count { list =>
-      list match {
-        case List(a, b) =>
-          intersectWithinBounds2D(a, b)
-
-        case _ =>
-          list.toString.fail
-      }
-    }
-  }
-
   def part1(data: InputPart2, minC: Long, maxC: Long): Long = {
     val area =
       Area2D[BigDecimal](
@@ -215,6 +212,33 @@ object Advent24 {
       )
     }
 
+    def solve1(
+      input: List[PositionAndVelocity2D],
+      area: Area2D[BigDecimal],
+    ): Long = {
+      def intersectWithinBounds2D(
+        a: PositionAndVelocity2D,
+        b: PositionAndVelocity2D,
+      ): Boolean = {
+        val debug = false
+
+        if (debug) println(s"a = $a, b= $b")
+        val result = vectorIntersection2D(a, b)
+        if (debug) println(s"result = $result\n")
+
+        result match {
+          case Some(c) =>
+            area.contains(c)
+          case None    => false
+        }
+      }
+
+      input.combinations(2).count { list =>
+        val List(a, b) = list
+        intersectWithinBounds2D(a, b)
+      }
+    }
+
     solve1(input, area)
   }
 
@@ -224,36 +248,6 @@ object Advent24 {
     } else {
       s"+ $n"
     }
-
-  def solveAssumingV(
-    data: List[PositionAndVelocity3D],
-    v: Coords3D[Long],
-  ): Coords3D[Long] = {
-    val debug = false
-
-    if (debug) {
-      println(
-        s"Now that we know (vx, vy, vz) == $v it becomes a much simpler task"
-      )
-      data.zipWithIndex foreach { case (r, id) =>
-        val idx = id + 1
-        println(s"px = ${r.p.x} ${sgn(r.v.x - v.x)} * t$idx")
-        println(s"py = ${r.p.y} ${sgn(r.v.y - v.y)} * t$idx")
-        println(s"pz = ${r.p.z} ${sgn(r.v.z - v.z)} * t$idx")
-        println()
-      }
-    }
-
-    // TODO: Implement Gaussian reduction (just first 3 equations should be enough)
-
-    // This is linear now so you can use Gaussian reduction to get:
-    // t1 = 94255352940 and t2 = 810431007754 and t3 = 857431055888
-
-    // Now just plug it in:
-    // 191146615936494 + 342596108503183 + 131079628110881 = 664822352550558
-
-    ???
-  }
 
   private def toBasicEquation(
     r: PositionAndVelocity3D,
