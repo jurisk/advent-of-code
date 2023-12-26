@@ -17,8 +17,14 @@ import com.microsoft.z3.RealExpr
 import com.microsoft.z3.Sort
 import com.microsoft.z3.Status
 import com.microsoft.z3.enumerations.Z3_lbool
+import jurisk.process.Runner
 import jurisk.utils.Parsing.StringOps
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
+// The https://github.com/tudo-aqua/z3-turnkey distribution did not work on task 2023-24 while the same program
+// worked from the command line. Thus, some methods have ended up being deprecated, and this class is mostly
+// a way to generate SMT-LIB programs (see https://smtlib.cs.uiowa.edu/language.shtml).
+// TODO: Consider removing the Z3 dependency and just generating SMT-LIB format directly.
 trait Optimizer {
   val context: Context
   val optimize: Optimize
@@ -35,9 +41,12 @@ trait Optimizer {
 
   def addConstraints(expressions: Expr[BoolSort]*): Unit
 
-  // TODO:  Should probably discontinue this, at least deprecate, as it was not working well compared to the command
-  //        line version
+  @deprecated("Use `runExternal` instead", "2023-12-24")
   def checkAndGetModel(): Model
+
+  // TODO: Make type-safe?
+  def runExternal(evaluate: String*): List[String]
+  def resultToLong(result: String): Long
 
   def debugPrint(): Unit
 
@@ -81,8 +90,13 @@ trait Optimizer {
   def and(expressions: Expr[BoolSort]*): BoolExpr
   def or(expressions: Expr[BoolSort]*): BoolExpr
 
+  @deprecated("Use `runExternal` instead", "2023-12-24")
   def extractBoolean(b: BoolExpr): Option[Boolean]
+
+  @deprecated("Use `runExternal` instead", "2023-12-24")
   def extractInt(n: IntExpr): Int
+
+  @deprecated("Use `runExternal` instead", "2023-12-24")
   def extractLong(n: IntExpr): Long
 }
 
@@ -151,6 +165,38 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
     assert(status == Status.SATISFIABLE, "Model is not satisfiable")
     optimize.getModel
   }
+
+  def runExternal(evaluate: String*): List[String] = {
+    val debug = false
+
+    val programStart = optimize.toString
+
+    // Note - `get-value` is SMT-LIB spec, but `eval` works with Z3
+    val programEnd = evaluate
+      .map { what =>
+        s"(eval $what)"
+      }
+      .mkString("\n")
+
+    val program = s"$programStart\n$programEnd\n(exit)"
+
+    if (debug) println(program)
+
+    val results = Runner.runSync("z3", "-in")(program)
+
+    if (debug) println(results)
+
+    val lines = results.splitLines
+    lines.head.trim shouldEqual "sat"
+    lines.tail.size shouldEqual evaluate.length
+    lines.tail
+  }
+
+  def resultToLong(result: String): Long =
+    result.trim match {
+      case s"(- $n)" => -n.toLong
+      case other     => other.toLong
+    }
 
   def debugPrint(): Unit =
     println(optimize)
