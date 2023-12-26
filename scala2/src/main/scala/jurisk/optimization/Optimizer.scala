@@ -21,10 +21,12 @@ import jurisk.process.Runner
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
-// The https://github.com/tudo-aqua/z3-turnkey distribution did not work on task 2023-24 while the same program
+// The https://github.com/tudo-aqua/z3-turnkey distribution did not work on task 2023-24 while the same SMT-LIB program
 // worked from the command line. Thus, some methods have ended up being deprecated, and this class is mostly
 // a way to generate SMT-LIB programs (see https://smtlib.cs.uiowa.edu/language.shtml).
-// TODO: Consider removing the Z3 dependency and just generating SMT-LIB format directly.
+//
+// You could consider removing the Z3 dependency and just generating SMT-LIB format directly, but it's probably not
+// worth it.
 trait Optimizer {
   val context: Context
   val optimize: Optimize
@@ -46,6 +48,7 @@ trait Optimizer {
 
   // TODO: Make type-safe?
   def runExternal(evaluate: String*): List[String]
+  def resultToInt(result: String): Int
   def resultToLong(result: String): Long
 
   def debugPrint(): Unit
@@ -191,6 +194,12 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
     lines.tail.size shouldEqual evaluate.length
     lines.tail
   }
+
+  def resultToInt(result: String): Int =
+    result.trim match {
+      case s"(- $n)" => -n.toInt
+      case other     => other.toInt
+    }
 
   def resultToLong(result: String): Long =
     result.trim match {
