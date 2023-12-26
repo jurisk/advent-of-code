@@ -411,6 +411,8 @@ object Advent21 {
     val realData: Input = parseFile(fileName(""))
 
     println(s"Part 1: ${part1(realData, 64)}")
+
+    // TODO:  Try solving Part 2 as extrapolating as a 2nd degree polynomial for 65 + n * 131 steps, where n = 0..4
     println(s"Part 2: ${part2FieldClassification(realData, 26501365)}")
   }
 }
