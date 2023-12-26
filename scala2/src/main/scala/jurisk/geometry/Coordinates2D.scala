@@ -1,5 +1,6 @@
 package jurisk.geometry
 
+import cats.Functor
 import cats.implicits._
 import jurisk.math.Enumerated
 import jurisk.utils.Parsing.StringOps
@@ -62,6 +63,9 @@ final case class Coordinates2D[N: Numeric](x: N, y: N) {
   def NW: Coordinates2D[N] = this + Direction2D.NW
   def SE: Coordinates2D[N] = this + Direction2D.SE
   def SW: Coordinates2D[N] = this + Direction2D.SW
+
+  def map[M: Numeric](f: N => M): Coordinates2D[M] =
+    Coordinates2D(f(x), f(y))
 }
 
 object Coordinates2D {
@@ -123,5 +127,4 @@ object Coordinates2D {
     } else
       s"Expected $a and $b to have same x or y coordinates, but they do not".fail
   }
-
 }

@@ -1,6 +1,7 @@
 package jurisk.geometry
 
 import cats.implicits._
+import jurisk.math.Matrix2x2
 
 object Coords2D {
   def apply(x: Int, y: Int): Coords2D = Coordinates2D[Int](x, y)
@@ -36,10 +37,15 @@ object Coords2D {
   def areaOfSimplePolygon(seq: IndexedSeq[Coords2D]): Double = {
     val determinants = adjacentCircularValues(seq)
       .map { case (a, b) =>
-        a.x.toDouble * b.y.toDouble - a.y.toDouble * b.x.toDouble
+        Matrix2x2(
+          a.x.toDouble,
+          b.x.toDouble,
+          a.y.toDouble,
+          b.y.toDouble,
+        ).determinant
       }
 
-    (determinants.sum / 2.0).abs
+    determinants.sum / 2.0
   }
 
   def calculateBoundaryPoints(seq: IndexedSeq[Coords2D]): Long =

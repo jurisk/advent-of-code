@@ -15,6 +15,8 @@ import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
+import scala.math.Fractional.Implicits.infixFractionalOps
+
 object Advent24 {
   final case class PositionAndVelocity2D(
     position: Coordinates2D[Long],
@@ -142,26 +144,26 @@ object Advent24 {
     (cp dotProduct pDiff) == 0
   }
 
-  // TODO: You can rewrite using determinants, possibly change the signature too
-  private def vectorIntersection2D(
-    a: PositionAndVelocity2D,
-    b: PositionAndVelocity2D,
-  ): Option[Coordinates2D[BigDecimal]] = {
-    // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
+  private def lineLineIntersectionGivenTwoPointsOnEachLine[N: Fractional](
+    a1: Coordinates2D[N],
+    a2: Coordinates2D[N],
+    b1: Coordinates2D[N],
+    b2: Coordinates2D[N],
+  ): Option[Coordinates2D[N]] = {
+    val Zero = implicitly[Fractional[N]].zero
 
-    val x1: BigDecimal = a.position.x
-    val y1: BigDecimal = a.position.y
-    val x2: BigDecimal = a.position.x + a.velocity.x
-    val y2: BigDecimal = a.position.y + a.velocity.y
-
-    val x3: BigDecimal = b.position.x
-    val y3: BigDecimal = b.position.y
-    val x4: BigDecimal = b.position.x + b.velocity.x
-    val y4: BigDecimal = b.position.y + b.velocity.y
+    val x1 = a1.x
+    val y1 = a1.y
+    val x2 = a2.x
+    val y2 = a2.y
+    val x3 = b1.x
+    val y3 = b1.y
+    val x4 = b2.x
+    val y4 = b2.y
 
     val bottom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
 
-    if (bottom == 0) {
+    if (bottom == Zero) {
       none
     } else {
       val pxTop =
@@ -172,6 +174,28 @@ object Advent24 {
       val pyTop =
         (x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)
       val py    = pyTop / bottom
+
+      Coordinates2D(px, py).some
+    }
+  }
+
+  // TODO: You can rewrite using determinants, possibly change the signature too
+  private def vectorIntersection2D(
+    a: PositionAndVelocity2D,
+    b: PositionAndVelocity2D,
+  ): Option[Coordinates2D[BigDecimal]] = {
+    // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
+
+    val result = lineLineIntersectionGivenTwoPointsOnEachLine(
+      a.position.map(BigDecimal(_)),
+      (a.position + a.velocity).map(BigDecimal(_)),
+      b.position.map(BigDecimal(_)),
+      (b.position + b.velocity).map(BigDecimal(_)),
+    )
+
+    result.flatMap { result =>
+      val px = result.x
+      val py = result.y
 
       val Eps = 0.001
       val tax = (px - a.position.x) / a.velocity.x
