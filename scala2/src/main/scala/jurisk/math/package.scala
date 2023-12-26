@@ -51,7 +51,7 @@ package object math {
   def pow(a: Int, b: Int): Long =
     Math.pow(a, b).toLong
 
-  def divisors(n: Long): Seq[Long] =
+  def positiveDivisors(n: Long): Seq[Long] =
     (1L to Math.sqrt(n.toDouble).toLong)
       .flatMap(i =>
         if (n % i == 0) {
@@ -63,7 +63,12 @@ package object math {
           }
         } else Seq.empty[Long]
       )
-      .sorted // Optional: sort the sequence
+      .sorted
+
+  def positiveAndNegativeDivisors(n: Long): Seq[Long] = {
+    val positive = positiveDivisors(n.abs)
+    positive.map(-_).reverse ++ positive
+  }
 
   def countLongsBetweenExclusive(low: Double, high: Double): Long = {
     def floorExclusive(x: Double): Long = {
