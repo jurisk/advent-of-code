@@ -13,7 +13,7 @@ object Advent22 {
   type Input   = Vector[Brick]
   type BrickId = Int
 
-  final case class Brick(id: BrickId, blocks: Area3D) {
+  final case class Brick(id: BrickId, blocks: Area3D[Int]) {
     def name: String = if (id < 26) {
       ('A'.toInt + id).toChar.toString
     } else {

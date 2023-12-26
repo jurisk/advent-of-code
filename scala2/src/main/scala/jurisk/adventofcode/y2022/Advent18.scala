@@ -7,22 +7,22 @@ import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent18 {
-  private def sidesFree(cube: Coords3D, cubes: Set[Coords3D]): Int =
+  private def sidesFree(cube: Coords3D[Int], cubes: Set[Coords3D[Int]]): Int =
     cube.adjacent6.count(n => !cubes.contains(n))
 
-  def parse(data: String): Set[Coords3D] =
-    data.parseLines(Coords3D.parse).toSet
+  def parse(data: String): Set[Coords3D[Int]] =
+    data.parseLines(Coords3D.parse[Int]).toSet
 
-  def part1(points: Set[Coords3D]): Int =
+  def part1(points: Set[Coords3D[Int]]): Int =
     points.toList.map(sidesFree(_, points)).sum
 
-  def part2(points: Set[Coords3D]): Int = {
+  def part2(points: Set[Coords3D[Int]]): Int = {
     val boundingBox         = Coords3D.boundingBoxInclusive(points)
     val expandedBoundingBox = boundingBox.expandInEachDirectionBy(1)
 
     val startingPointForSearch = expandedBoundingBox.min
     val reachable              = Bfs
-      .bfsReachable[Coords3D](
+      .bfsReachable[Coords3D[Int]](
         startingPointForSearch,
         _.adjacent6.filter { n =>
           !points.contains(n) && expandedBoundingBox.contains(n)

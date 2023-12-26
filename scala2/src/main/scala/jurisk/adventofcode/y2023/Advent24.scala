@@ -4,7 +4,8 @@ import cats.implicits._
 import com.microsoft.z3.Version
 import jurisk.geometry.Coordinates2D
 import jurisk.math.positiveAndNegativeDivisors
-import jurisk.optimization.ImplicitConversions.{RichArithExprIntSort, RichExpr}
+import jurisk.optimization.ImplicitConversions.RichArithExprIntSort
+import jurisk.optimization.ImplicitConversions.RichExpr
 import jurisk.optimization.Optimizer
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
@@ -23,7 +24,7 @@ object Advent24 {
     y: Long,
     z: Long,
   ) {
-    def get(axis: Axis): Long = axis match {
+    def apply(axis: Axis): Long = axis match {
       case Axis.X => x
       case Axis.Y => y
       case Axis.Z => z
@@ -92,9 +93,9 @@ object Advent24 {
   def solve2UsingChineseRemainderTheorem(
     data: List[PositionAndVelocity3D]
   ): Long = {
-    println(s"For getting to Chinese Remainder Theorem:")
-    println(s"v = vx + vy + vz")
-    println(s"p = px + py + pz")
+    println("For getting to Chinese Remainder Theorem:")
+    println("v = vx + vy + vz")
+    println("p = px + py + pz")
     println()
 
     data.zipWithIndex foreach { case (r, id) =>
@@ -307,8 +308,8 @@ object Advent24 {
     idx: String,
     axis: Axis,
   ): String = {
-    val rp = r.p.get(axis)
-    val rv = r.v.get(axis)
+    val rp = r.p(axis)
+    val rv = r.v(axis)
     val a  = axis.toChar
 
     s"p$a ${sgn(-rp)} = t$idx * ($rv - v$a)"
@@ -323,7 +324,7 @@ object Advent24 {
 
       if (debug) println(s"Same r.v.${axis.toChar}: ")
       data
-        .groupBy(_.v.get(axis))
+        .groupBy(_.v(axis))
         .filter { case (_, equations) => equations.size >= 2 }
         .foreach { case (n, list) =>
           if (debug) {
@@ -334,10 +335,10 @@ object Advent24 {
 
           list.combinations(2) foreach { list2 =>
             val List(a, b) = list2
-            val rpDiff     = (a.p.get(axis) - b.p.get(axis)).abs
+            val rpDiff     = (a.p(axis) - b.p(axis)).abs
 
-            assert(n == a.v.get(axis))
-            assert(n == b.v.get(axis))
+            assert(n == a.v(axis))
+            assert(n == b.v(axis))
 
             val divisors    = positiveAndNegativeDivisors(rpDiff)
             if (debug)
@@ -373,7 +374,7 @@ object Advent24 {
   }
 
   def printEquations(data: List[PositionAndVelocity3D]): Unit = {
-    println(s"Basic equations:")
+    println("Basic equations:")
     data.zipWithIndex foreach { case (r, id) =>
       val idx = id + 1
       println(s"px + t$idx * vx = ${r.p.x} ${sgn(r.v.x)} * t$idx")
@@ -397,9 +398,9 @@ object Advent24 {
     println(s"${data.length * 3} equations")
 
     println()
-    println(s"px + t_n * vx = rpx + rvx * t_n")
-    println(s"py + t_n * vy = rpy + rvy * t_n")
-    println(s"pz + t_n * vz = rpz + rvz * t_n")
+    println("px + t_n * vx = rpx + rvx * t_n")
+    println("py + t_n * vy = rpy + rvy * t_n")
+    println("pz + t_n * vz = rpz + rvz * t_n")
 
     println()
   }
@@ -422,13 +423,13 @@ object Advent24 {
     println(Version.getFullVersion)
     import o._
 
-    val px = o.labeledInt(s"px")
-    val py = o.labeledInt(s"py")
-    val pz = o.labeledInt(s"pz")
+    val px = o.labeledInt("px")
+    val py = o.labeledInt("py")
+    val pz = o.labeledInt("pz")
 
-    val vx = o.labeledInt(s"vx")
-    val vy = o.labeledInt(s"vy")
-    val vz = o.labeledInt(s"vz")
+    val vx = o.labeledInt("vx")
+    val vy = o.labeledInt("vy")
+    val vz = o.labeledInt("vz")
 
     data.zipWithIndex.foreach { case (rock, idx) =>
       val t_n  = o.labeledInt(s"t_$idx")
@@ -450,7 +451,7 @@ object Advent24 {
 
     println(o.optimize)
 
-    println(s"""
+    println("""
                |(echo "position:")
                |(eval px) (eval py) (eval pz)
                |

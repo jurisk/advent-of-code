@@ -15,7 +15,7 @@ object Advent23 {
   type Input = List[Nanobot]
 
   final case class Nanobot(
-    position: Coords3D,
+    position: Coords3D[Int],
     radius: Int,
   )
 
