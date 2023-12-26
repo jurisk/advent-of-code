@@ -17,6 +17,8 @@ import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent24 {
+  private type InputPart2 = List[PositionAndVelocity3D]
+
   final case class PositionAndVelocity2D(
     position: Coordinates2D[Long],
     velocity: Coordinates2D[Long],
@@ -30,8 +32,6 @@ object Advent24 {
     def v: Coords3D[Long] = velocity
   }
 
-  type InputPart2 = List[PositionAndVelocity3D]
-
   def parse(input: String): InputPart2 = {
     def parse3D(input: String): PositionAndVelocity3D =
       input match {
@@ -44,18 +44,6 @@ object Advent24 {
       }
 
     input.parseLines(parse3D)
-  }
-
-  def areVectorsParallel(a: Coords3D[Long], b: Coords3D[Long]): Boolean = {
-    val ax = BigDecimal(a.x)
-    val ay = BigDecimal(a.y)
-    val az = BigDecimal(a.z)
-
-    val bx = BigDecimal(b.x)
-    val by = BigDecimal(b.y)
-    val bz = BigDecimal(b.z)
-
-    List(ax / bx, ay / by, az / bz).distinct.size == 1
   }
 
   // https://en.wikipedia.org/wiki/Chinese_remainder_theorem
