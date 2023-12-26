@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits._
 import com.microsoft.z3.Version
+import jurisk.geometry.Area2D
 import jurisk.geometry.Coordinates2D
 import jurisk.geometry.Coords3D
 import jurisk.geometry.Coords3D.Axis
@@ -30,18 +31,19 @@ object Advent24 {
 
   type InputPart2 = List[PositionAndVelocity3D]
 
-  def parse3D(input: String): PositionAndVelocity3D =
-    input match {
-      case s"$position @ $velocity" =>
-        PositionAndVelocity3D(
-          Coords3D.parse[Long](position),
-          Coords3D.parse[Long](velocity),
-        )
-      case _                        => input.failedToParse
-    }
+  def parse(input: String): InputPart2 = {
+    def parse3D(input: String): PositionAndVelocity3D =
+      input match {
+        case s"$position @ $velocity" =>
+          PositionAndVelocity3D(
+            Coords3D.parse[Long](position),
+            Coords3D.parse[Long](velocity),
+          )
+        case _                        => input.failedToParse
+      }
 
-  def parse(input: String): InputPart2 =
     input.parseLines(parse3D)
+  }
 
   def areVectorsParallel(a: Coords3D[Long], b: Coords3D[Long]): Boolean = {
     val ax = BigDecimal(a.x)
@@ -163,14 +165,11 @@ object Advent24 {
 
   def solve1(
     input: List[PositionAndVelocity2D],
-    min: Coordinates2D[Long],
-    max: Coordinates2D[Long],
+    area: Area2D[BigDecimal],
   ): Long = {
     def intersectWithinBounds2D(
       a: PositionAndVelocity2D,
       b: PositionAndVelocity2D,
-      min: Coordinates2D[Long],
-      max: Coordinates2D[Long],
     ): Boolean = {
       val debug = false
 
@@ -180,9 +179,7 @@ object Advent24 {
 
       result match {
         case Some(c) =>
-          val inBounds =
-            c.x >= min.x && c.x <= max.x && c.y >= min.y && c.y <= max.y
-          inBounds
+          area.contains(c)
         case None    => false
       }
     }
@@ -190,7 +187,7 @@ object Advent24 {
     input.combinations(2).count { list =>
       list match {
         case List(a, b) =>
-          intersectWithinBounds2D(a, b, min, max)
+          intersectWithinBounds2D(a, b)
 
         case _ =>
           list.toString.fail
@@ -199,8 +196,12 @@ object Advent24 {
   }
 
   def part1(data: InputPart2, minC: Long, maxC: Long): Long = {
-    val min   = Coordinates2D[Long](minC, minC)
-    val max   = Coordinates2D[Long](maxC, maxC)
+    val area =
+      Area2D[BigDecimal](
+        Coordinates2D[BigDecimal](minC, minC),
+        Coordinates2D[BigDecimal](maxC, maxC),
+      )
+
     val input = data.map { c =>
       PositionAndVelocity2D(
         Coordinates2D[Long](
@@ -214,7 +215,7 @@ object Advent24 {
       )
     }
 
-    solve1(input, min, max)
+    solve1(input, area)
   }
 
   private def sgn(n: Long): String =

@@ -84,10 +84,22 @@ object Coordinates2D {
     Coordinates2D.of[N](an, bn)
   }
 
+  def boundingBoxInclusive[N: Numeric](
+    coords: Iterable[Coordinates2D[N]]
+  ): Area2D[N] = {
+    val xList = coords.map(_.x)
+    val minX  = xList.min
+    val maxX  = xList.max
+    val yList = coords.map(_.y)
+    val minY  = yList.min
+    val maxY  = yList.max
+    Area2D(Coordinates2D.of(minX, minY), Coordinates2D.of(maxX, maxY))
+  }
+
   def allPointsInclusive[N: Integral: Enumerated](
     a: Coordinates2D[N],
     b: Coordinates2D[N],
-  ): List[Coordinates2D[N]] = {
+  ): Seq[Coordinates2D[N]] = {
     import jurisk.math.Enumerated.EnumeratedOps
     val numeric          = implicitly[Numeric[N]]
     val min: (N, N) => N = numeric.min

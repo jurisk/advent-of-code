@@ -336,7 +336,10 @@ object Field2D {
     }
   }
 
-  def forArea[T: ClassTag](boundingBox: Area2D, initialValue: T): Field2D[T] =
+  def forArea[T: ClassTag](
+    boundingBox: Area2D[Int],
+    initialValue: T,
+  ): Field2D[T] =
     ofSize(
       boundingBox.width,
       boundingBox.height,

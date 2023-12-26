@@ -8,23 +8,12 @@ object Coords2D {
 
   val Zero: Coords2D = Coordinates2D.zero[Int]
 
-  // Note - This could be moved to `Coordinates2D` if `Area2D` is made generic
-  def boundingBoxInclusive(coords: Iterable[Coords2D]): Area2D = {
-    val xList = coords.map(_.x)
-    val minX  = xList.min
-    val maxX  = xList.max
-    val yList = coords.map(_.y)
-    val minY  = yList.min
-    val maxY  = yList.max
-    Area2D(Coordinates2D.of(minX, minY), Coordinates2D.of(maxX, maxY))
-  }
-
   def parse(s: String): Coords2D = Coordinates2D.parse[Int](s)
 
   implicit val readingOrdering: Ordering[Coords2D] =
     Coordinates2D.readingOrdering[Int]
 
-  def allPointsInclusive(a: Coords2D, b: Coords2D): List[Coords2D] =
+  def allPointsInclusive(a: Coords2D, b: Coords2D): Seq[Coords2D] =
     Coordinates2D.allPointsInclusive(a, b)
 
   private def adjacentCircularIndices[T](

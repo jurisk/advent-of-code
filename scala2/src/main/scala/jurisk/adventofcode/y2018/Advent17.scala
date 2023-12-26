@@ -5,6 +5,7 @@ import jurisk.adventofcode.y2018.Advent17.Square.Clay
 import jurisk.adventofcode.y2018.Advent17.Square._
 import jurisk.adventofcode.y2018.Advent17.State.consecutiveRanges
 import jurisk.adventofcode.y2018.Advent17.State.isSolid
+import jurisk.geometry.Coordinates2D
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
@@ -137,15 +138,15 @@ object Advent17 {
     }
   }
 
-  private def parsePoints(s: String): List[Coords2D] =
+  private def parsePoints(s: String): Seq[Coords2D] =
     s match {
       case s"x=$x, y=$y1..$y2" =>
-        Coords2D.allPointsInclusive(
+        Coordinates2D.allPointsInclusive(
           Coords2D.of(x.toInt, y1.toInt),
           Coords2D.of(x.toInt, y2.toInt),
         )
       case s"y=$y, x=$x1..$x2" =>
-        Coords2D.allPointsInclusive(
+        Coordinates2D.allPointsInclusive(
           Coords2D.of(x1.toInt, y.toInt),
           Coords2D.of(x2.toInt, y.toInt),
         )
@@ -157,7 +158,7 @@ object Advent17 {
   def parse(data: String): Field2D[Square] = {
     val points = data.parseLines(parsePoints).flatten
 
-    val boundingBox = Coords2D
+    val boundingBox = Coordinates2D
       .boundingBoxInclusive(SpringOfWater :: points)
       .expandInEachDirectionBy(1)
 
