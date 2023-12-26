@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
-import jurisk.geometry.BigIntCoords2D
+import jurisk.geometry.Coordinates2D
 import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -12,7 +12,8 @@ import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
 
 object Advent11 {
-  private type Galaxies = ArraySeq[BigIntCoords2D]
+  private type BigIntCoords2D = Coordinates2D[BigInt]
+  private type Galaxies       = ArraySeq[BigIntCoords2D]
 
   def parse(input: String): Galaxies = {
     val field = Field2D.parseBooleanField(input)
@@ -20,7 +21,7 @@ object Advent11 {
     val coords = field.filterCoordsByValue(_ == true)
 
     val results = coords.map { c =>
-      BigIntCoords2D(c.x, c.y)
+      Coordinates2D[BigInt](c.x, c.y)
     }
 
     ArraySeq.from(results)
