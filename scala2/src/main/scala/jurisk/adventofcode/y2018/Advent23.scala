@@ -11,6 +11,8 @@ import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
+import scala.annotation.nowarn
+
 object Advent23 {
   type Input = List[Nanobot]
 
@@ -87,12 +89,17 @@ object Advent23 {
     val objective1 = maximize(nanobotsInRange)
     val objective2 = minimize(distanceFromOrigin)
 
+    @nowarn("cat=deprecation")
     val model = checkAndGetModel()
 
     println(model)
 
     val List(xc, yc, zc, nir, dor) =
-      List(x, y, z, nanobotsInRange, distanceFromOrigin).map(extractInt)
+      List(x, y, z, nanobotsInRange, distanceFromOrigin).map { v =>
+        @nowarn("cat=deprecation")
+        val result = extractInt(v)
+        result
+      }
 
     val found = Coords3D(xc, yc, zc)
     println(s"$found: nanobots in range: $nir, distance from origin: $dor")

@@ -45,14 +45,12 @@ class Advent24Spec extends AnyFreeSpec {
     }
   }
 
-  // TODO:  The embedded `z3-turnkey` seems to be broken as it is much slower than command line `z3`.
-  //        Switch to the command line one.
   "part 2 Z3" - {
-    "test optimizer" ignore {
+    "test optimizer" in {
       solvePart2Optimizer(testData) shouldEqual expectedTestAnswer
     }
 
-    "real optimizer" ignore {
+    "real optimizer" in {
       solvePart2Optimizer(realData) shouldEqual expectedRealAnswer
     }
   }

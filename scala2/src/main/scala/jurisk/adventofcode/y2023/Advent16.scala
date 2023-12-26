@@ -20,6 +20,7 @@ import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
 import mouse.all.booleanSyntaxMouse
 
+import scala.annotation.nowarn
 import scala.collection.immutable.ArraySeq
 
 object Advent16 {
@@ -250,9 +251,9 @@ object Advent16 {
       println(s"Upper:\n${objective.getUpper}")
     }
 
-    val model = checkAndGetModel()
-
     if (debug) {
+      @nowarn("cat=deprecation")
+      val model = checkAndGetModel()
       println(s"Model:\n$model")
 
       val debugField = field
@@ -261,7 +262,10 @@ object Advent16 {
             val incoming = incomingBool(c, d)
             val outgoing = outgoingBool(c, d)
 
+            @nowarn("cat=deprecation")
             val incm = extractBoolean(incoming).getOrElse("Unknown".fail)
+
+            @nowarn("cat=deprecation")
             val outg = extractBoolean(outgoing).getOrElse("Unknown".fail)
 
             (incm, outg) match {
@@ -288,7 +292,8 @@ object Advent16 {
       Field2D.printCharField(debugField)
     }
 
-    extractLong(energizedVar)
+    val List(result) = runExternal("energized")
+    resultToLong(result)
   }
 
   private def edgeIncomings(

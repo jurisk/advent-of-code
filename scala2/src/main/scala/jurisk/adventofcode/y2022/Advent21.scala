@@ -184,10 +184,8 @@ object Advent21 {
       }
     }
 
-    val model = checkAndGetModel()
-    println(model)
-
-    extractLong(calculate.labeledInt)
+    val List(result) = runExternal(calculate)
+    resultToLong(result)
   }
 
   private def solvePart1Optimizer(

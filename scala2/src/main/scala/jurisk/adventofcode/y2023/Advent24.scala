@@ -1,7 +1,6 @@
 package jurisk.adventofcode.y2023
 
 import cats.implicits._
-import com.microsoft.z3.Version
 import jurisk.geometry.Area2D
 import jurisk.geometry.Coordinates2D
 import jurisk.geometry.Coords3D
@@ -131,7 +130,6 @@ object Advent24 {
     (cp dotProduct pDiff) == 0
   }
 
-  // TODO: You can rewrite using determinants, possibly change the signature too
   private def vectorIntersection2D(
     a: PositionAndVelocity2D,
     b: PositionAndVelocity2D,
@@ -326,7 +324,6 @@ object Advent24 {
     println()
   }
 
-  // TODO: `z3-turnkey` doesn't work here, switch to the command line version
   def solvePart2Optimizer(
     data: List[PositionAndVelocity3D]
   ): PositionAndVelocity3D = {
@@ -340,8 +337,7 @@ object Advent24 {
     //    py + t[n] * vy == py[n] + t[n] * vy[n]
     //    pz + t[n] * vz == pz[n] + t[n] * vz[n]
 
-    implicit val o = Optimizer.z3()
-    println(Version.getFullVersion)
+    implicit val o: Optimizer = Optimizer.z3()
     import o._
 
     val px = o.labeledInt("px")
@@ -370,26 +366,13 @@ object Advent24 {
       )
     }
 
-    println(o.optimize)
-
-    println("""
-              |(echo "position:")
-              |(eval px) (eval py) (eval pz)
-              |
-              |(echo "velocity:")
-              |(eval vx) (eval vy) (eval vz)
-              |
-              |(echo "answer:")
-              |(eval (+ px py pz))
-              |""".stripMargin)
-
-    val model = o.checkAndGetModel()
-
-    println(model)
+    val List(pxS, pyS, pzS, vxS, vyS, vzS) = o
+      .runExternal("px", "py", "pz", "vx", "vy", "vz")
+      .map(r => resultToLong(r))
 
     val result = PositionAndVelocity3D(
-      Coords3D[Long](o.extractInt(px), o.extractInt(py), o.extractInt(pz)),
-      Coords3D[Long](o.extractInt(vx), o.extractInt(vy), o.extractInt(vz)),
+      Coords3D[Long](pxS, pyS, pzS),
+      Coords3D[Long](vxS, vyS, vzS),
     )
 
     println(result)
