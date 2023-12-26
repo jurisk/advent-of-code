@@ -6,6 +6,7 @@ import jurisk.geometry.Coordinates2D
 import jurisk.geometry.Coords3D
 import jurisk.geometry.Coords3D.Axis
 import jurisk.geometry.lineLineIntersectionGivenTwoPointsOnEachLine
+import jurisk.math.GaussianElimination
 import jurisk.math.positiveAndNegativeDivisors
 import jurisk.optimization.ImplicitConversions.RichArithExprIntSort
 import jurisk.optimization.ImplicitConversions.RichExpr
@@ -68,8 +69,8 @@ object Advent24 {
     }
 
     // We can assume that rv is rather small, e.g. -1000 to +1000.
-    // Then we can solve CRT for various assumed `rv` and IF they are `coprime` (requirement for CRT)
-    // then the solution of CRT will be a solution for all the equations and thus the answer
+    // Then we can solve CRT for various assumed `coprime` (requirement for CRT!) `rv` values.
+    // Solution of the CRT is the `p` which is the solution we are looking for.
 
     "Not implemented".fail
   }
@@ -100,15 +101,26 @@ object Advent24 {
         }
       }
 
-      // TODO: Implement Gaussian reduction (just first 3 equations should be enough)
+      // Gaussian reduction (just the first 5 equations are enough, the rest are redundant)
 
-      // This is linear now so you can use Gaussian reduction to get:
-      // t1 = 94255352940 and t2 = 810431007754 and t3 = 857431055888
+      val h = data.head
+      val g = data(1)
 
-      // Now just plug it in:
-      // 191146615936494 + 342596108503183 + 131079628110881 = 664822352550558
+      // Columns: px, py, pz, t1, t2
+      // Rows: Equations, 3 from h, 2 from g
+      val A = Array(
+        Array(1, 0, 0, v.x - h.v.x, 0),
+        Array(0, 1, 0, v.y - h.v.y, 0),
+        Array(0, 0, 1, v.z - h.v.z, 0),
+        Array(1, 0, 0, 0, v.x - g.v.x),
+        Array(0, 1, 0, 0, v.y - g.v.y),
+      ).map(_.map(_.toDouble))
 
-      ???
+      val b = Array(h.p.x, h.p.y, h.p.z, g.p.x, g.p.y).map(_.toDouble)
+
+      val Array(px, py, pz, t1 @ _, t2 @ _) = GaussianElimination.solve(A, b)
+
+      Coords3D[Long](px.toLong, py.toLong, pz.toLong)
     }
 
     val position = solveAssumingV(data, velocity)
@@ -381,7 +393,8 @@ object Advent24 {
   }
 
   def part2(data: InputPart2): Long = {
-    // TODO: Consider also trying Newton-Raphson and/or gradient descent
+    // TODO:  Consider also trying Newton-Raphson (see https://github.com/rzikm/advent-of-code/blob/master/2023/24.fs,
+    //        or https://pastebin.com/s6nvy0jA) and/or gradient descent
     val result = solve2InferringVelocity(data)
     result.position.x + result.position.y + result.position.z
   }

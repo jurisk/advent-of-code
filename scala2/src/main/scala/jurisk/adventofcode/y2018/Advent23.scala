@@ -85,24 +85,14 @@ object Advent23 {
       distanceFromOrigin === sum(abs(x), abs(y), abs(z)),
     )
 
-    // Objective - maximize nanobotsInRange and minimize distanceFromOrigin
-    val objective1 = maximize(nanobotsInRange)
-    val objective2 = minimize(distanceFromOrigin)
+    // Objectives - maximize nanobotsInRange and minimize distanceFromOrigin
+    val _ = maximize(nanobotsInRange)
+    val _ = minimize(distanceFromOrigin)
 
-    @nowarn("cat=deprecation")
-    val model = checkAndGetModel()
-
-    println(model)
-
-    val List(xc, yc, zc, nir, dor) =
-      List(x, y, z, nanobotsInRange, distanceFromOrigin).map { v =>
-        @nowarn("cat=deprecation")
-        val result = extractInt(v)
-        result
-      }
+    val List(xc, yc, zc) = runExternal("x", "y", "z").map(resultToInt)
 
     val found = Coords3D(xc, yc, zc)
-    println(s"$found: nanobots in range: $nir, distance from origin: $dor")
+
     found.manhattanDistance(Coords3D.Zero)
   }
 
