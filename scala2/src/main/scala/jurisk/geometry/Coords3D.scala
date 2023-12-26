@@ -106,4 +106,16 @@ object Coords3D {
     val maxZ = points.map(_.z).max
     Area3D(Coords3D(minX, minY, minZ), Coords3D(maxX, maxY, maxZ))
   }
+
+  def areVectorsParallel(a: Coords3D[Long], b: Coords3D[Long]): Boolean = {
+    val ax = BigDecimal(a.x)
+    val ay = BigDecimal(a.y)
+    val az = BigDecimal(a.z)
+
+    val bx = BigDecimal(b.x)
+    val by = BigDecimal(b.y)
+    val bz = BigDecimal(b.z)
+
+    List(ax / bx, ay / by, az / bz).distinct.size == 1
+  }
 }
