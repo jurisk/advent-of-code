@@ -6,6 +6,7 @@ import jurisk.geometry.Area2D
 import jurisk.geometry.Coordinates2D
 import jurisk.geometry.Coords3D
 import jurisk.geometry.Coords3D.Axis
+import jurisk.geometry.lineLineIntersectionGivenTwoPointsOnEachLine
 import jurisk.math.positiveAndNegativeDivisors
 import jurisk.optimization.ImplicitConversions.RichArithExprIntSort
 import jurisk.optimization.ImplicitConversions.RichExpr
@@ -14,8 +15,6 @@ import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
-
-import scala.math.Fractional.Implicits.infixFractionalOps
 
 object Advent24 {
   final case class PositionAndVelocity2D(
@@ -144,47 +143,11 @@ object Advent24 {
     (cp dotProduct pDiff) == 0
   }
 
-  private def lineLineIntersectionGivenTwoPointsOnEachLine[N: Fractional](
-    a1: Coordinates2D[N],
-    a2: Coordinates2D[N],
-    b1: Coordinates2D[N],
-    b2: Coordinates2D[N],
-  ): Option[Coordinates2D[N]] = {
-    val Zero = implicitly[Fractional[N]].zero
-
-    val x1 = a1.x
-    val y1 = a1.y
-    val x2 = a2.x
-    val y2 = a2.y
-    val x3 = b1.x
-    val y3 = b1.y
-    val x4 = b2.x
-    val y4 = b2.y
-
-    val bottom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
-
-    if (bottom == Zero) {
-      none
-    } else {
-      val pxTop =
-        (x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)
-
-      val px = pxTop / bottom
-
-      val pyTop =
-        (x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)
-      val py    = pyTop / bottom
-
-      Coordinates2D(px, py).some
-    }
-  }
-
   // TODO: You can rewrite using determinants, possibly change the signature too
   private def vectorIntersection2D(
     a: PositionAndVelocity2D,
     b: PositionAndVelocity2D,
   ): Option[Coordinates2D[BigDecimal]] = {
-    // https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
 
     val result = lineLineIntersectionGivenTwoPointsOnEachLine(
       a.position.map(BigDecimal(_)),
