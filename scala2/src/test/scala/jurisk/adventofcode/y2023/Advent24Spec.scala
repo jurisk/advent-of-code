@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2023
 
 import org.scalatest.freespec.AnyFreeSpec
 import Advent24._
+import jurisk.geometry.Coords3D
 import org.scalatest.matchers.should.Matchers._
 
 class Advent24Spec extends AnyFreeSpec {
@@ -11,13 +12,13 @@ class Advent24Spec extends AnyFreeSpec {
   private def realData = parseFile(fileName(""))
 
   val expectedTestAnswer: PositionAndVelocity3D = PositionAndVelocity3D(
-    Coordinates3D(24, 13, 10),
-    Coordinates3D(-3, 1, 2),
+    Coords3D[Long](24, 13, 10),
+    Coords3D[Long](-3, 1, 2),
   )
 
   val expectedRealAnswer: PositionAndVelocity3D = PositionAndVelocity3D(
-    Coordinates3D(191146615936494L, 342596108503183L, 131079628110881L),
-    Coordinates3D(139, -93, 245),
+    Coords3D[Long](191146615936494L, 342596108503183L, 131079628110881L),
+    Coords3D[Long](139, -93, 245),
   )
 
   "part 1" - {
@@ -33,10 +34,11 @@ class Advent24Spec extends AnyFreeSpec {
 
   // https://www.mathsisfun.com/algebra/vectors-cross-product.html
   "crossProduct" - {
-    crossProduct(
-      Coordinates3D(2, 3, 4),
-      Coordinates3D(5, 6, 7),
-    ) shouldEqual Coordinates3D(
+    (Coords3D[Long](2, 3, 4) crossProduct Coords3D[Long](
+      5,
+      6,
+      7,
+    )) shouldEqual Coords3D[Long](
       -3,
       6,
       -3,
@@ -44,8 +46,8 @@ class Advent24Spec extends AnyFreeSpec {
   }
 
   "areVectorsParallel" in {
-    val a = Coordinates3D(5, 2, -1)
-    val b = Coordinates3D(-10, -4, 2)
+    val a = Coords3D[Long](5, 2, -1)
+    val b = Coords3D[Long](-10, -4, 2)
     areVectorsParallel(a, b) shouldEqual true
     areVectorsParallel(a, expectedTestAnswer.velocity) shouldEqual false
   }
@@ -55,7 +57,10 @@ class Advent24Spec extends AnyFreeSpec {
       linesIntersect(rock, expectedTestAnswer) shouldEqual true
       linesIntersect(
         rock,
-        PositionAndVelocity3D(Coordinates3D(-3, -4, -1), Coordinates3D(1, 2, 3)),
+        PositionAndVelocity3D(
+          Coords3D[Long](-3, -4, -1),
+          Coords3D[Long](1, 2, 3),
+        ),
       ) shouldEqual false
     }
   }

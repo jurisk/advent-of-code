@@ -3,6 +3,8 @@ package jurisk.adventofcode.y2023
 import cats.implicits._
 import com.microsoft.z3.Version
 import jurisk.geometry.Coordinates2D
+import jurisk.geometry.Coords3D
+import jurisk.geometry.Coords3D.Axis
 import jurisk.math.positiveAndNegativeDivisors
 import jurisk.optimization.ImplicitConversions.RichArithExprIntSort
 import jurisk.optimization.ImplicitConversions.RichExpr
@@ -18,36 +20,12 @@ object Advent24 {
     velocity: Coordinates2D[Long],
   )
 
-  // TODO: Move / merge to Coords3D
-  final case class Coordinates3D(
-    x: Long,
-    y: Long,
-    z: Long,
-  ) {
-    def apply(axis: Axis): Long = axis match {
-      case Axis.X => x
-      case Axis.Y => y
-      case Axis.Z => z
-    }
-
-    def -(other: Coordinates3D): Coordinates3D =
-      Coordinates3D(x - other.x, y - other.y, z - other.z)
-  }
-
-  object Coordinates3D {
-    def parse(s: String): Coordinates3D = s match {
-      case s"$x,$y,$z" =>
-        Coordinates3D(x.trim.toLong, y.trim.toLong, z.trim.toLong)
-      case _           => s.failedToParse("Coordinates3D")
-    }
-  }
-
   final case class PositionAndVelocity3D(
-    position: Coordinates3D,
-    velocity: Coordinates3D,
+    position: Coords3D[Long],
+    velocity: Coords3D[Long],
   ) {
-    def v: Coordinates3D = velocity
-    def p: Coordinates3D = position
+    def v: Coords3D[Long] = velocity
+    def p: Coords3D[Long] = position
   }
 
   type InputPart2 = List[PositionAndVelocity3D]
@@ -56,8 +34,8 @@ object Advent24 {
     input match {
       case s"$position @ $velocity" =>
         PositionAndVelocity3D(
-          Coordinates3D.parse(position),
-          Coordinates3D.parse(velocity),
+          Coords3D.parse[Long](position),
+          Coords3D.parse[Long](velocity),
         )
       case _                        => input.failedToParse
     }
@@ -65,17 +43,7 @@ object Advent24 {
   def parse(input: String): InputPart2 =
     input.parseLines(parse3D)
 
-  def crossProduct(a: Coordinates3D, b: Coordinates3D): Coordinates3D =
-    Coordinates3D(
-      a.y * b.z - a.z * b.y,
-      a.z * b.x - a.x * b.z,
-      a.x * b.y - a.y * b.x,
-    )
-
-  def dotProduct(a: Coordinates3D, b: Coordinates3D): Long =
-    a.x * b.x + a.y * b.y + a.z * b.z
-
-  def areVectorsParallel(a: Coordinates3D, b: Coordinates3D): Boolean = {
+  def areVectorsParallel(a: Coords3D[Long], b: Coords3D[Long]): Boolean = {
     val ax = BigDecimal(a.x)
     val ay = BigDecimal(a.y)
     val az = BigDecimal(a.z)
@@ -137,10 +105,10 @@ object Advent24 {
     a: PositionAndVelocity3D,
     b: PositionAndVelocity3D,
   ): Boolean = {
-    val cp    = crossProduct(a.velocity, b.velocity)
+    val cp    = a.velocity crossProduct b.velocity
     val pDiff = a.position - b.position
 
-    dotProduct(cp, pDiff) == 0
+    (cp dotProduct pDiff) == 0
   }
 
   // TODO: You can rewrite using determinants, possibly change the signature too
@@ -249,23 +217,6 @@ object Advent24 {
     solve1(input, min, max)
   }
 
-  sealed trait Axis {
-    def toChar: Char
-  }
-  object Axis       {
-    case object X extends Axis {
-      override def toChar: Char = 'x'
-    }
-    case object Y extends Axis {
-      override def toChar: Char = 'y'
-    }
-    case object Z extends Axis {
-      override def toChar: Char = 'z'
-    }
-
-    val All: Set[Axis] = Set(X, Y, Z)
-  }
-
   private def sgn(n: Long): String =
     if (n < 0) {
       s"- ${-n}"
@@ -275,8 +226,8 @@ object Advent24 {
 
   def solveAssumingV(
     data: List[PositionAndVelocity3D],
-    v: Coordinates3D,
-  ): Coordinates3D = {
+    v: Coords3D[Long],
+  ): Coords3D[Long] = {
     val debug = false
 
     if (debug) {
@@ -317,7 +268,7 @@ object Advent24 {
 
   private def inferVelocity(
     data: List[PositionAndVelocity3D]
-  ): Coordinates3D = {
+  ): Coords3D[Long] = {
     def deriveV(axis: Axis): Long = {
       val debug                         = false
       var candidates: Option[Set[Long]] = None
@@ -370,7 +321,7 @@ object Advent24 {
 
     println(s"v = $vx, $vy, $vz")
 
-    Coordinates3D(vx, vy, vz)
+    Coords3D[Long](vx, vy, vz)
   }
 
   def printEquations(data: List[PositionAndVelocity3D]): Unit = {
@@ -452,23 +403,23 @@ object Advent24 {
     println(o.optimize)
 
     println("""
-               |(echo "position:")
-               |(eval px) (eval py) (eval pz)
-               |
-               |(echo "velocity:")
-               |(eval vx) (eval vy) (eval vz)
-               |
-               |(echo "answer:")
-               |(eval (+ px py pz))
-               |""".stripMargin)
+              |(echo "position:")
+              |(eval px) (eval py) (eval pz)
+              |
+              |(echo "velocity:")
+              |(eval vx) (eval vy) (eval vz)
+              |
+              |(echo "answer:")
+              |(eval (+ px py pz))
+              |""".stripMargin)
 
     val model = o.checkAndGetModel()
 
     println(model)
 
     val result = PositionAndVelocity3D(
-      Coordinates3D(o.extractInt(px), o.extractInt(py), o.extractInt(pz)),
-      Coordinates3D(o.extractInt(vx), o.extractInt(vy), o.extractInt(vz)),
+      Coords3D[Long](o.extractInt(px), o.extractInt(py), o.extractInt(pz)),
+      Coords3D[Long](o.extractInt(vx), o.extractInt(vy), o.extractInt(vz)),
     )
 
     println(result)
