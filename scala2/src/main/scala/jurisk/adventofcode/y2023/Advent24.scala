@@ -2,7 +2,8 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits._
 import com.microsoft.z3.Version
-import jurisk.math.{positiveAndNegativeDivisors, positiveDivisors}
+import jurisk.geometry.Coordinates2D
+import jurisk.math.positiveAndNegativeDivisors
 import jurisk.optimization.ImplicitConversions.{RichArithExprIntSort, RichExpr}
 import jurisk.optimization.Optimizer
 import jurisk.utils.CollectionOps.IterableOps
@@ -11,15 +12,9 @@ import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
 
 object Advent24 {
-  // TODO: Move to Coords2D
-  final case class Coordinates2D[T](
-    x: T,
-    y: T,
-  )
-
   final case class PositionAndVelocity2D(
-    position: Coordinates2D[BigDecimal],
-    velocity: Coordinates2D[BigDecimal],
+    position: Coordinates2D[Long],
+    velocity: Coordinates2D[Long],
   )
 
   // TODO: Move / merge to Coords3D
@@ -123,7 +118,9 @@ object Advent24 {
   def solve2InferringVelocity(
     data: List[PositionAndVelocity3D]
   ): PositionAndVelocity3D = {
-    printEquations(data)
+    val debug = false
+
+    if (debug) printEquations(data)
 
     val velocity = inferVelocity(data)
     val position = solveAssumingV(data, velocity)
@@ -237,13 +234,13 @@ object Advent24 {
     val max   = Coordinates2D[Long](maxC, maxC)
     val input = data.map { c =>
       PositionAndVelocity2D(
-        Coordinates2D[BigDecimal](
-          BigDecimal.decimal(c.position.x),
-          BigDecimal.decimal(c.position.y),
+        Coordinates2D[Long](
+          c.position.x,
+          c.position.y,
         ),
-        Coordinates2D[BigDecimal](
-          BigDecimal.decimal(c.velocity.x),
-          BigDecimal.decimal(c.velocity.y),
+        Coordinates2D[Long](
+          c.velocity.x,
+          c.velocity.y,
         ),
       )
     }
@@ -279,15 +276,19 @@ object Advent24 {
     data: List[PositionAndVelocity3D],
     v: Coordinates3D,
   ): Coordinates3D = {
-    println(
-      s"Now that we know (vx, vy, vz) == $v it becomes a much simpler task"
-    )
-    data.zipWithIndex foreach { case (r, id) =>
-      val idx = id + 1
-      println(s"px = ${r.p.x} ${sgn(r.v.x - v.x)} * t$idx")
-      println(s"py = ${r.p.y} ${sgn(r.v.y - v.y)} * t$idx")
-      println(s"pz = ${r.p.z} ${sgn(r.v.z - v.z)} * t$idx")
-      println()
+    val debug = false
+
+    if (debug) {
+      println(
+        s"Now that we know (vx, vy, vz) == $v it becomes a much simpler task"
+      )
+      data.zipWithIndex foreach { case (r, id) =>
+        val idx = id + 1
+        println(s"px = ${r.p.x} ${sgn(r.v.x - v.x)} * t$idx")
+        println(s"py = ${r.p.y} ${sgn(r.v.y - v.y)} * t$idx")
+        println(s"pz = ${r.p.z} ${sgn(r.v.z - v.z)} * t$idx")
+        println()
+      }
     }
 
     // TODO: Implement Gaussian reduction (just first 3 equations should be enough)
@@ -317,7 +318,7 @@ object Advent24 {
     data: List[PositionAndVelocity3D]
   ): Coordinates3D = {
     def deriveV(axis: Axis): Long = {
-      val debug                         = true
+      val debug                         = false
       var candidates: Option[Set[Long]] = None
 
       if (debug) println(s"Same r.v.${axis.toChar}: ")
@@ -325,8 +326,10 @@ object Advent24 {
         .groupBy(_.v.get(axis))
         .filter { case (_, equations) => equations.size >= 2 }
         .foreach { case (n, list) =>
-          list.zipWithIndex.foreach { case (r, idx) =>
-            println(toBasicEquation(r, ('a' + idx).toString, axis))
+          if (debug) {
+            list.zipWithIndex.foreach { case (r, idx) =>
+              println(toBasicEquation(r, ('a' + idx).toString, axis))
+            }
           }
 
           list.combinations(2) foreach { list2 =>
@@ -352,8 +355,10 @@ object Advent24 {
           if (debug) println()
         }
 
-      println(s"Outcome: Valid v${axis.toChar}-es: $candidates")
-      println()
+      if (debug) {
+        println(s"Outcome: Valid v${axis.toChar}-es: $candidates")
+        println()
+      }
 
       candidates.get.toSeq.singleResultUnsafe
     }
