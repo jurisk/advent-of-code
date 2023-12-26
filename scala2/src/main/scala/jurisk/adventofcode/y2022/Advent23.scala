@@ -1,5 +1,6 @@
 package jurisk.adventofcode.y2022
 
+import jurisk.geometry.Coordinates2D
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D._
@@ -81,7 +82,7 @@ object Advent23 {
     }
 
     def debugPrint(): Unit = {
-      val box       = Coords2D.boundingBoxInclusive(elves.map(_.location))
+      val box       = Coordinates2D.boundingBoxInclusive(elves.map(_.location))
       val field     = Field2D.forArea(box, '.')
       val resulting = elves.foldLeft(field) { case (acc, e) =>
         acc.updatedAtUnsafe(e.location, e.charRep)
@@ -107,7 +108,7 @@ object Advent23 {
         state.next(iteration.toInt)
     }
 
-    val box = Coords2D.boundingBoxInclusive(result.allCoords)
+    val box = Coordinates2D.boundingBoxInclusive(result.allCoords)
     (box.width * box.height) - result.allCoords.size
   }
 

@@ -7,7 +7,7 @@ final case class SparseField[T](points: Map[Coords2D, T]) {
     display: Option[T] => Char,
     limit: Int,
   ): String = {
-    val boundingBox = Coords2D.boundingBoxInclusive(points.keys)
+    val boundingBox = Coordinates2D.boundingBoxInclusive(points.keys)
     val xMin        = boundingBox.topLeft.x
     val yMin        = boundingBox.topLeft.y
     val xMax        = boundingBox.bottomRight.x

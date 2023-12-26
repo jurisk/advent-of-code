@@ -24,7 +24,7 @@ object Advent24 {
     start: Coords2D,
     blizzards: Set[Blizzard],
     goal: Coords2D,
-    area: Area2D,
+    area: Area2D[Int],
   ) {
     def freeAtTimeNear(time: Int, location: Coords2D): List[Coords2D] = {
       val blizzardCoordinatesInNext = blizzardsAt(time)

@@ -1,55 +1,71 @@
 package jurisk.geometry
 
-final case class Area2D(min: Coords2D, max: Coords2D) {
-  def onInsideEdge(c: Coords2D): Boolean =
+import jurisk.math.Enumerated
+import jurisk.math.Enumerated.EnumeratedOps
+
+import scala.math.Numeric.Implicits.infixNumericOps
+import scala.math.Ordering.Implicits.infixOrderingOps
+
+// Inclusive
+final case class Area2D[N: Numeric](
+  min: Coordinates2D[N],
+  max: Coordinates2D[N],
+) {
+  private val One = implicitly[Numeric[N]].one
+
+  def onInsideEdge(c: Coordinates2D[N]): Boolean =
     (c.x == min.x) || (c.x == max.x) || (c.y == min.y) || (c.y == max.y)
 
-  def points: List[Coords2D] = {
+  def points(implicit enumerable: Enumerated[N]): Seq[Coordinates2D[N]] =
     (min.x to max.x) flatMap { x =>
       (min.y to max.y) map { y =>
-        Coords2D.of(x, y)
+        Coordinates2D.of[N](x, y)
       }
     }
-  }.toList
 
-  def shiftBy(c: Coords2D): Area2D =
-    Area2D(min + c, max + c)
+  def shiftBy(c: Coordinates2D[N]): Area2D[N] =
+    Area2D[N](min + c, max + c)
 
-  def +(c: Coords2D): Area2D =
+  def +(c: Coordinates2D[N]): Area2D[N] =
     shiftBy(c)
 
-  def topLeft: Coords2D     = min
-  def bottomRight: Coords2D = max
+  def topLeft: Coordinates2D[N]     = min
+  def bottomRight: Coordinates2D[N] = max
 
-  def height: Int = (max.y - min.y) + 1
-  def width: Int  = (max.x - min.x) + 1
+  def height: N = (max.y - min.y) + One
+  def width: N  = (max.x - min.x) + One
 
-  def left: Int   = min.x
-  def right: Int  = max.x
-  def top: Int    = min.y
-  def bottom: Int = max.y
+  def left: N   = min.x
+  def right: N  = max.x
+  def top: N    = min.y
+  def bottom: N = max.y
 
-  def expandInEachDirectionBy(n: Int): Area2D = Area2D(
-    min - Coords2D.of(n, n),
-    max + Coords2D.of(n, n),
+  def expandInEachDirectionBy(n: N): Area2D[N] = Area2D[N](
+    min - Coordinates2D.of[N](n, n),
+    max + Coordinates2D.of[N](n, n),
   )
 
-  def contains(c: Coords2D): Boolean =
+  def contains(c: Coordinates2D[N]): Boolean =
     c.x >= min.x && c.x <= max.x && c.y >= min.y && c.y <= max.y
 }
 
 object Area2D {
-  def fromLeftTopWidthHeight(
-    left: Int,
-    top: Int,
-    width: Int,
-    height: Int,
-  ): Area2D =
-    Area2D(
-      Coords2D.of(left, top),
-      Coords2D.of(left + width - 1, top + height - 1),
-    )
+  def fromLeftTopWidthHeight[N: Numeric](
+    left: N,
+    top: N,
+    width: N,
+    height: N,
+  ): Area2D[N] = {
+    val One = implicitly[Numeric[N]].one
 
-  def boundingBoxInclusive(coords: Seq[Coords2D]): Area2D =
-    Coords2D.boundingBoxInclusive(coords)
+    Area2D(
+      Coordinates2D.of(left, top),
+      Coordinates2D.of(left + width - One, top + height - One),
+    )
+  }
+
+  def boundingBoxInclusive[N: Numeric](
+    coords: Seq[Coordinates2D[N]]
+  ): Area2D[N] =
+    Coordinates2D.boundingBoxInclusive(coords)
 }

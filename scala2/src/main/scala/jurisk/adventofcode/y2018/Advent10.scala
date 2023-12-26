@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2018
 
 import cats.implicits._
+import jurisk.geometry.Coordinates2D
 import jurisk.geometry.Coords2D
 import jurisk.geometry.SparseBooleanField
 import jurisk.utils.FileInput._
@@ -34,7 +35,7 @@ object Advent10 {
 
     Simulation.runWithIterationCount(()) { case ((), time) =>
       val atTime      = field.map(x => x.atTime(time.toInt))
-      val boundingBox = Coords2D.boundingBoxInclusive(atTime)
+      val boundingBox = Coordinates2D.boundingBoxInclusive(atTime)
       if (boundingBox.height <= limit) {
         val fieldAtTime = SparseBooleanField(atTime, 100).toDebugRepresentation
         println(s"At time $time:")

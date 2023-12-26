@@ -89,7 +89,10 @@ object Advent21 {
 
   // Working but slow
   def part2Simulation(data: Input, steps: Int): Long = {
-    def debugPrint(area: Area2D, map: mutable.HashMap[Coords2D, Long]): Long = {
+    def debugPrint(
+      area: Area2D[Int],
+      map: mutable.HashMap[Coords2D, Long],
+    ): Long = {
       var results = 0
 
       val stringField = Field2D.forArea(area, ' ').mapByCoords { c =>
