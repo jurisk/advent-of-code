@@ -91,6 +91,9 @@ object Advent24 {
     List(ax / bx, ay / by, az / bz).distinct.size == 1
   }
 
+  // https://en.wikipedia.org/wiki/Chinese_remainder_theorem
+  // From https://github.com/ellentari/aoc2023/blob/main/src/main/scala/aoc/Day24.scala
+  // and https://github.com/ellentari/aoc2023/blob/main/src/main/scala/aoc/util/ChineseRemainderTheorem.scala
   def solve2UsingChineseRemainderTheorem(
     data: List[PositionAndVelocity3D]
   ): Long = {
@@ -106,11 +109,15 @@ object Advent24 {
       println(s"p ${sgn(-rp)} = (${sgn(rv)} -v) * t$idx")
       println(" ==> ")
       // https://en.wikipedia.org/wiki/Modular_arithmetic#Congruence
-      println(s"a ≡ $rp (mod ($rv - v))")
+      println(s"p ≡ $rp (mod ($rv - v))")
       println()
     }
 
-    ???
+    // We can assume that rv is rather small, e.g. -1000 to +1000.
+    // Then we can solve CRT for various assumed `rv` and IF they are `coprime` (requirement for CRT)
+    // then the solution of CRT will be a solution for all the equations and thus the answer
+
+    "Not implemented".fail
   }
 
   def solve2InferringVelocity(
@@ -277,7 +284,7 @@ object Advent24 {
     )
     data.zipWithIndex foreach { case (r, id) =>
       val idx = id + 1
-      println(s"px  = ${r.p.x} ${sgn(r.v.x - v.x)} * t$idx")
+      println(s"px = ${r.p.x} ${sgn(r.v.x - v.x)} * t$idx")
       println(s"py = ${r.p.y} ${sgn(r.v.y - v.y)} * t$idx")
       println(s"pz = ${r.p.z} ${sgn(r.v.z - v.z)} * t$idx")
       println()
@@ -464,11 +471,9 @@ object Advent24 {
   }
 
   def part2(data: InputPart2): Long = {
-    val result        = solve2InferringVelocity(data)
-    val answerFromCRT = solve2UsingChineseRemainderTheorem(data)
-    val answer        = result.position.x + result.position.y + result.position.z
-    answer shouldEqual answerFromCRT
-    answer
+    // TODO: Consider also trying Newton-Raphson and/or gradient descent
+    val result = solve2InferringVelocity(data)
+    result.position.x + result.position.y + result.position.z
   }
 
   def parseFile(fileName: String): InputPart2 =
