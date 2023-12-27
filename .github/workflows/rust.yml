@@ -2,11 +2,11 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
     paths:
       - 'rust/**'
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
     paths:
       - 'rust/**'
 

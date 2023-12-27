@@ -2,11 +2,11 @@ name: Scala 3 CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
     paths:
       - 'scala3/**'
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
     paths:
       - 'scala3/**'
 
