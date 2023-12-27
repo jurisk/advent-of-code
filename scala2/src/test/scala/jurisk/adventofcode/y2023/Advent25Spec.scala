@@ -13,7 +13,7 @@ class Advent25Spec extends AnyFreeSpec {
       solve(testData) shouldEqual 54
     }
 
-    "real" ignore {
+    "real" in {
       solve(realData) shouldEqual 582626
     }
   }

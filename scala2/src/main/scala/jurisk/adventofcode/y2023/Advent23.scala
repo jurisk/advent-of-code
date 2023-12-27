@@ -7,10 +7,11 @@ import jurisk.adventofcode.y2023.Advent23.Square.Slope
 import jurisk.algorithms.Backtracker
 import jurisk.algorithms.Backtracking
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.collections.immutable.BiMap.BiDirectionalArrowAssociation
 import jurisk.collections.immutable.BiMap
+import jurisk.collections.immutable.BiMap.BiDirectionalArrowAssociation
 import jurisk.collections.immutable.graph.Graph
-import jurisk.collections.immutable.graph.Graph.{Distance, VertexId}
+import jurisk.collections.immutable.graph.Graph.Distance
+import jurisk.collections.immutable.graph.Graph.VertexId
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.CardinalDirection2D

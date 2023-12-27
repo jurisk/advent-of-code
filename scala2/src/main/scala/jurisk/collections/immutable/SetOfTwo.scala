@@ -11,6 +11,9 @@ final case class SetOfTwo[T](private val underlying: Set[T]) {
   def toSet: Set[T] = underlying
 
   override def toString: String = tupleInArbitraryOrder.toString()
+
+  def mapUnsafe[B](f: T => B): SetOfTwo[B] = SetOfTwo(toSet.map(f))
+  def map[B](f: T => B): Set[B]            = toSet.map(f)
 }
 
 object SetOfTwo {
