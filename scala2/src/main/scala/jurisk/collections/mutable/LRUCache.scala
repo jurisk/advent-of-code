@@ -1,7 +1,6 @@
-package jurisk.collections
+package jurisk.collections.mutable
 
-import java.util.{LinkedHashMap => JavaLinkedHashMap}
-import java.util.{Map => JavaMap}
+import java.util.{LinkedHashMap => JavaLinkedHashMap, Map => JavaMap}
 
 private class LRUCache[K, V](capacity: Int) extends MapForCache[K, V] {
   // We tried using Scala mutable.LinkedHashMap here but it didn't have such a method to override, so it was slightly

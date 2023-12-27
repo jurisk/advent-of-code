@@ -7,15 +7,15 @@ import jurisk.adventofcode.y2023.Advent23.Square.Slope
 import jurisk.algorithms.Backtracker
 import jurisk.algorithms.Backtracking
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.collections.BiMap
-import jurisk.collections.BiMap.BiDirectionalArrowAssociation
+import jurisk.collections.immutable.BiMap
+import jurisk.collections.immutable.BiMap.BiDirectionalArrowAssociation
+import jurisk.collections.immutable.graph.Graph
+import jurisk.collections.immutable.graph.Graph.Distance
+import jurisk.collections.immutable.graph.Graph.VertexId
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.CardinalDirection2D
 import jurisk.geometry.Field2D
-import jurisk.graph.Graph
-import jurisk.graph.Graph.Distance
-import jurisk.graph.Graph.VertexId
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import mouse.all.booleanSyntaxMouse
@@ -225,7 +225,13 @@ object Advent23 {
 
     val result = solve2Backtracking(start, simplified, goal)
 
-    println(Graph.toDotDigraph(simplified, converted.start, converted.goal))
+    println(
+      Graph.toDotDigraph[Coords2D](
+        simplified,
+        c => s"x${c.x}y${c.y}",
+        Map(converted.start -> "green", converted.goal -> "blue"),
+      )
+    )
 
     result
   }

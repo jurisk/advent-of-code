@@ -2,8 +2,8 @@ package jurisk.adventofcode.y2018
 
 import cats.implicits._
 import jurisk.adventofcode.y2018.Advent18.Square._
-import jurisk.collections.BiMap
-import jurisk.collections.BiMap.BiDirectionalArrowAssociation
+import jurisk.collections.immutable.BiMap
+import jurisk.collections.immutable.BiMap.BiDirectionalArrowAssociation
 import jurisk.geometry.Field2D
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._

@@ -1,7 +1,7 @@
 package jurisk.geometry
 
-import jurisk.collections.BiMap
-import jurisk.collections.BiMap.BiDirectionalArrowAssociation
+import jurisk.collections.immutable.BiMap
+import jurisk.collections.immutable.BiMap.BiDirectionalArrowAssociation
 import jurisk.geometry.Rotation._
 import jurisk.utils.Parsing.StringOps
 

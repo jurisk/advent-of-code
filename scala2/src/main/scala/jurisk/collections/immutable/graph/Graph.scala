@@ -1,10 +1,8 @@
-package jurisk.graph
+package jurisk.collections.immutable.graph
 
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.collections.SetOfTwo
-import jurisk.geometry.Coords2D
-import jurisk.graph.Graph.Distance
-import jurisk.graph.Graph.VertexId
+import jurisk.collections.immutable.SetOfTwo
+import jurisk.collections.immutable.graph.Graph.{Distance, VertexId}
 import jurisk.utils.CollectionOps.ArraySeqOps
 
 import scala.collection.immutable.ArraySeq
@@ -12,33 +10,45 @@ import scala.reflect.ClassTag
 
 trait Graph[L] {
   def allVertices: Seq[VertexId]
-  def outgoingEdges(v: VertexId): Set[(VertexId, Distance)]
+  def allEdges: Seq[(VertexId, Distance, VertexId)]
+  def vertexCount: Int
+  def outgoingEdges(v: VertexId): Seq[(VertexId, Distance)]
   def labelFor(v: VertexId): L
   def labelToVertex(label: L): VertexId
   def simplify(doNotTouch: Set[VertexId]): Graph[L]
-  def verticesReachableFrom(from: VertexId): Set[VertexId]
+  def verticesReachableFrom(from: VertexId): Seq[VertexId]
 }
 
 final class GraphImpl[L: Ordering: ClassTag](
   private val labels: ArraySeq[L],
   private val labelIndices: Map[L, VertexId],
-  private val adjacency: ArraySeq[Set[(VertexId, Distance)]],
+  private val adjacency: ArraySeq[Seq[(VertexId, Distance)]],
 ) extends Graph[L] {
+  def vertexCount: Int           = adjacency.size
   def allVertices: Seq[VertexId] = adjacency.indices
 
-  def outgoingEdges(v: VertexId): Set[(VertexId, Distance)] =
-    adjacency.lift(v).getOrElse(Set.empty)
+  override def allEdges: Seq[(VertexId, Distance, VertexId)] =
+    allVertices.flatMap { from =>
+      outgoingEdges(from).map { case (to, distance) =>
+        (from, distance, to)
+      }
+    }
+
+  def outgoingEdges(v: VertexId): Seq[(VertexId, Distance)] =
+    adjacency.lift(v).getOrElse(Seq.empty)
 
   def labelFor(v: VertexId): L = labels(v)
 
   def labelToVertex(label: L): VertexId =
     labelIndices(label)
 
-  def verticesReachableFrom(from: VertexId): Set[VertexId] =
+  def verticesReachableFrom(from: VertexId): Seq[VertexId] =
     outgoingEdges(from).map { case (n, _) => n }
 
   // TODO:  This is really crude, improve it. Also it was written assuming an undirected graph. Either assert this,
   //        or make it work with directed ones (and then test with `Advent 2023-23-1`).
+  //        Also, the part where it changes all `VertexId`-s is really error-prone, they should stay the same. Which
+  //        means You probably need a different, slightly less effective representation - e.g. BiMap[VertexId, Label] again.
   def simplify(doNotTouch: Set[VertexId]): Graph[L] = {
     val nonOptimisibleVertices: Iterable[VertexId] =
       allVertices.filter(v => outgoingEdges(v).size != 2)
@@ -100,7 +110,7 @@ object Graph {
       acc.updatedWith(a)(set => set + (b -> d))
     }
 
-    new GraphImpl[L](ArraySeq.from(labels), labelIndices, e)
+    new GraphImpl[L](ArraySeq.from(labels), labelIndices, e.map(_.toSeq))
   }
 
   def undirected[L: Ordering: ClassTag](
@@ -117,39 +127,61 @@ object Graph {
     directed(adapted)
   }
 
-  // TODO: Implement, reusing code with `toDotDigraph`, not tying to Coords2D
-  def toDotUndirectedGraph(
-    graph: Graph[Coords2D],
-    start: Coords2D,
-    goal: Coords2D,
-  ): String =
-    // TODO: Start by asserting it is indeed undirected
-
-    ???
-
-  // TODO: Instead of special `start` and `goal` nodes, you can just have a map of "colors"?
-  // TODO: Don't tie to Coords2D
-  def toDotDigraph(
-    graph: Graph[Coords2D],
-    start: Coords2D,
-    goal: Coords2D,
+  // The thing we do here is suspicious, if the graph isn't actually undirected,
+  // for example A -> B has a different distance to B -> A, then we don't detect it,
+  // just lose information.
+  def toDotUndirectedGraph[T](
+    graph: Graph[T],
+    labelName: T => String,
+    colors: Map[T, String] = Map.empty[T, String],
   ): String = {
-    def coordsName(c: Coords2D): String = s"x${c.x}y${c.y}"
-
-    def vertexName(v: VertexId): String = coordsName(
+    def vertexName(v: VertexId): String = labelName(
       graph.labelFor(v)
     )
 
-    val edges = graph.allVertices.flatMap { v =>
-      graph.outgoingEdges(v).map { case (n, d) =>
-        s"""  ${vertexName(v)} -> ${vertexName(n)} [ label="$d" ]"""
+    val colorText = colors.map { case (c, color) =>
+      s"""  ${labelName(c)} [color="$color"]"""
+    }
+
+    val edges = graph.allEdges
+      .map { case (from, d, to) =>
+        (SetOfTwo(from, to), d)
       }
+      .toSet[(SetOfTwo[VertexId], Distance)]
+      .map { case (e, d) =>
+        val (from, to) = e.tupleInArbitraryOrder
+        s"""  ${vertexName(from)} -- ${vertexName(to)} [ label="$d" ]"""
+      }
+
+    s"""graph G {
+       |
+       |${colorText.toList.sorted.mkString("\n")}
+       |
+       |${edges.toList.sorted.mkString("\n")}
+       |}
+       |""".stripMargin
+  }
+
+  def toDotDigraph[T](
+    graph: Graph[T],
+    labelName: T => String,
+    colors: Map[T, String] = Map.empty,
+  ): String = {
+    def vertexName(v: VertexId): String = labelName(
+      graph.labelFor(v)
+    )
+
+    val colorText = colors.map { case (c, color) =>
+      s"""  ${labelName(c)} [color="$color"]"""
+    }
+
+    val edges = graph.allEdges.map { case (from, d, to) =>
+      s"""  ${vertexName(from)} -> ${vertexName(to)} [ label="$d" ]"""
     }
 
     s"""digraph G {
        |
-       |    ${coordsName(start)} [color="green"]
-       |    ${coordsName(goal)} [color="red"]
+       |${colorText.toList.sorted.mkString("\n")}
        |
        |${edges.toList.sorted.mkString("\n")}
        |}

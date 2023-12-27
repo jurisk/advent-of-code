@@ -1,4 +1,4 @@
-package jurisk.collections
+package jurisk.collections.immutable
 
 import jurisk.utils.Parsing.StringOps
 

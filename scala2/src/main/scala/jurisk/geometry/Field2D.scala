@@ -6,15 +6,16 @@ import cats.Functor
 import cats.implicits._
 import jurisk.adventofcode.y2023.Advent23.Square.Path
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.collections.BiMap
-import jurisk.collections.SetOfTwo
+import jurisk.collections.immutable.BiMap
+import jurisk.collections.immutable.SetOfTwo
+import jurisk.collections.immutable.graph.Graph
 import jurisk.geometry.Direction2D.CardinalDirection2D
-import jurisk.graph.Graph
-import jurisk.graph.Graph.Distance
 import jurisk.utils.Parsing.StringOps
 
 import scala.collection.immutable.ArraySeq
 import scala.reflect.ClassTag
+
+import Graph.Distance
 
 // TODO:  Extract Field2D as a trait and have various implementations to test performance on:
 //          - ArraySeq[ArraySeq[T]]

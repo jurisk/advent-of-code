@@ -395,6 +395,9 @@ object Advent24 {
   def part2(data: InputPart2): Long = {
     // TODO:  Consider also trying Newton-Raphson (see https://github.com/rzikm/advent-of-code/blob/master/2023/24.fs,
     //        or https://pastebin.com/s6nvy0jA) and/or gradient descent
+
+    // TODO:  There is reportedly a way to use cross product to transform it into a linear equation system:
+    //        https://www.reddit.com/r/adventofcode/comments/18pnycy/2023_day_24_solutions/
     val result = solve2InferringVelocity(data)
     result.position.x + result.position.y + result.position.z
   }

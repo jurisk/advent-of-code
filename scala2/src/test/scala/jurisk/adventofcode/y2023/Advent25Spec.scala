@@ -10,11 +10,11 @@ class Advent25Spec extends AnyFreeSpec {
 
   "part 1" - {
     "test" in {
-      part1(testData) shouldEqual 54
+      solve(testData) shouldEqual 54
     }
 
-    "real" ignore {
-      part1(realData) shouldEqual 582626
+    "real" in {
+      solve(realData) shouldEqual 582626
     }
   }
 }
