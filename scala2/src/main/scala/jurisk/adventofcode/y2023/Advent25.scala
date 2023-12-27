@@ -2,12 +2,15 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits.{catsSyntaxOptionId, none}
 import jurisk.algorithms.pathfinding.{Bfs, ConnectedComponents}
-import jurisk.collections.SetOfTwo
-import jurisk.graph.Graph
-import jurisk.graph.Graph.VertexId
+import jurisk.collections.immutable.SetOfTwo
+import jurisk.collections.immutable.graph.Graph
+import jurisk.collections.immutable.graph.Graph.VertexId
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+
+import scala.collection.mutable
+import scala.util.Random
 
 object Advent25 {
   type Input = Seq[SetOfTwo[String]]
@@ -40,9 +43,10 @@ object Advent25 {
   }
 
   // TODO: way too slow - consider https://en.wikipedia.org/wiki/Stoer%E2%80%93Wagner_algorithm or smth
-  def part1(input: Input): Int = {
+  def solve(input: Input): Int = {
     val graph =
       Graph.undirected(input.toSet.map((x: SetOfTwo[String]) => x -> 1L))
+
     val edges = input.map { s =>
       val (a, b) = s.tupleInArbitraryOrder
       SetOfTwo(graph.labelToVertex(a), graph.labelToVertex(b))
@@ -90,6 +94,6 @@ object Advent25 {
   def main(args: Array[String]): Unit = {
     val realData: Input = parseFile(fileName(""))
 
-    println(s"Part 1: ${part1(realData)}")
+    println(s"Part 1: ${solve(realData)}")
   }
 }

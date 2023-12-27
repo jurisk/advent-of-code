@@ -1,7 +1,6 @@
 package jurisk.utils
 
-import jurisk.collections.LRUCache
-import jurisk.collections.MapForCache
+import jurisk.collections.mutable.{LRUCache, MapForCache}
 
 import scala.collection.mutable
 

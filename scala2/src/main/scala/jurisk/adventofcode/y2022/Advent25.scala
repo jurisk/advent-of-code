@@ -1,8 +1,8 @@
 package jurisk.adventofcode.y2022
 
 import jurisk.adventofcode.y2022.Advent25.SnafuNumber.Mapping
-import jurisk.collections.BiMap
-import jurisk.collections.BiMap.BiDirectionalArrowAssociation
+import jurisk.collections.immutable.BiMap.BiDirectionalArrowAssociation
+import jurisk.collections.immutable.BiMap
 import jurisk.math.pow
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps

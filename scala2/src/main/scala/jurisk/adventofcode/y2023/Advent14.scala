@@ -3,8 +3,8 @@ package jurisk.adventofcode.y2023
 import jurisk.adventofcode.y2023.Advent14.Square.Cube
 import jurisk.adventofcode.y2023.Advent14.Square.Empty
 import jurisk.adventofcode.y2023.Advent14.Square.Round
-import jurisk.collections.BiMap
-import jurisk.collections.BiMap.BiDirectionalArrowAssociation
+import jurisk.collections.immutable.BiMap.BiDirectionalArrowAssociation
+import jurisk.collections.immutable.BiMap
 import jurisk.geometry.Field2D
 import jurisk.geometry.Rotation
 import jurisk.utils.FileInput._

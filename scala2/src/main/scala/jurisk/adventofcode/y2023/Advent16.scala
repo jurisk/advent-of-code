@@ -3,8 +3,8 @@ package jurisk.adventofcode.y2023
 import cats.implicits._
 import com.microsoft.z3.BoolExpr
 import jurisk.adventofcode.y2023.Advent16.Square.Empty
-import jurisk.collections.BiMap
-import jurisk.collections.BiMap.BiDirectionalArrowAssociation
+import jurisk.collections.immutable.BiMap.BiDirectionalArrowAssociation
+import jurisk.collections.immutable.BiMap
 import jurisk.geometry.Coords2D
 import jurisk.geometry.CoordsAndDirection2D
 import jurisk.geometry.Direction2D

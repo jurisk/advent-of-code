@@ -1,10 +1,10 @@
-package jurisk.graph
+package jurisk.collections.immutable.graph
 
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.collections.SetOfTwo
+import jurisk.collections.immutable.SetOfTwo
 import jurisk.geometry.Coords2D
-import jurisk.graph.Graph.Distance
-import jurisk.graph.Graph.VertexId
+import Graph.Distance
+import Graph.VertexId
 import jurisk.utils.CollectionOps.ArraySeqOps
 
 import scala.collection.immutable.ArraySeq
@@ -39,6 +39,8 @@ final class GraphImpl[L: Ordering: ClassTag](
 
   // TODO:  This is really crude, improve it. Also it was written assuming an undirected graph. Either assert this,
   //        or make it work with directed ones (and then test with `Advent 2023-23-1`).
+  //        Also, the part where it changes all `VertexId` is really error-prone, they should stay the same. Which means
+  //        You probably need a different, slightly less effective representation - e.g. BiMap[VertexId, Label] again.
   def simplify(doNotTouch: Set[VertexId]): Graph[L] = {
     val nonOptimisibleVertices: Iterable[VertexId] =
       allVertices.filter(v => outgoingEdges(v).size != 2)

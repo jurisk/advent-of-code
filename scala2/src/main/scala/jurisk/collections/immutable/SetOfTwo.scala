@@ -1,4 +1,4 @@
-package jurisk.collections
+package jurisk.collections.immutable
 
 final case class SetOfTwo[T](private val underlying: Set[T]) {
   def tupleInArbitraryOrder: (T, T) = {

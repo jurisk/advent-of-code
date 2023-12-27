@@ -7,7 +7,7 @@ import cats.syntax.all._
 import jurisk.adventofcode.y2016.Advent24.Square.LocationCode
 import jurisk.adventofcode.y2016.Advent24.Square.Zero
 import jurisk.algorithms.pathfinding.Bfs
-import jurisk.collections.SetOfTwo
+import jurisk.collections.immutable.SetOfTwo
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Field2D
 import jurisk.utils.CollectionOps.IterableOps
