@@ -13,24 +13,19 @@ import scala.util.Random
 // how many cuts we should get.
 // https://en.wikipedia.org/wiki/Karger%27s_algorithm
 object KargersMinCuts {
-  private def attemptCuts[T](graph: Graph[T]): Seq[SetOfTwo[T]] = {
+  private def attemptCuts[T](graph: Graph[T]): Set[SetOfTwo[T]] = {
     val disjointSets = DisjointSets[VertexId](graph.allVertices: _*)
-    val allEdges     = graph.allEdges.toVector.map { case (from, _, to) =>
+    val edges        = graph.allEdges.toVector.map { case (from, _, to) =>
       SetOfTwo(from, to)
     }
-
-    var edges = allEdges
 
     var vertexCount = graph.vertexCount
     while (vertexCount > 2) {
       val e = {
         // choose e ∈ E uniformly at random
         val selectedEdgeIndex = Random.nextInt(edges.size)
-        val result            = edges(selectedEdgeIndex)
-
-        // TODO: Does this removal improve or worsen the running time?
-        edges = edges.removeAt(selectedEdgeIndex)
-        result
+        // We tried removing "e" from "edges" here but it didn't improve the running time
+        edges(selectedEdgeIndex)
       }
 
       e.map(disjointSets.find).toList match {
@@ -41,8 +36,7 @@ object KargersMinCuts {
       }
     }
 
-    // TODO: allEdges or edges ?
-    allEdges
+    edges
       .filter { e =>
         e.map(disjointSets.find).toList match {
           case a :: b :: Nil if a != b =>
@@ -54,13 +48,14 @@ object KargersMinCuts {
       .map { e =>
         e.mapUnsafe(graph.labelFor)
       }
+      .toSet
   }
 
   @tailrec
   def minCuts[T](graph: Graph[T], numCuts: Int): Set[SetOfTwo[T]] = {
     val candidate = attemptCuts(graph)
     if (candidate.size <= numCuts) {
-      candidate.toSet
+      candidate
     } else {
       minCuts(graph, numCuts)
     }
