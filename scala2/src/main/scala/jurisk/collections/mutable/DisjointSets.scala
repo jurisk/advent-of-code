@@ -5,6 +5,8 @@ import jurisk.collections.immutable.BiMap
 // https://en.wikipedia.org/wiki/Disjoint-set_data_structure
 trait DisjointSets[T] {
   def union(a: T, b: T): Unit
+
+  // TODO: Consider just having a "sameSet(a, b): Boolean" and "differentSets(a, b): Boolean" instead?
   // Which set does `value` belong to?
   def find(value: T): T
   def toSets: Set[Set[T]]
