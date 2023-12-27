@@ -11,7 +11,7 @@ import org.scalatest.matchers.should.Matchers._
 object Advent03 {
   type ClaimId = Int
 
-  final case class Claim(id: ClaimId, area: Area2D)
+  final case class Claim(id: ClaimId, area: Area2D[Int])
   object Claim {
     private val RegEx           = """#(\d+) @ (\d+),(\d+): (\d+)x(\d+)""".r
     def parse(s: String): Claim =

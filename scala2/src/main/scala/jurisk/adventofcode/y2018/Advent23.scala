@@ -11,11 +11,13 @@ import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
+import scala.annotation.nowarn
+
 object Advent23 {
   type Input = List[Nanobot]
 
   final case class Nanobot(
-    position: Coords3D,
+    position: Coords3D[Int],
     radius: Int,
   )
 
@@ -69,7 +71,7 @@ object Advent23 {
         nanobot.position.y,
         nanobot.position.z,
         nanobot.radius,
-      ).map(constant)
+      ).map(intConstant)
 
       val inRange = (x - nx).abs + (y - ny).abs + (z - nz).abs <= nr
 
@@ -83,19 +85,14 @@ object Advent23 {
       distanceFromOrigin === sum(abs(x), abs(y), abs(z)),
     )
 
-    // Objective - maximize nanobotsInRange and minimize distanceFromOrigin
-    val objective1 = maximize(nanobotsInRange)
-    val objective2 = minimize(distanceFromOrigin)
+    // Objectives - maximize nanobotsInRange and minimize distanceFromOrigin
+    val _ = maximize(nanobotsInRange)
+    val _ = minimize(distanceFromOrigin)
 
-    val model = checkAndGetModel()
-
-    println(model)
-
-    val List(xc, yc, zc, nir, dor) =
-      List(x, y, z, nanobotsInRange, distanceFromOrigin).map(extractInt)
+    val List(xc, yc, zc) = runExternal("x", "y", "z").map(resultToInt)
 
     val found = Coords3D(xc, yc, zc)
-    println(s"$found: nanobots in range: $nir, distance from origin: $dor")
+
     found.manhattanDistance(Coords3D.Zero)
   }
 

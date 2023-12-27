@@ -1,12 +1,13 @@
 package jurisk.geometry
 
+import cats.Functor
 import cats.implicits._
 import jurisk.math.Enumerated
 import jurisk.utils.Parsing.StringOps
 
-import scala.math.Integral.Implicits.infixIntegralOps
+import scala.math.Numeric.Implicits.infixNumericOps
 
-final case class Coordinates2D[N: Integral](x: N, y: N) {
+final case class Coordinates2D[N: Numeric](x: N, y: N) {
   def +(other: Coordinates2D[N]): Coordinates2D[N] =
     Coordinates2D(x + other.x, y + other.y)
 
@@ -16,16 +17,25 @@ final case class Coordinates2D[N: Integral](x: N, y: N) {
   def *(n: N): Coordinates2D[N] =
     Coordinates2D(x * n, y * n)
 
-  def manhattanDistanceToOrigin: N =
+  def manhattanDistanceToOrigin(implicit integral: Integral[N]): N =
     x.abs + y.abs
 
-  def manhattanDistance(other: Coordinates2D[N]): N =
+  def manhattanDistance(other: Coordinates2D[N])(implicit
+    integral: Integral[N]
+  ): N =
     (this - other).manhattanDistanceToOrigin
 
-  def adjacent4: List[Coordinates2D[N]] = neighbours(includeDiagonal = false)
-  def adjacent8: List[Coordinates2D[N]] = neighbours(includeDiagonal = true)
+  def adjacent4(implicit integral: Integral[N]): List[Coordinates2D[N]] =
+    neighbours(includeDiagonal = false)
+  def adjacent8(implicit integral: Integral[N]): List[Coordinates2D[N]] =
+    neighbours(includeDiagonal = true)
 
-  def neighbours(includeDiagonal: Boolean): List[Coordinates2D[N]] = {
+  def neighbours(
+    includeDiagonal: Boolean
+  )(implicit integral: Integral[N]): List[Coordinates2D[N]] = {
+    val _ =
+      integral.zero // This is a hack to ensure that the compiler does not complain about the unused Integral requirement
+
     val directions = if (includeDiagonal) {
       Direction2D.AllDirections
     } else {
@@ -53,18 +63,21 @@ final case class Coordinates2D[N: Integral](x: N, y: N) {
   def NW: Coordinates2D[N] = this + Direction2D.NW
   def SE: Coordinates2D[N] = this + Direction2D.SE
   def SW: Coordinates2D[N] = this + Direction2D.SW
+
+  def map[M: Numeric](f: N => M): Coordinates2D[M] =
+    Coordinates2D(f(x), f(y))
 }
 
 object Coordinates2D {
   implicit def readingOrdering[N: Ordering]: Ordering[Coordinates2D[N]] =
     Ordering[(N, N)].contramap(c => (c.y, c.x))
 
-  def zero[N: Integral]: Coordinates2D[N] = {
+  def zero[N: Numeric]: Coordinates2D[N] = {
     val numeric = implicitly[Numeric[N]]
     Coordinates2D.of[N](numeric.zero, numeric.zero)
   }
 
-  def of[N: Integral](x: N, y: N): Coordinates2D[N] =
+  def of[N: Numeric](x: N, y: N): Coordinates2D[N] =
     Coordinates2D[N](x, y)
 
   def parse[N: Integral](s: String): Coordinates2D[N] = {
@@ -75,10 +88,22 @@ object Coordinates2D {
     Coordinates2D.of[N](an, bn)
   }
 
+  def boundingBoxInclusive[N: Numeric](
+    coords: Iterable[Coordinates2D[N]]
+  ): Area2D[N] = {
+    val xList = coords.map(_.x)
+    val minX  = xList.min
+    val maxX  = xList.max
+    val yList = coords.map(_.y)
+    val minY  = yList.min
+    val maxY  = yList.max
+    Area2D(Coordinates2D.of(minX, minY), Coordinates2D.of(maxX, maxY))
+  }
+
   def allPointsInclusive[N: Integral: Enumerated](
     a: Coordinates2D[N],
     b: Coordinates2D[N],
-  ): List[Coordinates2D[N]] = {
+  ): Seq[Coordinates2D[N]] = {
     import jurisk.math.Enumerated.EnumeratedOps
     val numeric          = implicitly[Numeric[N]]
     val min: (N, N) => N = numeric.min
@@ -102,5 +127,4 @@ object Coordinates2D {
     } else
       s"Expected $a and $b to have same x or y coordinates, but they do not".fail
   }
-
 }

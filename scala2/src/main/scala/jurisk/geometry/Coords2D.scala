@@ -1,6 +1,7 @@
 package jurisk.geometry
 
 import cats.implicits._
+import jurisk.math.Matrix2x2
 
 object Coords2D {
   def apply(x: Int, y: Int): Coords2D = Coordinates2D[Int](x, y)
@@ -8,23 +9,12 @@ object Coords2D {
 
   val Zero: Coords2D = Coordinates2D.zero[Int]
 
-  // Note - This could be moved to `Coordinates2D` if `Area2D` is made generic
-  def boundingBoxInclusive(coords: Iterable[Coords2D]): Area2D = {
-    val xList = coords.map(_.x)
-    val minX  = xList.min
-    val maxX  = xList.max
-    val yList = coords.map(_.y)
-    val minY  = yList.min
-    val maxY  = yList.max
-    Area2D(Coordinates2D.of(minX, minY), Coordinates2D.of(maxX, maxY))
-  }
-
   def parse(s: String): Coords2D = Coordinates2D.parse[Int](s)
 
   implicit val readingOrdering: Ordering[Coords2D] =
     Coordinates2D.readingOrdering[Int]
 
-  def allPointsInclusive(a: Coords2D, b: Coords2D): List[Coords2D] =
+  def allPointsInclusive(a: Coords2D, b: Coords2D): Seq[Coords2D] =
     Coordinates2D.allPointsInclusive(a, b)
 
   private def adjacentCircularIndices[T](
@@ -47,10 +37,15 @@ object Coords2D {
   def areaOfSimplePolygon(seq: IndexedSeq[Coords2D]): Double = {
     val determinants = adjacentCircularValues(seq)
       .map { case (a, b) =>
-        a.x.toDouble * b.y.toDouble - a.y.toDouble * b.x.toDouble
+        Matrix2x2(
+          a.x.toDouble,
+          b.x.toDouble,
+          a.y.toDouble,
+          b.y.toDouble,
+        ).determinant
       }
 
-    (determinants.sum / 2.0).abs
+    determinants.sum / 2.0
   }
 
   def calculateBoundaryPoints(seq: IndexedSeq[Coords2D]): Long =

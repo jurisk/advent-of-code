@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2018
 
 import cats.implicits._
+import jurisk.geometry.Coordinates2D
 import jurisk.geometry.Coords2D
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput.parseFileLines
@@ -12,7 +13,7 @@ object Advent06 {
     parseFileLines(fileName, _.parseCoords2D)
 
   def part1(points: List[Coords2D]): Int = {
-    val boundingBox = Coords2D.boundingBoxInclusive(points)
+    val boundingBox = Coordinates2D.boundingBoxInclusive(points)
     println(s"Bounding box: $boundingBox")
 
     def onEdgeOfBoundingBox(point: Coords2D): Boolean =
@@ -47,7 +48,7 @@ object Advent06 {
   }
 
   def part2(points: List[Coords2D], limit: Int): Int =
-    Coords2D.boundingBoxInclusive(points).points.count { point =>
+    Coordinates2D.boundingBoxInclusive(points).points.count { point =>
       val distanceToAll = points.map(_.manhattanDistance(point)).sum
       distanceToAll < limit
     }

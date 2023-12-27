@@ -89,7 +89,10 @@ object Advent21 {
 
   // Working but slow
   def part2Simulation(data: Input, steps: Int): Long = {
-    def debugPrint(area: Area2D, map: mutable.HashMap[Coords2D, Long]): Long = {
+    def debugPrint(
+      area: Area2D[Int],
+      map: mutable.HashMap[Coords2D, Long],
+    ): Long = {
       var results = 0
 
       val stringField = Field2D.forArea(area, ' ').mapByCoords { c =>
@@ -411,6 +414,8 @@ object Advent21 {
     val realData: Input = parseFile(fileName(""))
 
     println(s"Part 1: ${part1(realData, 64)}")
+
+    // TODO:  Try solving Part 2 as extrapolating as a 2nd degree polynomial for 65 + n * 131 steps, where n = 0..4
     println(s"Part 2: ${part2FieldClassification(realData, 26501365)}")
   }
 }

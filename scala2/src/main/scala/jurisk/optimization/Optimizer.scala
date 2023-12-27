@@ -12,11 +12,21 @@ import com.microsoft.z3.IntNum
 import com.microsoft.z3.IntSort
 import com.microsoft.z3.Model
 import com.microsoft.z3.Optimize
+import com.microsoft.z3.RatNum
+import com.microsoft.z3.RealExpr
 import com.microsoft.z3.Sort
 import com.microsoft.z3.Status
 import com.microsoft.z3.enumerations.Z3_lbool
+import jurisk.process.Runner
 import jurisk.utils.Parsing.StringOps
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
+// The https://github.com/tudo-aqua/z3-turnkey distribution did not work on task 2023-24 while the same SMT-LIB program
+// worked from the command line. Thus, some methods have ended up being deprecated, and this class is mostly
+// a way to generate SMT-LIB programs (see https://smtlib.cs.uiowa.edu/language.shtml).
+//
+// You could consider removing the Z3 dependency and just generating SMT-LIB format directly, but it's probably not
+// worth it.
 trait Optimizer {
   val context: Context
   val optimize: Optimize
@@ -33,17 +43,27 @@ trait Optimizer {
 
   def addConstraints(expressions: Expr[BoolSort]*): Unit
 
+  @deprecated("Use `runExternal` instead", "2023-12-24")
   def checkAndGetModel(): Model
+
+  // TODO: Make type-safe?
+  def runExternal(evaluate: String*): List[String]
+  def resultToInt(result: String): Int
+  def resultToLong(result: String): Long
 
   def debugPrint(): Unit
 
   def maximize[R <: Sort](expr: Expr[R]): Optimize.Handle[R]
   def minimize[R <: Sort](expr: Expr[R]): Optimize.Handle[R]
 
-  def constant(n: Int): IntNum
-  def constant(n: Long): IntNum
+  def realConstant(n: Int): RatNum
+  def intConstant(n: Int): IntNum
+  def longConstant(n: Long): IntNum
+
+  def intToReal(n: Expr[IntSort]): RealExpr
 
   def labeledBool(label: String): BoolExpr
+  def labeledReal(label: String): RealExpr
   def labeledInt(label: String): IntExpr
 
   def equal(a: Expr[_], b: Expr[_]): BoolExpr
@@ -51,6 +71,12 @@ trait Optimizer {
     a: Expr[A],
     b: Expr[B],
   ): BoolExpr
+
+  def greater[A <: ArithSort, B <: ArithSort](
+    a: Expr[A],
+    b: Expr[B],
+  ): BoolExpr
+
   def lessOrEqual[A <: ArithSort, B <: ArithSort](
     a: Expr[A],
     b: Expr[B],
@@ -67,25 +93,39 @@ trait Optimizer {
   def and(expressions: Expr[BoolSort]*): BoolExpr
   def or(expressions: Expr[BoolSort]*): BoolExpr
 
+  @deprecated("Use `runExternal` instead", "2023-12-24")
   def extractBoolean(b: BoolExpr): Option[Boolean]
+
+  @deprecated("Use `runExternal` instead", "2023-12-24")
   def extractInt(n: IntExpr): Int
+
+  @deprecated("Use `runExternal` instead", "2023-12-24")
   def extractLong(n: IntExpr): Long
 }
 
 private class Z3Optimizer(val context: Context, val optimize: Optimize)
     extends Optimizer {
-  val Zero: IntNum     = constant(0)
-  val One: IntNum      = constant(1)
-  val MinusOne: IntNum = constant(-1)
+  val Zero: IntNum     = intConstant(0)
+  val One: IntNum      = intConstant(1)
+  val MinusOne: IntNum = intConstant(-1)
 
   val False: BoolExpr = context.mkBool(false)
   val True: BoolExpr  = context.mkBool(true)
 
-  def constant(n: Int): IntNum =
+  def realConstant(n: Int): RatNum =
+    context.mkReal(n)
+
+  def intConstant(n: Int): IntNum =
     context.mkInt(n)
 
-  def constant(n: Long): IntNum =
+  def longConstant(n: Long): IntNum =
     context.mkInt(n)
+
+  def intToReal(n: Expr[IntSort]): RealExpr =
+    context.mkInt2Real(n)
+
+  def labeledReal(label: String): RealExpr =
+    context.mkRealConst(label)
 
   def labeledInt(label: String): IntExpr =
     context.mkIntConst(label)
@@ -95,6 +135,12 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
 
   def equal(a: Expr[_], b: Expr[_]): BoolExpr =
     context.mkEq(a, b)
+
+  def greater[A <: ArithSort, B <: ArithSort](
+    a: Expr[A],
+    b: Expr[B],
+  ): BoolExpr =
+    context.mkGt(a, b)
 
   def greaterOrEqual[A <: ArithSort, B <: ArithSort](
     a: Expr[A],
@@ -119,9 +165,47 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
 
   def checkAndGetModel(): Model = {
     val status = optimize.Check()
-    assert(status == Status.SATISFIABLE)
+    assert(status == Status.SATISFIABLE, "Model is not satisfiable")
     optimize.getModel
   }
+
+  def runExternal(evaluate: String*): List[String] = {
+    val debug = false
+
+    val programStart = optimize.toString
+
+    // Note - `get-value` is SMT-LIB spec, but `eval` works with Z3
+    val programEnd = evaluate
+      .map { what =>
+        s"(eval $what)"
+      }
+      .mkString("\n")
+
+    val program = s"$programStart\n$programEnd\n(exit)"
+
+    if (debug) println(program)
+
+    val results = Runner.runSync("z3", "-in")(program)
+
+    if (debug) println(results)
+
+    val lines = results.splitLines
+    lines.head.trim shouldEqual "sat"
+    lines.tail.size shouldEqual evaluate.length
+    lines.tail
+  }
+
+  def resultToInt(result: String): Int =
+    result.trim match {
+      case s"(- $n)" => -n.toInt
+      case other     => other.toInt
+    }
+
+  def resultToLong(result: String): Long =
+    result.trim match {
+      case s"(- $n)" => -n.toLong
+      case other     => other.toLong
+    }
 
   def debugPrint(): Unit =
     println(optimize)
@@ -197,12 +281,12 @@ object Optimizer {
 object ImplicitConversions {
   implicit class RichInt(val int: Int) {
     def constant(implicit optimizer: Optimizer): IntExpr =
-      optimizer.constant(int)
+      optimizer.intConstant(int)
   }
 
   implicit class RichLong(val long: Long) {
     def constant(implicit optimizer: Optimizer): IntExpr =
-      optimizer.constant(long)
+      optimizer.longConstant(long)
   }
 
   implicit class RichString(val string: String) {
@@ -225,6 +309,11 @@ object ImplicitConversions {
     def >=(other: Expr[B])(implicit
       optimizer: Optimizer
     ): BoolExpr = optimizer.greaterOrEqual(expr, other)
+
+    def >(other: Expr[B])(implicit
+      optimizer: Optimizer
+    ): BoolExpr = optimizer.greater(expr, other)
+
     def <=(other: Expr[B])(implicit
       optimizer: Optimizer
     ): BoolExpr = optimizer.lessOrEqual(expr, other)

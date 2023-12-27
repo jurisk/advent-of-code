@@ -21,7 +21,9 @@ final case class DiscreteInterval[N: Numeric: Enumerated](
 
   def size: N = to - from + One
 
-  def toList: List[N] = from to to
+  def toSeq: Seq[N] = from to to
+
+  def toList: List[N] = toSeq.toList
 
   def union(
     other: DiscreteInterval[N]
