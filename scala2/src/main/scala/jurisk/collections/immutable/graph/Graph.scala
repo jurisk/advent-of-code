@@ -2,14 +2,11 @@ package jurisk.collections.immutable.graph
 
 import jurisk.algorithms.pathfinding.Bfs
 import jurisk.collections.immutable.SetOfTwo
-import jurisk.geometry.Coords2D
+import jurisk.collections.immutable.graph.Graph.{Distance, VertexId}
 import jurisk.utils.CollectionOps.ArraySeqOps
 
 import scala.collection.immutable.ArraySeq
 import scala.reflect.ClassTag
-
-import Graph.Distance
-import Graph.VertexId
 
 trait Graph[L] {
   def allVertices: Seq[VertexId]
@@ -130,28 +127,53 @@ object Graph {
     directed(adapted)
   }
 
-  // TODO: Implement, reusing code with `toDotDigraph`, not tying to Coords2D
-  def toDotUndirectedGraph(
-    graph: Graph[Coords2D],
-    start: Coords2D,
-    goal: Coords2D,
-  ): String =
-    // TODO: Start by asserting it is indeed undirected
-
-    ???
-
-  // TODO: Instead of special `start` and `goal` nodes, you can just have a map of "colors"?
-  // TODO: Don't tie to Coords2D
-  def toDotDigraph(
-    graph: Graph[Coords2D],
-    start: Coords2D,
-    goal: Coords2D,
+  // The thing we do here is suspicious, if the graph isn't actually undirected,
+  // for example A -> B has a different distance to B -> A, then we don't detect it,
+  // just lose information.
+  def toDotUndirectedGraph[T](
+    graph: Graph[T],
+    labelName: T => String,
+    colors: Map[T, String] = Map.empty[T, String],
   ): String = {
-    def coordsName(c: Coords2D): String = s"x${c.x}y${c.y}"
-
-    def vertexName(v: VertexId): String = coordsName(
+    def vertexName(v: VertexId): String = labelName(
       graph.labelFor(v)
     )
+
+    val colorText = colors.map { case (c, color) =>
+      s"""  ${labelName(c)} [color="$color"]"""
+    }
+
+    val edges = graph.allEdges
+      .map { case (from, d, to) =>
+        (SetOfTwo(from, to), d)
+      }
+      .toSet[(SetOfTwo[VertexId], Distance)]
+      .map { case (e, d) =>
+        val (from, to) = e.tupleInArbitraryOrder
+        s"""  ${vertexName(from)} -- ${vertexName(to)} [ label="$d" ]"""
+      }
+
+    s"""graph G {
+       |
+       |${colorText.toList.sorted.mkString("\n")}
+       |
+       |${edges.toList.sorted.mkString("\n")}
+       |}
+       |""".stripMargin
+  }
+
+  def toDotDigraph[T](
+    graph: Graph[T],
+    labelName: T => String,
+    colors: Map[T, String] = Map.empty,
+  ): String = {
+    def vertexName(v: VertexId): String = labelName(
+      graph.labelFor(v)
+    )
+
+    val colorText = colors.map { case (c, color) =>
+      s"""  ${labelName(c)} [color="$color"]"""
+    }
 
     val edges = graph.allEdges.map { case (from, d, to) =>
       s"""  ${vertexName(from)} -> ${vertexName(to)} [ label="$d" ]"""
@@ -159,8 +181,7 @@ object Graph {
 
     s"""digraph G {
        |
-       |    ${coordsName(start)} [color="green"]
-       |    ${coordsName(goal)} [color="red"]
+       |${colorText.toList.sorted.mkString("\n")}
        |
        |${edges.toList.sorted.mkString("\n")}
        |}

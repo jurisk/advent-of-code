@@ -28,22 +28,17 @@ object KargersMinCuts {
         edges(selectedEdgeIndex)
       }
 
-      e.map(disjointSets.find).toList match {
-        case a :: b :: Nil if a != b =>
-          disjointSets.union(a, b)
-          vertexCount -= 1
-        case _                       =>
+      val (a, b) = e.tupleInArbitraryOrder
+      if (disjointSets.differentSets(a, b)) {
+        disjointSets.union(a, b)
+        vertexCount -= 1
       }
     }
 
     edges
       .filter { e =>
-        e.map(disjointSets.find).toList match {
-          case a :: b :: Nil if a != b =>
-            true
-          case _                       =>
-            false
-        }
+        val (a, b) = e.tupleInArbitraryOrder
+        disjointSets.differentSets(a, b)
       }
       .map { e =>
         e.mapUnsafe(graph.labelFor)

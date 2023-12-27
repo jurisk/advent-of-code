@@ -225,7 +225,13 @@ object Advent23 {
 
     val result = solve2Backtracking(start, simplified, goal)
 
-    println(Graph.toDotDigraph(simplified, converted.start, converted.goal))
+    println(
+      Graph.toDotDigraph[Coords2D](
+        simplified,
+        c => s"x${c.x}y${c.y}",
+        Map(converted.start -> "green", converted.goal -> "blue"),
+      )
+    )
 
     result
   }

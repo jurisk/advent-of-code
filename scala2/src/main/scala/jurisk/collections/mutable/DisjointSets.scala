@@ -5,10 +5,7 @@ import jurisk.collections.immutable.BiMap
 // https://en.wikipedia.org/wiki/Disjoint-set_data_structure
 trait DisjointSets[T] {
   def union(a: T, b: T): Unit
-
-  // TODO: Consider just having a "sameSet(a, b): Boolean" and "differentSets(a, b): Boolean" instead?
-  // Which set does `value` belong to?
-  def find(value: T): T
+  def differentSets(a: T, b: T): Boolean
   def toSets: Set[Set[T]]
 }
 
@@ -62,10 +59,8 @@ private class DisjointSetsImpl[T](labels: T*) extends DisjointSets[T] {
     root
   }
 
-  override def find(value: T): T = {
-    val found = find(mapping.leftToRightUnsafe(value))
-    mapping.rightToLeftUnsafe(found)
-  }
+  def differentSets(a: T, b: T): Boolean =
+    find(mapping.leftToRightUnsafe(a)) != find(mapping.leftToRightUnsafe(b))
 
   override def toSets: Set[Set[T]] =
     parents.indices
