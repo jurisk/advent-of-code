@@ -6,6 +6,7 @@ Note - Python 3 is required.
 pip install z3-solver
 pip install more-itertools
 pip install numpy
+pip install sympy
 pip install pytest
 python y20AB/dayXY.py
 python -m pytest
