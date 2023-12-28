@@ -12,10 +12,6 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 object Advent25 {
   type Input = Seq[SetOfTwo[String]]
 
-  // Save as `25.dot`, then `dot -Tsvg -Kneato 25.dot -o 25.svg`
-  private def printEdges(graph: Graph[String]): Unit =
-    println(Graph.toDotUndirectedGraph[String](graph, identity))
-
   def parse(input: String): Input =
     input.splitLines.flatMap {
       case s"$from: $tos" => tos.split(" ").map(to => SetOfTwo(from, to))
@@ -26,8 +22,16 @@ object Advent25 {
     val graph =
       Graph.undirected(input.toSet.map((x: SetOfTwo[String]) => x -> 1L))
 
-    val debug = false
-    if (debug) printEdges(graph)
+    val debug = true
+    // Save as `25.dot`, then `dot -Tsvg -Kneato 25.dot -o 25.svg`
+    if (debug)
+      println(
+        Graph.toDotUndirectedGraph[String](
+          graph,
+          identity,
+          includeDistances = false,
+        )
+      )
 
     val cuts = KargersMinCuts.minCuts(graph, 3)
 

@@ -4,6 +4,7 @@ import jurisk.algorithms.pathfinding.Bfs
 import jurisk.collections.immutable.SetOfTwo
 import jurisk.collections.immutable.graph.Graph.{Distance, VertexId}
 import jurisk.utils.CollectionOps.ArraySeqOps
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 import scala.collection.immutable.ArraySeq
 import scala.reflect.ClassTag
@@ -17,6 +18,7 @@ trait Graph[L] {
   def labelToVertex(label: L): VertexId
   def simplify(doNotTouch: Set[VertexId]): Graph[L]
   def verticesReachableFrom(from: VertexId): Seq[VertexId]
+  def isUndirected: Boolean
 }
 
 final class GraphImpl[L: Ordering: ClassTag](
@@ -27,7 +29,14 @@ final class GraphImpl[L: Ordering: ClassTag](
   def vertexCount: Int           = adjacency.size
   def allVertices: Seq[VertexId] = adjacency.indices
 
-  override def allEdges: Seq[(VertexId, Distance, VertexId)] =
+  def isUndirected: Boolean = {
+    val edges = allEdges.toSet
+    edges forall { case (from, d, to) =>
+      edges contains (to, d, from)
+    }
+  }
+
+  def allEdges: Seq[(VertexId, Distance, VertexId)] =
     allVertices.flatMap { from =>
       outgoingEdges(from).map { case (to, distance) =>
         (from, distance, to)
@@ -50,6 +59,8 @@ final class GraphImpl[L: Ordering: ClassTag](
   //        Also, the part where it changes all `VertexId`-s is really error-prone, they should stay the same. Which
   //        means You probably need a different, slightly less effective representation - e.g. BiMap[VertexId, Label] again.
   def simplify(doNotTouch: Set[VertexId]): Graph[L] = {
+    isUndirected shouldEqual true
+
     val nonOptimisibleVertices: Iterable[VertexId] =
       allVertices.filter(v => outgoingEdges(v).size != 2)
 
@@ -127,14 +138,14 @@ object Graph {
     directed(adapted)
   }
 
-  // The thing we do here is suspicious, if the graph isn't actually undirected,
-  // for example A -> B has a different distance to B -> A, then we don't detect it,
-  // just lose information.
   def toDotUndirectedGraph[T](
     graph: Graph[T],
     labelName: T => String,
+    includeDistances: Boolean,
     colors: Map[T, String] = Map.empty[T, String],
   ): String = {
+    graph.isUndirected shouldEqual true
+
     def vertexName(v: VertexId): String = labelName(
       graph.labelFor(v)
     )
@@ -149,8 +160,9 @@ object Graph {
       }
       .toSet[(SetOfTwo[VertexId], Distance)]
       .map { case (e, d) =>
-        val (from, to) = e.tupleInArbitraryOrder
-        s"""  ${vertexName(from)} -- ${vertexName(to)} [ label="$d" ]"""
+        val (from, to)   = e.tupleInArbitraryOrder
+        val distanceText = if (includeDistances) s""" [ label="$d" ]""" else ""
+        s"""  ${vertexName(from)} -- ${vertexName(to)}$distanceText"""
       }
 
     s"""graph G {
