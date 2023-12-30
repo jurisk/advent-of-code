@@ -97,9 +97,9 @@ object Advent23 {
     }
   }
 
-  // TODO:  Try two more things (likely together):
-  //        1) Use Backtracking to solve
-  //        2) Convert to the `Graph` (this one will be directed) and use that to solve Part 1
+  // This is slower than it could be. Could try two other things (likely together):
+  //  1) Use Backtracking to solve
+  //  2) Convert to the `Graph` (this one will be directed) and use that to solve Part 1
   def solve1(data: Input): Int = {
     val startState = State(
       visited = Set(data.start),
@@ -153,7 +153,7 @@ object Advent23 {
           best = best max c.steps
           Nil
         } else {
-          graph.outgoingEdges(c.current).toSeq.map { case (to, distance) =>
+          graph.outgoingEdges(c.current).map { case (to, distance) =>
             BacktrackingState(to, c.visited + c.current, c.steps + distance)
           }
         }
@@ -223,18 +223,20 @@ object Advent23 {
 
     val (start, simplified, goal) = convertToSimplified(converted)
 
-    println(s"${simplified.vertexCount}")
+    println(
+      s"Simplified to ${simplified.vertexCount} vertices, ${simplified.allEdges.size} edges"
+    )
     val result = solve2Backtracking(start, simplified, goal)
-    println("qqwer")
 
     val debug = false
-    if (debug) println(
-      Graph.toDotDigraph[Coords2D](
-        simplified,
-        c => s"x${c.x}y${c.y}",
-        Map(converted.start -> "green", converted.goal -> "blue"),
+    if (debug)
+      println(
+        Graph.toDotDigraph[Coords2D](
+          simplified,
+          c => s"x${c.x}y${c.y}",
+          Map(converted.start -> "green", converted.goal -> "blue"),
+        )
       )
-    )
 
     result
   }
