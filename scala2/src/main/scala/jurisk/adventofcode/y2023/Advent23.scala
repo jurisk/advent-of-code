@@ -223,9 +223,12 @@ object Advent23 {
 
     val (start, simplified, goal) = convertToSimplified(converted)
 
+    println(s"${simplified.vertexCount}")
     val result = solve2Backtracking(start, simplified, goal)
+    println("qqwer")
 
-    println(
+    val debug = false
+    if (debug) println(
       Graph.toDotDigraph[Coords2D](
         simplified,
         c => s"x${c.x}y${c.y}",

@@ -54,11 +54,36 @@ final class GraphImpl[L: Ordering: ClassTag](
   def verticesReachableFrom(from: VertexId): Seq[VertexId] =
     outgoingEdges(from).map { case (n, _) => n }
 
+
+  def simplify(doNotTouch: Set[VertexId]): Graph[L] = {
+    isUndirected shouldEqual true
+
+    val nonOptimisibleVertices: Iterable[VertexId] =
+      allVertices.filter(v => outgoingEdges(v).size != 2)
+
+    val verticesThatStay = nonOptimisibleVertices.toSet ++ doNotTouch
+    val verticesToRemove = allVertices.toSet -- verticesThatStay
+
+    val result = verticesToRemove.foldLeft(this) { case (acc, v) =>
+      val List((av, ad), (bv, bd)) = acc.outgoingEdges(v).toList
+      val distance = ad + bd
+      val newAdjacency = acc
+        .adjacency
+        .updated(v, Seq.empty)
+        .updatedWith(av)(edges => edges.filter(_._1 != v) :+ (bv, distance))
+        .updatedWith(bv)(edges => edges.filter(_._1 != v) :+ (av, distance))
+
+      new GraphImpl[L](acc.labels, acc.labelIndices, newAdjacency)
+    }
+
+    result
+  }
+
   // TODO:  This is really crude, improve it. Also it was written assuming an undirected graph. Either assert this,
   //        or make it work with directed ones (and then test with `Advent 2023-23-1`).
   //        Also, the part where it changes all `VertexId`-s is really error-prone, they should stay the same. Which
   //        means You probably need a different, slightly less effective representation - e.g. BiMap[VertexId, Label] again.
-  def simplify(doNotTouch: Set[VertexId]): Graph[L] = {
+  def simplify2(doNotTouch: Set[VertexId]): Graph[L] = {
     isUndirected shouldEqual true
 
     val nonOptimisibleVertices: Iterable[VertexId] =
