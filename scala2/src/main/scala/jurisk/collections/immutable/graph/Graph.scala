@@ -1,8 +1,8 @@
 package jurisk.collections.immutable.graph
 
-import jurisk.algorithms.pathfinding.Bfs
 import jurisk.collections.immutable.SetOfTwo
-import jurisk.collections.immutable.graph.Graph.{Distance, VertexId}
+import jurisk.collections.immutable.graph.Graph.Distance
+import jurisk.collections.immutable.graph.Graph.VertexId
 import jurisk.utils.CollectionOps.ArraySeqOps
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
@@ -16,7 +16,7 @@ trait Graph[L] {
   def outgoingEdges(v: VertexId): Seq[(VertexId, Distance)]
   def labelFor(v: VertexId): L
   def labelToVertex(label: L): VertexId
-  def simplify(doNotTouch: Set[VertexId]): Graph[L]
+  def simplifyByPathContraction(doNotTouch: Set[VertexId]): Graph[L]
   def verticesReachableFrom(from: VertexId): Seq[VertexId]
   def isUndirected: Boolean
 }
@@ -54,46 +54,32 @@ final class GraphImpl[L: Ordering: ClassTag](
   def verticesReachableFrom(from: VertexId): Seq[VertexId] =
     outgoingEdges(from).map { case (n, _) => n }
 
-  // TODO:  This is really crude, improve it. Also it was written assuming an undirected graph. Either assert this,
-  //        or make it work with directed ones (and then test with `Advent 2023-23-1`).
-  //        Also, the part where it changes all `VertexId`-s is really error-prone, they should stay the same. Which
-  //        means You probably need a different, slightly less effective representation - e.g. BiMap[VertexId, Label] again.
-  def simplify(doNotTouch: Set[VertexId]): Graph[L] = {
+  // Can be optimised further, but OK
+  def simplifyByPathContraction(doNotTouch: Set[VertexId]): Graph[L] = {
     isUndirected shouldEqual true
 
     val nonOptimisibleVertices: Iterable[VertexId] =
       allVertices.filter(v => outgoingEdges(v).size != 2)
 
-    val connectors = nonOptimisibleVertices.toSet ++ doNotTouch
+    val verticesThatStay = nonOptimisibleVertices.toSet ++ doNotTouch
+    val verticesToRemove = allVertices.toSet -- verticesThatStay
 
-    var newEdges = Set.empty[(SetOfTwo[L], Long)]
+    val result = verticesToRemove.foldLeft(this) { case (acc, v) =>
+      val List((av, ad), (bv, bd)) = acc.outgoingEdges(v).toList
+      val distance                 = ad + bd
+      val newAdjacency             = acc.adjacency
+        .updated(v, Seq.empty)
+        .updatedWith(av)(edges => edges.filter(_._1 != v) :+ (bv, distance))
+        .updatedWith(bv)(edges => edges.filter(_._1 != v) :+ (av, distance))
 
-    connectors foreach { connector =>
-      def helper(v: VertexId) = if (v == connector || !connectors.contains(v)) {
-        verticesReachableFrom(v).toList
-      } else {
-        Nil
-      }
-
-      val reachable = Bfs.bfsReachable[VertexId](connector, helper)
-
-      reachable.filterNot(_ == connector) foreach { n =>
-        if (connectors.contains(n)) {
-          val distance: Long =
-            Bfs.bfsLength[VertexId](connector, helper, _ == n).get
-          val edge           = (
-            SetOfTwo(
-              labels(connector),
-              labels(n),
-            ),
-            distance,
-          )
-          newEdges += edge
-        }
-      }
+      new GraphImpl[L](acc.labels, acc.labelIndices, newAdjacency)
     }
 
-    Graph.undirected(newEdges)
+    val filteredEdges = result.allEdges.map { case (from, d, to) =>
+      (result.labelFor(from), d, result.labelFor(to))
+    }
+
+    Graph.directed(filteredEdges.toSet)
   }
 }
 
