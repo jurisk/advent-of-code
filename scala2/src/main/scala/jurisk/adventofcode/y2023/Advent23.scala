@@ -207,7 +207,7 @@ object Advent23 {
     val (start1, graph, goal1) = inputToGraph(input)
 
     val (start, simplified, goal) = {
-      val simplified = graph.simplify(Set(start1, goal1))
+      val simplified = graph.simplifyByPathContraction(Set(start1, goal1))
       (
         simplified.labelToVertex(input.start),
         simplified,

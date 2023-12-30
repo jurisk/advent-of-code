@@ -16,7 +16,7 @@ trait Graph[L] {
   def outgoingEdges(v: VertexId): Seq[(VertexId, Distance)]
   def labelFor(v: VertexId): L
   def labelToVertex(label: L): VertexId
-  def simplify(doNotTouch: Set[VertexId]): Graph[L]
+  def simplifyByPathContraction(doNotTouch: Set[VertexId]): Graph[L]
   def verticesReachableFrom(from: VertexId): Seq[VertexId]
   def isUndirected: Boolean
 }
@@ -55,7 +55,7 @@ final class GraphImpl[L: Ordering: ClassTag](
     outgoingEdges(from).map { case (n, _) => n }
 
   // Can be optimised further, but OK
-  def simplify(doNotTouch: Set[VertexId]): Graph[L] = {
+  def simplifyByPathContraction(doNotTouch: Set[VertexId]): Graph[L] = {
     isUndirected shouldEqual true
 
     val nonOptimisibleVertices: Iterable[VertexId] =
