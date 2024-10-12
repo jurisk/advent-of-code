@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use advent_of_code_common::parsing::{normalize_newlines, Error};
+use advent_of_code_common::parsing::{Error, normalize_newlines};
 use advent_of_code_common::utils::head_tail;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
@@ -186,13 +186,10 @@ fn parse(input: &str) -> Result<Data, Error> {
         let (input, size) = parse_u32(input)?;
         let (input, _) = char(' ')(input)?;
         let (input, name) = name(input)?;
-        Ok((
-            input,
-            OutputLine::File {
-                name: name.to_string(),
-                size,
-            },
-        ))
+        Ok((input, OutputLine::File {
+            name: name.to_string(),
+            size,
+        }))
     }
 
     fn output_line(input: &str) -> IResult<&str, OutputLine> {

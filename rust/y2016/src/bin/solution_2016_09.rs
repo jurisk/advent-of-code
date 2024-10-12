@@ -2,6 +2,7 @@ use std::str;
 
 use advent_of_code_common::parsing;
 use advent_of_code_common::parsing::split_into_two_strings;
+use nom::Err;
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 use nom::combinator::{complete, map};
@@ -9,7 +10,6 @@ use nom::error::ParseError;
 use nom::error::{Error, ErrorKind};
 use nom::multi::many0;
 use nom::sequence::delimited;
-use nom::Err;
 use nom::{Finish, IResult};
 
 const DATA: &str = include_str!("../../resources/09.txt");

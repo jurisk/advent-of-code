@@ -183,13 +183,10 @@ mod tests {
 
     fn test_part_1(data: &str, expected_x: Number, expected_y: Number, expected_detected: usize) {
         let (best_coords, detected) = part_1(data);
-        assert_eq!(
-            best_coords,
-            Coords {
-                x: expected_x,
-                y: expected_y,
-            }
-        );
+        assert_eq!(best_coords, Coords {
+            x: expected_x,
+            y: expected_y,
+        });
         assert_eq!(detected, expected_detected);
     }
 

@@ -5,11 +5,11 @@ use std::fmt::{Debug, Formatter};
 use std::str::FromStr;
 
 use advent_of_code_common::parsing::{
-    normalize_newlines, parse_comma_separated_vec, parse_lines_to_nonempty,
-    parse_separated_nonempty, Error,
+    Error, normalize_newlines, parse_comma_separated_vec, parse_lines_to_nonempty,
+    parse_separated_nonempty,
 };
 use nalgebra::{Matrix3, Vector3};
-use nonempty::{nonempty, NonEmpty};
+use nonempty::{NonEmpty, nonempty};
 use num_traits::abs;
 
 type N = i32;

@@ -1,5 +1,5 @@
 use advent_of_code_common::matrices::{IsCorner, MapByCoords};
-use advent_of_code_common::parsing::{parse_matrix, Error};
+use advent_of_code_common::parsing::{Error, parse_matrix};
 use advent_of_code_common::simulate::n_steps;
 use pathfinding::matrix::Matrix;
 

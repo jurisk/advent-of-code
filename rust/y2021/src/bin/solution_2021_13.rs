@@ -4,8 +4,8 @@ use std::str::FromStr;
 
 use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::parsing::{
-    parse_lines_to_hashset, parse_lines_to_vec,
-    split_into_two_segments_separated_by_double_newline, Error,
+    Error, parse_lines_to_hashset, parse_lines_to_vec,
+    split_into_two_segments_separated_by_double_newline,
 };
 use advent_of_code_common::utils::head_tail;
 use itertools::Itertools;
@@ -151,27 +151,27 @@ mod tests {
     #[test]
     fn test_fold_y() {
         let fold = AlongY(7);
-        assert_eq!(
-            fold.apply_to_coords(Coords { x: 4, y: 14 }),
-            Coords { x: 4, y: 0 }
-        );
-        assert_eq!(
-            fold.apply_to_coords(Coords { x: 3, y: 13 }),
-            Coords { x: 3, y: 1 }
-        );
+        assert_eq!(fold.apply_to_coords(Coords { x: 4, y: 14 }), Coords {
+            x: 4,
+            y: 0,
+        });
+        assert_eq!(fold.apply_to_coords(Coords { x: 3, y: 13 }), Coords {
+            x: 3,
+            y: 1,
+        });
     }
 
     #[test]
     fn test_fold_x() {
         let fold = AlongX(5);
-        assert_eq!(
-            fold.apply_to_coords(Coords { x: 6, y: 0 }),
-            Coords { x: 4, y: 0 }
-        );
-        assert_eq!(
-            fold.apply_to_coords(Coords { x: 9, y: 0 }),
-            Coords { x: 1, y: 0 }
-        );
+        assert_eq!(fold.apply_to_coords(Coords { x: 6, y: 0 }), Coords {
+            x: 4,
+            y: 0,
+        });
+        assert_eq!(fold.apply_to_coords(Coords { x: 9, y: 0 }), Coords {
+            x: 1,
+            y: 0,
+        });
     }
 
     #[test]

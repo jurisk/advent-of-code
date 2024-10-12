@@ -1,11 +1,9 @@
-#![feature(slice_group_by)]
-
 use std::cmp::min;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
 
-use advent_of_code_2019::intcode::{parse_machine_code, Process};
+use advent_of_code_2019::intcode::{Process, parse_machine_code};
 use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::direction::Direction;
 use itertools::Itertools;
@@ -38,7 +36,7 @@ impl MapSquare {
     }
 }
 
-fn find_robot(map_squares: &Vec<Vec<MapSquare>>) -> Coords {
+fn find_robot(map_squares: &[Vec<MapSquare>]) -> Coords {
     let robots: Vec<Coords> = (0 .. map_squares.len())
         .flat_map(|y| {
             (0 .. map_squares[y].len()).filter_map(move |x| {
@@ -334,12 +332,9 @@ impl WithSubroutines {
             let candidate = &steps_to_allocate[0 .. n];
             let this_name = subroutine_names_remaining[0];
             let mut new_subroutines = acc.subroutines.clone();
-            new_subroutines.insert(
-                this_name,
-                Route {
-                    steps: Vec::from(candidate),
-                },
-            );
+            new_subroutines.insert(this_name, Route {
+                steps: Vec::from(candidate),
+            });
             let result = WithSubroutines::extract_subroutines(
                 &steps_to_allocate[n ..],
                 &subroutine_names_remaining[1 ..],

@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use advent_of_code_common::parsing::{parse_lines_to_vec, parse_str, Error};
+use advent_of_code_common::parsing::{Error, parse_lines_to_vec, parse_str};
 
 use crate::Instruction::{Hlf, Inc, Jie, Jio, Jmp, Tpl};
 use crate::Register::{A, B};

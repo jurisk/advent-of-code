@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Formatter};
 use std::str::FromStr;
 
-use advent_of_code_common::parsing::{parse_lines_to_nonempty, Error};
+use advent_of_code_common::parsing::{Error, parse_lines_to_nonempty};
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::digit1;

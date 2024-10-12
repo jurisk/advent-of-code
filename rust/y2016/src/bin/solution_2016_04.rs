@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 
-use advent_of_code_common::parsing::{parse_lines_to_vec, parse_str, Error};
+use advent_of_code_common::parsing::{Error, parse_lines_to_vec, parse_str};
 use advent_of_code_common::utils::additive_hashmap_from_vec;
 use itertools::Itertools;
 use memoize::lazy_static::lazy_static;

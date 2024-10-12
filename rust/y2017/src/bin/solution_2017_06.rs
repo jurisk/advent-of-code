@@ -2,7 +2,7 @@ use advent_of_code_common::simulate::{until_matches_predicate, until_state_repea
 use itertools::Itertools;
 
 fn reallocate(banks: &Vec<usize>) -> Vec<usize> {
-    let mut result = banks.clone();
+    let mut result = banks.to_owned();
     let max = banks.iter().max().unwrap();
     let (chosen_index, _) = banks.iter().find_position(|&x| x == max).unwrap();
     let amount = banks[chosen_index];

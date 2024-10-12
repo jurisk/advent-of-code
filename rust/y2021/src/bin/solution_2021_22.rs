@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use advent_of_code_common::coords3d::Coords3D;
 use advent_of_code_common::cuboid::Cuboid;
-use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
+use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
 use memoize::lazy_static::lazy_static;
 use regex::Regex;
 

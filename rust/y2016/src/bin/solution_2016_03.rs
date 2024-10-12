@@ -1,7 +1,7 @@
 use std::slice::Iter;
 
 use advent_of_code_common::parsing::{
-    parse_ascii_whitespace_separated_vec, parse_lines_to_vec_passing_parser, Error,
+    Error, parse_ascii_whitespace_separated_vec, parse_lines_to_vec_passing_parser,
 };
 use itertools::{Chunk, Itertools};
 

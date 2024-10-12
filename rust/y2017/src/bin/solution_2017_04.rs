@@ -1,7 +1,7 @@
 use std::collections::{BTreeSet, HashSet};
 use std::str::FromStr;
 
-use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
+use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
 
 #[derive(Debug)]
 struct Password {

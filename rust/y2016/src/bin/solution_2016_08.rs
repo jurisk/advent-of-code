@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use advent_of_code_common::coords2d::Coords2D;
-use advent_of_code_common::parsing::{parse_lines_to_vec, parse_str, Error};
+use advent_of_code_common::parsing::{Error, parse_lines_to_vec, parse_str};
 use pathfinding::matrix::Matrix;
 
 use crate::Command::{Rect, RotateColumn, RotateRow};

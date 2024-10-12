@@ -3,7 +3,7 @@ use std::hash::Hash;
 use std::str::FromStr;
 
 use advent_of_code_common::parsing::{
-    parse_lines_to_vec, parse_space_separated_vec, split_into_two_strings, Error,
+    Error, parse_lines_to_vec, parse_space_separated_vec, split_into_two_strings,
 };
 use itertools::Itertools;
 

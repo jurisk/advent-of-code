@@ -1,5 +1,5 @@
 use advent_of_code_2019::intcode::{
-    parse_machine_code, Entry, MachineCode, MachineCodeRef, Process,
+    Entry, MachineCode, MachineCodeRef, Process, parse_machine_code,
 };
 
 fn solve(program: &MachineCodeRef, input: Entry, expected_output: Entry) {
@@ -36,7 +36,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use advent_of_code_2019::intcode::{parse_machine_code, Index};
+    use advent_of_code_2019::intcode::{Index, parse_machine_code};
 
     use super::*;
 

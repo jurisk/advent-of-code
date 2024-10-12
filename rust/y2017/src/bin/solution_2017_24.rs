@@ -2,7 +2,7 @@ use std::collections::BTreeSet;
 
 use advent_of_code_common::pairing::Pairing;
 use advent_of_code_common::parsing::{
-    parse_lines_to_btreeset, parse_str, split_into_two_strings, Error,
+    Error, parse_lines_to_btreeset, parse_str, split_into_two_strings,
 };
 use pathfinding::prelude::bfs_reach;
 

@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use advent_of_code_common::area2d::Area2D;
 use advent_of_code_common::coords2d::Coords2D;
-use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
+use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
 use recap::Recap;
 use serde::Deserialize;
 

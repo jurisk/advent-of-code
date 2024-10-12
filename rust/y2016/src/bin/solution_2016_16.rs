@@ -1,4 +1,4 @@
-use advent_of_code_common::parsing::{convert_error, Error};
+use advent_of_code_common::parsing::{Error, convert_error};
 use itertools::Itertools;
 use num_enum::TryFromPrimitive;
 

@@ -1,6 +1,6 @@
 use std::cmp::max;
 
-use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
+use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
 use recap::Recap;
 use serde::Deserialize;
 

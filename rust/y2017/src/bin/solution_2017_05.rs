@@ -1,4 +1,4 @@
-use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
+use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
 
 type Data = Vec<i32>;
 

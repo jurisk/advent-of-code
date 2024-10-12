@@ -1,6 +1,6 @@
-use advent_of_code_2019::intcode::{parse_machine_code, Process};
+use advent_of_code_2019::intcode::{Process, parse_machine_code};
 use num_derive::FromPrimitive;
-use num_traits::{signum, FromPrimitive};
+use num_traits::{FromPrimitive, signum};
 
 #[repr(u8)]
 #[derive(PartialEq, Eq, FromPrimitive, Debug)]

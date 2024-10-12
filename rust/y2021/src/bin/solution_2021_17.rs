@@ -1,4 +1,4 @@
-use std::cmp::{max, Ordering};
+use std::cmp::{Ordering, max};
 
 use advent_of_code_common::coords2d::Coords2D;
 

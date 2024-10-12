@@ -1,5 +1,5 @@
-use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
-use nonempty::{nonempty, NonEmpty};
+use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
+use nonempty::{NonEmpty, nonempty};
 use recap::Recap;
 use serde::Deserialize;
 

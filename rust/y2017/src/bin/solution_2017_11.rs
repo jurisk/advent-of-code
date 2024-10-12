@@ -2,7 +2,7 @@ use std::cmp::max;
 
 use advent_of_code_common::coords_hex::CoordsHex;
 use advent_of_code_common::direction_hex::DirectionHex;
-use advent_of_code_common::parsing::{parse_separated_vec, Error};
+use advent_of_code_common::parsing::{Error, parse_separated_vec};
 
 fn solve_1(directions: Vec<DirectionHex>) -> i16 {
     let mut location: CoordsHex<i16> = CoordsHex::origin();

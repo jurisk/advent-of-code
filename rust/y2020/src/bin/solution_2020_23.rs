@@ -90,10 +90,10 @@ fn answer1(cups: &Cups) -> String {
         result.push(current);
         current = cups.links[current];
     }
-    return result
+    result
         .iter()
         .map(|x| (x + 1).to_string())
-        .collect::<String>();
+        .collect::<String>()
 }
 
 fn answer2(cups: &Cups) -> usize {

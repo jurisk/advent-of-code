@@ -4,6 +4,7 @@ use std::str::FromStr;
 use advent_of_code_common::parsing;
 use advent_of_code_common::parsing::parse_lines_to_vec;
 use itertools::Itertools;
+use nom::Err;
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 use nom::combinator::{complete, map};
@@ -11,7 +12,6 @@ use nom::error::ParseError;
 use nom::error::{Error, ErrorKind};
 use nom::multi::many0;
 use nom::sequence::delimited;
-use nom::Err;
 use nom::{Finish, IResult};
 
 #[derive(Debug)]

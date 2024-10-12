@@ -1,4 +1,4 @@
-use advent_of_code_2019::intcode::{parse_machine_code, Process};
+use advent_of_code_2019::intcode::{Process, parse_machine_code};
 
 fn main() {
     let data = include_str!("../../resources/05.txt");

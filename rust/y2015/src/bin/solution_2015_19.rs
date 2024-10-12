@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use std::string::ToString;
 
 use advent_of_code_common::parsing::{
-    normalize_newlines, parse_lines_to_vec_passing_parser, parse_str, split_into_two_strings, Error,
+    Error, normalize_newlines, parse_lines_to_vec_passing_parser, parse_str, split_into_two_strings,
 };
 use pathfinding::prelude::astar;
 use strum::{Display, EnumIter, EnumString, IntoEnumIterator};

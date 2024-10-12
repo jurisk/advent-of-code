@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::str::FromStr;
 
 use advent_of_code_common::parsing::{
-    parse_lines_to_hashmap, parse_string_to_nonempty,
-    split_into_two_segments_separated_by_double_newline, Error,
+    Error, parse_lines_to_hashmap, parse_string_to_nonempty,
+    split_into_two_segments_separated_by_double_newline,
 };
 use advent_of_code_common::utils::additive_hashmap_from_vec;
 use nonempty::NonEmpty;

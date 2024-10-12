@@ -1,12 +1,12 @@
 use advent_of_code_common::parsing::Error;
 use itertools::Itertools;
-use serde_json::{from_str, Value};
+use serde_json::{Value, from_str};
 
 fn parse(input: &str) -> Result<Value, Error> {
     from_str(input).map_err(|err| format!("Failed to parse JSON: {err}"))
 }
 
-fn solve(data: &Value, ignore_objects_with_property: &Option<String>) -> i64 {
+fn solve(data: &Value, ignore_objects_with_property: Option<&String>) -> i64 {
     match data {
         Value::Null | Value::Bool(_) | Value::String(_) => 0,
 
@@ -24,7 +24,7 @@ fn solve(data: &Value, ignore_objects_with_property: &Option<String>) -> i64 {
         },
 
         Value::Object(object) => {
-            let ignore = if let Some(ref p) = ignore_objects_with_property {
+            let ignore = if let Some(p) = ignore_objects_with_property {
                 // println!("qq {:?} {} {}", object.values().collect::<Vec<_>>(), p.clone(),
                 // object.values().contains(&Value::String(p.clone())));
                 object.values().contains(&Value::String(p.clone()))
@@ -45,11 +45,11 @@ fn solve(data: &Value, ignore_objects_with_property: &Option<String>) -> i64 {
 }
 
 fn solve_1(data: &Value) -> i64 {
-    solve(data, &None)
+    solve(data, None)
 }
 
 fn solve_2(data: &Value) -> i64 {
-    solve(data, &Some("red".to_string()))
+    solve(data, Some(&"red".to_string()))
 }
 
 fn part_1(input: &str) -> Result<i64, Error> {

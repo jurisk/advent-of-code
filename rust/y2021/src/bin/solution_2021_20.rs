@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use advent_of_code_common::parsing::{
-    parse_matrix, split_into_two_segments_separated_by_double_newline, Error,
+    Error, parse_matrix, split_into_two_segments_separated_by_double_newline,
 };
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use pathfinding::matrix::Matrix;

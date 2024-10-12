@@ -1,4 +1,4 @@
-use advent_of_code_common::parsing::{parse_u8_matrix, Error};
+use advent_of_code_common::parsing::{Error, parse_u8_matrix};
 use pathfinding::matrix::Matrix;
 use pathfinding::prelude::dijkstra;
 

@@ -5,7 +5,7 @@ use std::str::FromStr;
 use num_traits::{One, Signed, Zero};
 
 use crate::direction::Direction;
-use crate::parsing::{split_into_two_strings, Error};
+use crate::parsing::{Error, split_into_two_strings};
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
 pub struct Coords2D<T> {

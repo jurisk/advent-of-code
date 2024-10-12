@@ -1,11 +1,12 @@
 use std::collections::HashSet;
 use std::str::FromStr;
 
-use advent_of_code_common::parsing::{parse_lines_to_vec, parse_str, Error};
+use advent_of_code_common::parsing::{Error, parse_lines_to_vec, parse_str};
 use itertools::Itertools;
 use recap::Recap;
 use serde::Deserialize;
 
+#[allow(non_local_definitions)]
 #[derive(Deserialize, Recap)]
 #[recap(
     regex = r#"^(?P<who>\w+) would (?P<do_what>\w+) (?P<how_many>\d+) happiness units by sitting next to (?P<next_to_who>\w+).$"#

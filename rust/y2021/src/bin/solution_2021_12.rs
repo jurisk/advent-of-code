@@ -1,8 +1,8 @@
 use std::str::FromStr;
 
-use advent_of_code_common::parsing::{parse_lines_to_nonempty, split_into_two_strings, Error};
+use advent_of_code_common::parsing::{Error, parse_lines_to_nonempty, split_into_two_strings};
 use itertools::Itertools;
-use nonempty::{nonempty, NonEmpty};
+use nonempty::{NonEmpty, nonempty};
 use pathfinding::prelude::bfs_reach;
 
 const DATA: &str = include_str!("../../resources/12.txt");

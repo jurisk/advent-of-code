@@ -47,7 +47,7 @@ type Name = [char; 2];
 #[allow(clippy::cast_possible_wrap)]
 #[allow(clippy::cast_possible_truncation)]
 impl Maze {
-    fn build_temp_portals(chars: &Vec<Vec<char>>) -> Vec<(Name, CoordsXY)> {
+    fn build_temp_portals(chars: &[Vec<char>]) -> Vec<(Name, CoordsXY)> {
         let mut temp_portals: Vec<(Name, CoordsXY)> = Vec::new();
 
         #[allow(clippy::needless_range_loop)]

@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use advent_of_code_common::parsing::{
-    parse_lines_to_vec, parse_str, split_into_two_strings, Error,
+    Error, parse_lines_to_vec, parse_str, split_into_two_strings,
 };
 
 #[derive(Debug)]

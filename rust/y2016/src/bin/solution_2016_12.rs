@@ -1,4 +1,4 @@
-use advent_of_code_2016::assembunny::{parse_instructions, Instruction, State, N};
+use advent_of_code_2016::assembunny::{Instruction, N, State, parse_instructions};
 use advent_of_code_common::parsing::Error;
 
 fn solve_1(instructions: &[Instruction]) -> N {

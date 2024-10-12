@@ -1,4 +1,4 @@
-use advent_of_code_common::parsing::{parse_matrix, Error};
+use advent_of_code_common::parsing::{Error, parse_matrix};
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use pathfinding::matrix::Matrix;
 

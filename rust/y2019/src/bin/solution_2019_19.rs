@@ -1,6 +1,6 @@
 use std::cmp::max;
 
-use advent_of_code_2019::intcode::{parse_machine_code, MachineCode, Process};
+use advent_of_code_2019::intcode::{MachineCode, Process, parse_machine_code};
 use advent_of_code_common::coords2d::Coords2D;
 
 type Coords = Coords2D<i32>;

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-use advent_of_code_2019::intcode::{parse_machine_code, Entry, MachineCode, Process};
+use advent_of_code_2019::intcode::{Entry, MachineCode, Process, parse_machine_code};
 use advent_of_code_common::coords2d::Coords2D;
 
 const NAT_ADDRESS: Entry = 255;

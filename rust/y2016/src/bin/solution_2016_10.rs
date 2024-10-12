@@ -4,7 +4,7 @@ use std::fmt::{Debug, Formatter};
 use std::str::FromStr;
 
 use advent_of_code_common::parsing::{
-    parse_lines_to_vec, parse_str, split_into_two_strings, Error,
+    Error, parse_lines_to_vec, parse_str, split_into_two_strings,
 };
 use itertools::Itertools;
 use memoize::lazy_static::lazy_static;
@@ -212,13 +212,10 @@ fn solve(
         match instruction {
             ValueXGoesToBotY { value, bot_id } => add_to_mailbox(&mut mailboxes, *bot_id, *value),
             BotNGiveLowToXAndHighToY { bot_id, low, high } => {
-                definitions.insert(
-                    *bot_id,
-                    BotDefinition {
-                        low:  *low,
-                        high: *high,
-                    },
-                );
+                definitions.insert(*bot_id, BotDefinition {
+                    low:  *low,
+                    high: *high,
+                });
             },
         }
     }

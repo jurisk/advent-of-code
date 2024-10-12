@@ -1,10 +1,10 @@
 use std::str::FromStr;
 
-use advent_of_code_common::parsing::{parse_separated_vec, Error};
+use advent_of_code_common::parsing::{Error, parse_separated_vec};
 use advent_of_code_common::utils::head_tail;
+use nom::Err::Incomplete;
 use nom::combinator::complete;
 use nom::multi::count;
-use nom::Err::Incomplete;
 use nom::{Finish, IResult, Needed};
 
 const DATA: &str = include_str!("../../resources/08.txt");

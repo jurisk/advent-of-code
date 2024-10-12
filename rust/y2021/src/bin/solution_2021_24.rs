@@ -83,13 +83,10 @@ impl State {
                 .iter()
                 .map(|input| {
                     let z = subroutine.solve(self.z, *input);
-                    (
-                        *input,
-                        State {
-                            instruction_pointer,
-                            z,
-                        },
-                    )
+                    (*input, State {
+                        instruction_pointer,
+                        z,
+                    })
                 })
                 .collect()
         } else {

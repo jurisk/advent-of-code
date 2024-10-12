@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::direction::Direction;
-use advent_of_code_common::parsing::{parse_lines_to_vec, Error};
+use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
 use advent_of_code_common::rotation::Rotation;
 
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]

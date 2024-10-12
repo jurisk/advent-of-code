@@ -1,4 +1,4 @@
-use advent_of_code_2019::intcode::{parse_machine_code, Entry, MachineCodeRef, Process};
+use advent_of_code_2019::intcode::{Entry, MachineCodeRef, Process, parse_machine_code};
 
 fn run_with_modifications(incoming: &MachineCodeRef, noun: Entry, verb: Entry) -> Entry {
     let mut program = incoming.to_owned();

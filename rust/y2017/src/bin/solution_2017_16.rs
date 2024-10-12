@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use advent_of_code_common::parsing::{
-    parse_comma_separated_vec, parse_str, split_into_two_strings, Error,
+    Error, parse_comma_separated_vec, parse_str, split_into_two_strings,
 };
 use advent_of_code_common::simulate::run_n_steps_removing_loops;
 

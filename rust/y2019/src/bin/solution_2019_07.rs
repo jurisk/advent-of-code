@@ -1,6 +1,6 @@
 use std::ops::RangeInclusive;
 
-use advent_of_code_2019::intcode::{parse_machine_code, Entry, MachineCodeRef, Process};
+use advent_of_code_2019::intcode::{Entry, MachineCodeRef, Process, parse_machine_code};
 use itertools::Itertools;
 
 fn amplifier(program: &MachineCodeRef, phase_setting: u8, input: Entry) -> Entry {

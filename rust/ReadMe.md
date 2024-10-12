@@ -50,6 +50,7 @@ cargo run --bin solution_<XY>
 # Testing
 
 ```shell
+cargo nextest run
 cargo test
 ```
 
