@@ -27,6 +27,7 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo clippy -- -W clippy::pedantic
 cargo clippy --fix -- -W clippy::pedantic
 cargo clippy -- -W clippy::pedantic -A clippy::redundant_else
+cargo clippy --all-targets --all-features -- -W clippy::pedantic
 ```
 
 # Formatting
