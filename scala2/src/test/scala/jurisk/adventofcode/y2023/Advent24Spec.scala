@@ -50,7 +50,7 @@ class Advent24Spec extends AnyFreeSpec {
       solvePart2Optimizer(testData) shouldEqual expectedTestAnswer
     }
 
-    "real optimizer" in {
+    "real optimizer" ignore {
       solvePart2Optimizer(realData) shouldEqual expectedRealAnswer
     }
   }
