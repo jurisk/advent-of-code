@@ -103,15 +103,9 @@ object Advent22 {
   def solve(data: Input): Vector[Int] = {
     println(s"${data.length} blocks")
 
-    data foreach println
-    println()
     val landed = landBricks(data)
-    landed foreach println
-    println()
 
     landed.zipWithIndex.map { case (brick, index) =>
-      print(s"Considering $brick...")
-
       val withoutThis = landed.removeAt(index)
       val packedAgain = landBricks(withoutThis)
 
@@ -120,8 +114,6 @@ object Advent22 {
           case (a, b) =>
             a != b
         }
-
-      println(s"causes $result to fall")
 
       result
     }

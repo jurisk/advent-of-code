@@ -1,36 +1,35 @@
 package jurisk.adventofcode.y2024
 
+import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent01 {
-  type Input = List[Command]
+  type Input = (List[Int], List[Int])
 
-  sealed trait Command extends Product with Serializable
-  object Command {
-    case object Noop                      extends Command
-    final case class Something(
-      values: List[Int]
-    ) extends Command
-    final case class Other(value: String) extends Command
+  private val Line                = """(\d+)\s+(\d+)""".r
+  def parse(input: String): Input =
+    input.parseLines {
+      case Line(first, second) => (first.toInt, second.toInt)
+      case other               => other.failedToParse
+    }.unzip
 
-    def parse(s: String): Command =
-      s match {
-        case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractIntList)
-        case s if s.nonEmpty   => Other(s)
-        case _                 => s.failedToParse
-      }
+  def part1(data: Input): Int = {
+    val (a, b)             = data
+    val (aSorted, bSorted) = (a.sorted, b.sorted)
+    val zipped             = aSorted zip bSorted
+    val diffs              = zipped map { case (x, y) => (x - y).abs }
+    diffs.sum
   }
 
-  def parse(input: String): Input =
-    input.parseLines(Command.parse)
+  def part2(data: Input): Int = {
+    val (a, b) = data
+    val counts = b.counts
 
-  def part1(data: Input): Int =
-    0
-
-  def part2(data: Input): Int =
-    0
+    a.map { x =>
+      x * counts.getOrElse(x, 0)
+    }.sum
+  }
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))

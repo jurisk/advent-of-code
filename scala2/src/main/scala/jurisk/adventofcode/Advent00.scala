@@ -39,7 +39,7 @@ object Advent00 {
     parse(readFileText(fileName))
 
   def fileName(suffix: String): String =
-    s"2024/00$suffix.txt"
+    s"2024/01$suffix.txt"
 
   def main(args: Array[String]): Unit = {
     val realData: Input = parseFile(fileName(""))

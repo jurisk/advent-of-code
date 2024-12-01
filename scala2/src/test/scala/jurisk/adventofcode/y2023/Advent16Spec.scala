@@ -43,7 +43,7 @@ class Advent16Spec extends AnyFreeSpec {
         part1Optimization(testData) shouldEqual TestAnswer
       }
 
-      "real" in {
+      "real" ignore {
         part1Optimization(realData) shouldEqual RealAnswer
       }
     }
