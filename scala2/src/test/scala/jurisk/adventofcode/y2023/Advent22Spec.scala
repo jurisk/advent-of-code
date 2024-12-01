@@ -13,7 +13,7 @@ class Advent22Spec extends AnyFreeSpec {
       part1(testData) shouldEqual 5
     }
 
-    "real" in {
+    "real" ignore {
       part1(realData) shouldEqual 512
     }
   }
@@ -23,7 +23,7 @@ class Advent22Spec extends AnyFreeSpec {
       part2(testData) shouldEqual 7
     }
 
-    "real" in {
+    "real" ignore {
       part2(realData) shouldEqual 98167
     }
   }

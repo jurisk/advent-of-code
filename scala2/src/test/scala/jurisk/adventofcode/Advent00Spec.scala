@@ -5,7 +5,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
 
 class Advent00Spec extends AnyFreeSpec {
-  private def testData = parseFile(fileName("-test"))
+  private def testData = parseFile(fileName("-test-00"))
   private def realData = parseFile(fileName(""))
 
   "part 1" - {

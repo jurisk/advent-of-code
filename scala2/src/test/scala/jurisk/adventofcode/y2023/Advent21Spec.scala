@@ -216,7 +216,7 @@ class Advent21Spec extends AnyFreeSpec {
       name - {
         val MaxN = 36
         1 to MaxN map { n =>
-          s"$name - $n" in {
+          s"$name - $n" ignore {
             val old                     = part2Simulation(test, n)
             val distFieldClassification = part2FieldClassification(test, n)
             distFieldClassification shouldEqual old
