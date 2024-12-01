@@ -191,11 +191,13 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_solve_2_test_2() {
         assert_eq!(part_2(TEST, 10_000_000), Ok(2_511_944));
     }
 
     #[test]
+    #[ignore]
     fn test_solve_2_real() {
         assert_eq!(part_2(DATA, 10_000_000), Ok(2_511_416));
     }

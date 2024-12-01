@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(part_1(DATA), Ok(373160));
+        assert_eq!(part_1(DATA), Ok(373_160));
     }
 
     #[test]
@@ -78,6 +78,6 @@ mod tests {
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA), Ok(26395586));
+        assert_eq!(part_2(DATA), Ok(26_395_586));
     }
 }

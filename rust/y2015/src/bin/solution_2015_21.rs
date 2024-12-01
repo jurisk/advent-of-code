@@ -231,7 +231,7 @@ mod tests {
             cost:       0,
         };
 
-        assert!(wins(&player, &boss))
+        assert!(wins(&player, &boss));
     }
 
     #[test]

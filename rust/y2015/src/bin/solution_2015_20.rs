@@ -101,7 +101,7 @@ mod tests {
     #[test]
     #[ignore]
     fn test_solve_1_real() {
-        assert_eq!(solve_1(DATA), 831600);
+        assert_eq!(solve_1(DATA), 831_600);
     }
 
     #[test]
@@ -112,6 +112,6 @@ mod tests {
     #[test]
     #[ignore]
     fn test_solve_2_real() {
-        assert_eq!(solve_2(DATA), 884520);
+        assert_eq!(solve_2(DATA), 884_520);
     }
 }

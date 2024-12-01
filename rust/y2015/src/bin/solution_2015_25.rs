@@ -33,9 +33,9 @@ mod tests {
 
     #[test]
     fn test_code() {
-        assert_eq!(code(1), 20151125);
-        assert_eq!(code(2), 31916031);
-        assert_eq!(code(3), 18749137);
+        assert_eq!(code(1), 20_151_125);
+        assert_eq!(code(2), 31_916_031);
+        assert_eq!(code(3), 18_749_137);
     }
 
     #[test]
@@ -48,15 +48,15 @@ mod tests {
 
     #[test]
     fn test_solve() {
-        assert_eq!(solve(&Coords2D::new(1, 1)), 20151125);
-        assert_eq!(solve(&Coords2D::new(4, 1)), 30943339);
-        assert_eq!(solve(&Coords2D::new(2, 5)), 17552253);
-        assert_eq!(solve(&Coords2D::new(4, 3)), 7981243);
+        assert_eq!(solve(&Coords2D::new(1, 1)), 20_151_125);
+        assert_eq!(solve(&Coords2D::new(4, 1)), 30_943_339);
+        assert_eq!(solve(&Coords2D::new(2, 5)), 17_552_253);
+        assert_eq!(solve(&Coords2D::new(4, 3)), 7_981_243);
     }
 
     #[test]
     fn test_solve_real() {
         let data: Coords2D<N> = Coords2D::new(COLUMN, ROW);
-        assert_eq!(solve(&data), 9132360);
+        assert_eq!(solve(&data), 9_132_360);
     }
 }

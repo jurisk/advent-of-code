@@ -57,11 +57,11 @@ mod tests {
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(solution(DATA, 40), 252594);
+        assert_eq!(solution(DATA, 40), 252_594);
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(solution(DATA, 50), 3579328);
+        assert_eq!(solution(DATA, 50), 3_579_328);
     }
 }

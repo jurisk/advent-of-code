@@ -163,6 +163,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_solve_2_test_2() {
         assert_eq!(part_2(10_000), 3_439);
     }

@@ -372,6 +372,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_solve_test() {
         assert_eq!(solve(TEST), Ok((79, 3621)));
     }

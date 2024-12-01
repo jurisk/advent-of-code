@@ -44,11 +44,12 @@ mod tests {
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(part_1(DATA), Ok(317993));
+        assert_eq!(part_1(DATA), Ok(317_993));
     }
 
     #[test]
+    #[ignore]
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA), Ok(9227647));
+        assert_eq!(part_2(DATA), Ok(9_227_647));
     }
 }

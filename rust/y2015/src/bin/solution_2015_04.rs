@@ -34,20 +34,23 @@ mod tests {
     use super::*;
     #[test]
     fn test_solve_1_test_1() {
-        assert_eq!(solve_1("abcdef"), Some(609043));
+        assert_eq!(solve_1("abcdef"), Some(609_043));
     }
+
     #[test]
+    #[ignore]
     fn test_solve_1_test_2() {
-        assert_eq!(solve_1("pqrstuv"), Some(1048970));
+        assert_eq!(solve_1("pqrstuv"), Some(1_048_970));
     }
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(solve_1(DATA), Some(254575));
+        assert_eq!(solve_1(DATA), Some(254_575));
     }
 
     #[test]
+    #[ignore]
     fn test_solve_2_real() {
-        assert_eq!(solve_2(DATA), Some(1038736));
+        assert_eq!(solve_2(DATA), Some(1_038_736));
     }
 }

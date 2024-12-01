@@ -78,11 +78,11 @@ mod tests {
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(part_1(DATA), Ok(203660));
+        assert_eq!(part_1(DATA), Ok(203_660));
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA), Ok(2408135));
+        assert_eq!(part_2(DATA), Ok(2_408_135));
     }
 }

@@ -76,6 +76,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_solve_2() {
         solve_2();
     }

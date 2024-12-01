@@ -105,10 +105,7 @@ mod tests {
     #[test]
     fn location_test() {
         let layer = Layer { depth: 0, range: 4 };
-        let locations: Vec<_> = (0 ..= 8)
-            .into_iter()
-            .map(|x| layer.location_at_time(x))
-            .collect();
+        let locations: Vec<_> = (0 ..= 8).map(|x| layer.location_at_time(x)).collect();
         assert_eq!(locations, vec![0, 1, 2, 3, 2, 1, 0, 1, 2]);
     }
 
@@ -129,6 +126,6 @@ mod tests {
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA), Ok(Some(3873662)));
+        assert_eq!(part_2(DATA), Ok(Some(3_873_662)));
     }
 }

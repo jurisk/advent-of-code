@@ -131,21 +131,21 @@ mod tests {
 
     #[test]
     fn test_solve_1_test() {
-        assert_eq!(part_1(TEST), Ok(62842880));
+        assert_eq!(part_1(TEST), Ok(62_842_880));
     }
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(part_1(DATA), Ok(18965440));
+        assert_eq!(part_1(DATA), Ok(18_965_440));
     }
 
     #[test]
     fn test_solve_2_test() {
-        assert_eq!(part_2(TEST), Ok(57600000));
+        assert_eq!(part_2(TEST), Ok(57_600_000));
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA), Ok(15862900));
+        assert_eq!(part_2(DATA), Ok(15_862_900));
     }
 }

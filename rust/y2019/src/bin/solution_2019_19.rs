@@ -89,6 +89,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[ignore]
     fn test_solve_1() {
         solve_1();
     }

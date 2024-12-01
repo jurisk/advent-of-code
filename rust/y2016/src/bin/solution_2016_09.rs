@@ -142,7 +142,7 @@ mod tests {
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(part_1(DATA), Ok(183269));
+        assert_eq!(part_1(DATA), Ok(183_269));
     }
 
     #[test]
@@ -157,7 +157,7 @@ mod tests {
 
     #[test]
     fn test_solve_2_test_2() {
-        assert_eq!(part_2("(27x12)(20x12)(13x14)(7x10)(1x12)A"), Ok(241920));
+        assert_eq!(part_2("(27x12)(20x12)(13x14)(7x10)(1x12)A"), Ok(241_920));
     }
 
     #[test]
@@ -170,6 +170,6 @@ mod tests {
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA), Ok(11317278863));
+        assert_eq!(part_2(DATA), Ok(11_317_278_863));
     }
 }

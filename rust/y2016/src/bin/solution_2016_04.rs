@@ -147,7 +147,7 @@ mod tests {
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(part_1(DATA), Ok(245102));
+        assert_eq!(part_1(DATA), Ok(245_102));
     }
 
     #[test]

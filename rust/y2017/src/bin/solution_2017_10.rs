@@ -43,26 +43,26 @@ mod tests {
 
     #[test]
     fn test_solve_2_test_0() {
-        assert_eq!(part_2(""), "a2582a3a0e66e6e86e3812dcb672a272")
+        assert_eq!(part_2(""), "a2582a3a0e66e6e86e3812dcb672a272");
     }
 
     #[test]
     fn test_solve_2_test_1() {
-        assert_eq!(part_2("AoC 2017"), "33efeb34ea91902bb2f59c9920caa6cd")
+        assert_eq!(part_2("AoC 2017"), "33efeb34ea91902bb2f59c9920caa6cd");
     }
 
     #[test]
     fn test_solve_2_test_2() {
-        assert_eq!(part_2("1,2,3"), "3efbe78a8d82f29979031a4aa0b16a9d")
+        assert_eq!(part_2("1,2,3"), "3efbe78a8d82f29979031a4aa0b16a9d");
     }
 
     #[test]
     fn test_solve_2_test_3() {
-        assert_eq!(part_2("1,2,4"), "63960835bcdc130f0b66d7ff4f6a5a8e")
+        assert_eq!(part_2("1,2,4"), "63960835bcdc130f0b66d7ff4f6a5a8e");
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(part_2(DATA), "a7af2706aa9a09cf5d848c1e6605dd2a")
+        assert_eq!(part_2(DATA), "a7af2706aa9a09cf5d848c1e6605dd2a");
     }
 }
