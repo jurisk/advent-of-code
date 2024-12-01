@@ -266,7 +266,7 @@ pub fn normalize_newlines(input: &str) -> String {
 pub fn segments_separated_by_double_newline(input: &str) -> Vec<String> {
     normalize_newlines(input)
         .split("\n\n")
-        .map(std::string::ToString::to_string)
+        .map(ToString::to_string)
         .filter(|x| !x.is_empty())
         .collect()
 }
