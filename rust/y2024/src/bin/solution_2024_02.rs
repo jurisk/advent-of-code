@@ -24,9 +24,7 @@ fn valid_diffs_1(row: &[N], range: &RangeInclusive<N>) -> bool {
     row.iter()
         .tuple_windows()
         .map(|(a, b)| b - a)
-        .filter(|diff| !range.contains(diff))
-        .count()
-        == 0
+        .all(|diff| range.contains(&diff))
 }
 
 #[allow(dead_code)]
