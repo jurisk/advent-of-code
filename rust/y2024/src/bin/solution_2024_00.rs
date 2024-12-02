@@ -3,18 +3,19 @@ use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
 const DATA: &str = include_str!("../../resources/00.txt");
 
 type N = u32;
+type R = usize;
 type Data = Vec<N>;
 
 fn parse(input: &str) -> Result<Data, Error> {
     parse_lines_to_vec(input)
 }
 
-fn solve_1(data: &Data) -> N {
-    data.iter().sum()
+fn solve_1(data: &Data) -> R {
+    data.len()
 }
 
-fn solve_2(data: &Data) -> N {
-    data.iter().sum()
+fn solve_2(data: &Data) -> R {
+    data.len()
 }
 
 fn main() -> Result<(), Error> {
