@@ -30,12 +30,11 @@ fn valid_diffs_1(row: &[N], range: &RangeInclusive<N>) -> bool {
 #[allow(dead_code)]
 fn valid_diffs_2_straightforward(row: &[N], range: &RangeInclusive<N>) -> bool {
     valid_diffs_1(row, range)
-        || (0 .. row.len())
-            .any(|idx| {
-                let mut row = row.to_vec();
-                row.remove(idx);
-                valid_diffs_1(row.as_slice(), range)
-            })
+        || (0 .. row.len()).any(|idx| {
+            let mut row = row.to_vec();
+            row.remove(idx);
+            valid_diffs_1(row.as_slice(), range)
+        })
 }
 
 fn valid_diffs_2_dp(row: &[N], range: &RangeInclusive<N>) -> bool {
