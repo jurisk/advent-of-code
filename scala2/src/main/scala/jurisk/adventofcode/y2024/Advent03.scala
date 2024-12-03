@@ -9,7 +9,7 @@ import scala.util.matching.Regex
 object Advent03 {
   type Input = String
 
-  private val Number = """(\d+)""".r
+  private val Number = """(\d+)"""
   private val Mul    = s"""mul\\($Number,$Number\\)""".r
   private val Do     = """do\(\)""".r
   private val Dont   = """don't\(\)""".r
