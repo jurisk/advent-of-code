@@ -5,7 +5,7 @@ type Data = &'static str;
 
 use regex::Regex;
 
-const MUL: &str = r"mul\((\d+),(\d+)\)";
+const MUL: &str = r"mul\((?<a>\d+),(?<b>\d+)\)";
 const DO: &str = r"do()";
 const DONT: &str = r"don't()";
 
@@ -28,13 +28,13 @@ fn solve(data: &Data, regex: &str) -> Result<R, String> {
             active = false;
         } else if let Some(captures) = mul.captures(s) {
             if active {
-                let c_1 = captures.get(1).ok_or(format!("Invalid capture: {s}"))?;
-                let a = c_1
+                let c_a = captures.name("a").ok_or(format!("Invalid capture: {s}"))?;
+                let a = c_a
                     .as_str()
                     .parse::<usize>()
                     .map_err(|err| format!("Failed to parse: {err}"))?;
-                let c_2 = captures.get(2).ok_or(format!("Invalid capture: {s}"))?;
-                let b = c_2
+                let c_b = captures.name("b").ok_or(format!("Invalid capture: {s}"))?;
+                let b = c_b
                     .as_str()
                     .parse::<usize>()
                     .map_err(|err| format!("Failed to parse: {err}"))?;
