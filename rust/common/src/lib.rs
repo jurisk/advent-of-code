@@ -9,6 +9,8 @@ pub mod cryptography;
 pub mod cuboid;
 pub mod direction;
 pub mod direction_hex;
+pub mod direction_with_diagonals;
+pub mod grid2d;
 pub mod math;
 pub mod matrices;
 pub mod pairing;

@@ -153,6 +153,8 @@ final case class Field2D[T] private (
       }
     }
 
+  def countCoords(p: Coords2D => Boolean): Int = allCoords.count(p)
+
   def allConnectionsDirectional
     : Seq[(Coords2D, CardinalDirection2D, Coords2D)] = for {
     from <- allCoords
@@ -191,8 +193,10 @@ final case class Field2D[T] private (
   def coordsForRow(y: Int): List[Coords2D] = xIndices.toList map { x =>
     Coords2D.of(x, y)
   }
-
-  def rows: List[ArraySeq[T]] = data.toList
+  def allRowCoords: Seq[List[Coords2D]]    = yIndices map { y =>
+    coordsForRow(y)
+  }
+  def rows: List[ArraySeq[T]]              = data.toList
 
   def columns: List[ArraySeq[T]] = for {
     columnIdx <- (0 until width).toList
@@ -201,6 +205,9 @@ final case class Field2D[T] private (
   def column(x: Int): ArraySeq[T]             = data.map(_(x - topLeft.x))
   def coordsForColumn(x: Int): List[Coords2D] = yIndices.toList map { y =>
     Coords2D.of(x, y)
+  }
+  def allColumnCoords: Seq[List[Coords2D]]    = xIndices map { x =>
+    coordsForColumn(x)
   }
 
   def topRowCoords: List[Coords2D]      = coordsForRow(0)
@@ -297,6 +304,9 @@ final case class Field2D[T] private (
     assert(height % 2 == 1)
     Coords2D(width / 2, height / 2)
   }
+
+  def apply(c: Coords2D): Option[T]        = at(c)
+  def apply(c: Coords2D, default: => T): T = atOrElse(c, default)
 }
 
 object Field2D {
