@@ -1,32 +1,49 @@
 use std::collections::BTreeSet;
+use std::convert::Infallible;
 
 use advent_of_code_common::direction_with_diagonals::DirectionWithDiagonals;
 use advent_of_code_common::direction_with_diagonals::DirectionWithDiagonals::{NE, NW, SE, SW};
 use advent_of_code_common::grid2d::{Coords, Grid2D, MatrixGrid2D};
-use advent_of_code_common::parsing::Error;
 use advent_of_code_common::utils::head_tail;
+
+use crate::C::{A, M, Other, S, X};
 
 const DATA: &str = include_str!("../../resources/04.txt");
 
-type C = char;
 type R = usize;
 
-const X: C = 'X';
-const M: C = 'M';
-const A: C = 'A';
-const S: C = 'S';
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Ord, PartialOrd)]
+enum C {
+    X,
+    M,
+    A,
+    S,
+    Other,
+}
 
 const XMAS: [C; 4] = [X, M, A, S];
 
-fn parse(input: &str) -> Result<MatrixGrid2D<char>, Error> {
+impl Into<C> for char {
+    fn into(self) -> C {
+        match self {
+            'X' => X,
+            'M' => M,
+            'A' => A,
+            'S' => S,
+            _ => Other,
+        }
+    }
+}
+
+fn parse(input: &str) -> Result<MatrixGrid2D<C>, Infallible> {
     input.parse()
 }
 
-fn is_valid_1<D: Grid2D<char>>(
+fn is_valid_1<D: Grid2D<C>>(
     data: &D,
     coords: Coords,
     direction: DirectionWithDiagonals,
-    options: &[char],
+    options: &[C],
 ) -> bool {
     match head_tail(options) {
         (Some(&head), tail) => {
@@ -40,7 +57,7 @@ fn is_valid_1<D: Grid2D<char>>(
     }
 }
 
-fn solve_1<D: Grid2D<char>>(data: &D) -> R {
+fn solve_1<D: Grid2D<C>>(data: &D) -> R {
     data.map_by_coords(|c| {
         DirectionWithDiagonals::all()
             .into_iter()
@@ -50,8 +67,8 @@ fn solve_1<D: Grid2D<char>>(data: &D) -> R {
     .sum()
 }
 
-fn is_valid_2<D: Grid2D<char>>(data: &D, coords: Coords) -> bool {
-    let corners: BTreeSet<BTreeSet<char>> =
+fn is_valid_2<D: Grid2D<C>>(data: &D, coords: Coords) -> bool {
+    let corners: BTreeSet<BTreeSet<C>> =
         BTreeSet::from([BTreeSet::from([NE, SW]), BTreeSet::from([NW, SE])])
             .into_iter()
             .map(|directions| {
@@ -65,12 +82,12 @@ fn is_valid_2<D: Grid2D<char>>(data: &D, coords: Coords) -> bool {
     data.get(coords) == Some(&A) && corners == BTreeSet::from([BTreeSet::from([M, S])])
 }
 
-fn solve_2<D: Grid2D<char>>(data: &D) -> R {
+fn solve_2<D: Grid2D<C>>(data: &D) -> R {
     data.map_by_coords(|c| is_valid_2(data, c))
         .count(|_, valid| *valid)
 }
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Infallible> {
     let data = parse(DATA)?;
 
     let result_1 = solve_1(&data);
@@ -88,11 +105,11 @@ mod tests {
 
     const TEST_DATA: &str = include_str!("../../resources/04-test-00.txt");
 
-    fn test_data() -> MatrixGrid2D<char> {
+    fn test_data() -> MatrixGrid2D<C> {
         parse(TEST_DATA).unwrap()
     }
 
-    fn real_data() -> MatrixGrid2D<char> {
+    fn real_data() -> MatrixGrid2D<C> {
         parse(DATA).unwrap()
     }
 

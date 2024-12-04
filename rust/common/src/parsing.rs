@@ -233,28 +233,30 @@ pub fn parse_u8_matrix(input: &str) -> Result<Matrix<u8>, Error> {
 ///
 /// Will return `Err` if parsing fails.
 #[allow(clippy::redundant_closure)]
-pub fn parse_matrix<T: Clone, PF>(input: &str, parse_element: PF) -> Result<Matrix<T>, Error>
+pub fn parse_matrix<T, TE, PF>(input: &str, parse_element: PF) -> Result<Matrix<T>, TE>
 where
-    PF: Fn(char) -> Result<T, Error>,
+    PF: Fn(char) -> Result<T, TE>,
 {
-    let result_vec_vec: Result<Vec<_>, Error> = input
+    let result_vec_vec: Result<Vec<_>, TE> = input
         .lines()
         .filter(|r| !r.is_empty())
         .map(|r| {
             r.chars()
                 .map(|ch| parse_element(ch))
-                .collect::<Result<Vec<T>, Error>>()
+                .collect::<Result<Vec<T>, TE>>()
         })
         .collect();
 
     let vec_vec = result_vec_vec?;
 
-    Matrix::from_vec(
+    let result = Matrix::from_vec(
         vec_vec.len(),
         vec_vec[0].len(),
         vec_vec.into_iter().flatten().collect(),
-    )
-    .map_err(|err| format!("{err:?}"))
+    );
+
+    // TODO: Avoid this `unwrap` eventually
+    Ok(result.unwrap())
 }
 
 #[must_use]

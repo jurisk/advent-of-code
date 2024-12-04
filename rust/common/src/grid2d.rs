@@ -1,4 +1,8 @@
-#![expect(clippy::cast_possible_wrap, clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+#![expect(
+    clippy::cast_possible_wrap,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss
+)]
 
 use std::iter::Sum;
 use std::str::FromStr;
@@ -87,10 +91,13 @@ impl<T> Grid2D<T> for MatrixGrid2D<T> {
     }
 }
 
-impl FromStr for MatrixGrid2D<char> {
-    type Err = String;
+impl<T> FromStr for MatrixGrid2D<T>
+where
+    T: TryFrom<char> + Clone,
+{
+    type Err = T::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parse_matrix(s, Ok).map(|data| MatrixGrid2D { data })
+        parse_matrix(s, |ch| ch.try_into()).map(|data| MatrixGrid2D { data })
     }
 }
