@@ -10,7 +10,7 @@ import scala.annotation.tailrec
 object Advent05 {
   private type Page = Int
 
-  final case class Update(pages: List[Page]) {
+  final case class Update(pages: List[Page], index: Map[Page, Int]) {
     def middlePage: Page =
       pages(pages.length / 2)
 
@@ -21,13 +21,18 @@ object Advent05 {
         } else if (pageOrderingRules.contains(b, a)) {
           false
         } else {
-          (pages firstIndexOf a) < (pages firstIndexOf b)
+          index.get(a) < index.get(b)
         }
       }
     }
   }
 
   private object Update {
+    def apply(pages: List[Page]): Update = {
+      val index = pages.zipWithIndex.toMap
+      new Update(pages, index)
+    }
+
     def parse(s: String): Update = Update {
       s.parseCommaSeparatedList(_.toInt)
     }

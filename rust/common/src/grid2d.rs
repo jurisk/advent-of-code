@@ -98,6 +98,6 @@ where
     type Err = T::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parse_matrix(s, |ch| ch.try_into()).map(|data| MatrixGrid2D { data })
+        parse_matrix(s, TryInto::try_into).map(|data| MatrixGrid2D { data })
     }
 }

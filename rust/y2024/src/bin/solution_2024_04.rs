@@ -23,9 +23,9 @@ enum C {
 
 const XMAS: [C; 4] = [X, M, A, S];
 
-impl Into<C> for char {
-    fn into(self) -> C {
-        match self {
+impl From<char> for C {
+    fn from(ch: char) -> Self {
+        match ch {
             'X' => X,
             'M' => M,
             'A' => A,
@@ -74,7 +74,7 @@ fn is_valid_2<D: Grid2D<C>>(data: &D, coords: Coords) -> bool {
             .map(|directions| {
                 directions
                     .into_iter()
-                    .flat_map(|direction| data.get(coords + direction).copied())
+                    .filter_map(|direction| data.get(coords + direction).copied())
                     .collect()
             })
             .collect();
