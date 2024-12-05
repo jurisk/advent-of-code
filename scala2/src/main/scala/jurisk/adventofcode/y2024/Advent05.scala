@@ -5,55 +5,23 @@ import jurisk.utils.CollectionOps.SeqOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
+import scala.annotation.tailrec
+
 object Advent05 {
   private type Page = Int
 
-  final case class PrintedBefore(
-    page: Page,
-    mustBePrintedBeforePage: Page,
-  ) {
-    def matches(pages: List[Page]): Boolean =
-      (
-        pages firstIndexOf page,
-        pages firstIndexOf mustBePrintedBeforePage,
-      ) match {
-        case (Some(pageIdx), Some(mustBePrintedBeforePageIdx)) =>
-          pageIdx < mustBePrintedBeforePageIdx
-        case _                                                 => true
-      }
-  }
-
-  private object PrintedBefore {
-    def parse(s: String): PrintedBefore = {
-      val (page, mustBePrintedBeforePage) =
-        s.parsePairUnsafe('|', _.toInt, _.toInt)
-      PrintedBefore(page, mustBePrintedBeforePage)
-    }
-  }
-
   final case class Update(pages: List[Page]) {
-    def isValid(pageOrderingRules: List[PrintedBefore]): Boolean =
-      pageOrderingRules.forall(_.matches(pages))
-
     def middlePage: Page =
       pages(pages.length / 2)
 
-    def fixInvalid(pageOrderingRules: List[PrintedBefore]): Update = Update {
+    def fixInvalid(pageOrderingRules: PageOrderingRules): Update = Update {
       pages.sortWith { case (a, b) =>
-        if (
-          pageOrderingRules
-            .exists(r => r.page == a && r.mustBePrintedBeforePage == b)
-        ) {
+        if (pageOrderingRules.contains(a, b)) {
           true
-        } else if (
-          pageOrderingRules
-            .exists(r => r.page == b && r.mustBePrintedBeforePage == a)
-        ) {
+        } else if (pageOrderingRules.contains(b, a)) {
           false
         } else {
-          val aIdx = pages firstIndexOf a
-          val bIdx = pages firstIndexOf b
-          aIdx < bIdx
+          (pages firstIndexOf a) < (pages firstIndexOf b)
         }
       }
     }
@@ -65,23 +33,60 @@ object Advent05 {
     }
   }
 
+  final case class PageOrderingRules(preconditions: Map[Page, Set[Page]]) {
+    def validFor(update: Update): Boolean = {
+      @tailrec
+      def f(pages: List[Page], remaining: Set[Page]): Boolean =
+        pages match {
+          case Nil    => true
+          case h :: t =>
+            val pre = preconditions.getOrElse(h, Set.empty)
+            if ((pre intersect remaining).isEmpty) {
+              f(t, remaining - h)
+            } else {
+              false
+            }
+        }
+
+      f(update.pages, update.pages.toSet)
+    }
+
+    def contains(page: Page, precondition: Page): Boolean =
+      preconditions.getOrElse(page, Set.empty) contains precondition
+  }
+
+  private object PageOrderingRules {
+    def parse(input: String): PageOrderingRules = PageOrderingRules {
+      input
+        .parseLines { s =>
+          val (page, mustBePrintedBeforePage) =
+            s.parsePairUnsafe('|', _.toInt, _.toInt)
+          (page, mustBePrintedBeforePage)
+        }
+        .groupBy { case (_, mustBePrintedBefore) => mustBePrintedBefore }
+        .map { case (k, v) =>
+          (k, v.map { case (page, _) => page }.toSet)
+        }
+    }
+  }
+
   final case class Input(
-    pageOrderingRules: List[PrintedBefore],
+    pageOrderingRules: PageOrderingRules,
     updates: List[Update],
   )
 
   def parse(input: String): Input = {
     val (a, b)            = input.splitPairByDoubleNewline
+    val pageOrderingRules = PageOrderingRules.parse(a)
     val updates           = b parseLines Update.parse
-    val pageOrderingRules = a parseLines PrintedBefore.parse
     Input(pageOrderingRules, updates)
   }
 
   def part1(data: Input): Int =
-    data.updates.filter(_.isValid(data.pageOrderingRules)).map(_.middlePage).sum
+    data.updates.filter(data.pageOrderingRules.validFor).map(_.middlePage).sum
 
   def part2(data: Input): Int = {
-    val invalids = data.updates.filterNot(_.isValid(data.pageOrderingRules))
+    val invalids = data.updates.filterNot(data.pageOrderingRules.validFor)
     val fixed    = invalids.map(_.fixInvalid(data.pageOrderingRules))
     fixed.map(_.middlePage).sum
   }

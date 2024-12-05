@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2024
 
-import jurisk.utils.CollectionOps.{IntegralSeqOps, VectorOps}
+import jurisk.utils.CollectionOps.IntegralSeqOps
+import jurisk.utils.CollectionOps.VectorOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
