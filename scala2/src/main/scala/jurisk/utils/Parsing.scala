@@ -53,21 +53,37 @@ object Parsing {
       )
 
     def commaSeparatedList: List[String] =
-      s.split(",").map(_.trim).toList
+      s.split(',').map(_.trim).toList
 
     def parseCoords2D: Coords2D = {
-      val (x, y): (Int, Int) = s.parsePairUnsafe(",", _.trim.toInt)
+      val (x, y): (Int, Int) =
+        s.parsePairUnsafe(',', _.trim.toInt, _.trim.toInt)
       Coords2D.of(x, y)
     }
 
+    def splitPairUnsafe(separator: Char): (String, String) =
+      s.split(separator).toList.twoElementsUnsafe
+
     def splitPairUnsafe(separator: String): (String, String) =
       s.split(separator).toList.twoElementsUnsafe
+
+    def splitPairByDoubleNewline: (String, String) =
+      s.splitPairUnsafe("\n\n")
 
     def splitByDoubleNewline: List[String] =
       s.split("\n\n").toList
 
     def splitLines: List[String] =
       s.split("\n").toList
+
+    def parsePairUnsafe[A, B](
+      c: Char,
+      parserLeft: String => A,
+      parserRight: String => B,
+    ): (A, B) = {
+      val (a, b) = s.splitPairUnsafe(c)
+      (parserLeft(a), parserRight(b))
+    }
 
     def parsePairUnsafe[A, B](
       separator: String,
