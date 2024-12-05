@@ -47,6 +47,11 @@ object CollectionOps {
   }
 
   implicit class SeqOps[T](seq: Seq[T]) {
+    private val NotFound = -1
+
+    def firstIndexOf(value: T): Option[Int] =
+      seq.indexOf(value).some.filter(_ != NotFound)
+
     def firstIndexWhere(p: T => Boolean, from: Int = 0): Option[Int] = {
       val result = seq.indexWhere(p, from)
       if (result == -1) {

@@ -1,25 +1,26 @@
 package jurisk.adventofcode.y2024
 
+import cats.implicits.catsSyntaxPartialOrder
+import jurisk.utils.CollectionOps.SeqOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent05 {
   private type Page = Int
-  private val NotFound = -1
 
   final case class PrintedBefore(
     page: Page,
     mustBePrintedBeforePage: Page,
   ) {
-    def matches(pages: List[Page]): Boolean = {
-      val pageIdx                    = pages.indexOf(page)
-      val mustBePrintedBeforePageIdx = pages.indexOf(mustBePrintedBeforePage)
-      if (pageIdx == NotFound || mustBePrintedBeforePageIdx == NotFound) {
-        true
-      } else {
-        pageIdx < mustBePrintedBeforePageIdx
+    def matches(pages: List[Page]): Boolean =
+      (
+        pages firstIndexOf page,
+        pages firstIndexOf mustBePrintedBeforePage,
+      ) match {
+        case (Some(pageIdx), Some(mustBePrintedBeforePageIdx)) =>
+          pageIdx < mustBePrintedBeforePageIdx
+        case _                                                 => true
       }
-    }
   }
 
   private object PrintedBefore {
@@ -37,8 +38,8 @@ object Advent05 {
     def middlePage: Page =
       pages(pages.length / 2)
 
-    def fixInvalid(pageOrderingRules: List[PrintedBefore]): Update = {
-      val sorted = pages.sortWith { case (a, b) =>
+    def fixInvalid(pageOrderingRules: List[PrintedBefore]): Update = Update {
+      pages.sortWith { case (a, b) =>
         if (
           pageOrderingRules
             .exists(r => r.page == a && r.mustBePrintedBeforePage == b)
@@ -50,18 +51,18 @@ object Advent05 {
         ) {
           false
         } else {
-          val aIdx = pages.indexOf(a)
-          val bIdx = pages.indexOf(b)
+          val aIdx = pages firstIndexOf a
+          val bIdx = pages firstIndexOf b
           aIdx < bIdx
         }
       }
-      Update(sorted)
     }
   }
 
   private object Update {
-    def parse(s: String): Update =
-      Update(s.commaSeparatedList.map(_.toInt))
+    def parse(s: String): Update = Update {
+      s.parseCommaSeparatedList(_.toInt)
+    }
   }
 
   final case class Input(
@@ -71,8 +72,8 @@ object Advent05 {
 
   def parse(input: String): Input = {
     val (a, b)            = input.splitPairByDoubleNewline
-    val updates           = b.splitLines map Update.parse
-    val pageOrderingRules = a.splitLines map PrintedBefore.parse
+    val updates           = b parseLines Update.parse
+    val pageOrderingRules = a parseLines PrintedBefore.parse
     Input(pageOrderingRules, updates)
   }
 

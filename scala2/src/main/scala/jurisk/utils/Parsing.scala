@@ -55,6 +55,9 @@ object Parsing {
     def commaSeparatedList: List[String] =
       s.split(',').map(_.trim).toList
 
+    def parseCommaSeparatedList[T](parser: String => T): List[T] =
+      commaSeparatedList.map(parser)
+
     def parseCoords2D: Coords2D = {
       val (x, y): (Int, Int) =
         s.parsePairUnsafe(',', _.trim.toInt, _.trim.toInt)
