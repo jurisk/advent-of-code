@@ -1,76 +1,95 @@
 package jurisk.adventofcode.y2024
 
 import cats.implicits._
+import jurisk.adventofcode.y2024.Advent06.Block.Empty
+import jurisk.adventofcode.y2024.Advent06.Block.Wall
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.CardinalDirection2D
-import jurisk.geometry.{Coords2D, Direction2D, Field2D, Rotation}
+import jurisk.geometry.Field2D
+import jurisk.geometry.Rotation
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+import jurisk.utils.Simulation
 
 object Advent06 {
-  type Input = (State, Field2D[Boolean])
-  final case class State(location: Coords2D, direction: CardinalDirection2D, visited: Set[Coords2D])
-  final case class State2(location: Coords2D, direction: CardinalDirection2D)
+  sealed trait Block extends Product with Serializable
+  object Block {
+    case object Empty extends Block
+    case object Wall  extends Block
+  }
+
+  type Input = (Coords2D, Field2D[Block])
+
+  final private case class GuardWithVisitedLog(
+    guard: Guard,
+    visited: Set[Coords2D],
+  )
+
+  final private case class Guard(
+    location: Coords2D,
+    direction: CardinalDirection2D,
+  ) {
+    def next(field: Field2D[Block]): Option[Guard] = {
+      val nextLocation = location + direction
+
+      field.at(nextLocation) map {
+        case Empty =>
+          copy(location = nextLocation)
+        case Wall  =>
+          copy(direction = direction.rotate(Rotation.Right90))
+      }
+    }
+  }
 
   def parse(input: String): Input = {
     val charField = Field2D.parseCharField(input)
-    val result = charField.map {
-      case '.' => false
-      case '#'  => true
-      case '^' => false
-      case ch => ch.toString.fail
+    val field     = charField.map {
+      case '.' | '^' => Empty
+      case '#'       => Wall
+      case ch        => s"Unexpected character: $ch".fail
     }
-    val location = charField.allCoords.find(charField(_).contains('^')).get
-    val state = State(location, Direction2D.N, Set(location))
-    (state, result)
+
+    val location = charField
+      .findCoordsByValue('^')
+      .getOrElse("No starting location found".fail)
+
+    (location, field)
   }
 
   def part1(data: Input): Int = {
-    val (state, field) = data
-    var s = state
-    while (field.at(s.location).isDefined) {
-      val nextLocation = s.location + s.direction
-      field.at(nextLocation) match {
-        case Some(false) =>
-          s = s.copy(location = nextLocation, visited = s.visited + nextLocation)
-        case Some(true) =>
-          s = s.copy(direction = s.direction.rotate(Rotation.Right90))
-        case None =>
-          return s.visited.size
+    val (location, field) = data
+    val s                 = GuardWithVisitedLog(Guard(location, Direction2D.N), Set(location))
+
+    Simulation.run(s) { s =>
+      s.guard.next(field) match {
+        case Some(next) =>
+          s.copy(
+            guard = next,
+            visited = s.visited + next.location,
+          ).asRight
+        case None       =>
+          s.visited.size.asLeft
       }
     }
-    s.visited.size
   }
 
-  private def wouldLoop(c: Coords2D, state: State, field: Field2D[Boolean]): Boolean = {
-    println(s"$c")
-
-    val hypothetical = field.updatedAtUnsafe(c, true)
-    var seenStates: Set[State2] = Set()
-    var s: State2 = State2(state.location, state.direction)
-    while (true) {
-      val nextLocation = s.location + s.direction
-      if (seenStates.contains(s)) {
-        return true
-      } else {
-          seenStates += s
+  private def wouldLoop(
+    location: Coords2D,
+    field: Field2D[Block],
+  ): Boolean =
+    Simulation
+      .detectLoop(Guard(location, Direction2D.N)) { case (s, _) =>
+        s.next(field).toRight(())
       }
-
-      hypothetical.at(nextLocation) match {
-        case Some(false) =>
-          s = s.copy(location = nextLocation)
-        case Some(true) =>
-          s = s.copy(direction = s.direction.rotate(Rotation.Right90))
-        case None =>
-          return false
-      }
-    }
-    false
-  }
+      .isRight
 
   def part2(data: Input): Int = {
-    val (state, field) = data
+    val (location, field) = data
 
-    field.allCoords.filterNot(_ == state.location).count(x => wouldLoop(x, state, field))
+    field.allCoords
+      .filterNot(_ == location)
+      .count(c => wouldLoop(location, field.updatedAtUnsafe(c, Wall)))
   }
 
   def parseFile(fileName: String): Input =
@@ -80,7 +99,7 @@ object Advent06 {
     s"2024/06$suffix.txt"
 
   def main(args: Array[String]): Unit = {
-    val realData: Input = parseFile(fileName(""))
+    val realData = parseFile(fileName(""))
 
     println(s"Part 1: ${part1(realData)}")
     println(s"Part 2: ${part2(realData)}")

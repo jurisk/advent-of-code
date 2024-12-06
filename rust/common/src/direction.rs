@@ -1,9 +1,10 @@
-use std::ops::Neg;
+use std::ops::{Add, Neg};
 
 use num_traits::{One, Zero};
 
 use crate::coords2d::Coords2D;
 use crate::direction::Direction::{East, North, South, West};
+use crate::grid2d::Coords;
 use crate::parsing::Error;
 use crate::rotation::Rotation;
 
@@ -89,5 +90,19 @@ impl Direction {
             South => 'D',
             West => 'L',
         }
+    }
+}
+
+impl<T: Zero + One + Neg<Output = T> + Copy> From<Direction> for Coords2D<T> {
+    fn from(value: Direction) -> Self {
+        value.diff()
+    }
+}
+
+impl Add<Direction> for Coords {
+    type Output = Coords;
+
+    fn add(self, rhs: Direction) -> Self::Output {
+        self + rhs.diff()
     }
 }

@@ -50,8 +50,7 @@ where
     F: Fn(&T) -> T,
 {
     let mut current = start.clone();
-    let mut seen: HashSet<T> = HashSet::new();
-    seen.insert(current.clone());
+    let mut seen: HashSet<T> = HashSet::from([current.clone()]);
 
     let mut steps = 0;
     loop {
@@ -78,5 +77,47 @@ where
         if predicate(&current) {
             return (steps, current);
         }
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum SimulationOutcome {
+    Repeats,
+    Finished,
+}
+
+pub enum SimulationStepResult<T> {
+    Continue(T),
+    Finished(T),
+}
+
+pub fn until_repeats_or_finishes<T: Clone + Eq + Hash, F>(
+    start: T,
+    next: F,
+) -> (SimulationOutcome, usize, T)
+where
+    F: Fn(T) -> SimulationStepResult<T>,
+{
+    let mut current = start;
+    let mut steps = 0;
+    let mut seen: HashSet<T> = HashSet::from([current.clone()]);
+
+    loop {
+        match next(current) {
+            SimulationStepResult::Finished(result) => {
+                return (SimulationOutcome::Finished, steps, result);
+            },
+            SimulationStepResult::Continue(result) => {
+                current = result;
+
+                if seen.contains(&current) {
+                    return (SimulationOutcome::Repeats, steps, current);
+                }
+
+                seen.insert(current.clone());
+            },
+        }
+
+        steps += 1;
     }
 }

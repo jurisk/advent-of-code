@@ -4,10 +4,8 @@ import cats.Eval
 import cats.Foldable
 import cats.Functor
 import cats.implicits._
-import jurisk.adventofcode.y2023.Advent23.Square.Path
 import jurisk.algorithms.pathfinding.Bfs
 import jurisk.collections.immutable.BiMap
-import jurisk.collections.immutable.SetOfTwo
 import jurisk.collections.immutable.graph.Graph
 import jurisk.geometry.Direction2D.CardinalDirection2D
 import jurisk.utils.Parsing.StringOps
@@ -57,6 +55,15 @@ final case class Field2D[T] private (
       }
     }
   }
+
+  def findCoordsByValue(value: T): Option[Coords2D] =
+    valuesAndCoords
+      .find { case (_, v) =>
+        v == value
+      }
+      .map { case (c, _) =>
+        c
+      }
 
   def filterCoordsByValue(p: T => Boolean): List[Coords2D] = entries
     .filter { case (_, v) =>
