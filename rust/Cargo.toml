@@ -36,3 +36,7 @@ bytecount = "0.6"
 md5 = "0.7"
 strum = { version = "0.26", features = ["derive"] }
 integer-sqrt = "0.1"
+
+[profile.release]
+# For profiling only:
+# debug = true

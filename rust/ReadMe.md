@@ -63,3 +63,12 @@ xcode-select --version
 cargo instruments --list-templates
 cargo instruments --bin solution_<XY> --template 'CPU Profiler'
 ```
+
+```shell
+cargo install flamegraph
+sudo cargo flamegraph --bin=solution_<XY>
+```
+
+```shell
+time cargo run --release --bin=solution_<XY>
+```
