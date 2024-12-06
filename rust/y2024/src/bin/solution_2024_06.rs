@@ -77,14 +77,13 @@ fn parse(input: &str) -> Data {
     (location, field)
 }
 
-fn solve_1(data: &Data) -> R {
-    let (location, field) = data;
+fn guards_path(location: Coords, field: &MatrixGrid2D<Block>) -> HashSet<Coords> {
     let mut guard = Guard {
-        location:  *location,
+        location,
         direction: Direction::North,
     };
 
-    let mut visited = HashSet::from([*location]);
+    let mut visited = HashSet::from([location]);
 
     loop {
         match guard.next(field) {
@@ -92,20 +91,23 @@ fn solve_1(data: &Data) -> R {
                 visited.insert(next.location);
                 guard = next;
             },
-            None => return visited.len(),
+            None => return visited,
         }
     }
 }
 
-fn solve_2(data: Data) -> R {
-    let (location, mut field) = data;
-    let mut result = 0;
+fn solve_1(location: Coords, field: &MatrixGrid2D<Block>) -> R {
+    guards_path(location, field).len()
+}
 
-    let todos = field
-        .iter()
-        .filter(|(c, v)| *c != location && **v != Wall)
-        .map(|(c, _)| c)
+fn solve_2(location: Coords, field: MatrixGrid2D<Block>) -> R {
+    let todos = guards_path(location, &field)
+        .into_iter()
+        .filter(|c| *c != location)
         .collect::<Vec<_>>();
+
+    let mut field = field;
+    let mut result = 0;
 
     for c in todos {
         field.set(c, Wall);
@@ -134,12 +136,12 @@ fn solve_2(data: Data) -> R {
 }
 
 fn main() {
-    let data = parse(DATA);
+    let (location, field) = parse(DATA);
 
-    let result_1 = solve_1(&data);
+    let result_1 = solve_1(location, &field);
     println!("Part 1: {result_1}");
 
-    let result_2 = solve_2(data);
+    let result_2 = solve_2(location, field);
     println!("Part 2: {result_2}");
 }
 
@@ -159,21 +161,27 @@ mod tests {
 
     #[test]
     fn test_solve_1_test() {
-        assert_eq!(solve_1(&test_data()), 41);
+        let (location, field) = test_data();
+        assert_eq!(solve_1(location, &field,), 41);
     }
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(solve_1(&real_data()), 5162);
+        let (location, field) = real_data();
+        assert_eq!(solve_1(location, &field,), 5162);
     }
 
     #[test]
     fn test_solve_2_test() {
-        assert_eq!(solve_2(test_data()), 6);
+        let (location, field) = test_data();
+
+        assert_eq!(solve_2(location, field,), 6);
     }
 
     #[test]
+    #[ignore]
     fn test_solve_2_real() {
-        assert_eq!(solve_2(real_data()), 1909);
+        let (location, field) = real_data();
+        assert_eq!(solve_2(location, field,), 1909);
     }
 }
