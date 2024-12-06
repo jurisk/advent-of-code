@@ -57,11 +57,12 @@ object Advent06 {
     (location, field)
   }
 
-  def part1(data: Input): Int = {
+  private def guardsPath(data: Input): Set[Coords2D] = {
     val (location, field) = data
-    val s                 = GuardWithVisitedLog(Guard(location, Direction2D.N), Set(location))
+    val state             =
+      GuardWithVisitedLog(Guard(location, Direction2D.N), Set(location))
 
-    Simulation.run(s) { s =>
+    Simulation.run(state) { s =>
       s.guard.next(field) match {
         case Some(next) =>
           s.copy(
@@ -69,10 +70,13 @@ object Advent06 {
             visited = s.visited + next.location,
           ).asRight
         case None       =>
-          s.visited.size.asLeft
+          s.visited.asLeft
       }
     }
   }
+
+  def part1(data: Input): Int =
+    guardsPath(data).size
 
   private def wouldLoop(
     location: Coords2D,
@@ -87,7 +91,7 @@ object Advent06 {
   def part2(data: Input): Int = {
     val (location, field) = data
 
-    field.allCoords
+    guardsPath(data)
       .filterNot(_ == location)
       .count(c => wouldLoop(location, field.updatedAtUnsafe(c, Wall)))
   }
