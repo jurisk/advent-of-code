@@ -1,4 +1,6 @@
 use std::collections::HashSet;
+use bit_set::BitSet;
+
 use std::fmt::{Debug, Formatter};
 
 use advent_of_code_common::direction::Direction;
@@ -83,6 +85,7 @@ fn guards_path(location: Coords, field: &MatrixGrid2D<Block>) -> HashSet<Coords>
         direction: Direction::North,
     };
 
+    // TODO: Try a BitSet (but can you wrap it nicely?) instead of a HashSet
     let mut visited = HashSet::from([location]);
 
     loop {
