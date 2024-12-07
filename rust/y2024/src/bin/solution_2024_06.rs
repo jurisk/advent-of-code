@@ -1,10 +1,8 @@
-use std::collections::HashSet;
-use bit_set::BitSet;
-
 use std::fmt::{Debug, Formatter};
 
 use advent_of_code_common::direction::Direction;
 use advent_of_code_common::grid2d::{Coords, Grid2D, MatrixGrid2D};
+use advent_of_code_common::mutable_bit_set::MutableBitSet;
 use advent_of_code_common::rotation::Rotation;
 use advent_of_code_common::simulate::{
     SimulationOutcome, SimulationStepResult, until_repeats_or_finishes,
@@ -79,14 +77,13 @@ fn parse(input: &str) -> Data {
     (location, field)
 }
 
-fn guards_path(location: Coords, field: &MatrixGrid2D<Block>) -> HashSet<Coords> {
+fn guards_path(location: Coords, field: &MatrixGrid2D<Block>) -> MutableBitSet<Coords> {
     let mut guard = Guard {
         location,
         direction: Direction::North,
     };
 
-    // TODO: Try a BitSet (but can you wrap it nicely?) instead of a HashSet
-    let mut visited = HashSet::from([location]);
+    let mut visited = MutableBitSet::from([location]);
 
     loop {
         match guard.next(field) {
@@ -182,7 +179,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_solve_2_real() {
         let (location, field) = real_data();
         assert_eq!(solve_2(location, field,), 1909);

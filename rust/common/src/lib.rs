@@ -13,6 +13,7 @@ pub mod direction_with_diagonals;
 pub mod grid2d;
 pub mod math;
 pub mod matrices;
+pub mod mutable_bit_set;
 pub mod pairing;
 pub mod parsing;
 pub mod rotation;

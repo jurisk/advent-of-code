@@ -5,6 +5,7 @@ use std::str::FromStr;
 use num_traits::{One, Signed, Zero};
 
 use crate::direction::Direction;
+use crate::grid2d::Coords;
 use crate::parsing::{Error, split_into_two_strings};
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
@@ -141,5 +142,35 @@ where
     #[inline]
     pub const fn as_tuple(&self) -> (T, T) {
         (self.y, self.x)
+    }
+}
+
+// These conversions to/from usize are needed for the MutableBitSet
+
+// Note: This is a bit of a hack as we just picked an arbitrary number, but aren't checking it elsewhere.
+const MAX_COLUMNS: usize = 100_000;
+
+impl From<Coords> for usize {
+    #[allow(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        clippy::cast_possible_wrap
+    )]
+    fn from(value: Coords) -> Self {
+        value.x as usize + value.y as usize * MAX_COLUMNS
+    }
+}
+
+impl From<usize> for Coords {
+    #[allow(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        clippy::cast_possible_wrap
+    )]
+    fn from(value: usize) -> Self {
+        Coords {
+            x: (value % MAX_COLUMNS) as i32,
+            y: (value / MAX_COLUMNS) as i32,
+        }
     }
 }
