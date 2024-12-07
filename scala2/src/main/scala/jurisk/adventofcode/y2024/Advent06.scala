@@ -3,6 +3,8 @@ package jurisk.adventofcode.y2024
 import cats.implicits._
 import jurisk.adventofcode.y2024.Advent06.Block.Empty
 import jurisk.adventofcode.y2024.Advent06.Block.Wall
+import jurisk.collections.mutable.BitSetKey
+import jurisk.collections.mutable.MutableBitSet
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.CardinalDirection2D
@@ -20,11 +22,6 @@ object Advent06 {
   }
 
   type Input = (Coords2D, Field2D[Block])
-
-  final private case class GuardWithVisitedLog(
-    guard: Guard,
-    visited: Set[Coords2D],
-  )
 
   final private case class Guard(
     location: Coords2D,
@@ -57,24 +54,30 @@ object Advent06 {
     (location, field)
   }
 
-  private def guardsPath(data: Input): Set[Coords2D] = {
-    // TODO: Try a BitSet instead of a Set?
-
+  private def guardsPath(data: Input): MutableBitSet[Coords2D] = {
     val (location, field) = data
-    val state             =
-      GuardWithVisitedLog(Guard(location, Direction2D.N), Set(location))
+
+    implicit val key: BitSetKey[Coords2D] = new BitSetKey[Coords2D] {
+      def toInt(value: Coords2D): Int   = value.x + value.y * field.width
+      def fromInt(value: Int): Coords2D =
+        Coords2D(value % field.width, value / field.width)
+    }
+
+    val visited = MutableBitSet[Coords2D](location)
+
+    val state = Guard(location, Direction2D.N)
 
     Simulation.run(state) { s =>
-      s.guard.next(field) match {
+      s.next(field) match {
         case Some(next) =>
-          s.copy(
-            guard = next,
-            visited = s.visited + next.location,
-          ).asRight
+          visited.add(next.location)
+          next.asRight
         case None       =>
-          s.visited.asLeft
+          ().asLeft
       }
     }
+
+    visited
   }
 
   def part1(data: Input): Int =
@@ -94,8 +97,9 @@ object Advent06 {
     val (location, field) = data
 
     guardsPath(data)
-      .filterNot(_ == location)
-      .count(c => wouldLoop(location, field.updatedAtUnsafe(c, Wall)))
+      .count(c =>
+        c != location && wouldLoop(location, field.updatedAtUnsafe(c, Wall))
+      )
   }
 
   def parseFile(fileName: String): Input =

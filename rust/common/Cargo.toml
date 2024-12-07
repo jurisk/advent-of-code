@@ -16,3 +16,4 @@ num-traits.workspace = true
 num-derive.workspace = true
 itertools.workspace = true
 md5.workspace = true
+bit-set.workspace = true

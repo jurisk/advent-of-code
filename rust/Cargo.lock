@@ -118,7 +118,6 @@ name = "advent-of-code-2024"
 version = "0.1.0"
 dependencies = [
  "advent-of-code-common",
- "bit-set",
  "chumsky",
  "itertools",
  "regex",
@@ -128,6 +127,7 @@ dependencies = [
 name = "advent-of-code-common"
 version = "0.1.0"
 dependencies = [
+ "bit-set",
  "itertools",
  "md5",
  "nonempty",

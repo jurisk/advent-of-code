@@ -8,19 +8,20 @@ import org.scalatest.matchers.should.Matchers._
 
 object Advent00 {
   type Input = List[Command]
+  type N     = Long
 
   sealed trait Command extends Product with Serializable
   object Command {
     case object Noop                      extends Command
     final case class Something(
-      values: List[Int]
+      values: List[N]
     ) extends Command
     final case class Other(value: String) extends Command
 
     def parse(s: String): Command =
       s match {
         case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractIntList)
+        case s"something $rem" => Something(rem.extractLongList)
         case s if s.nonEmpty   => Other(s)
         case _                 => s.failedToParse
       }
@@ -29,10 +30,10 @@ object Advent00 {
   def parse(input: String): Input =
     input.parseLines(Command.parse)
 
-  def part1(data: Input): Int =
+  def part1(data: Input): N =
     0
 
-  def part2(data: Input): Int =
+  def part2(data: Input): N =
     0
 
   def parseFile(fileName: String): Input =

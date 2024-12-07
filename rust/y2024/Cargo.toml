@@ -14,4 +14,3 @@ advent-of-code-common = { path = "../common" }
 chumsky.workspace = true
 itertools.workspace = true
 regex.workspace = true
-bit-set.workspace = true
