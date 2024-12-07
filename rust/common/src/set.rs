@@ -6,7 +6,7 @@ pub trait Set<T> {
     fn contains(&self, value: &T) -> bool;
 }
 
-impl <T: Eq + Hash, S: BuildHasher> Set<T> for HashSet<T, S> {
+impl<T: Eq + Hash, S: BuildHasher> Set<T> for HashSet<T, S> {
     fn insert(&mut self, value: T) -> bool {
         HashSet::insert(self, value)
     }

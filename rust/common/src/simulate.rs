@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
+
 use crate::mutable_bit_set::MutableBitSet;
 use crate::set::Set;
 
@@ -104,16 +105,20 @@ where
     until_repeats_or_finishes(start, next, seen)
 }
 
+#[expect(clippy::missing_panics_doc)]
 pub fn until_repeats_or_finishes_using_bit_set<T: Clone + Eq + Hash, F>(
     start: T,
     next: F,
     capacity: usize,
+    to_u32: fn(T) -> u32,
 ) -> (SimulationOutcome, usize, T)
 where
     F: Fn(T) -> SimulationStepResult<T>,
-    usize: From<T>,
 {
-    let seen = MutableBitSet::with_capacity(capacity);
+    let from_u32 = |_value: u32| {
+        panic!("`from_u32` should never be called");
+    };
+    let seen = MutableBitSet::with_capacity(capacity, to_u32, from_u32);
     until_repeats_or_finishes(start, next, seen)
 }
 

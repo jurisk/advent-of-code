@@ -17,8 +17,8 @@ pub enum Direction {
     West  = b'W',
 }
 
-impl From<Direction> for usize {
-    fn from(value: Direction) -> Self {
+impl From<Direction> for u32 {
+    fn from(value: Direction) -> u32 {
         match value {
             North => 0,
             East => 1,

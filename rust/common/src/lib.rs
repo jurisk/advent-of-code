@@ -17,6 +17,6 @@ pub mod mutable_bit_set;
 pub mod pairing;
 pub mod parsing;
 pub mod rotation;
+pub mod set;
 pub mod simulate;
 pub mod utils;
-pub mod set;

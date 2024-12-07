@@ -1,33 +1,34 @@
 use std::marker::PhantomData;
 
 use bit_set::BitSet;
+
 use crate::set::Set;
 
 pub struct MutableBitSet<T> {
-    underlying: BitSet<u32>,
+    underlying: BitSet,
+    to_u32:     fn(T) -> u32,
+    from_u32:   fn(u32) -> T,
     phantom:    PhantomData<T>,
-}
-
-impl<T> Default for MutableBitSet<T> {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 impl<T> MutableBitSet<T> {
     #[must_use]
-    pub fn new() -> Self {
+    pub fn new(to_u32: fn(T) -> u32, from_u32: fn(u32) -> T) -> Self {
         Self {
             underlying: BitSet::default(),
-            phantom:    PhantomData,
+            to_u32,
+            from_u32,
+            phantom: PhantomData,
         }
     }
 
     #[must_use]
-    pub fn with_capacity(capacity: usize) -> Self {
+    pub fn with_capacity(capacity: usize, to_u32: fn(T) -> u32, from_u32: fn(u32) -> T) -> Self {
         Self {
             underlying: BitSet::with_capacity(capacity),
-            phantom:    PhantomData,
+            to_u32,
+            from_u32,
+            phantom: PhantomData,
         }
     }
 
@@ -50,69 +51,43 @@ impl<T> MutableBitSet<T> {
     }
 }
 
-impl<T: Clone> Set<T> for MutableBitSet<T>
-where
-    usize: From<T>,
-{
+impl<T: Clone> Set<T> for MutableBitSet<T> {
     fn insert(&mut self, value: T) -> bool {
-        self.underlying.insert(value.into())
+        let value = (self.to_u32)(value);
+        self.underlying.insert(value as usize)
     }
 
     #[must_use]
     fn contains(&self, value: &T) -> bool {
-        self.underlying.contains(value.clone().into())
+        let value = (self.to_u32)(value.clone());
+        self.underlying.contains(value as usize)
     }
 }
 
-pub struct  MutableBitSetIter<'a, T> {
-    iter: bit_set::Iter<'a, u32>, // Adjust this to match `BitSet`'s iterator
-    phantom: PhantomData<T>,
+pub struct MutableBitSetIter<'a, T> {
+    iter:     bit_set::Iter<'a, u32>, // Adjust this to match `BitSet`'s iterator
+    from_u32: fn(u32) -> T,
+    phantom:  PhantomData<T>,
 }
 
-impl<T> Iterator for MutableBitSetIter<'_, T>
-where
-    T: From<usize>,
-{
+impl<T> Iterator for MutableBitSetIter<'_, T> {
     type Item = T;
 
+    #[expect(clippy::cast_possible_truncation)]
     fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next().map(T::from)
+        self.iter.next().map(|value| (self.from_u32)(value as u32))
     }
 }
 
-impl<'a, T> IntoIterator for &'a MutableBitSet<T>
-where
-    T: From<usize>,
-{
-    type Item = T;
+impl<'a, T> IntoIterator for &'a MutableBitSet<T> {
     type IntoIter = MutableBitSetIter<'a, T>;
+    type Item = T;
 
     fn into_iter(self) -> Self::IntoIter {
         MutableBitSetIter {
-            iter: self.underlying.into_iter(),
-            phantom: PhantomData,
+            iter:     self.underlying.into_iter(),
+            from_u32: self.from_u32,
+            phantom:  PhantomData,
         }
-    }
-}
-
-impl<T: Clone, const N: usize> From<[T; N]> for MutableBitSet<T>
-where
-    usize: From<T>,
-{
-    fn from(value: [T; N]) -> Self {
-        MutableBitSet::from_iter(value)
-    }
-}
-
-impl <T: Clone> FromIterator<T> for MutableBitSet<T>
-where
-    usize: From<T>,
-{
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-        let mut set = MutableBitSet::new();
-        for value in iter {
-            set.insert(value);
-        }
-        set
     }
 }

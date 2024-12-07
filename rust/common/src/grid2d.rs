@@ -53,7 +53,14 @@ pub trait Grid2D<T> {
     fn coords(&self) -> impl Iterator<Item = Coords>;
 
     fn rows(&self) -> usize;
+    fn height(&self) -> usize {
+        self.rows()
+    }
+
     fn columns(&self) -> usize;
+    fn width(&self) -> usize {
+        self.columns()
+    }
 
     fn is_empty(&self) -> bool {
         self.len() == 0

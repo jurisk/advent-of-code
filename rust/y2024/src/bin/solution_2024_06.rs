@@ -1,10 +1,14 @@
 use std::fmt::{Debug, Formatter};
+
+use advent_of_code_common::coords2d::{from_u32, to_u32};
 use advent_of_code_common::direction::Direction;
 use advent_of_code_common::grid2d::{Coords, Grid2D, MatrixGrid2D};
 use advent_of_code_common::mutable_bit_set::MutableBitSet;
 use advent_of_code_common::rotation::Rotation;
 use advent_of_code_common::set::Set;
-use advent_of_code_common::simulate::{SimulationOutcome, SimulationStepResult, until_repeats_or_finishes_using_bit_set};
+use advent_of_code_common::simulate::{
+    SimulationOutcome, SimulationStepResult, until_repeats_or_finishes_using_bit_set,
+};
 
 use crate::Block::{Empty, Wall};
 
@@ -75,13 +79,17 @@ fn parse(input: &str) -> Data {
     (location, field)
 }
 
-fn guards_path(location: Coords, field: &MatrixGrid2D<Block>) -> MutableBitSet<Coords> {
+fn guards_path(location: Coords, field: &MatrixGrid2D<Block>) -> Vec<Coords> {
     let mut guard = Guard {
         location,
         direction: Direction::North,
     };
 
-    let mut visited = MutableBitSet::from([location]);
+    // TODO: Do not use a fixed grid width, use field.width() instead
+    let c_to_u32 = |c| to_u32(c, 10_000);
+    let u32_to_c = |u| from_u32(u, 10_000);
+    let mut visited = MutableBitSet::new(c_to_u32, u32_to_c);
+    visited.insert(location);
 
     loop {
         match guard.next(field) {
@@ -89,22 +97,13 @@ fn guards_path(location: Coords, field: &MatrixGrid2D<Block>) -> MutableBitSet<C
                 visited.insert(next.location);
                 guard = next;
             },
-            None => return visited,
+            None => return visited.into_iter().collect(),
         }
     }
 }
 
 fn solve_1(location: Coords, field: &MatrixGrid2D<Block>) -> R {
     guards_path(location, field).len()
-}
-
-impl From<Guard> for usize {
-    fn from(value: Guard) -> Self {
-        let Guard { location, direction } = value;
-        let location: usize = location.into();
-        let direction: usize = direction.into();
-        location * 4 + direction
-    }
 }
 
 fn solve_2(location: Coords, field: MatrixGrid2D<Block>) -> R {
@@ -115,6 +114,13 @@ fn solve_2(location: Coords, field: MatrixGrid2D<Block>) -> R {
 
     let mut field = field;
     let mut result = 0;
+
+    let g_to_u32 = |g: Guard| {
+        // TODO: Do not use fixed width
+        let location = to_u32(g.location, 10_000);
+        let direction: u32 = g.direction.into();
+        location * 4 + direction
+    };
 
     for c in todos {
         field.set(c, Wall);
@@ -131,6 +137,7 @@ fn solve_2(location: Coords, field: MatrixGrid2D<Block>) -> R {
                 }
             },
             4 * field.len(),
+            g_to_u32,
         );
 
         if outcome == SimulationOutcome::Repeats {

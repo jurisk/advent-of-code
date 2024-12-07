@@ -146,31 +146,17 @@ where
 }
 
 // These conversions to/from usize are needed for the MutableBitSet
-
-// Note: This is a bit of a hack as we just picked an arbitrary number, but aren't checking it elsewhere.
-const MAX_COLUMNS: usize = 10_000;
-
-impl From<Coords> for usize {
-    #[allow(
-        clippy::cast_possible_truncation,
-        clippy::cast_sign_loss,
-        clippy::cast_possible_wrap
-    )]
-    fn from(value: Coords) -> Self {
-        value.x as usize + value.y as usize * MAX_COLUMNS
-    }
+#[must_use]
+#[expect(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+pub fn to_u32(coords: Coords, grid_width: usize) -> u32 {
+    (coords.x as u32) + (coords.y as u32) * grid_width as u32
 }
 
-impl From<usize> for Coords {
-    #[allow(
-        clippy::cast_possible_truncation,
-        clippy::cast_sign_loss,
-        clippy::cast_possible_wrap
-    )]
-    fn from(value: usize) -> Self {
-        Coords {
-            x: (value % MAX_COLUMNS) as i32,
-            y: (value / MAX_COLUMNS) as i32,
-        }
+#[must_use]
+#[expect(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+pub fn from_u32(value: u32, grid_width: usize) -> Coords {
+    Coords {
+        x: (value % grid_width as u32) as i32,
+        y: (value / grid_width as u32) as i32,
     }
 }
