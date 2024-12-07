@@ -280,3 +280,13 @@ pub fn split_into_two_segments_separated_by_double_newline(
 ) -> Result<(String, String), Error> {
     split_into_two_strings(&normalize_newlines(input), "\n\n")
 }
+
+#[expect(clippy::missing_errors_doc)]
+pub fn parse_pair_unsafe<A, B, PA, PB>(input: &str, delimiter: &str, parse_left: PA, parse_right: PB) -> Result<(A, B), Error>
+where
+    PA: Fn(&str) -> Result<A, Error>,
+    PB: Fn(&str) -> Result<B, Error>,
+{
+    let (a, b) = split_into_two_strings(input, delimiter)?;
+    Ok((parse_left(&a)?, parse_right(&b)?))
+}
