@@ -45,16 +45,35 @@ fn validate<const ALLOW_PIPE: bool>(result: N, numbers: &mut [N]) -> bool {
     match numbers {
         [] => false,
         [a] => result == *a,
-        [a, b, t @ ..] => {
-            let mut options = vec![*a * *b, *a + *b];
-            if ALLOW_PIPE {
-                options.push(concat(*a, *b));
-            }
+        [a, bt @ ..] => {
+            if bt.is_empty() {
+                false
+            } else {
+                let saved_b = bt[0];
 
-            options.iter().any(|r| {
-                let mut combined = [vec![*r], t.to_vec()].concat();
-                validate::<ALLOW_PIPE>(result, &mut combined)
-            })
+                bt[0] = *a + saved_b;
+                if validate::<ALLOW_PIPE>(result, bt) {
+                    bt[0] = saved_b;
+                    return true;
+                }
+
+                bt[0] = *a * saved_b;
+                if validate::<ALLOW_PIPE>(result, bt) {
+                    bt[0] = saved_b;
+                    return true;
+                }
+
+                if ALLOW_PIPE {
+                    bt[0] = concat(*a, saved_b);
+                    if validate::<ALLOW_PIPE>(result, bt) {
+                        bt[0] = saved_b;
+                        return true;
+                    }
+                }
+
+                bt[0] = saved_b;
+                false
+            }
         },
     }
 }
