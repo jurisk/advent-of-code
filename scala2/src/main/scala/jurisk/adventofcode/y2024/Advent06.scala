@@ -58,6 +58,8 @@ object Advent06 {
   }
 
   private def guardsPath(data: Input): Set[Coords2D] = {
+    // TODO: Try a BitSet instead of a Set?
+
     val (location, field) = data
     val state             =
       GuardWithVisitedLog(Guard(location, Direction2D.N), Set(location))

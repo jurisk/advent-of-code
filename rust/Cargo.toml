@@ -28,6 +28,7 @@ chumsky = "0.9"
 regex = "1.9"
 rand = "0.8"
 bimap = "0.6"
+bit-set = "0.8.0"
 lazy_static = "1.4"
 recap = { git = "https://github.com/jurisk/recap", branch = "fix_warn_non_local_definitions" }
 serde = "1.0"
