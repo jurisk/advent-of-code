@@ -37,7 +37,7 @@ fn parse(input: &str) -> Result<Data, Error> {
     clippy::cast_precision_loss
 )]
 fn concat(a: N, b: N) -> N {
-    let b_length = (b as f64).log10() as u32 + 1;
+    let b_length = b.ilog10() + 1;
     a * 10u64.pow(b_length) + b
 }
 
