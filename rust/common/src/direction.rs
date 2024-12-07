@@ -17,6 +17,17 @@ pub enum Direction {
     West  = b'W',
 }
 
+impl From<Direction> for usize {
+    fn from(value: Direction) -> Self {
+        match value {
+            North => 0,
+            East => 1,
+            South => 2,
+            West => 3,
+        }
+    }
+}
+
 impl Direction {
     #[allow(clippy::match_same_arms)]
     #[must_use]

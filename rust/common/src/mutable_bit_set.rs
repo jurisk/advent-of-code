@@ -1,9 +1,10 @@
 use std::marker::PhantomData;
 
 use bit_set::BitSet;
+use crate::set::Set;
 
 pub struct MutableBitSet<T> {
-    underlying: BitSet<usize>,
+    underlying: BitSet<u32>,
     phantom:    PhantomData<T>,
 }
 
@@ -18,6 +19,14 @@ impl<T> MutableBitSet<T> {
     pub fn new() -> Self {
         Self {
             underlying: BitSet::default(),
+            phantom:    PhantomData,
+        }
+    }
+
+    #[must_use]
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            underlying: BitSet::with_capacity(capacity),
             phantom:    PhantomData,
         }
     }
@@ -41,22 +50,22 @@ impl<T> MutableBitSet<T> {
     }
 }
 
-impl<T> MutableBitSet<T>
+impl<T: Clone> Set<T> for MutableBitSet<T>
 where
     usize: From<T>,
 {
-    pub fn insert(&mut self, value: T) -> bool {
+    fn insert(&mut self, value: T) -> bool {
         self.underlying.insert(value.into())
     }
 
     #[must_use]
-    pub fn contains(&self, value: T) -> bool {
-        self.underlying.contains(value.into())
+    fn contains(&self, value: &T) -> bool {
+        self.underlying.contains(value.clone().into())
     }
 }
 
 pub struct  MutableBitSetIter<'a, T> {
-    iter: bit_set::Iter<'a, usize>, // Adjust this to match `BitSet`'s iterator
+    iter: bit_set::Iter<'a, u32>, // Adjust this to match `BitSet`'s iterator
     phantom: PhantomData<T>,
 }
 
@@ -86,7 +95,7 @@ where
     }
 }
 
-impl<T, const N: usize> From<[T; N]> for MutableBitSet<T>
+impl<T: Clone, const N: usize> From<[T; N]> for MutableBitSet<T>
 where
     usize: From<T>,
 {
@@ -95,7 +104,7 @@ where
     }
 }
 
-impl <T> FromIterator<T> for MutableBitSet<T>
+impl <T: Clone> FromIterator<T> for MutableBitSet<T>
 where
     usize: From<T>,
 {

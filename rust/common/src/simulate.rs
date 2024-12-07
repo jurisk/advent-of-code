@@ -1,5 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
+use crate::mutable_bit_set::MutableBitSet;
+use crate::set::Set;
 
 #[must_use]
 pub fn n_steps<F, T: Clone>(start: &T, steps: usize, next: F) -> T
@@ -91,16 +93,42 @@ pub enum SimulationStepResult<T> {
     Finished(T),
 }
 
-pub fn until_repeats_or_finishes<T: Clone + Eq + Hash, F>(
+pub fn until_repeats_or_finishes_using_hash_set<T: Clone + Eq + Hash, F>(
     start: T,
     next: F,
 ) -> (SimulationOutcome, usize, T)
 where
     F: Fn(T) -> SimulationStepResult<T>,
 {
+    let seen: HashSet<T> = HashSet::new();
+    until_repeats_or_finishes(start, next, seen)
+}
+
+pub fn until_repeats_or_finishes_using_bit_set<T: Clone + Eq + Hash, F>(
+    start: T,
+    next: F,
+    capacity: usize,
+) -> (SimulationOutcome, usize, T)
+where
+    F: Fn(T) -> SimulationStepResult<T>,
+    usize: From<T>,
+{
+    let seen = MutableBitSet::with_capacity(capacity);
+    until_repeats_or_finishes(start, next, seen)
+}
+
+fn until_repeats_or_finishes<T: Clone + Eq + Hash, F, S: Set<T>>(
+    start: T,
+    next: F,
+    set: S,
+) -> (SimulationOutcome, usize, T)
+where
+    F: Fn(T) -> SimulationStepResult<T>,
+{
     let mut current = start;
     let mut steps = 0;
-    let mut seen: HashSet<T> = HashSet::from([current.clone()]);
+    let mut seen = set;
+    seen.insert(current.clone());
 
     loop {
         match next(current) {

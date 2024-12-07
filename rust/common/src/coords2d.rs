@@ -148,7 +148,7 @@ where
 // These conversions to/from usize are needed for the MutableBitSet
 
 // Note: This is a bit of a hack as we just picked an arbitrary number, but aren't checking it elsewhere.
-const MAX_COLUMNS: usize = 100_000;
+const MAX_COLUMNS: usize = 10_000;
 
 impl From<Coords> for usize {
     #[allow(

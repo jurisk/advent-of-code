@@ -54,6 +54,14 @@ pub trait Grid2D<T> {
 
     fn rows(&self) -> usize;
     fn columns(&self) -> usize;
+
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    fn len(&self) -> usize {
+        self.rows() * self.columns()
+    }
 }
 
 pub struct MatrixGrid2D<T> {

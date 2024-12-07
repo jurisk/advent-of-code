@@ -1,12 +1,10 @@
 use std::fmt::{Debug, Formatter};
-
 use advent_of_code_common::direction::Direction;
 use advent_of_code_common::grid2d::{Coords, Grid2D, MatrixGrid2D};
 use advent_of_code_common::mutable_bit_set::MutableBitSet;
 use advent_of_code_common::rotation::Rotation;
-use advent_of_code_common::simulate::{
-    SimulationOutcome, SimulationStepResult, until_repeats_or_finishes,
-};
+use advent_of_code_common::set::Set;
+use advent_of_code_common::simulate::{SimulationOutcome, SimulationStepResult, until_repeats_or_finishes_using_bit_set};
 
 use crate::Block::{Empty, Wall};
 
@@ -100,6 +98,15 @@ fn solve_1(location: Coords, field: &MatrixGrid2D<Block>) -> R {
     guards_path(location, field).len()
 }
 
+impl From<Guard> for usize {
+    fn from(value: Guard) -> Self {
+        let Guard { location, direction } = value;
+        let location: usize = location.into();
+        let direction: usize = direction.into();
+        location * 4 + direction
+    }
+}
+
 fn solve_2(location: Coords, field: MatrixGrid2D<Block>) -> R {
     let todos = guards_path(location, &field)
         .into_iter()
@@ -112,7 +119,7 @@ fn solve_2(location: Coords, field: MatrixGrid2D<Block>) -> R {
     for c in todos {
         field.set(c, Wall);
 
-        let (outcome, ..) = until_repeats_or_finishes(
+        let (outcome, ..) = until_repeats_or_finishes_using_bit_set(
             Guard {
                 location,
                 direction: Direction::North,
@@ -123,6 +130,7 @@ fn solve_2(location: Coords, field: MatrixGrid2D<Block>) -> R {
                     Some(next) => SimulationStepResult::Continue(next),
                 }
             },
+            4 * field.len(),
         );
 
         if outcome == SimulationOutcome::Repeats {

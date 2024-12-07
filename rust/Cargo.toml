@@ -40,4 +40,4 @@ integer-sqrt = "0.1"
 
 [profile.release]
 # For profiling only:
-# debug = true
+debug = true
