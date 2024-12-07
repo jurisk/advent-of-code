@@ -22,8 +22,8 @@ object BitSetKeySyntax {
     def toInt: Int = ev.toInt(value)
   }
 
-  implicit class BitSetKeyOps2[T](value: Int)(implicit ev: BitSetKey[T]) {
-    def fromInt: T = ev.fromInt(value)
+  implicit class BitSetKeyOps2(value: Int) {
+    def fromInt[T](implicit ev: BitSetKey[T]): T = ev.fromInt(value)
   }
 }
 
@@ -48,9 +48,15 @@ final class MutableBitSet[T: BitSetKey](
     predicate: T => Boolean
   ): Int =
     underlying.count(x => predicate(x.fromInt))
+
+  def contains(value: T): Boolean =
+    underlying.contains(value.toInt)
 }
 
 object MutableBitSet {
+  def empty[T: BitSetKey]: MutableBitSet[T] =
+    new MutableBitSet[T]()
+
   def apply[T: BitSetKey](values: T*): MutableBitSet[T] = {
     val result = new MutableBitSet[T]()
     values.foreach(result.add)

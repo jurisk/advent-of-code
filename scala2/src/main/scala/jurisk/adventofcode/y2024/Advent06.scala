@@ -4,6 +4,7 @@ import cats.implicits._
 import jurisk.adventofcode.y2024.Advent06.Block.Empty
 import jurisk.adventofcode.y2024.Advent06.Block.Wall
 import jurisk.collections.mutable.BitSetKey
+import jurisk.collections.mutable.BitSetKeySyntax._
 import jurisk.collections.mutable.MutableBitSet
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
@@ -86,12 +87,48 @@ object Advent06 {
   private def wouldLoop(
     location: Coords2D,
     field: Field2D[Block],
-  ): Boolean =
+  ): Boolean = {
+    implicit val coordsBitSetKey: BitSetKey[Coords2D] =
+      new BitSetKey[Coords2D] {
+        def toInt(value: Coords2D): Int   = value.x + value.y * field.width
+        def fromInt(value: Int): Coords2D =
+          Coords2D(value % field.width, value / field.width)
+      }
+
+    implicit val directionBitSetKey: BitSetKey[CardinalDirection2D] =
+      new BitSetKey[CardinalDirection2D] {
+        def toInt(value: CardinalDirection2D): Int   = value match {
+          case Direction2D.N => 0
+          case Direction2D.E => 1
+          case Direction2D.S => 2
+          case Direction2D.W => 3
+        }
+        def fromInt(value: Int): CardinalDirection2D = value match {
+          case 0 => Direction2D.N
+          case 1 => Direction2D.E
+          case 2 => Direction2D.S
+          case 3 => Direction2D.W
+          case _ => s"Invalid value: $value".fail
+        }
+      }
+
+    implicit val guardBitSetKey: BitSetKey[Guard] = new BitSetKey[Guard] {
+      def toInt(guard: Guard): Int =
+        guard.location.toInt * 4 + guard.direction.toInt
+
+      def fromInt(value: Int): Guard = {
+        val location  = (value / 4).fromInt[Coords2D]
+        val direction = (value % 4).fromInt[CardinalDirection2D]
+        Guard(location, direction)
+      }
+    }
+
     Simulation
-      .detectLoop(Guard(location, Direction2D.N)) { case (s, _) =>
+      .detectLoopUsingBitSet(Guard(location, Direction2D.N)) { case (s, _) =>
         s.next(field).toRight(())
       }
       .isRight
+  }
 
   def part2(data: Input): Int = {
     val (location, field) = data

@@ -1,6 +1,8 @@
 package jurisk.utils
 
 import cats.implicits._
+import jurisk.collections.mutable.BitSetKey
+import jurisk.collections.mutable.MutableBitSet
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -115,7 +117,7 @@ object Simulation {
   def detectLoop[State, Result](initial: State)(
     f: (State, Counter) => Either[Result, State]
   ): Either[Result, (Counter, Counter)] = {
-    val alreadySeen: mutable.HashMap[State, Counter] = mutable.HashMap.empty
+    val alreadySeen: mutable.Map[State, Counter] = mutable.HashMap.empty
     runWithIterationCount(initial) { case (state, iteration) =>
       alreadySeen.get(state) match {
         case Some(iterationWeSawThisBefore) =>
@@ -123,6 +125,20 @@ object Simulation {
         case None                           =>
           alreadySeen.update(state, iteration)
           f(state, iteration).leftMap(_.asLeft)
+      }
+    }
+  }
+
+  def detectLoopUsingBitSet[State: BitSetKey, Result](initial: State)(
+    f: (State, Counter) => Either[Result, State]
+  ): Either[Result, Counter] = {
+    val alreadySeen = MutableBitSet.empty[State]
+    runWithIterationCount(initial) { case (state, iteration) =>
+      if (alreadySeen.contains(state)) {
+        iteration.asRight.asLeft
+      } else {
+        alreadySeen.add(state)
+        f(state, iteration).leftMap(_.asLeft)
       }
     }
   }
