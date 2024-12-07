@@ -11,7 +11,7 @@ object Advent07 {
     a * math.pow(10, bLength).toLong + b
   }
 
-  private[y2024] def validate(
+  private[y2024] def f(
     allowPipe: Boolean,
     result: Long,
     numbers: List[Long],
@@ -26,7 +26,7 @@ object Advent07 {
         ) ::: (if (allowPipe) List(concatLongs(a, b)) else Nil)
 
         options.exists { r =>
-          validate(allowPipe, result, r :: t)
+          f(allowPipe, result, r :: t)
         }
     }
 
@@ -34,11 +34,8 @@ object Advent07 {
     result: Long,
     numbers: List[Long],
   ) {
-    def options1: Boolean =
-      validate(allowPipe = false, result, numbers)
-
-    def options2: Boolean =
-      validate(allowPipe = true, result, numbers)
+    def validate(allowPipe: Boolean): Boolean =
+      f(allowPipe, result, numbers)
   }
 
   object Equation {
@@ -51,11 +48,14 @@ object Advent07 {
   def parse(input: String): Input =
     input.parseLines(Equation.parse)
 
+  def solve(data: Input, allowPipe: Boolean): Long =
+    data.filter(_.validate(allowPipe)).map(_.result).sum
+
   def part1(data: Input): Long =
-    data.filter(_.options1).map(_.result).sum
+    solve(data, allowPipe = false)
 
   def part2(data: Input): Long =
-    data.filter(_.options2).map(_.result).sum
+    solve(data, allowPipe = true)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))

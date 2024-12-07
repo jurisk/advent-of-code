@@ -15,7 +15,7 @@ class Advent07Spec extends AnyFreeSpec {
 
     "3267: 81 40 27" in {
       val equation = Equation.parse("3267: 81 40 27")
-      validate(
+      f(
         allowPipe = false,
         equation.result,
         equation.numbers,
