@@ -1,13 +1,17 @@
 use std::str::FromStr;
-use advent_of_code_common::parsing::{Error, parse_lines_to_vec, parse_pair_unsafe, parse_separated_vec, parse_str};
+
+use advent_of_code_common::parsing::{
+    Error, parse_lines_to_vec, parse_pair_unsafe, parse_separated_vec, parse_str,
+};
 
 const DATA: &str = include_str!("../../resources/07.txt");
 
 type N = u64;
 type R = u64;
 
+#[derive(Clone)]
 struct Equation {
-    result: N,
+    result:  N,
     numbers: Vec<N>,
 }
 
@@ -27,55 +31,59 @@ fn parse(input: &str) -> Result<Data, Error> {
     parse_lines_to_vec(input)
 }
 
-#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss, clippy::cast_precision_loss)]
+#[allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    clippy::cast_precision_loss
+)]
 fn concat(a: N, b: N) -> N {
     let b_length = (b as f64).log10() as u32 + 1;
     a * 10u64.pow(b_length) + b
 }
 
-fn validate(allow_pipe: bool, result: N, numbers: &[N]) -> bool {
+fn validate<const ALLOW_PIPE: bool>(result: N, numbers: &mut [N]) -> bool {
     match numbers {
         [] => false,
         [a] => result == *a,
         [a, b, t @ ..] => {
-            let mut options = vec![
-                a * b,
-                a + b,
-            ];
-            if allow_pipe {
+            let mut options = vec![*a * *b, *a + *b];
+            if ALLOW_PIPE {
                 options.push(concat(*a, *b));
             }
 
             options.iter().any(|r| {
-                let combined = [vec![*r], t.to_vec()].concat();
-                validate(allow_pipe, result, &combined)
+                let mut combined = [vec![*r], t.to_vec()].concat();
+                validate::<ALLOW_PIPE>(result, &mut combined)
             })
-        }
+        },
     }
 }
 
-fn solve(data: &Data, allow_pipes: bool) -> N {
-    data.iter().filter(|equation| {
-        let Equation { result, numbers } = equation;
-        validate(allow_pipes, *result, numbers)
-    }).map(|equation| equation.result).sum()
+fn solve<const ALLOW_PIPE: bool>(data: &mut Data) -> N {
+    let mut result = 0;
+    for equation in data.iter_mut() {
+        if validate::<ALLOW_PIPE>(equation.result, &mut equation.numbers) {
+            result += equation.result;
+        }
+    }
+    result
 }
 
-fn solve_1(data: &Data) -> R {
-    solve(data, false)
+fn solve_1(data: &mut Data) -> R {
+    solve::<false>(data)
 }
 
-fn solve_2(data: &Data) -> R {
-    solve(data, true)
+fn solve_2(data: &mut Data) -> R {
+    solve::<true>(data)
 }
 
 fn main() -> Result<(), Error> {
-    let data = parse(DATA)?;
+    let mut data = parse(DATA)?;
 
-    let result_1 = solve_1(&data);
+    let result_1 = solve_1(&mut data.clone());
     println!("Part 1: {result_1}");
 
-    let result_2 = solve_2(&data);
+    let result_2 = solve_2(&mut data);
     println!("Part 2: {result_2}");
 
     Ok(())
@@ -97,21 +105,21 @@ mod tests {
 
     #[test]
     fn test_solve_1_test() {
-        assert_eq!(solve_1(&test_data()), 3749);
+        assert_eq!(solve_1(&mut test_data()), 3749);
     }
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(solve_1(&real_data()), 1_038_838_357_795);
+        assert_eq!(solve_1(&mut real_data()), 1_038_838_357_795);
     }
 
     #[test]
     fn test_solve_2_test() {
-        assert_eq!(solve_2(&test_data()), 11387);
+        assert_eq!(solve_2(&mut test_data()), 11387);
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(solve_2(&real_data()), 254_136_560_217_241);
+        assert_eq!(solve_2(&mut real_data()), 254_136_560_217_241);
     }
 }
