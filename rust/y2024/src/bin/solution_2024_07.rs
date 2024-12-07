@@ -41,41 +41,28 @@ fn concat(a: N, b: N) -> N {
     a * 10u64.pow(b_length) + b
 }
 
-fn validate<const ALLOW_PIPE: bool>(result: N, numbers: &mut [N]) -> bool {
-    match numbers {
-        [] => false,
-        [a] => result == *a,
-        [a, bt @ ..] => {
-            if bt.is_empty() {
-                false
-            } else {
-                let saved_b = bt[0];
-
-                bt[0] = *a + saved_b;
-                if validate::<ALLOW_PIPE>(result, bt) {
-                    bt[0] = saved_b;
-                    return true;
-                }
-
-                bt[0] = *a * saved_b;
-                if validate::<ALLOW_PIPE>(result, bt) {
-                    bt[0] = saved_b;
-                    return true;
-                }
-
-                if ALLOW_PIPE {
-                    bt[0] = concat(*a, saved_b);
-                    if validate::<ALLOW_PIPE>(result, bt) {
-                        bt[0] = saved_b;
-                        return true;
-                    }
-                }
-
-                bt[0] = saved_b;
-                false
+fn try_op<const ALLOW_PIPE: bool>(result: N, op: fn(N, N) -> N, numbers: &mut [N]) -> bool {
+    match numbers.first().copied() {
+        Some(a) => {
+            match numbers.get(1).copied() {
+                Some(b) => {
+                    numbers[1] = op(a, b);
+                    let obtained = validate::<ALLOW_PIPE>(result, &mut numbers[1 ..]);
+                    numbers[1] = b;
+                    obtained
+                },
+                None => result == a,
             }
         },
+
+        None => result == 0,
     }
+}
+
+fn validate<const ALLOW_PIPE: bool>(result: N, numbers: &mut [N]) -> bool {
+    try_op::<ALLOW_PIPE>(result, |a, b| a + b, numbers)
+        || try_op::<ALLOW_PIPE>(result, |a, b| a * b, numbers)
+        || (ALLOW_PIPE && try_op::<ALLOW_PIPE>(result, concat, numbers))
 }
 
 fn solve<const ALLOW_PIPE: bool>(data: &mut Data) -> N {
