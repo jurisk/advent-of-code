@@ -85,10 +85,9 @@ fn guards_path(location: Coords, field: &MatrixGrid2D<Block>) -> Vec<Coords> {
         direction: Direction::North,
     };
 
-    // TODO: Do not use a fixed grid width, use field.width() instead
-    let c_to_u32 = |c| to_u32(c, 10_000);
-    let u32_to_c = |u| from_u32(u, 10_000);
-    let mut visited = MutableBitSet::new(c_to_u32, u32_to_c);
+    let c_to_u32 = |c| to_u32(c, field.width());
+    let u32_to_c = |u| from_u32(u, field.width());
+    let mut visited = MutableBitSet::new(&c_to_u32, &u32_to_c);
     visited.insert(location);
 
     loop {
@@ -115,15 +114,14 @@ fn solve_2(location: Coords, field: MatrixGrid2D<Block>) -> R {
     let mut field = field;
     let mut result = 0;
 
-    let g_to_u32 = |g: Guard| {
-        // TODO: Do not use fixed width
-        let location = to_u32(g.location, 10_000);
-        let direction: u32 = g.direction.into();
-        location * 4 + direction
-    };
-
     for c in todos {
         field.set(c, Wall);
+
+        let g_to_u32 = |g: Guard| {
+            let location = to_u32(g.location, field.width());
+            let direction: u32 = g.direction.into();
+            location * 4 + direction
+        };
 
         let (outcome, ..) = until_repeats_or_finishes_using_bit_set(
             Guard {
@@ -137,7 +135,7 @@ fn solve_2(location: Coords, field: MatrixGrid2D<Block>) -> R {
                 }
             },
             4 * field.len(),
-            g_to_u32,
+            &g_to_u32,
         );
 
         if outcome == SimulationOutcome::Repeats {

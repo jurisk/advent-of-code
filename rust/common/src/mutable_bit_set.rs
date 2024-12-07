@@ -4,16 +4,16 @@ use bit_set::BitSet;
 
 use crate::set::Set;
 
-pub struct MutableBitSet<T> {
+pub struct MutableBitSet<'a, T> {
     underlying: BitSet,
-    to_u32:     fn(T) -> u32,
-    from_u32:   fn(u32) -> T,
+    to_u32:     &'a dyn Fn(T) -> u32,
+    from_u32:   &'a dyn Fn(u32) -> T,
     phantom:    PhantomData<T>,
 }
 
-impl<T> MutableBitSet<T> {
+impl<'a, T> MutableBitSet<'a, T> {
     #[must_use]
-    pub fn new(to_u32: fn(T) -> u32, from_u32: fn(u32) -> T) -> Self {
+    pub fn new(to_u32: &'a dyn Fn(T) -> u32, from_u32: &'a dyn Fn(u32) -> T) -> Self {
         Self {
             underlying: BitSet::default(),
             to_u32,
@@ -23,7 +23,11 @@ impl<T> MutableBitSet<T> {
     }
 
     #[must_use]
-    pub fn with_capacity(capacity: usize, to_u32: fn(T) -> u32, from_u32: fn(u32) -> T) -> Self {
+    pub fn with_capacity(
+        capacity: usize,
+        to_u32: &'a dyn Fn(T) -> u32,
+        from_u32: &'a dyn Fn(u32) -> T,
+    ) -> Self {
         Self {
             underlying: BitSet::with_capacity(capacity),
             to_u32,
@@ -51,7 +55,7 @@ impl<T> MutableBitSet<T> {
     }
 }
 
-impl<T: Clone> Set<T> for MutableBitSet<T> {
+impl<T: Clone> Set<T> for MutableBitSet<'_, T> {
     fn insert(&mut self, value: T) -> bool {
         let value = (self.to_u32)(value);
         self.underlying.insert(value as usize)
@@ -66,7 +70,7 @@ impl<T: Clone> Set<T> for MutableBitSet<T> {
 
 pub struct MutableBitSetIter<'a, T> {
     iter:     bit_set::Iter<'a, u32>, // Adjust this to match `BitSet`'s iterator
-    from_u32: fn(u32) -> T,
+    from_u32: &'a dyn Fn(u32) -> T,
     phantom:  PhantomData<T>,
 }
 
@@ -79,7 +83,7 @@ impl<T> Iterator for MutableBitSetIter<'_, T> {
     }
 }
 
-impl<'a, T> IntoIterator for &'a MutableBitSet<T> {
+impl<'a, T> IntoIterator for &'a MutableBitSet<'a, T> {
     type IntoIter = MutableBitSetIter<'a, T>;
     type Item = T;
 
