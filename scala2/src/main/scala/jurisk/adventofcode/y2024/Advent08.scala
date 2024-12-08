@@ -57,18 +57,6 @@ object Advent08 {
       field
     }
 
-  private def update(
-    field: Input,
-    frequency: Char,
-    a: Coords2D,
-    b: Coords2D,
-    limit: Option[Int],
-  ): Input =
-    List((a, a - b), (b, b - a)).foldLeft(field) {
-      case (field, (start, diff)) =>
-        helper(field, frequency, start, diff, limit)
-    }
-
   private def processFrequency(
     field: Input,
     frequency: Char,
@@ -82,7 +70,7 @@ object Advent08 {
     }.flatten
 
     pairs.foldLeft(field) { case (field, (a, b)) =>
-      update(field, frequency, a, b, limit)
+      helper(field, frequency, a, a - b, limit)
     }
   }
 

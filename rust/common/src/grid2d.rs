@@ -4,6 +4,7 @@
     clippy::cast_sign_loss
 )]
 
+use std::convert::Infallible;
 use std::fmt::{Debug, Formatter};
 use std::iter::Sum;
 use std::str::FromStr;
@@ -28,9 +29,15 @@ pub trait Grid2D<T> {
     where
         T: PartialEq;
 
+    fn filter_coords_by_value(&self, value: &T) -> Vec<Coords>
+    where
+        T: PartialEq;
+
     fn count<F>(&self, f: F) -> usize
     where
         F: Fn(Coords, &T) -> bool;
+
+    fn valid_coords(&self, coords: Coords) -> bool;
 
     fn get(&self, coords: Coords) -> Option<&T>;
 
@@ -73,6 +80,18 @@ pub trait Grid2D<T> {
 
 pub struct MatrixGrid2D<T> {
     data: Matrix<T>,
+}
+
+impl<T> MatrixGrid2D<T> {
+    #[expect(clippy::missing_panics_doc)]
+    pub fn parse(input: &str, f: impl Fn(char) -> T) -> Self
+    where
+        T: TryFrom<char>,
+    {
+        Self {
+            data: parse_matrix(input, |ch| Ok::<T, Infallible>(f(ch))).unwrap(),
+        }
+    }
 }
 
 impl From<(usize, usize)> for Coords {
@@ -126,6 +145,22 @@ impl<T> Grid2D<T> for MatrixGrid2D<T> {
         })
     }
 
+    fn filter_coords_by_value(&self, value: &T) -> Vec<Coords>
+    where
+        T: PartialEq,
+    {
+        self.data
+            .keys()
+            .filter_map(|coords| {
+                if self.data[coords] == *value {
+                    Some(Coords::from(coords))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
     fn count<F>(&self, f: F) -> usize
     where
         F: Fn(Coords, &T) -> bool,
@@ -171,6 +206,11 @@ impl<T> Grid2D<T> for MatrixGrid2D<T> {
 
     fn columns(&self) -> usize {
         self.data.columns
+    }
+
+    fn valid_coords(&self, coords: Coords) -> bool {
+        let (r, c) = coords.into();
+        self.data.within_bounds((r, c))
     }
 }
 
