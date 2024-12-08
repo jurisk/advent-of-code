@@ -3,17 +3,20 @@ package jurisk.adventofcode.y2024
 import cats.implicits._
 import jurisk.adventofcode.y2024.Advent06.Block.Empty
 import jurisk.adventofcode.y2024.Advent06.Block.Wall
-import jurisk.collections.mutable.BitSetKey
-import jurisk.collections.mutable.BitSetKeySyntax._
 import jurisk.collections.mutable.MutableBitSet
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.CardinalDirection2D
 import jurisk.geometry.Field2D
+import jurisk.geometry.Field2D.coordsToInt
+import jurisk.geometry.Field2D.intToCoords
 import jurisk.geometry.Rotation
 import jurisk.utils.FileInput._
+import jurisk.utils.FromInt
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
+import jurisk.utils.ToInt
+import jurisk.utils.conversions.syntax._
 
 object Advent06 {
   sealed trait Block extends Product with Serializable
@@ -58,11 +61,7 @@ object Advent06 {
   private def guardsPath(data: Input): MutableBitSet[Coords2D] = {
     val (location, field) = data
 
-    implicit val key: BitSetKey[Coords2D] = new BitSetKey[Coords2D] {
-      def toInt(value: Coords2D): Int   = value.x + value.y * field.width
-      def fromInt(value: Int): Coords2D =
-        Coords2D(value % field.width, value / field.width)
-    }
+    implicit val c2i: ToInt[Coords2D] = coordsToInt(field)
 
     val visited = MutableBitSet[Coords2D](location)
 
@@ -88,39 +87,16 @@ object Advent06 {
     location: Coords2D,
     field: Field2D[Block],
   ): Boolean = {
-    implicit val coordsBitSetKey: BitSetKey[Coords2D] =
-      new BitSetKey[Coords2D] {
-        def toInt(value: Coords2D): Int   = value.x + value.y * field.width
-        def fromInt(value: Int): Coords2D =
-          Coords2D(value % field.width, value / field.width)
+    implicit val c2i: ToInt[Coords2D] = coordsToInt(field)
+    implicit val g2i: ToInt[Guard]    = (guard: Guard) => {
+      val directionInt = guard.direction match {
+        case Direction2D.N => 0
+        case Direction2D.E => 1
+        case Direction2D.S => 2
+        case Direction2D.W => 3
       }
 
-    implicit val directionBitSetKey: BitSetKey[CardinalDirection2D] =
-      new BitSetKey[CardinalDirection2D] {
-        def toInt(value: CardinalDirection2D): Int   = value match {
-          case Direction2D.N => 0
-          case Direction2D.E => 1
-          case Direction2D.S => 2
-          case Direction2D.W => 3
-        }
-        def fromInt(value: Int): CardinalDirection2D = value match {
-          case 0 => Direction2D.N
-          case 1 => Direction2D.E
-          case 2 => Direction2D.S
-          case 3 => Direction2D.W
-          case _ => s"Invalid value: $value".fail
-        }
-      }
-
-    implicit val guardBitSetKey: BitSetKey[Guard] = new BitSetKey[Guard] {
-      def toInt(guard: Guard): Int =
-        guard.location.toInt * 4 + guard.direction.toInt
-
-      def fromInt(value: Int): Guard = {
-        val location  = (value / 4).fromInt[Coords2D]
-        val direction = (value % 4).fromInt[CardinalDirection2D]
-        Guard(location, direction)
-      }
+      guard.location.toInt * 4 + directionInt
     }
 
     Simulation
@@ -132,6 +108,8 @@ object Advent06 {
 
   def part2(data: Input): Int = {
     val (location, field) = data
+
+    implicit val i2c: FromInt[Coords2D] = intToCoords(field)
 
     guardsPath(data)
       .count(c =>

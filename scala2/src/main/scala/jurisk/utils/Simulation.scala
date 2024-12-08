@@ -1,7 +1,6 @@
 package jurisk.utils
 
 import cats.implicits._
-import jurisk.collections.mutable.BitSetKey
 import jurisk.collections.mutable.MutableBitSet
 
 import scala.annotation.tailrec
@@ -129,7 +128,7 @@ object Simulation {
     }
   }
 
-  def detectLoopUsingBitSet[State: BitSetKey, Result](initial: State)(
+  def detectLoopUsingBitSet[State: ToInt, Result](initial: State)(
     f: (State, Counter) => Either[Result, State]
   ): Either[Result, Counter] = {
     val alreadySeen = MutableBitSet.empty[State]

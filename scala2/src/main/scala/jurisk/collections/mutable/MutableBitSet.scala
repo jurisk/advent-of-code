@@ -1,33 +1,12 @@
 package jurisk.collections.mutable
 
-import jurisk.collections.mutable.BitSetKeySyntax.BitSetKeyOps1
-import jurisk.collections.mutable.BitSetKeySyntax.BitSetKeyOps2
+import jurisk.utils.FromInt
+import jurisk.utils.ToInt
+import jurisk.utils.conversions.syntax._
 
 import scala.collection.mutable
 
-trait BitSetKey[T] {
-  def toInt(value: T): Int
-  def fromInt(value: Int): T
-}
-
-object BitSetKeyInstances {
-  implicit val intBitSetKey: BitSetKey[Int] = new BitSetKey[Int] {
-    def toInt(value: Int): Int   = value
-    def fromInt(value: Int): Int = value
-  }
-}
-
-object BitSetKeySyntax {
-  implicit class BitSetKeyOps1[T](value: T)(implicit ev: BitSetKey[T]) {
-    def toInt: Int = ev.toInt(value)
-  }
-
-  implicit class BitSetKeyOps2(value: Int) {
-    def fromInt[T](implicit ev: BitSetKey[T]): T = ev.fromInt(value)
-  }
-}
-
-final class MutableBitSet[T: BitSetKey](
+final class MutableBitSet[T: ToInt](
   private val underlying: mutable.BitSet
 ) {
   private def this() =
@@ -41,12 +20,12 @@ final class MutableBitSet[T: BitSetKey](
 
   def filterNot(
     predicate: T => Boolean
-  ): MutableBitSet[T] =
+  )(implicit FI: FromInt[T]): MutableBitSet[T] =
     new MutableBitSet(underlying.filterNot(x => predicate(x.fromInt)))
 
   def count(
     predicate: T => Boolean
-  ): Int =
+  )(implicit FI: FromInt[T]): Int =
     underlying.count(x => predicate(x.fromInt))
 
   def contains(value: T): Boolean =
@@ -54,10 +33,10 @@ final class MutableBitSet[T: BitSetKey](
 }
 
 object MutableBitSet {
-  def empty[T: BitSetKey]: MutableBitSet[T] =
+  def empty[T: ToInt]: MutableBitSet[T] =
     new MutableBitSet[T]()
 
-  def apply[T: BitSetKey](values: T*): MutableBitSet[T] = {
+  def apply[T: ToInt](values: T*): MutableBitSet[T] = {
     val result = new MutableBitSet[T]()
     values.foreach(result.add)
     result

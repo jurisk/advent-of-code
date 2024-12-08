@@ -8,7 +8,9 @@ import jurisk.algorithms.pathfinding.Bfs
 import jurisk.collections.immutable.BiMap
 import jurisk.collections.immutable.graph.Graph
 import jurisk.geometry.Direction2D.CardinalDirection2D
+import jurisk.utils.FromInt
 import jurisk.utils.Parsing.StringOps
+import jurisk.utils.ToInt
 
 import scala.collection.immutable.ArraySeq
 import scala.reflect.ClassTag
@@ -317,6 +319,12 @@ final case class Field2D[T] private (
 }
 
 object Field2D {
+  //  Useful helpers to generate implicits used by the `jurisk.collections.mutable.MutableBitSet`
+  def coordsToInt[S](field: Field2D[S]): ToInt[Coords2D]   = (value: Coords2D) =>
+    value.x + value.y * field.width
+  def intToCoords[S](field: Field2D[S]): FromInt[Coords2D] = (value: Int) =>
+    Coords2D(value % field.width, value / field.width)
+
   implicit val functorInstance: Functor[Field2D] = new Functor[Field2D] {
     override def map[A, B](fa: Field2D[A])(f: A => B): Field2D[B] =
       fa.mapByCoordsWithValues { case (_, v) => f(v) }
