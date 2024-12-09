@@ -1,8 +1,7 @@
 package jurisk.adventofcode.y2020
 
 import cats.implicits.*
-import jurisk.adventofcode.AdventApp.ErrorMessage
-import jurisk.adventofcode.SingleLineAdventApp
+import AdventApp.ErrorMessage
 import jurisk.adventofcode.y2020.Advent08.{ExecutionResult, Instruction}
 
 import scala.annotation.tailrec

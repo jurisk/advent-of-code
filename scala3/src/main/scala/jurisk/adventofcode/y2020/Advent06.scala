@@ -1,8 +1,7 @@
 package jurisk.adventofcode.y2020
 
 import cats.implicits.*
-import jurisk.adventofcode.AdventApp.ErrorMessage
-import jurisk.adventofcode.MultiLineAdventApp
+import AdventApp.ErrorMessage
 
 import scala.io.Source
 

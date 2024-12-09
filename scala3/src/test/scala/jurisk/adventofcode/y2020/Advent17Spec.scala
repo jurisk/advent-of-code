@@ -14,7 +14,7 @@ object Advent17Spec extends App:
   
   def parse(x: String) = parseTestCases(x.split(Properties.lineSeparator).filter(_.nonEmpty).toList)
   
-  val testsA = parse(inputA).fold((e) => sys.error(s"$e"), identity)
+  val testsA = parse(inputA).fold(e => sys.error(s"$e"), identity)
 
   val solved1 = solution1(testsA)
   val expected1 = 112

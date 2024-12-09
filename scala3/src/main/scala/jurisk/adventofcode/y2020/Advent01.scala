@@ -1,7 +1,6 @@
 package jurisk.adventofcode.y2020
 
-import jurisk.adventofcode.AdventApp.ErrorMessage
-import jurisk.adventofcode.SingleLineAdventApp
+import AdventApp.ErrorMessage
 
 object Advent01 extends SingleLineAdventApp[Int, Int]:
   def fileName: String = "01.txt"

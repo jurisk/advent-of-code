@@ -146,5 +146,11 @@ object CollectionOps {
 
     def removeAt(index: Int): Vector[T] =
       vector.slice(0, index) ++ vector.slice(index + 1, vector.length)
+
+    def insertAt(index: Int, slice: Vector[T]): Vector[T] =
+      vector.slice(0, index) ++ slice ++ vector.slice(index, vector.length)
+
+    def replaceAt(index: Int, slice: Vector[T]): Vector[T] =
+      vector.slice(0, index) ++ slice ++ vector.slice(index + 1, vector.length)
   }
 }

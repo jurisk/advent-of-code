@@ -2,16 +2,21 @@ package jurisk.adventofcode.y2020
 
 import cats.implicits.*
 import jurisk.adventofcode.y2020.Advent05.*
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers._
 
-object Advent05Spec extends App:
-  def check(input: String, expected: Int) = {
-    val obtained = seatId(input)
-    assert(obtained == expected.asRight, s"Failed $input $expected - got $obtained")
+class Advent05Spec extends AnyFreeSpec:
+  "seatId" - {
+    "FBFBBFFRLR" in {
+      seatId("FBFBBFFRLR") shouldEqual 357.asRight
+    }
+    "BFFFBBFRRR" in {
+      seatId("BFFFBBFRRR") shouldEqual 567.asRight
+    }
+    "FFFBBBFRRR" in {
+      seatId("FFFBBBFRRR") shouldEqual 119.asRight
+    }
+    "BBFFBBFRLL" in {
+      seatId("BBFFBBFRLL") shouldEqual 820.asRight
+    }
   }
-
-  check("FBFBBFFRLR", 357)
-  check("BFFFBBFRRR", 567)
-  check("FFFBBBFRRR", 119)
-  check("BBFFBBFRLL", 820)
-
-  println("Passed")

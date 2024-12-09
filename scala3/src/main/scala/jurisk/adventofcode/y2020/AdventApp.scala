@@ -1,9 +1,8 @@
-package jurisk.adventofcode
+package jurisk.adventofcode.y2020
 
-import cats.Show
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits.*
-import jurisk.adventofcode.AdventApp.ErrorMessage
+import AdventApp.ErrorMessage
 
 import scala.io.Source
 
