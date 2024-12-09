@@ -80,5 +80,5 @@ object Advent24 extends App:
     println(realAfter100Days.black.size)
     assert(realAfter100Days.black.size == expected2)
 
-  run("24-test.txt", 10, 2208)
-  run("24.txt", 275, 3537)
+  run("2020/24-test.txt", 10, 2208)
+  run("2020/24.txt", 275, 3537)

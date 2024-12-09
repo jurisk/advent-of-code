@@ -12,7 +12,7 @@ type Group = Set[Form]
 type MergeFunction[T] = (Set[T], Set[T]) => Set[T]
 
 object Advent06 extends MultiLineAdventApp[Group, Int]:
-  def fileName: String = "06.txt"
+  def fileName: String = "06"
 
   def solve(testCases: List[Group], f: MergeFunction[Answer]): Int =
     testCases.map(_.reduce(f).size).sum

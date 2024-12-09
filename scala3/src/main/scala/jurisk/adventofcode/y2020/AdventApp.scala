@@ -12,6 +12,7 @@ object AdventApp:
     def apply(message: String): ErrorMessage = message
 
 sealed private trait AdventApp[TestCase, Output] extends IOApp:
+  private def makeFilePath(fileName: String): String = s"2020/$fileName.txt"
   def fileName: String
   
   def parseTestCases(lines: List[String]): Either[ErrorMessage, List[TestCase]]
@@ -22,9 +23,10 @@ sealed private trait AdventApp[TestCase, Output] extends IOApp:
   def run(args: List[String]): IO[ExitCode] = {
     def printOutput(answer: Either[ErrorMessage, Output]): IO[Unit] =
       IO(println(answer.bimap(x => s"Error: $x", _.toString).merge))
-    
+
+    val path = makeFilePath(fileName)
     for
-      lines           <-  IO(Source.fromResource(fileName).getLines().toList)
+      lines           <-  IO(Source.fromResource(path).getLines().toList)
       testCases       =   parseTestCases(lines)
       answer1         =   testCases.map(solution1)
       _               <-  printOutput(answer1)

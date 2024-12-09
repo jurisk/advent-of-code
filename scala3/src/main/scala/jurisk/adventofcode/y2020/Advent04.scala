@@ -84,7 +84,7 @@ object Advent04 extends App:
 
   private val Pair = """(\w+):(.+)""".r
   private val passports =
-    Source.fromResource("04.txt")
+    Source.fromResource("2020/04.txt")
       .getLines()
       .mkString("\n")
       .split("\n\n")

@@ -93,7 +93,7 @@ object Advent21 extends App:
     assert(solution2 == expected2)
     println(solution2)
 
-  run("21-test.txt", 5, "mxmxvkd,sqjhc,fvjkl")
-  run("21.txt", 2826, "pbhthx,sqdsxhb,dgvqv,csnfnl,dnlsjr,xzb,lkdg,rsvlb")
+  run("2020/21-test.txt", 5, "mxmxvkd,sqjhc,fvjkl")
+  run("2020/21.txt", 2826, "pbhthx,sqdsxhb,dgvqv,csnfnl,dnlsjr,xzb,lkdg,rsvlb")
 
   println("Passed")

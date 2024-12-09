@@ -102,7 +102,7 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int]:
   private object Grid:
     def empty[C <: Coordinates[C]]: Grid[C] = new Grid(Map.empty)
   
-  def fileName: String = "17.txt"
+  def fileName: String = "17"
 
   def solve[C <: Coordinates[C]](grid: Grid[C], iterations: Int): Int =
     val resultingGrid = (0 until iterations)

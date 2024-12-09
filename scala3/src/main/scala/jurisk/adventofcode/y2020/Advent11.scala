@@ -7,7 +7,7 @@ import jurisk.adventofcode.y2020.Advent11.{Line, Seat}
 import scala.annotation.tailrec
 
 object Advent11 extends SingleLineAdventApp[Line, Int]:
-  def fileName: String = "11.txt"
+  def fileName: String = "11"
 
   enum Seat:
     case Floor

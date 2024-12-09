@@ -3,7 +3,7 @@ package jurisk.adventofcode.y2020
 import scala.io.Source
 
 object Advent03 extends App:
-  val data = Source.fromResource("03.txt").getLines().toArray
+  val data = Source.fromResource("2020/03.txt").getLines().toArray
   private val Tree = '#'
 
   def f(jumpRight: Int, jumpDown: Int): Long =

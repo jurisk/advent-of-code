@@ -248,7 +248,7 @@ object Advent20 extends App:
     println(solution2)
     assert(solution2 == expected2)
 
-  run("20-test.txt", 20899048083289L, 273)
-  run("20.txt", 60145080587029L, 1901)
+  run("2020/20-test.txt", 20899048083289L, 273)
+  run("2020/20.txt", 60145080587029L, 1901)
 
   println("Passed")

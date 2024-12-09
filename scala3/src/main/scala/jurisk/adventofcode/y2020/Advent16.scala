@@ -119,9 +119,9 @@ object Advent16 extends IOApp:
       .product
 
   def run(args: List[String]): IO[ExitCode] = for
-    testInput <-  IO(Source.fromResource("16-test.txt").getLines().toVector)
+    testInput <-  IO(Source.fromResource("2020/16-test.txt").getLines().toVector)
     testData  =   parse(testInput)
-    realInput <-  IO(Source.fromResource("16.txt").getLines().toVector)
+    realInput <-  IO(Source.fromResource("2020/16.txt").getLines().toVector)
     realData  =   parse(realInput)
 
     result1   =   solve1(realData)

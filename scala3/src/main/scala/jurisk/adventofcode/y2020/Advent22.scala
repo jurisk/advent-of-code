@@ -82,7 +82,7 @@ object Advent22 extends App:
     println(solution2)
     assert(solution2 == expected2)
 
-  run("22-test.txt", 306, 291)
-  run("22.txt", 34566, 31854)
+  run("2020/22-test.txt", 306, 291)
+  run("2020/22.txt", 34566, 31854)
 
   println("Passed")

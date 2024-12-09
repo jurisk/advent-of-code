@@ -8,12 +8,11 @@ import scala.io.Source
 
 object Advent05 extends IOApp:
   def decode(zero: Char, one: Char)(input: String): Either[ErrorMessage, Int] =
-    input.map { c =>
-      c match
-        case `zero`   =>  0.asRight
-        case `one`    =>  1.asRight
-        case _        =>  ErrorMessage(s"Unexpected character $c in $input").asLeft
-    }
+    input.map {
+        case `zero` => 0.asRight
+        case `one` => 1.asRight
+        case c => ErrorMessage(s"Unexpected character $c in $input").asLeft
+      }
     .toList
     .sequence
     .map(_.foldLeft(0) { case (acc, x) => acc * 2 + x})
@@ -46,7 +45,7 @@ object Advent05 extends IOApp:
 
   def run(args: List[String]): IO[ExitCode] =
     for
-      lines           <-  IO(Source.fromResource("05.txt").getLines().toList)
+      lines           <-  IO(Source.fromResource("2020/05.txt").getLines().toList)
       sortedSeatIds   =   lines.map(seatId).sequence.map(_.sorted)
       solution1       =   sortedSeatIds.flatMap(findLast)
       _               <-  output(solution1)

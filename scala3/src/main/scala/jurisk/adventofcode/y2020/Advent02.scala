@@ -24,7 +24,7 @@ object Advent02 extends App:
       case _ =>
         sys.error(s"Couldn't parse $x")
 
-  val list = Source.fromResource("02.txt").getLines().map(parse).toList
+  val list = Source.fromResource("2020/02.txt").getLines().map(parse).toList
   
   def solve(f: Item => Boolean): Unit =
     println(list.count(f))
