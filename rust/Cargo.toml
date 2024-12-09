@@ -39,5 +39,5 @@ strum = { version = "0.26", features = ["derive"] }
 integer-sqrt = "0.1"
 
 [profile.release]
-# For profiling only:
+# For profiling:
 debug = true

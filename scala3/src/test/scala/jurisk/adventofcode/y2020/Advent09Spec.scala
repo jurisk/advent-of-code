@@ -1,12 +1,13 @@
 package jurisk.adventofcode.y2020
 
-import cats.implicits.*
-import jurisk.adventofcode.y2020.Advent09
+import jurisk.adventofcode.y2020.Advent09.solution2
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers.*
 
 import scala.util.Properties
 
-object Advent09Spec extends App:
-  val tests1 = """
+class Advent09Spec extends AnyFreeSpec:
+  private val tests1 = """
      |20
      |15
      |25
@@ -27,18 +28,14 @@ object Advent09Spec extends App:
      |309
      |576""".stripMargin
   
-  def parse(x: String) = Advent09.parseTestCases(x.split(Properties.lineSeparator).filter(_.nonEmpty).toList)
+  private def parse(x: String) = Advent09.parseTestCases(x.split(Properties.lineSeparator).filter(_.nonEmpty).toList)
   
-  val testCases1 = parse(tests1).getOrElse(sys.error("failed"))
+  private val testCases1 = parse(tests1).getOrElse(sys.error("failed"))
 
-  val solved1 = Advent09.solution1(testCases1, 5)
-  
-  val expected1 = Some(127)
-  require(solved1 == expected1, s"$solved1 did not equal $expected1")
+  "solution1" in {
+    Advent09.solution1(testCases1, 5) shouldEqual Some(127)
+  }
 
-  val solved2 = Advent09.solution2(testCases1, 5)
-  
-  val expected2 = Some(62)
-  require(solved2 == expected2, s"$solved2 did not equal $expected2")
-
-  println("Passed")
+  "solution2" in {
+    solution2(testCases1, 5) shouldEqual Some(62)
+  }

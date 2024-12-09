@@ -11,7 +11,7 @@ import scala.annotation.tailrec
 object Advent09 {
   sealed trait Node extends Product with Serializable
   object Node {
-    final case class File(fileId: FileId, blocks: Int) extends Node
+    final case class Full(fileId: FileId, blocks: Int) extends Node
     final case class Free(blocks: Int)                 extends Node
   }
 
@@ -25,7 +25,7 @@ object Advent09 {
       .zipWithIndex
       .map { case (length, index) =>
         if (index % 2 == 0) {
-          Node.File(index / 2, length)
+          Node.Full(index / 2, length)
         } else {
           Node.Free(length)
         }
@@ -34,7 +34,7 @@ object Advent09 {
 
   private def decompress(nodes: Vector[Node]): Vector[Option[FileId]] =
     nodes.flatMap {
-      case Node.File(fileId, blocks) => Vector.fill(blocks)(Some(fileId))
+      case Node.Full(fileId, blocks) => Vector.fill(blocks)(Some(fileId))
       case Node.Free(blocks)         => Vector.fill(blocks)(None)
     }
 
@@ -78,10 +78,10 @@ object Advent09 {
   }
 
   def part2(nodes: Input): N = {
-    val toMove: Vector[Node.File] = nodes.reverse flatMap { node =>
+    val toMove: Vector[Node.Full] = nodes.reverse flatMap { node =>
       node match {
-        case Node.Free(_)        => none[Node.File]
-        case x @ Node.File(_, _) =>
+        case Node.Free(_)        => none[Node.Full]
+        case x @ Node.Full(_, _) =>
           x.some
       }
     }
@@ -125,7 +125,7 @@ object Advent09 {
   private def printNodes(v: Vector[Node]): Unit = {
     val s = v flatMap { n =>
       n match {
-        case Node.File(fileId, blocks) =>
+        case Node.Full(fileId, blocks) =>
           List.fill(blocks)(fileId.toString).mkString
         case Node.Free(blocks)         => List.fill(blocks)(".").mkString
       }
