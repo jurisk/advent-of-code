@@ -1,12 +1,12 @@
 package jurisk.adventofcode.y2020
 
-import cats.implicits.*
-import jurisk.adventofcode.y2020.Advent10
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.matchers.should.Matchers.*
 
 import scala.util.Properties
 
-object Advent10Spec extends App:
-  val inputA = """
+class Advent10Spec extends AnyFreeSpec:
+  private val inputA = """
     |16
     |10
     |15
@@ -20,16 +20,18 @@ object Advent10Spec extends App:
     |4
     |""".stripMargin
   
-  def parse(x: String) = Advent10.parseTestCases(x.split(Properties.lineSeparator).filter(_.nonEmpty).toList)
+  private def parse(x: String) = Advent10.parseTestCases(x.split(Properties.lineSeparator).filter(_.nonEmpty).toList)
   
-  val testsA = parse(inputA).getOrElse(sys.error("failed"))
+  private val testsA = parse(inputA).getOrElse(sys.error("failed"))
 
-  val solved1 = Advent10.solution1(testsA)
-  
-  val expected1 = 7 * 5
-  require(solved1 == expected1, s"$solved1 did not equal $expected1")
+  "solution1" in {
+    val solved1 = Advent10.solution1(testsA)
 
-  val inputB =
+    val expected1 = 7 * 5
+    require(solved1 == expected1, s"$solved1 did not equal $expected1")
+  }
+
+  private val inputB =
     """
       |28
       |33
@@ -63,22 +65,23 @@ object Advent10Spec extends App:
       |10
       |3""".stripMargin
 
-  val testsB = parse(inputB).getOrElse(sys.error("failed"))
-  val solved2 = Advent10.solution1(testsB)
-  
-  val expected2 = 22 * 10
-  require(solved2 == expected2, s"$solved2 did not equal $expected2")
+  private val testsB = parse(inputB).getOrElse(sys.error("failed"))
 
-  assert(Advent10.solution2(1 :: Nil) == 1)
-  assert(Advent10.solution2(1 :: 2 :: Nil) == 2)
-  assert(Advent10.solution2(1 :: 2 :: 3 :: Nil) == 4)
+  "solution2" in {
+    val solved2 = Advent10.solution1(testsB)
 
-  val solved3 = Advent10.solution2(testsA)
-  val expected3 = 8
-  require(solved3 == expected3, s"$solved3 did not equal $expected3")
-  
-  val solved4 = Advent10.solution2(testsB)
-  val expected4 = 19208
-  require(solved4 == expected4, s"$solved4 did not equal $expected4")
+    val expected2 = 22 * 10
+    require(solved2 == expected2, s"$solved2 did not equal $expected2")
 
-  println("Passed")
+    assert(Advent10.solution2(1 :: Nil) == 1)
+    assert(Advent10.solution2(1 :: 2 :: Nil) == 2)
+    assert(Advent10.solution2(1 :: 2 :: 3 :: Nil) == 4)
+
+    val solved3 = Advent10.solution2(testsA)
+    val expected3 = 8
+    require(solved3 == expected3, s"$solved3 did not equal $expected3")
+
+    val solved4 = Advent10.solution2(testsB)
+    val expected4 = 19208
+    require(solved4 == expected4, s"$solved4 did not equal $expected4")
+  }
