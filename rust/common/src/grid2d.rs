@@ -12,6 +12,8 @@ use std::str::FromStr;
 use pathfinding::matrix::Matrix;
 
 use crate::coords2d::Coords2D;
+use crate::direction::Direction;
+use crate::direction_with_diagonals::DirectionWithDiagonals;
 use crate::parsing::parse_matrix;
 
 pub type Coords = Coords2D<i32>;
@@ -75,6 +77,22 @@ pub trait Grid2D<T> {
 
     fn len(&self) -> usize {
         self.rows() * self.columns()
+    }
+
+    fn neighbours_for(&self, c: Coords, include_diagonal: bool) -> Vec<Coords> {
+        if include_diagonal {
+            DirectionWithDiagonals::all()
+                .into_iter()
+                .map(|d| c + d)
+                .filter(|n| self.valid_coords(*n))
+                .collect()
+        } else {
+            Direction::all()
+                .into_iter()
+                .map(|d| c + d)
+                .filter(|n| self.valid_coords(*n))
+                .collect()
+        }
     }
 }
 

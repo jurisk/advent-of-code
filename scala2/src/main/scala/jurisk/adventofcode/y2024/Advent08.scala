@@ -62,7 +62,7 @@ object Advent08 {
     frequency: Char,
     limit: Option[Int],
   ): Input = {
-    val locations = field.filterCoordsByValue { case (sq, _) =>
+    val locations = field.filterCoordsByPredicate { case (sq, _) =>
       sq == Antenna(frequency)
     }
     val pairs     = (locations, locations).mapN { case (a, b) =>

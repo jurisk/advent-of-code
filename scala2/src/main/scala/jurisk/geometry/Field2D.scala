@@ -67,7 +67,10 @@ final case class Field2D[T] private (
         c
       }
 
-  def filterCoordsByValue(p: T => Boolean): List[Coords2D] = entries
+  def filterCoordsByValue(v: T): List[Coords2D] =
+    filterCoordsByPredicate(_ == v)
+
+  def filterCoordsByPredicate(p: T => Boolean): List[Coords2D] = entries
     .filter { case (_, v) =>
       p(v)
     }

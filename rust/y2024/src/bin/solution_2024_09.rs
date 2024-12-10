@@ -1,7 +1,5 @@
 use std::fmt::{Debug, Formatter};
 
-use advent_of_code_common::parsing::Error;
-
 const DATA: &str = include_str!("../../resources/09.txt");
 
 #[derive(Copy, Clone)]
@@ -102,7 +100,7 @@ impl Disk {
         self.nodes
             .iter()
             .enumerate()
-            .flat_map(|(idx, n)| {
+            .filter_map(|(idx, n)| {
                 match n {
                     Node::Free(free_count) if *free_count >= count => Some((idx, *free_count)),
                     _ => None,
@@ -176,7 +174,6 @@ impl Debug for Disk {
 fn parse(input: &str) -> Disk {
     let nodes: Vec<Node> = input
         .chars()
-        .into_iter()
         .enumerate()
         .map(|(idx, ch)| {
             let count = (ch as u8 - b'0') as usize;
@@ -202,7 +199,7 @@ fn solve_2(disk: Disk) -> R {
     disk.check_sum()
 }
 
-fn main() -> Result<(), Error> {
+fn main() {
     let data = parse(DATA);
 
     let result_1 = solve_1(data.clone());
@@ -210,8 +207,6 @@ fn main() -> Result<(), Error> {
 
     let result_2 = solve_2(data);
     println!("Part 2: {result_2}");
-
-    Ok(())
 }
 
 #[cfg(test)]
@@ -235,7 +230,7 @@ mod tests {
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(solve_1(real_data()), 6471961544878);
+        assert_eq!(solve_1(real_data()), 6_471_961_544_878);
     }
 
     #[test]
@@ -246,6 +241,6 @@ mod tests {
     #[test]
     #[ignore]
     fn test_solve_2_real() {
-        assert_eq!(solve_2(real_data()), 6511178035564);
+        assert_eq!(solve_2(real_data()), 6_511_178_035_564);
     }
 }
