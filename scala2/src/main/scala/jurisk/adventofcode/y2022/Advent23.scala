@@ -94,7 +94,7 @@ object Advent23 {
   def parse(data: String): State = {
     val field = Field2D.parseBooleanField(data)
 
-    val elfPositions = field.filterCoordsByValue(_ == true)
+    val elfPositions = field.filterCoordsByValue(true)
     val elves        = elfPositions.zipWithIndex.map { case (c, idx) =>
       Elf(idx, c)
     }

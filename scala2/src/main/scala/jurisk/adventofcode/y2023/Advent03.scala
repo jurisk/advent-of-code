@@ -48,7 +48,7 @@ object Advent03 {
   private def extractNumbers(
     field: Field2D[Square]
   ): Set[(Int, Set[Coords2D])] = {
-    val digitCoords = field.filterCoordsByValue(_.isDigit)
+    val digitCoords = field.filterCoordsByPredicate(_.isDigit)
 
     val islands = ConnectedComponents
       .connectedComponents[Coords2D](
@@ -78,7 +78,7 @@ object Advent03 {
 
   def part1(data: Parsed): Int = {
     val numbers             = extractNumbers(data)
-    val specialSymbolCoords = data.filterCoordsByValue {
+    val specialSymbolCoords = data.filterCoordsByPredicate {
       case Symbol(_) => true
       case _         => false
     }.toSet
@@ -94,7 +94,7 @@ object Advent03 {
 
   def part2(data: Parsed): Int = {
     val numbers          = extractNumbers(data)
-    val gearSymbolCoords = data.filterCoordsByValue(_ == Gear)
+    val gearSymbolCoords = data.filterCoordsByValue(Gear)
 
     gearSymbolCoords
       .map { gearCoordinates =>

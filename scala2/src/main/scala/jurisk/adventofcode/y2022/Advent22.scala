@@ -233,7 +233,7 @@ object Advent22 {
     val (field, commands) = data
 
     val start = field
-      .filterCoordsByValue(_ == Open)
+      .filterCoordsByValue(Open)
       .filter(_.y == 0)
       .minBy(_.x)
 

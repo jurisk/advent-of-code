@@ -31,7 +31,7 @@ object Advent10 {
     def parse(s: String): Input = {
       val chars: Field2D[Char] = Field2D.parseCharField(s)
 
-      val animalAt = chars.filterCoordsByValue(_ == 'S').singleResultUnsafe
+      val animalAt = chars.filterCoordsByValue('S').singleResultUnsafe
 
       val mapping = Map(
         '|' -> N_S,

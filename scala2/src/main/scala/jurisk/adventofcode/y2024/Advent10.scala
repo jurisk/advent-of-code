@@ -2,7 +2,6 @@ package jurisk.adventofcode.y2024
 
 import jurisk.geometry.{Coords2D, Field2D}
 import jurisk.utils.FileInput._
-import jurisk.utils.Parsing.StringOps
 
 object Advent10 {
   type Input = Field2D[Int]
@@ -51,7 +50,7 @@ object Advent10 {
     }
 
   private def solve(data: Input, f: (Input, Coords2D) => Int): Int = {
-    val candidateTrailHeads = data.filterCoordsByValue(_ == Start)
+    val candidateTrailHeads = data.filterCoordsByValue(Start)
     val scores              = candidateTrailHeads.map(c => f(data, c))
     scores.sum
   }

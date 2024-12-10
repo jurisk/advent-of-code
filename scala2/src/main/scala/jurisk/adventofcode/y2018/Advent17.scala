@@ -48,7 +48,7 @@ object Advent17 {
       }
 
     private def runWaterDown: State = {
-      val waterSquares = field.filterCoordsByValue(_ == RunningWater)
+      val waterSquares = field.filterCoordsByValue(RunningWater)
       // Optimisation possibility: run all the way at once, not just one square
       val result       = waterSquares.foldLeft(field) { case (acc, c) =>
         acc.conditionalUpdate(c.S, _ == Empty, RunningWater)
@@ -57,7 +57,7 @@ object Advent17 {
     }
 
     private def runWaterToSides: State = {
-      val waterSquares = field.filterCoordsByValue(_ == RunningWater)
+      val waterSquares = field.filterCoordsByValue(RunningWater)
       val result       = waterSquares.foldLeft(field) { case (acc, c) =>
         if (isSolid(acc, c.S)) {
           // Optimisation possibility: all the way at once, not just one square

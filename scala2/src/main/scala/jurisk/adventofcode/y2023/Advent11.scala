@@ -18,7 +18,7 @@ object Advent11 {
   def parse(input: String): Galaxies = {
     val field = Field2D.parseBooleanField(input)
 
-    val coords = field.filterCoordsByValue(_ == true)
+    val coords = field.filterCoordsByValue(true)
 
     val results = coords.map { c =>
       Coordinates2D[BigInt](c.x, c.y)

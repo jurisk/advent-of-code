@@ -26,7 +26,7 @@ object Advent21 {
 
   def parse(input: String): Input = {
     val temp  = Field2D.parseCharField(input)
-    val start = temp.filterCoordsByValue(_ == 'S').singleResultUnsafe
+    val start = temp.filterCoordsByValue('S').singleResultUnsafe
 
     val field = temp.map {
       case '.' => false

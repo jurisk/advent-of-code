@@ -31,8 +31,8 @@ object Advent12 {
 
   def parse(data: String): Task = {
     val charField   = Field2D.parseCharField(data)
-    val List(start) = charField.filterCoordsByValue(_ == 'S')
-    val List(end)   = charField.filterCoordsByValue(_ == 'E')
+    val List(start) = charField.filterCoordsByValue('S')
+    val List(end)   = charField.filterCoordsByValue('E')
 
     val field = charField map {
       case 'S' => Elevation.Lowest

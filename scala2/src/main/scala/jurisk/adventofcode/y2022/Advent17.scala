@@ -109,7 +109,7 @@ object Advent17 {
 
   private def fieldMinY(field: Field2D[Square]): Int =
     field
-      .filterCoordsByValue {
+      .filterCoordsByPredicate {
         case Square.Wall  => true
         case Square.Rock  => true
         case Square.Empty => false

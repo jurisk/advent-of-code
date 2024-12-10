@@ -36,7 +36,7 @@ object Advent24 extends IOApp.Simple {
 
         def locationOf(locationCode: LocationCode): Coords2D =
           field
-            .filterCoordsByValue(_ == Square.Location(locationCode))
+            .filterCoordsByValue(Square.Location(locationCode))
             .singleElementUnsafe
 
         val (a, b) = setOfTwo.tupleInArbitraryOrder
