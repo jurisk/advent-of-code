@@ -68,7 +68,7 @@ object Advent08 extends SingleLineAdventApp[Instruction, Int]:
         )
       }
 
-  def fileName: String = "08"
+  def exercise: Int = 8
 
   def toProgram(testCases: List[Instruction]): Program =
     Program(testCases)

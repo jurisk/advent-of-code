@@ -3,7 +3,7 @@ package jurisk.adventofcode.y2020
 import AdventApp.ErrorMessage
 
 object Advent01 extends SingleLineAdventApp[Int, Int]:
-  def fileName: String = "01"
+  def exercise: Int = 1
 
   def solve(testCases: List[Int], n: Int): Int =
     testCases

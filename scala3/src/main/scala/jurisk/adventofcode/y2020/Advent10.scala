@@ -6,7 +6,7 @@ import AdventApp.ErrorMessage
 import scala.annotation.tailrec
 
 object Advent10 extends SingleLineAdventApp[Int, Long]:
-  def fileName: String = "10"
+  def exercise: Int = 10
   
   case class Solution(d1: Int = 0, d2: Int = 0, d3: Int = 0)
   

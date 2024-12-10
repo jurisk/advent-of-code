@@ -7,8 +7,8 @@ import jurisk.adventofcode.y2020.Advent07.Bag
 object Advent07 extends SingleLineAdventApp[Bag, Int]:
   opaque type Colour = String
   final case class Bag(colour: Colour, counts: Map[Colour, Int])
-  
-  def fileName: String = "07"
+
+  def exercise: Int = 7
 
   private val Target: Colour = new Colour("shiny gold")
 

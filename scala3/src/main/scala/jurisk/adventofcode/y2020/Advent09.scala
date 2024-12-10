@@ -6,7 +6,7 @@ import AdventApp.ErrorMessage
 import scala.annotation.tailrec
 
 object Advent09 extends SingleLineAdventApp[Long, Long]:
-  def fileName: String = "09"
+  def exercise: Int = 9
 
   extension [T] (self: Boolean)
     def option(x: => T): Option[T] = if (self) x.some else none

@@ -12,22 +12,29 @@ object AdventApp:
     def apply(message: String): ErrorMessage = message
 
 sealed private trait AdventApp[TestCase, Output] extends IOApp:
-  private def makeFilePath(fileName: String): String = s"2020/$fileName.txt"
-  def fileName: String
-  
+  def year: Int = 2020
+  def exercise: Int
+
+  private def makeFilePath(suffix: Option[String] = None): String = f"$year/$exercise%02d${suffix.fold("")(s => s"-$s")}.txt"
+
   def parseTestCases(lines: List[String]): Either[ErrorMessage, List[TestCase]]
   
   def solution1(input: List[TestCase]): Output
   def solution2(input: List[TestCase]): Output
-  
+
+  def parseTestData(suffix: Option[String] = None): IO[Either[ErrorMessage, List[TestCase]]] =
+    val path = makeFilePath(suffix)
+    for
+      lines <- IO(Source.fromResource(path).getLines().toList)
+      testCases = parseTestCases(lines)
+    yield testCases
+
   def run(args: List[String]): IO[ExitCode] = {
     def printOutput(answer: Either[ErrorMessage, Output]): IO[Unit] =
       IO(println(answer.bimap(x => s"Error: $x", _.toString).merge))
 
-    val path = makeFilePath(fileName)
     for
-      lines           <-  IO(Source.fromResource(path).getLines().toList)
-      testCases       =   parseTestCases(lines)
+      testCases       <-  parseTestData()
       answer1         =   testCases.map(solution1)
       _               <-  printOutput(answer1)
       answer2         =   testCases.map(solution2)
