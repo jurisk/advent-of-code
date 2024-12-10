@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter};
 
 const DATA: &str = include_str!("../../resources/09.txt");
@@ -63,29 +64,37 @@ impl Disk {
                     head += 1;
                 },
                 (Node::Free(free_count), Node::Full(full_count, file_id)) => {
-                    if free_count == full_count {
-                        self.nodes[head] = Node::Full(full_count, file_id);
-                        self.nodes[tail] = Node::Free(free_count);
-                        head += 1;
-                        tail -= 1;
-                    } else if free_count < full_count {
-                        let new_nodes = [self.nodes[0 .. head].to_vec(),
-                            vec![Node::Full(free_count, file_id)],
-                            self.nodes[head + 1 .. tail].to_vec(),
-                            vec![Node::Full(full_count - free_count, file_id)],
-                            self.nodes[tail + 1 ..].to_vec()]
-                        .concat();
-                        self.nodes = new_nodes;
-                    } else if free_count > full_count {
-                        let new_nodes = [self.nodes[0 .. head].to_vec(),
-                            vec![
-                                Node::Full(full_count, file_id),
-                                Node::Free(free_count - full_count),
-                            ],
-                            self.nodes[head + 1 .. tail].to_vec(),
-                            self.nodes[tail + 1 ..].to_vec()]
-                        .concat();
-                        self.nodes = new_nodes;
+                    match free_count.cmp(&full_count) {
+                        Ordering::Less => {
+                            let new_nodes = [
+                                self.nodes[0 .. head].to_vec(),
+                                vec![Node::Full(free_count, file_id)],
+                                self.nodes[head + 1 .. tail].to_vec(),
+                                vec![Node::Full(full_count - free_count, file_id)],
+                                self.nodes[tail + 1 ..].to_vec(),
+                            ]
+                            .concat();
+                            self.nodes = new_nodes;
+                        },
+                        Ordering::Equal => {
+                            self.nodes[head] = Node::Full(full_count, file_id);
+                            self.nodes[tail] = Node::Free(free_count);
+                            head += 1;
+                            tail -= 1;
+                        },
+                        Ordering::Greater => {
+                            let new_nodes = [
+                                self.nodes[0 .. head].to_vec(),
+                                vec![
+                                    Node::Full(full_count, file_id),
+                                    Node::Free(free_count - full_count),
+                                ],
+                                self.nodes[head + 1 .. tail].to_vec(),
+                                self.nodes[tail + 1 ..].to_vec(),
+                            ]
+                            .concat();
+                            self.nodes = new_nodes;
+                        },
                     }
                 },
             }
@@ -93,16 +102,12 @@ impl Disk {
     }
 
     fn find_free(&self, count: usize) -> Option<(usize, usize)> {
-        self.nodes
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, n)| {
-                match n {
-                    Node::Free(free_count) if *free_count >= count => Some((idx, *free_count)),
-                    _ => None,
-                }
-            })
-            .next()
+        self.nodes.iter().enumerate().find_map(|(idx, n)| {
+            match n {
+                Node::Free(free_count) if *free_count >= count => Some((idx, *free_count)),
+                _ => None,
+            }
+        })
     }
 
     fn solve_2(&mut self) {
@@ -114,19 +119,28 @@ impl Disk {
                 Node::Full(count, file_id) => {
                     if let Some((found_idx, free)) = self.find_free(*count) {
                         if found_idx < pointer {
-                            if *count == free {
-                                self.nodes[found_idx] = Node::Full(*count, *file_id);
-                                self.nodes[pointer] = Node::Free(free);
-                            } else if *count < free {
-                                let new_nodes = [self.nodes[0 .. found_idx].to_vec(),
-                                    vec![Node::Full(*count, *file_id), Node::Free(free - *count)],
-                                    self.nodes[found_idx + 1 .. pointer].to_vec(),
-                                    vec![Node::Free(*count)],
-                                    self.nodes[pointer + 1 ..].to_vec()]
-                                .concat();
-                                self.nodes = new_nodes;
-                            } else {
-                                unreachable!("This should not happen");
+                            match count.cmp(&free) {
+                                Ordering::Less => {
+                                    let new_nodes = [
+                                        self.nodes[0 .. found_idx].to_vec(),
+                                        vec![
+                                            Node::Full(*count, *file_id),
+                                            Node::Free(free - *count),
+                                        ],
+                                        self.nodes[found_idx + 1 .. pointer].to_vec(),
+                                        vec![Node::Free(*count)],
+                                        self.nodes[pointer + 1 ..].to_vec(),
+                                    ]
+                                    .concat();
+                                    self.nodes = new_nodes;
+                                },
+                                Ordering::Equal => {
+                                    self.nodes[found_idx] = Node::Full(*count, *file_id);
+                                    self.nodes[pointer] = Node::Free(free);
+                                },
+                                Ordering::Greater => {
+                                    unreachable!("This should not happen");
+                                },
                             }
                         }
                     }
