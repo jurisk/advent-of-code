@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2024
 
-import jurisk.geometry.{Coords2D, Field2D}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 
 object Advent10 {

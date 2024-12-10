@@ -69,25 +69,21 @@ impl Disk {
                         head += 1;
                         tail -= 1;
                     } else if free_count < full_count {
-                        let new_nodes = vec![
-                            self.nodes[0 .. head].to_vec(),
+                        let new_nodes = [self.nodes[0 .. head].to_vec(),
                             vec![Node::Full(free_count, file_id)],
                             self.nodes[head + 1 .. tail].to_vec(),
                             vec![Node::Full(full_count - free_count, file_id)],
-                            self.nodes[tail + 1 ..].to_vec(),
-                        ]
+                            self.nodes[tail + 1 ..].to_vec()]
                         .concat();
                         self.nodes = new_nodes;
                     } else if free_count > full_count {
-                        let new_nodes = vec![
-                            self.nodes[0 .. head].to_vec(),
+                        let new_nodes = [self.nodes[0 .. head].to_vec(),
                             vec![
                                 Node::Full(full_count, file_id),
                                 Node::Free(free_count - full_count),
                             ],
                             self.nodes[head + 1 .. tail].to_vec(),
-                            self.nodes[tail + 1 ..].to_vec(),
-                        ]
+                            self.nodes[tail + 1 ..].to_vec()]
                         .concat();
                         self.nodes = new_nodes;
                     }
@@ -122,13 +118,11 @@ impl Disk {
                                 self.nodes[found_idx] = Node::Full(*count, *file_id);
                                 self.nodes[pointer] = Node::Free(free);
                             } else if *count < free {
-                                let new_nodes = vec![
-                                    self.nodes[0 .. found_idx].to_vec(),
+                                let new_nodes = [self.nodes[0 .. found_idx].to_vec(),
                                     vec![Node::Full(*count, *file_id), Node::Free(free - *count)],
                                     self.nodes[found_idx + 1 .. pointer].to_vec(),
                                     vec![Node::Free(*count)],
-                                    self.nodes[pointer + 1 ..].to_vec(),
-                                ]
+                                    self.nodes[pointer + 1 ..].to_vec()]
                                 .concat();
                                 self.nodes = new_nodes;
                             } else {
