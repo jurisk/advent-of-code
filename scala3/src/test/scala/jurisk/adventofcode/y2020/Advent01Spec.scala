@@ -6,7 +6,7 @@ import org.scalatest.matchers.should.Matchers.*
 
 class Advent01Spec extends AsyncFreeSpec with AsyncIOSpec:
   private val testData = List(1721, 979, 366, 299, 675, 1456)
-  private val realData = Advent01.parseTestData().unsafeRunSync().getOrElse(sys.error("failed"))
+  private val realData = Advent01.parseRealData.unsafeRunSync().getOrElse(sys.error("failed"))
 
   "part1" - {
     "test" in {

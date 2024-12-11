@@ -1,12 +1,16 @@
 package jurisk.adventofcode.y2020
 
 import cats.implicits.*
-import AdventApp.ErrorMessage
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.SingleLineAdventApp
 import jurisk.adventofcode.y2020.Advent08.{ExecutionResult, Instruction}
 
 import scala.annotation.tailrec
 
 object Advent08 extends SingleLineAdventApp[Instruction, Int]:
+  val year: Int = 2020
+  val exercise: Int = 8
+
   type Accumulator = Int
   type InstructionIdx = Int
 
@@ -67,8 +71,6 @@ object Advent08 extends SingleLineAdventApp[Instruction, Int]:
           nextInstructionId = nextInstructionId + 1,
         )
       }
-
-  def exercise: Int = 8
 
   def toProgram(testCases: List[Instruction]): Program =
     Program(testCases)

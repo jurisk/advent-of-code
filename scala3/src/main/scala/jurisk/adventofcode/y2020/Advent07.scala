@@ -1,14 +1,16 @@
 package jurisk.adventofcode.y2020
 
 import cats.implicits.*
-import AdventApp.ErrorMessage
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.SingleLineAdventApp
 import jurisk.adventofcode.y2020.Advent07.Bag
 
 object Advent07 extends SingleLineAdventApp[Bag, Int]:
+  val year: Int = 2020
+  val exercise: Int = 7
+
   opaque type Colour = String
   final case class Bag(colour: Colour, counts: Map[Colour, Int])
-
-  def exercise: Int = 7
 
   private val Target: Colour = new Colour("shiny gold")
 

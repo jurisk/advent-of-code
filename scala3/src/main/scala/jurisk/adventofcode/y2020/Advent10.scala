@@ -1,12 +1,14 @@
 package jurisk.adventofcode.y2020
 
 import cats.implicits.*
-import AdventApp.ErrorMessage
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.SingleLineAdventApp
 
 import scala.annotation.tailrec
 
 object Advent10 extends SingleLineAdventApp[Int, Long]:
-  def exercise: Int = 10
+  val year: Int = 2020
+  val exercise: Int = 10
   
   case class Solution(d1: Int = 0, d2: Int = 0, d3: Int = 0)
   

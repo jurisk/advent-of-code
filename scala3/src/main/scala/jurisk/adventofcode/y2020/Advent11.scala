@@ -1,13 +1,15 @@
 package jurisk.adventofcode.y2020
 
 import cats.implicits.*
-import AdventApp.ErrorMessage
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.SingleLineAdventApp
 import jurisk.adventofcode.y2020.Advent11.{Line, Seat}
 
 import scala.annotation.tailrec
 
 object Advent11 extends SingleLineAdventApp[Line, Int]:
-  def exercise: Int = 11
+  val year: Int = 2020
+  val exercise: Int = 11
 
   enum Seat:
     case Floor

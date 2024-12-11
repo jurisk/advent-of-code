@@ -2,7 +2,7 @@ package jurisk.adventofcode.y2020
 
 import cats.effect.*
 import cats.implicits.*
-import AdventApp.ErrorMessage
+import jurisk.adventofcode.AdventApp.ErrorMessage
 
 import scala.io.Source
 

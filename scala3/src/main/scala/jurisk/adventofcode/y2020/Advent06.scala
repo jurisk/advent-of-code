@@ -1,7 +1,8 @@
 package jurisk.adventofcode.y2020
 
 import cats.implicits.*
-import AdventApp.ErrorMessage
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.MultiLineAdventApp
 
 import scala.io.Source
 
@@ -12,7 +13,8 @@ type Group = Set[Form]
 type MergeFunction[T] = (Set[T], Set[T]) => Set[T]
 
 object Advent06 extends MultiLineAdventApp[Group, Int]:
-  def exercise: Int = 6
+  val year: Int = 2020
+  val exercise: Int = 6
 
   def solve(testCases: List[Group], f: MergeFunction[Answer]): Int =
     testCases.map(_.reduce(f).size).sum

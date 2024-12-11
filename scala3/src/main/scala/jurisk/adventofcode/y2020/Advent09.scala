@@ -1,12 +1,14 @@
 package jurisk.adventofcode.y2020
 
 import cats.implicits.*
-import AdventApp.ErrorMessage
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.SingleLineAdventApp
 
 import scala.annotation.tailrec
 
 object Advent09 extends SingleLineAdventApp[Long, Long]:
-  def exercise: Int = 9
+  val year: Int = 2020
+  val exercise: Int = 9
 
   extension [T] (self: Boolean)
     def option(x: => T): Option[T] = if (self) x.some else none

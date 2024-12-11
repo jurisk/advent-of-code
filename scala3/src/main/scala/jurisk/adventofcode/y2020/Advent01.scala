@@ -1,9 +1,11 @@
 package jurisk.adventofcode.y2020
 
-import AdventApp.ErrorMessage
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.SingleLineAdventApp
 
 object Advent01 extends SingleLineAdventApp[Int, Int]:
-  def exercise: Int = 1
+  val year: Int = 2020
+  val exercise: Int = 1
 
   def solve(testCases: List[Int], n: Int): Int =
     testCases

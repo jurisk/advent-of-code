@@ -1,12 +1,16 @@
 package jurisk.adventofcode.y2020
 
 import cats.implicits.*
-import AdventApp.ErrorMessage
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.SingleLineAdventApp
 import jurisk.adventofcode.y2020.Advent17.Coordinates.{Coordinates3D, Coordinates4D}
 
 import scala.annotation.targetName
 
 object Advent17 extends SingleLineAdventApp[List[Boolean], Int]:
+  val year: Int = 2020
+  val exercise: Int = 17
+
   sealed trait Coordinates[C <: Coordinates[C]]:
     infix def to(other: C): Seq[C]
 
@@ -101,8 +105,6 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int]:
 
   private object Grid:
     def empty[C <: Coordinates[C]]: Grid[C] = new Grid(Map.empty)
-
-  def exercise: Int = 17
 
   def solve[C <: Coordinates[C]](grid: Grid[C], iterations: Int): Int =
     val resultingGrid = (0 until iterations)
