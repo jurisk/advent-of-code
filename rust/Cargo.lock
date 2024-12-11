@@ -120,6 +120,7 @@ dependencies = [
  "advent-of-code-common",
  "chumsky",
  "itertools",
+ "memoize",
  "regex",
 ]
 

@@ -1,12 +1,16 @@
 package jurisk.adventofcode.y2020
 
 import cats.implicits.*
-import jurisk.adventofcode.y2020.Advent04.Ecl
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.MultiLineAdventApp
+import jurisk.adventofcode.y2020.Advent04.Passport
 
-import scala.io.Source
 import scala.util.Try
 
-object Advent04 extends App:
+object Advent04 extends MultiLineAdventApp[Passport, Int]:
+  override val year: Int = 2020
+  override val exercise: Int = 4
+
   extension (self: String)
     private def between(start: Int, end: Int): Option[Int] =
       self.toIntOption flatMap { x =>
@@ -83,21 +87,16 @@ object Advent04 extends App:
     }
 
   private val Pair = """(\w+):(.+)""".r
-  private val passports =
-    Source.fromResource("2020/04.txt")
-      .getLines()
-      .mkString("\n")
-      .split("\n\n")
-      .map(_
-        .split("""\s""")
-        .map {
-          case Pair(a, b) => a -> b
-          case x          => sys.error(s"Unexpected $x")
-        }
-        .toMap
-      )
 
-  def solve(f: Passport => Boolean): Unit =
-    println(passports.count(f))
-  
-  List(valid1, valid2) foreach solve
+  override def parseLines(line: List[String]): Either[ErrorMessage, Passport] =
+    line
+      .flatMap(_.split(" "))
+      .map {
+        case Pair(a, b) => a -> b
+        case x          => sys.error(s"Unexpected $x")
+      }
+      .toMap
+      .asRight
+
+  override def solution1(input: List[Passport]): Int = input.count(valid1)
+  override def solution2(input: List[Passport]): Int = input.count(valid2)
