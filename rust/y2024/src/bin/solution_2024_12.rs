@@ -16,7 +16,7 @@ fn parse(input: &str) -> Data {
     MatrixGrid2D::parse(input, identity)
 }
 
-fn perimeter(coords: HashSet<Coords>) -> R {
+fn perimeter(coords: &HashSet<Coords>) -> R {
     coords
         .iter()
         .map(|c| {
@@ -29,6 +29,8 @@ fn perimeter(coords: HashSet<Coords>) -> R {
 }
 
 fn ascending_sequences(data: Vec<i32>) -> usize {
+    let mut data = data;
+    data.sort_unstable();
     if data.is_empty() {
         0
     } else if data.len() == 1 {
@@ -42,9 +44,8 @@ fn ascending_sequences(data: Vec<i32>) -> usize {
     }
 }
 
-fn number_of_sides(garden_coords: HashSet<Coords>) -> R {
-    println!("{garden_coords:?}");
-    let result = Direction::all()
+fn number_of_sides(garden_coords: &HashSet<Coords>) -> R {
+    Direction::all()
         .into_iter()
         .map(|d| {
             garden_coords
@@ -52,22 +53,18 @@ fn number_of_sides(garden_coords: HashSet<Coords>) -> R {
                 .filter(|&c| !garden_coords.contains(&(*c + d)))
                 .group_by_key(|c| {
                     match d {
-                        Direction::North => c.y,
-                        Direction::East => c.x,
-                        Direction::South => c.y,
-                        Direction::West => c.x,
+                        Direction::North | Direction::South => c.y,
+                        Direction::East | Direction::West => c.x,
                     }
                 })
-                .into_iter()
-                .map(|(_, coords)| {
+                .values()
+                .map(|coords| {
                     let values = coords
-                        .into_iter()
+                        .iter()
                         .map(|c| {
                             match d {
-                                Direction::North => c.x,
-                                Direction::East => c.y,
-                                Direction::South => c.x,
-                                Direction::West => c.y,
+                                Direction::North | Direction::South => c.x,
+                                Direction::East | Direction::West => c.y,
                             }
                         })
                         .collect();
@@ -75,14 +72,12 @@ fn number_of_sides(garden_coords: HashSet<Coords>) -> R {
                 })
                 .sum::<usize>()
         })
-        .sum();
-    println!("{result}");
-    result
+        .sum()
 }
 
 fn solve<F>(data: &Data, f: F) -> R
 where
-    F: Fn(HashSet<Coords>) -> R,
+    F: Fn(&HashSet<Coords>) -> R,
 {
     let coords: Vec<_> = data.coords().collect();
     let regions = connected_components(&coords, |&c| {
@@ -95,9 +90,7 @@ where
         .into_iter()
         .map(|coords| {
             let area = coords.len();
-            let result = f(coords);
-            println!("{area} * {result} == {}", area * result);
-            area * result
+            area * f(&coords)
         })
         .sum()
 }
@@ -130,7 +123,7 @@ mod tests {
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(solve_1(&real_data()), 1371306);
+        assert_eq!(solve_1(&real_data()), 1_371_306);
     }
 
     #[test]
@@ -175,6 +168,6 @@ mod tests {
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(solve_2(&real_data()), 805880);
+        assert_eq!(solve_2(&real_data()), 805_880);
     }
 }

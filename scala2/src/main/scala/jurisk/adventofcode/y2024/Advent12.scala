@@ -2,7 +2,9 @@ package jurisk.adventofcode.y2024
 
 import cats.implicits.catsSyntaxFoldableOps0
 import jurisk.algorithms.pathfinding.ConnectedComponents
-import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
