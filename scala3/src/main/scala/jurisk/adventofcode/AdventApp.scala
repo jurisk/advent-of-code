@@ -18,7 +18,7 @@ sealed private trait AdventApp[TestCase, Output] extends IOApp:
   private def makeFilePath(suffix: Option[String]): String = f"$year/$exercise%02d${suffix.fold("")(s => s"-$s")}.txt"
 
   def parseTestCases(lines: List[String]): Either[ErrorMessage, List[TestCase]]
-  
+
   def solution1(input: List[TestCase]): Output
   def solution2(input: List[TestCase]): Output
 
@@ -40,9 +40,9 @@ sealed private trait AdventApp[TestCase, Output] extends IOApp:
 
     for
       testCases       <-  parseRealData
-      answer1         =   testCases.map(solution1)
+      answer1         =   testCases map solution1
       _               <-  printOutput(answer1)
-      answer2         =   testCases.map(solution2)
+      answer2         =   testCases map solution2
       _               <-  printOutput(answer2)
     yield ExitCode.Success
   }

@@ -2,24 +2,26 @@ package jurisk.adventofcode.y2020
 
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.SingleLineAdventApp
-import cats.implicits._
-
-final case class Item(
-  a: Int,
-  b: Int,
-  letter: Char,
-  password: String,
-):
-  def isValid1: Boolean =
-    val count = password.count(_ == letter)
-    (count >= a) && (count <= b)
-
-  def isValid2: Boolean =
-    List(password(a - 1), password(b - 1)).count(_ == letter) == 1
+import cats.implicits.*
+import jurisk.adventofcode.y2020.Advent02.Item
 
 object Advent02 extends SingleLineAdventApp[Item, Int]:
   val year: Int = 2020
   val exercise: Int = 2
+
+  final case class Item(
+    a: Int,
+    b: Int,
+    letter: Char,
+    password: String,
+  ):
+    def isValid1: Boolean =
+      val count = password.count(_ == letter)
+      (count >= a) && (count <= b)
+
+    def isValid2: Boolean =
+      List(password(a - 1), password(b - 1)).count(_ == letter) == 1
+
 
   override def parseLine(line: String): Either[ErrorMessage, Item] = {
     val Pattern = """(\d+)-(\d+) (\w): (\w+)""".r
