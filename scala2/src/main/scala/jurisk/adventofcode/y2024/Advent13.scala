@@ -19,6 +19,14 @@ object Advent13 {
   type N     = Long
   type C     = Coordinates2D[Long]
 
+  sealed trait SolutionMode
+  private object SolutionMode {
+    case object InternalZ3 extends SolutionMode
+    case object ExternalZ3 extends SolutionMode
+  }
+
+  private val SelectedMode: SolutionMode = SolutionMode.InternalZ3
+
   final case class Machine(
     buttonA: C,
     buttonB: C,
@@ -32,9 +40,7 @@ object Advent13 {
         if result == prize
       } yield 3 * a + b
 
-      val result = results.minOption
-      println(s"$this $results $result")
-      result
+      results.minOption
     }
 
     def solve2: Option[N] = Try {
@@ -45,6 +51,7 @@ object Advent13 {
       println(s"Trying to solve $this")
       // a * ax + b * bx = px
       // a * ay + b * by = py
+      // Minimize 3 * a + b
 
       implicit val optimizer: Optimizer = Optimizer.z3()
       import optimizer._
@@ -65,20 +72,20 @@ object Advent13 {
 
       val _ = minimize(cost)
 
-      @nowarn("cat=deprecation")
-      val m = checkAndGetModel()
-      debugPrint()
+      val (ar, br) = SelectedMode match {
+        case SolutionMode.InternalZ3 =>
+          @nowarn("cat=deprecation")
+          val m  = checkAndGetModel()
+          val ar = m.getConstInterp(a).toString
+          val br = m.getConstInterp(b).toString
+          (ar.toLong, br.toLong)
 
-      val ar = m.getConstInterp(a).toString
-      val br = m.getConstInterp(b).toString
+        case SolutionMode.ExternalZ3 =>
+          val List(ar, br) = runExternal("a", "b").map(resultToLong)
+          (ar, br)
+      }
 
-      (ar.toLong * 3 + br.toLong).some
-
-//      println(m.toString)
-//      m.evaluate(cost, true).getString.toLong.some
-//      val List(ar, br) = runExternal("a", "b").map(resultToLong)
-//      val result = 3 * ar + br
-//      result.some
+      (3 * ar + br).some
     }
   }
 
