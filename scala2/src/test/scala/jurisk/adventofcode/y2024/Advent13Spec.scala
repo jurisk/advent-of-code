@@ -10,21 +10,22 @@ class Advent13Spec extends AnyFreeSpec {
 
   "part 1" - {
     "test" in {
-      part1(testData) shouldEqual 0
+      part1(testData) shouldEqual 480
     }
 
     "real" in {
-      part1(realData) shouldEqual 0
+      part1(realData) shouldEqual 25751
     }
   }
 
   "part 2" - {
-    "test" in {
-      part2(testData) shouldEqual 0
+    "test #0" in {
+      val example2 = testData.head
+      example2.solve2 shouldEqual Some(80 * 3 + 40)
     }
 
     "real" in {
-      part2(realData) shouldEqual 0
+      part2(realData) shouldEqual 108528956728655L
     }
   }
 }

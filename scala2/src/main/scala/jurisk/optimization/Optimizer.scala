@@ -43,6 +43,7 @@ trait Optimizer {
 
   def addConstraints(expressions: Expr[BoolSort]*): Unit
 
+  // Note - We were using `getConstInterp` to get the results from this
   @deprecated("Use `runExternal` instead", "2023-12-24")
   def checkAndGetModel(): Model
 
