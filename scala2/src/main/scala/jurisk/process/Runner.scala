@@ -1,5 +1,6 @@
 package jurisk.process
 
+import mouse.all.booleanSyntaxMouse
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 import scala.io.Source
@@ -7,7 +8,7 @@ import scala.sys.process.ProcessIO
 import scala.sys.process.stringSeqToProcess
 
 object Runner {
-  def runSync(command: String*)(input: String): String = {
+  def runSync(command: String*)(input: String): Either[String, String] = {
     val outputBuilder = new StringBuilder
     val io            = new ProcessIO(
       in => {
@@ -22,7 +23,9 @@ object Runner {
       _.close(),
     )
     val process       = command.run(io)
-    process.exitValue() shouldEqual 0
-    outputBuilder.toString()
+    // Note - order is important
+    val exitValue     = process.exitValue()
+    val result        = outputBuilder.toString()
+    (exitValue == 0).either(result, result)
   }
 }

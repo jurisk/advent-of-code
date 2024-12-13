@@ -1,6 +1,6 @@
 package jurisk.optimization
 
-import cats.implicits.catsSyntaxOptionId
+import cats.implicits.{catsSyntaxOptionId, none}
 import com.microsoft.z3.ArithExpr
 import com.microsoft.z3.ArithSort
 import com.microsoft.z3.BoolExpr
@@ -19,6 +19,7 @@ import com.microsoft.z3.Status
 import com.microsoft.z3.enumerations.Z3_lbool
 import jurisk.process.Runner
 import jurisk.utils.Parsing.StringOps
+import mouse.all.booleanSyntaxMouse
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
 // The https://github.com/tudo-aqua/z3-turnkey distribution did not work on task 2023-24 while the same SMT-LIB program
@@ -43,11 +44,12 @@ trait Optimizer {
 
   def addConstraints(expressions: Expr[BoolSort]*): Unit
 
-  @deprecated("Use `runExternal` instead", "2023-12-24")
-  def checkAndGetModel(): Model
+  // Note - We were using `getConstInterp` to get the results from this
+  @deprecated("Prefer `runExternal` instead, as this one was glitching for some cases", "2023-12-24")
+  def checkAndGetModel(): Option[Model]
 
   // TODO: Make type-safe?
-  def runExternal(evaluate: String*): List[String]
+  def runExternal(evaluate: String*): Option[List[String]]
   def resultToInt(result: String): Int
   def resultToLong(result: String): Long
 
@@ -163,13 +165,14 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
   def addConstraints(constraints: Expr[BoolSort]*): Unit =
     optimize.Add(constraints: _*)
 
-  def checkAndGetModel(): Model = {
+  def checkAndGetModel(): Option[Model] = {
     val status = optimize.Check()
-    assert(status == Status.SATISFIABLE, "Model is not satisfiable")
-    optimize.getModel
+    (status == Status.SATISFIABLE).option(
+      optimize.getModel
+    )
   }
 
-  def runExternal(evaluate: String*): List[String] = {
+  def runExternal(evaluate: String*): Option[List[String]] = {
     val debug = false
 
     val programStart = optimize.toString
@@ -189,10 +192,15 @@ private class Z3Optimizer(val context: Context, val optimize: Optimize)
 
     if (debug) println(results)
 
-    val lines = results.splitLines
-    lines.head.trim shouldEqual "sat"
-    lines.tail.size shouldEqual evaluate.length
-    lines.tail
+    results match {
+      case Left(_)        =>
+        none
+      case Right(results) =>
+        val lines = results.splitLines
+        lines.head.trim shouldEqual "sat"
+        lines.tail.size shouldEqual evaluate.length
+        lines.tail.some
+    }
   }
 
   def resultToInt(result: String): Int =

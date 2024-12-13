@@ -1,6 +1,11 @@
 package jurisk.adventofcode.y2024
 
 import Advent13._
+import jurisk.adventofcode.y2024.Advent13.SolutionMode.{LinearEquations, Z3}
+import jurisk.adventofcode.y2024.Advent13.SolutionMode.Z3Mode.{
+  External,
+  Internal,
+}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
 
@@ -10,21 +15,25 @@ class Advent13Spec extends AnyFreeSpec {
 
   "part 1" - {
     "test" in {
-      part1(testData) shouldEqual 0
+      part1(testData) shouldEqual 480
     }
 
     "real" in {
-      part1(realData) shouldEqual 0
+      part1(realData) shouldEqual 25751
     }
   }
 
   "part 2" - {
-    "test" in {
-      part2(testData) shouldEqual 0
+    "test #0" in {
+      val example  = testData.head
+      val expected = Some(80 * 3 + 40)
+      example.solve(Z3(Internal)) shouldEqual expected
+      example.solve(Z3(External)) shouldEqual expected
+      example.solve(LinearEquations) shouldEqual expected
     }
 
     "real" in {
-      part2(realData) shouldEqual 0
+      part2(realData) shouldEqual 108528956728655L
     }
   }
 }

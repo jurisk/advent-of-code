@@ -1,3 +1,5 @@
+use num_traits::Num;
+
 #[must_use]
 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 pub fn factors(n: u32) -> Vec<u32> {
@@ -60,4 +62,47 @@ pub fn gcd(a: i64, b: i64) -> i64 {
 #[must_use]
 pub fn lcm(a: i64, b: i64) -> i64 {
     a.abs() * b.abs() / gcd(a, b)
+}
+
+#[must_use]
+pub fn solve_two_variable_integer_linear_equation_system<N: Num + Copy>(
+    a: N,
+    b: N,
+    c: N,
+    d: N,
+    e: N,
+    f: N,
+) -> Option<(N, N)> {
+    let div = |dividend: N, divisor: N| -> Option<N> {
+        (dividend % divisor == N::zero()).then(|| dividend / divisor)
+    };
+
+    let det = a * d - b * c;
+    if det == N::zero() {
+        None
+    } else {
+        let x = div(e * d - b * f, det);
+        let y = div(a * f - e * c, det);
+        match (x, y) {
+            (Some(x), Some(y)) => Some((x, y)),
+            _ => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_solve_two_variable_integer_linear_equation_system() {
+        assert_eq!(
+            solve_two_variable_integer_linear_equation_system(2, 1, 3, -1, 15, 5),
+            Some((4, 7))
+        );
+        assert_eq!(
+            solve_two_variable_integer_linear_equation_system(1, 2, 1, 2, 5, 6),
+            None
+        );
+    }
 }
