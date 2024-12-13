@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2024
 
 import Advent13._
+import jurisk.adventofcode.y2024.Advent13.SolutionMode.{ExternalZ3, InternalZ3}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
 
@@ -20,8 +21,10 @@ class Advent13Spec extends AnyFreeSpec {
 
   "part 2" - {
     "test #0" in {
-      val example2 = testData.head
-      example2.solve2 shouldEqual Some(80 * 3 + 40)
+      val example  = testData.head
+      val expected = Some(80 * 3 + 40)
+      example.solve(InternalZ3) shouldEqual expected
+      example.solve(ExternalZ3) shouldEqual expected
     }
 
     "real" in {

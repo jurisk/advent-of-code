@@ -380,6 +380,7 @@ object Advent24 {
 
     val List(pxS, pyS, pzS, vxS, vyS, vzS) = o
       .runExternal("px", "py", "pz", "vx", "vy", "vz")
+      .getOrElse("Failed".fail)
       .map(r => resultToLong(r))
 
     val result = PositionAndVelocity3D(

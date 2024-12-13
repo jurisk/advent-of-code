@@ -184,7 +184,7 @@ object Advent21 {
       }
     }
 
-    val List(result) = runExternal(calculate)
+    val List(result) = runExternal(calculate).getOrElse("Failed".fail)
     resultToLong(result)
   }
 

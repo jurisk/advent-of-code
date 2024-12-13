@@ -1,6 +1,5 @@
 package jurisk.adventofcode.y2024
 
-import cats.implicits.catsSyntaxOptionId
 import jurisk.geometry.Coordinates2D
 import jurisk.optimization.ImplicitConversions.{
   RichArithExprIntSort,
@@ -12,7 +11,6 @@ import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 import scala.annotation.nowarn
-import scala.util.Try
 
 object Advent13 {
   type Input = List[Machine]
@@ -20,35 +18,35 @@ object Advent13 {
   type C     = Coordinates2D[Long]
 
   sealed trait SolutionMode
-  private object SolutionMode {
+  object SolutionMode {
     case object InternalZ3 extends SolutionMode
     case object ExternalZ3 extends SolutionMode
   }
 
-  private val SelectedMode: SolutionMode = SolutionMode.InternalZ3
+  private val CostA = 3
+  private val CostB = 1
 
   final case class Machine(
     buttonA: C,
     buttonB: C,
     prize: C,
   ) {
-    def solve: Option[N] = {
+    def bruteForceConstrained(limit: Int = 100): Option[N] = {
       val results = for {
-        a     <- 0L to 100
-        b     <- 0L to 100
+        a     <- 0L to limit
+        b     <- 0L to limit
         result = buttonA * a + buttonB * b
         if result == prize
-      } yield 3 * a + b
+      } yield CostA * a + CostB * b
 
       results.minOption
     }
 
-    def solve2: Option[N] = Try {
-      solve2Q
-    }.toOption.flatten
+    def solve(
+      solutionMode: SolutionMode = SolutionMode.InternalZ3
+    ): Option[N] = {
+      println(s"Solving $this")
 
-    def solve2Q: Option[N] = {
-      println(s"Trying to solve $this")
       // a * ax + b * bx = px
       // a * ay + b * by = py
       // Minimize 3 * a + b
@@ -67,29 +65,29 @@ object Advent13 {
         b >= Zero,
         a * ax + b * bx === px,
         a * ay + b * by === py,
-        cost === 3.constant * a + b,
+        cost === CostA.constant * a + CostB.constant * b,
       )
 
       val _ = minimize(cost)
 
-      val (ar, br) = SelectedMode match {
+      solutionMode match {
         case SolutionMode.InternalZ3 =>
           @nowarn("cat=deprecation")
-          val m  = checkAndGetModel()
-          val ar = m.getConstInterp(a).toString
-          val br = m.getConstInterp(b).toString
-          (ar.toLong, br.toLong)
+          val modelResult = checkAndGetModel()
+          modelResult.map { m =>
+            m.getConstInterp(cost).toString.toLong
+          }
 
         case SolutionMode.ExternalZ3 =>
-          val List(ar, br) = runExternal("a", "b").map(resultToLong)
-          (ar, br)
+          runExternal("cost").map { m =>
+            val List(cost) = m.map(resultToLong)
+            cost
+          }
       }
-
-      (3 * ar + br).some
     }
   }
 
-  object Machine {
+  private object Machine {
     def parse(s: String): Machine = {
       def parseCoords(s: String, symbol: String): C = {
         val Pattern = s"""X$symbol(\\d+), Y$symbol(\\d+)""".r
@@ -111,14 +109,14 @@ object Advent13 {
     input.parseSections(Machine.parse)
 
   def part1(data: Input): N =
-    data.flatMap(_.solve).sum
+    data.flatMap(_.bruteForceConstrained()).sum
 
   def part2(data: Input): N = {
     val adjusted = data.map(m =>
       m.copy(prize = m.prize + Coordinates2D(10000000000000L, 10000000000000L))
     )
 
-    adjusted.flatMap(_.solve2).sum
+    adjusted.flatMap(_.solve()).sum
   }
 
   def parseFile(fileName: String): Input =

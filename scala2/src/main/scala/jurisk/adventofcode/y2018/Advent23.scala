@@ -89,7 +89,8 @@ object Advent23 {
     val _ = maximize(nanobotsInRange)
     val _ = minimize(distanceFromOrigin)
 
-    val List(xc, yc, zc) = runExternal("x", "y", "z").map(resultToInt)
+    val List(xc, yc, zc) =
+      runExternal("x", "y", "z").getOrElse("Failed".fail).map(resultToInt)
 
     val found = Coords3D(xc, yc, zc)
 

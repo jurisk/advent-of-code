@@ -292,7 +292,7 @@ object Advent16 {
       Field2D.printCharField(debugField)
     }
 
-    val List(result) = runExternal("energized")
+    val List(result) = runExternal("energized").getOrElse("Failed".fail)
     resultToLong(result)
   }
 
