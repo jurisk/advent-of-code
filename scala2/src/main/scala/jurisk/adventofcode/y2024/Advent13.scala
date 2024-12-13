@@ -1,11 +1,15 @@
 package jurisk.adventofcode.y2024
 
+import jurisk.adventofcode.y2024.Advent13.SolutionMode.BruteForce
+import jurisk.adventofcode.y2024.Advent13.SolutionMode.LinearEquations
+import jurisk.adventofcode.y2024.Advent13.SolutionMode.Z3
+import jurisk.adventofcode.y2024.Advent13.SolutionMode.Z3Mode.External
+import jurisk.adventofcode.y2024.Advent13.SolutionMode.Z3Mode.Internal
 import jurisk.geometry.Coordinates2D
-import jurisk.optimization.ImplicitConversions.{
-  RichArithExprIntSort,
-  RichExpr,
-  RichLong,
-}
+import jurisk.math.LinearEquationSystems
+import jurisk.optimization.ImplicitConversions.RichArithExprIntSort
+import jurisk.optimization.ImplicitConversions.RichExpr
+import jurisk.optimization.ImplicitConversions.RichLong
 import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -19,8 +23,15 @@ object Advent13 {
 
   sealed trait SolutionMode
   object SolutionMode {
-    case object InternalZ3 extends SolutionMode
-    case object ExternalZ3 extends SolutionMode
+    final case class BruteForce(limit: Int) extends SolutionMode
+    final case class Z3(mode: Z3Mode)       extends SolutionMode
+    case object LinearEquations       extends SolutionMode
+
+    sealed trait Z3Mode
+    object Z3Mode {
+      case object Internal extends Z3Mode
+      case object External extends Z3Mode
+    }
   }
 
   private val CostA = 3
@@ -31,7 +42,30 @@ object Advent13 {
     buttonB: C,
     prize: C,
   ) {
-    def bruteForceConstrained(limit: Int = 100): Option[N] = {
+    def solve(
+      solutionMode: SolutionMode
+    ): Option[N] =
+      solutionMode match {
+        case BruteForce(limit) => bruteForceConstrained(limit)
+        case Z3(mode)          => solveZ3(mode)
+        case LinearEquations   => linearEquations
+      }
+
+    private def linearEquations: Option[N] =
+      LinearEquationSystems
+        .solveTwoVariablesInteger(
+          buttonA.x,
+          buttonB.x,
+          buttonA.y,
+          buttonB.y,
+          prize.x,
+          prize.y,
+        )
+        .map { case (a, b) =>
+          CostA * a + CostB * b
+        }
+
+    private def bruteForceConstrained(limit: Int = 100): Option[N] = {
       val results = for {
         a     <- 0L to limit
         b     <- 0L to limit
@@ -42,8 +76,8 @@ object Advent13 {
       results.minOption
     }
 
-    def solve(
-      solutionMode: SolutionMode = SolutionMode.InternalZ3
+    private def solveZ3(
+      z3Mode: SolutionMode.Z3Mode
     ): Option[N] = {
       println(s"Solving $this")
 
@@ -70,15 +104,15 @@ object Advent13 {
 
       val _ = minimize(cost)
 
-      solutionMode match {
-        case SolutionMode.InternalZ3 =>
+      z3Mode match {
+        case Internal =>
           @nowarn("cat=deprecation")
           val modelResult = checkAndGetModel()
           modelResult.map { m =>
             m.getConstInterp(cost).toString.toLong
           }
 
-        case SolutionMode.ExternalZ3 =>
+        case External =>
           runExternal("cost").map { m =>
             val List(cost) = m.map(resultToLong)
             cost
@@ -109,14 +143,14 @@ object Advent13 {
     input.parseSections(Machine.parse)
 
   def part1(data: Input): N =
-    data.flatMap(_.bruteForceConstrained()).sum
+    data.flatMap(_.solve(BruteForce(100))).sum
 
   def part2(data: Input): N = {
     val adjusted = data.map(m =>
       m.copy(prize = m.prize + Coordinates2D(10000000000000L, 10000000000000L))
     )
 
-    adjusted.flatMap(_.solve()).sum
+    adjusted.flatMap(_.solve(LinearEquations)).sum
   }
 
   def parseFile(fileName: String): Input =

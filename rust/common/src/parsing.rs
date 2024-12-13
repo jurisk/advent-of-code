@@ -272,6 +272,16 @@ pub fn segments_separated_by_double_newline(input: &str) -> Vec<String> {
         .collect()
 }
 
+pub fn parse_segments_separated_by_double_newline<T: FromStr>(input: &str) -> Result<Vec<T>, Error>
+where
+    <T as FromStr>::Err: Debug,
+{
+    segments_separated_by_double_newline(input)
+        .into_iter()
+        .map(|x| parse_str(&x))
+        .collect()
+}
+
 /// # Errors
 ///
 /// Will return `Err` if parsing fails.

@@ -1,6 +1,7 @@
 #![feature(step_trait)]
 
 pub mod area2d;
+pub mod bool_ops;
 pub mod circular;
 pub mod coords2d;
 pub mod coords3d;
