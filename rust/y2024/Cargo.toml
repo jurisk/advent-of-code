@@ -16,3 +16,5 @@ itertools.workspace = true
 regex.workspace = true
 memoize.workspace = true
 pathfinding.workspace = true
+recap.workspace = true
+serde.workspace = true

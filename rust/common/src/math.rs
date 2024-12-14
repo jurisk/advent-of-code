@@ -68,6 +68,7 @@ pub fn lcm(a: i64, b: i64) -> i64 {
 ///     a * x + b * y = e
 ///     c * x + d * y = f
 #[must_use]
+#[expect(clippy::many_single_char_names)]
 pub fn solve_two_variable_integer_linear_equation_system<N: Num + Copy>(
     a: N,
     b: N,

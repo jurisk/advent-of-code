@@ -272,6 +272,7 @@ pub fn segments_separated_by_double_newline(input: &str) -> Vec<String> {
         .collect()
 }
 
+#[expect(clippy::missing_errors_doc)]
 pub fn parse_segments_separated_by_double_newline<T: FromStr>(input: &str) -> Result<Vec<T>, Error>
 where
     <T as FromStr>::Err: Debug,

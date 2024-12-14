@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use std::ops::{Add, Neg, Sub};
+use std::ops::{Add, AddAssign, Neg, Sub};
 use std::str::FromStr;
 
 use num_traits::{One, Signed, Zero};
@@ -31,6 +31,13 @@ impl<T: Add<Output = T>> Add for Coords2D<T> {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
         }
+    }
+}
+
+impl AddAssign for Coords2D<i32> {
+    fn add_assign(&mut self, rhs: Self) {
+        self.x += rhs.x;
+        self.y += rhs.y;
     }
 }
 

@@ -44,6 +44,9 @@ pub trait Grid2D<T> {
     fn get(&self, coords: Coords) -> Option<&T>;
 
     fn set(&mut self, coords: Coords, value: T);
+    fn modify<F>(&mut self, coords: Coords, f: F)
+    where
+        F: FnOnce(&mut T);
 
     fn get_or_else(&self, coords: Coords, default: T) -> T
     where
@@ -101,6 +104,16 @@ pub struct MatrixGrid2D<T> {
 }
 
 impl<T> MatrixGrid2D<T> {
+    #[must_use]
+    pub fn new(width: usize, height: usize, default: T) -> Self
+    where
+        T: Clone,
+    {
+        Self {
+            data: Matrix::new(height, width, default),
+        }
+    }
+
     #[expect(clippy::missing_panics_doc)]
     pub fn parse(input: &str, f: impl Fn(char) -> T) -> Self
     where
@@ -198,6 +211,14 @@ impl<T> Grid2D<T> for MatrixGrid2D<T> {
         self.data[coords] = value;
     }
 
+    fn modify<F>(&mut self, coords: Coords, f: F)
+    where
+        F: FnOnce(&mut T),
+    {
+        let coords: (usize, usize) = coords.into();
+        f(&mut self.data[coords]);
+    }
+
     fn sum(&self) -> T
     where
         T: Sum + Clone,
@@ -243,16 +264,16 @@ where
     }
 }
 
-impl<T: Debug> Debug for MatrixGrid2D<T> {
+impl<T: Into<char> + Clone> Debug for MatrixGrid2D<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut result = String::new();
         for y in 0 .. self.rows() {
             for x in 0 .. self.columns() {
-                let coords: Coords = (x, y).into();
-                result.push_str(&format!(
-                    "{:?}",
-                    self.get(coords).expect("Failed to get value")
-                ));
+                let coords: Coords = Coords::new(x as i32, y as i32);
+
+                let value = self.get(coords).expect("Failed to get value");
+                let ch: char = value.clone().into();
+                result.push(ch);
             }
             result.push('\n');
         }

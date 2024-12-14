@@ -52,7 +52,7 @@ impl FromStr for Machine {
 
         let int_helper = |prefix: &str, s: &str| -> Result<N, Error> {
             s.strip_prefix(prefix)
-                .ok_or(format!("Missing prefix '{}'", prefix))?
+                .ok_or(format!("Missing prefix '{prefix}'"))?
                 .parse()
                 .map_err(|e| format!("{e:?}"))
         };
@@ -76,7 +76,7 @@ fn parse(input: &str) -> Result<Data, Error> {
 }
 
 fn solve_1(data: &Data) -> N {
-    data.iter().flat_map(Machine::solve).sum()
+    data.iter().filter_map(Machine::solve).sum()
 }
 
 fn solve_2(data: &Data) -> N {
@@ -86,7 +86,7 @@ fn solve_2(data: &Data) -> N {
             Machine {
                 button_a: m.button_a,
                 button_b: m.button_b,
-                prize:    m.prize + Coords2D::new(10000000000000, 10000000000000),
+                prize:    m.prize + Coords2D::new(10_000_000_000_000, 10_000_000_000_000),
             }
         })
         .collect();
@@ -132,6 +132,6 @@ mod tests {
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(solve_2(&real_data()), 108528956728655);
+        assert_eq!(solve_2(&real_data()), 108_528_956_728_655);
     }
 }

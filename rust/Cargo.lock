@@ -122,7 +122,9 @@ dependencies = [
  "itertools",
  "memoize",
  "pathfinding",
+ "recap",
  "regex",
+ "serde",
 ]
 
 [[package]]
