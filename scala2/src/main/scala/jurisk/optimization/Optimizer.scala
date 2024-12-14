@@ -1,6 +1,7 @@
 package jurisk.optimization
 
-import cats.implicits.{catsSyntaxOptionId, none}
+import cats.implicits.catsSyntaxOptionId
+import cats.implicits.none
 import com.microsoft.z3.ArithExpr
 import com.microsoft.z3.ArithSort
 import com.microsoft.z3.BoolExpr
@@ -45,7 +46,10 @@ trait Optimizer {
   def addConstraints(expressions: Expr[BoolSort]*): Unit
 
   // Note - We were using `getConstInterp` to get the results from this
-  @deprecated("Prefer `runExternal` instead, as this one was glitching for some cases", "2023-12-24")
+  @deprecated(
+    "Prefer `runExternal` instead, as this one was glitching for some cases",
+    "2023-12-24",
+  )
   def checkAndGetModel(): Option[Model]
 
   // TODO: Make type-safe?

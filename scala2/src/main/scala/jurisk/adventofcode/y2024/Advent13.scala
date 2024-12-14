@@ -25,7 +25,7 @@ object Advent13 {
   object SolutionMode {
     final case class BruteForce(limit: Int) extends SolutionMode
     final case class Z3(mode: Z3Mode)       extends SolutionMode
-    case object LinearEquations       extends SolutionMode
+    case object LinearEquations             extends SolutionMode
 
     sealed trait Z3Mode
     object Z3Mode {

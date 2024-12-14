@@ -111,7 +111,11 @@ final case class Field2D[T] private (
   def modifyIgnoringInvalidCoords(c: Coords2D, f: T => T): Field2D[T] =
     at(c) match {
       case Some(value) => updatedAtUnsafe(c, f(value))
-      case None        => this
+      case None        =>
+        println(
+          s"Coordinate $c is out of bounds in `modifyIgnoringInvalidCoords`"
+        )
+        this
     }
 
   def modifyUnsafe(c: Coords2D, f: T => T): Field2D[T] =
@@ -162,6 +166,14 @@ final case class Field2D[T] private (
     yIndices flatMap { y =>
       xIndices map { x =>
         Coords2D.of(x, y)
+      }
+    }
+
+  def allCoordsAndValues: Seq[(Coords2D, T)] =
+    yIndices flatMap { y =>
+      xIndices map { x =>
+        val c = Coords2D.of(x, y)
+        c -> atUnsafe(c)
       }
     }
 

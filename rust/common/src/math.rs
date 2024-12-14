@@ -64,6 +64,9 @@ pub fn lcm(a: i64, b: i64) -> i64 {
     a.abs() * b.abs() / gcd(a, b)
 }
 
+/// Solve a system of two linear equations with two variables, only integer solutions are supported:
+///     a * x + b * y = e
+///     c * x + d * y = f
 #[must_use]
 pub fn solve_two_variable_integer_linear_equation_system<N: Num + Copy>(
     a: N,
