@@ -119,4 +119,7 @@ object Direction2D {
 
   def parseCaretToOption(ch: Char): Option[CardinalDirection2D] =
     caretMapping.leftToRight(ch)
+
+  def parseCaret(ch: Char): CardinalDirection2D =
+    parseCaretToOption(ch).getOrElse(s"Unexpected caret: $ch".fail)
 }
