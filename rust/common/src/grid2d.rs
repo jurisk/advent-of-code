@@ -4,7 +4,7 @@
     clippy::cast_sign_loss
 )]
 
-use std::convert::Infallible;
+use std::convert::{Infallible, identity};
 use std::fmt::{Debug, Formatter};
 use std::iter::Sum;
 use std::str::FromStr;
@@ -19,13 +19,31 @@ use crate::parsing::parse_matrix;
 pub type Coords = Coords2D<i32>;
 
 pub trait Grid2D<T> {
+    fn from_vec(data: Vec<Vec<T>>) -> Self;
+
+    fn new(width: usize, height: usize, default: T) -> Self
+    where
+        T: Clone;
+
+    // TODO: Rather sub-optimal that this isn't `impl Grid2D<U>` or similar
     fn map_by_coords<F, U>(&self, f: F) -> MatrixGrid2D<U>
     where
         F: Fn(Coords) -> U;
 
+    // TODO: Rather sub-optimal that this isn't `impl Grid2D<U>` or similar
     fn map_by_values<F, U>(&self, f: F) -> MatrixGrid2D<U>
     where
         F: Fn(&T) -> U;
+
+    // TODO: Rather sub-optimal that this isn't `impl Grid2D<U>` or similar
+    fn flat_map_by_values<F, U: Default + Clone>(
+        &self,
+        width: usize,
+        height: usize,
+        f: F,
+    ) -> MatrixGrid2D<U>
+    where
+        F: Fn(&T) -> MatrixGrid2D<U>;
 
     fn find_coords_by_value(&self, value: &T) -> Option<Coords>
     where
@@ -42,6 +60,13 @@ pub trait Grid2D<T> {
     fn valid_coords(&self, coords: Coords) -> bool;
 
     fn get(&self, coords: Coords) -> Option<&T>;
+
+    fn get_or_default(&self, coords: Coords) -> T
+    where
+        T: Default + Clone,
+    {
+        self.get(coords).cloned().unwrap_or_default()
+    }
 
     fn set(&mut self, coords: Coords, value: T);
     fn modify<F>(&mut self, coords: Coords, f: F)
@@ -99,26 +124,21 @@ pub trait Grid2D<T> {
     }
 }
 
+#[derive(Clone)]
 pub struct MatrixGrid2D<T> {
     data: Matrix<T>,
 }
 
-impl<T> MatrixGrid2D<T> {
+impl MatrixGrid2D<char> {
     #[must_use]
-    pub fn new(width: usize, height: usize, default: T) -> Self
-    where
-        T: Clone,
-    {
-        Self {
-            data: Matrix::new(height, width, default),
-        }
+    pub fn char_field(input: &str) -> Self {
+        MatrixGrid2D::<char>::parse(input, identity)
     }
+}
 
+impl<T> MatrixGrid2D<T> {
     #[expect(clippy::missing_panics_doc)]
-    pub fn parse(input: &str, f: impl Fn(char) -> T) -> Self
-    where
-        T: TryFrom<char>,
-    {
+    pub fn parse(input: &str, f: impl Fn(char) -> T) -> Self {
         Self {
             data: parse_matrix(input, |ch| Ok::<T, Infallible>(f(ch))).unwrap(),
         }
@@ -139,6 +159,26 @@ impl From<Coords> for (usize, usize) {
 }
 
 impl<T> Grid2D<T> for MatrixGrid2D<T> {
+    #[must_use]
+    fn from_vec(data: Vec<Vec<T>>) -> Self {
+        let rows = data.len();
+        let columns = data.first().map_or(0, Vec::len);
+        let flattened = data.into_iter().flatten().collect();
+        Self {
+            data: Matrix::from_vec(rows, columns, flattened).expect("Failed to create matrix"),
+        }
+    }
+
+    #[must_use]
+    fn new(width: usize, height: usize, default: T) -> Self
+    where
+        T: Clone,
+    {
+        Self {
+            data: Matrix::new(height, width, default),
+        }
+    }
+
     fn map_by_coords<F, U>(&self, f: F) -> MatrixGrid2D<U>
     where
         F: Fn(Coords) -> U,
@@ -161,6 +201,33 @@ impl<T> Grid2D<T> for MatrixGrid2D<T> {
         MatrixGrid2D {
             data: Matrix::from_vec(self.data.rows, self.data.columns, new_data).unwrap(),
         }
+    }
+
+    fn flat_map_by_values<F, U: Default + Clone>(
+        &self,
+        width: usize,
+        height: usize,
+        f: F,
+    ) -> MatrixGrid2D<U>
+    where
+        F: Fn(&T) -> MatrixGrid2D<U>,
+    {
+        let mut result =
+            MatrixGrid2D::new(self.columns() * width, self.rows() * height, U::default());
+        for (coords, value) in self.iter() {
+            let new_data = f(value);
+            for c in new_data.coords() {
+                let new_coords = Coords::new(
+                    coords.x * width as i32 + c.x,
+                    coords.y * height as i32 + c.y,
+                );
+                result.set(
+                    new_coords,
+                    new_data.get(c).expect("Failed to get value").clone(),
+                );
+            }
+        }
+        result
     }
 
     fn find_coords_by_value(&self, value: &T) -> Option<Coords>

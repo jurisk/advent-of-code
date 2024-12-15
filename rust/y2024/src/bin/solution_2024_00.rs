@@ -4,17 +4,17 @@ const DATA: &str = include_str!("../../resources/00.txt");
 
 type N = u32;
 type R = usize;
-type Data = Vec<N>;
+type Input = Vec<N>;
 
-fn parse(input: &str) -> Result<Data, Error> {
+fn parse(input: &str) -> Result<Input, Error> {
     parse_lines_to_vec(input)
 }
 
-fn solve_1(data: &Data) -> R {
+fn solve_1(data: &Input) -> R {
     data.len()
 }
 
-fn solve_2(data: &Data) -> R {
+fn solve_2(data: &Input) -> R {
     data.len()
 }
 
@@ -36,11 +36,11 @@ mod tests {
 
     const TEST_DATA: &str = include_str!("../../resources/00-test-00.txt");
 
-    fn test_data() -> Data {
+    fn test_data() -> Input {
         parse(TEST_DATA).unwrap()
     }
 
-    fn real_data() -> Data {
+    fn real_data() -> Input {
         parse(DATA).unwrap()
     }
 

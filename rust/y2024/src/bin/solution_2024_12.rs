@@ -13,7 +13,7 @@ type R = usize;
 type Data = MatrixGrid2D<char>;
 
 fn parse(input: &str) -> Data {
-    MatrixGrid2D::parse(input, identity)
+    MatrixGrid2D::char_field(input)
 }
 
 fn perimeter(coords: &HashSet<Coords>) -> R {
