@@ -93,7 +93,7 @@ object Advent15 {
           val n = c + dir
           f.updatedAtUnsafe(n, field.at(c).getOrElse(s"No value at $c".fail))
         }
-      State(robot, movePackageIsPlacedInNewPositions)
+      copy(field = movePackageIsPlacedInNewPositions)
     }
 
     private def calculateMovePackage(
@@ -122,27 +122,16 @@ object Advent15 {
       }
     }
 
-    private def moveRobot(next: Coords2D): State =
+    private def moveRobotIfPossible(next: Coords2D): State =
       if (field.at(next) contains Empty) {
-        State(next, field)
+        copy(robot = next)
       } else {
-        sys.error(s"Tried to move robot to $next but failed")
+        this
       }
 
     def move(direction: CardinalDirection2D): State = {
-      val next        = robot + direction
-      val movePackage = calculateMovePackage(robot, direction)
-      movePackage match {
-        case None              =>
-          if (field.at(next) contains Empty) {
-            moveRobot(next)
-          } else {
-            this
-          }
-        case Some(movePackage) =>
-          moveMany(movePackage, direction)
-            .moveRobot(next)
-      }
+      val movePackage = calculateMovePackage(robot, direction).getOrElse(Nil)
+      moveMany(movePackage, direction).moveRobotIfPossible(robot + direction)
     }
   }
 
