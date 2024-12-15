@@ -33,7 +33,6 @@ class Advent15Spec extends AnyFreeSpec {
       part2(testData2) shouldEqual 618
     }
 
-    // Not 1582584
     "real" in {
       part2(realData) shouldEqual 1597035
     }
