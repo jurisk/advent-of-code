@@ -34,18 +34,19 @@ object Advent15 {
       Field2D.printCharField(f)
     }
 
-    @tailrec
     private def calculateMovePackage(
       c: Coords2D,
       direction: CardinalDirection2D,
-      acc: List[Coords2D] = Nil,
-    ): List[Coords2D] = {
+    ): Option[List[Coords2D]] = {
       val next = c + direction
       field.at(next) match {
-        case Some(Square.Empty) => acc.reverse
-        case Some(Square.Wall)  => Nil
+        case Some(Square.Empty) => Some(Nil)
+        case Some(Square.Wall)  => None
         case Some(Square.Box)   =>
-          calculateMovePackage(next, direction, next :: acc)
+          calculateMovePackage(next, direction) match {
+            case Some(more) => Some(next :: more)
+            case None       => None
+          }
         case None               => sys.error("unexpected")
       }
     }
@@ -53,24 +54,33 @@ object Advent15 {
     private def moveRobot(next: Coords2D): State =
       State(next, field)
 
+    private def moveSquare(c: Coords2D, dir: CardinalDirection2D): State = {
+      val next      = c + dir
+      val a         = field.at(c).get
+      val b         = field.at(next).get
+      val nextField = field
+        .updatedAtUnsafe(c, b)
+        .updatedAtUnsafe(next, a)
+      State(robot, nextField)
+    }
+
     def move(direction: CardinalDirection2D): State = {
       val next        = robot + direction
       val movePackage = calculateMovePackage(robot, direction)
       movePackage match {
-        case Nil =>
+        case None    =>
           if (field.at(next).contains(Square.Empty)) {
             moveRobot(next)
           } else {
             this
           }
-        case _   =>
-          val h         = movePackage.head
-          val t         = movePackage.last
-          val t_next    = t + direction
-          val nextField = field
-            .updatedAtUnsafe(t_next, Square.Box)
-            .updatedAtUnsafe(h, Square.Empty)
-          moveRobot(next).copy(field = nextField)
+        case Some(p) =>
+//          println(p)
+          p.reverse
+            .foldLeft(this) { (state, c) =>
+              state.moveSquare(c, direction)
+            }
+            .moveRobot(next)
       }
     }
   }
