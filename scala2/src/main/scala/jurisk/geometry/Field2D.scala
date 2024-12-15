@@ -197,13 +197,7 @@ final case class Field2D[T] private (
 
   def values: Iterable[T] = data.flatten
 
-  def valuesAndCoords: Seq[(Coords2D, T)] =
-    yIndices flatMap { y =>
-      xIndices map { x =>
-        val c = Coords2D.of(x, y)
-        c -> atUnsafe(c)
-      }
-    }
+  def valuesAndCoords: Seq[(Coords2D, T)] = entries
 
   def entries: Seq[(Coords2D, T)] =
     yIndices flatMap { y =>
@@ -354,6 +348,9 @@ object Field2D {
     ): Eval[B] =
       fa.data.foldRight(lb)((row, acc) => row.foldRight(acc)(f))
   }
+
+  def fromLists[T: ClassTag](lists: List[List[T]]): Field2D[T] =
+    Field2D(ArraySeq.from(lists.map(ArraySeq.from)))
 
   def ofSize[T: ClassTag](
     width: Int,

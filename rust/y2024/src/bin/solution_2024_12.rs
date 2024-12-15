@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::convert::identity;
 
 use advent_of_code_common::direction::Direction;
 use advent_of_code_common::grid2d::{Coords, Grid2D, MatrixGrid2D};
@@ -13,7 +12,7 @@ type R = usize;
 type Data = MatrixGrid2D<char>;
 
 fn parse(input: &str) -> Data {
-    MatrixGrid2D::parse(input, identity)
+    MatrixGrid2D::char_field(input)
 }
 
 fn perimeter(coords: &HashSet<Coords>) -> R {
