@@ -2,8 +2,10 @@ package jurisk.adventofcode.y2024
 
 import cats.implicits.toFunctorOps
 import jurisk.adventofcode.y2024.Advent15.Square.Empty
-import jurisk.adventofcode.y2024.Advent15.Square.LeftBox
-import jurisk.adventofcode.y2024.Advent15.Square.RightBox
+import jurisk.adventofcode.y2024.Advent15.Square.LargeBox
+import jurisk.adventofcode.y2024.Advent15.Square.LargeBox.Side
+import jurisk.adventofcode.y2024.Advent15.Square.LargeBox.Side.LeftSide
+import jurisk.adventofcode.y2024.Advent15.Square.LargeBox.Side.RightSide
 import jurisk.adventofcode.y2024.Advent15.Square.SmallBox
 import jurisk.adventofcode.y2024.Advent15.Square.Wall
 import jurisk.geometry.Coords2D
@@ -24,27 +26,41 @@ object Advent15 {
   sealed trait Square extends Product with Serializable {
     def toChar: Char =
       this match {
-        case Empty    => '.'
-        case Wall     => '#'
-        case SmallBox => 'O'
-        case LeftBox  => '['
-        case RightBox => ']'
+        case Empty               => '.'
+        case Wall                => '#'
+        case SmallBox            => 'O'
+        case LargeBox(LeftSide)  => '['
+        case LargeBox(RightSide) => ']'
       }
   }
+
   object Square {
-    case object Empty    extends Square
-    case object Wall     extends Square
-    case object SmallBox extends Square
-    case object LeftBox  extends Square
-    case object RightBox extends Square
+    object LargeBox {
+      sealed trait Side extends Product with Serializable {
+        def otherDirection: CardinalDirection2D
+      }
+      object Side {
+        case object LeftSide  extends Side {
+          val otherDirection: CardinalDirection2D = E
+        }
+        case object RightSide extends Side {
+          val otherDirection: CardinalDirection2D = W
+        }
+      }
+    }
+
+    case object Empty                     extends Square
+    case object Wall                      extends Square
+    case object SmallBox                  extends Square
+    final case class LargeBox(side: Side) extends Square
 
     def parse(c: Char): Square =
       c match {
         case '.' | '@' => Empty
         case '#'       => Wall
         case 'O'       => SmallBox
-        case '['       => LeftBox
-        case ']'       => RightBox
+        case '['       => LargeBox(LeftSide)
+        case ']'       => LargeBox(RightSide)
         case _         => s"unexpected char: $c".fail
       }
   }
@@ -75,7 +91,7 @@ object Advent15 {
       val movePackageIsPlacedInNewPositions =
         coords.foldLeft(movePackageIsTemporarilyRemoved) { (f, c) =>
           val n = c + dir
-          f.updatedAtUnsafe(n, field.at(c).get)
+          f.updatedAtUnsafe(n, field.at(c).getOrElse(s"No value at $c".fail))
         }
       State(robot, movePackageIsPlacedInNewPositions)
     }
@@ -84,14 +100,15 @@ object Advent15 {
       c: Coords2D,
       direction: CardinalDirection2D,
     ): Option[List[Coords2D]] = {
-      val next = c + direction
+      val next         = c + direction
+      val verticalMove = Set(N, S) contains direction
       field.atOrElse(next, Wall) match {
         case Empty => Some(Nil)
 
         case Wall => None
 
-        case LeftBox if Set(N, S).contains(direction) =>
-          val otherC = next + E
+        case LargeBox(side) if verticalMove =>
+          val otherC = next + side.otherDirection
           (
             calculateMovePackage(next, direction),
             calculateMovePackage(otherC, direction),
@@ -100,26 +117,13 @@ object Advent15 {
             case _                  => None
           }
 
-        case RightBox if Set(N, S).contains(direction) =>
-          val otherC = next + W
-          (
-            calculateMovePackage(next, direction),
-            calculateMovePackage(otherC, direction),
-          ) match {
-            case (Some(a), Some(b)) => Some(next :: otherC :: a ::: b)
-            case _                  => None
-          }
-
-        case RightBox | LeftBox | SmallBox =>
-          calculateMovePackage(next, direction) match {
-            case Some(more) => Some(next :: more)
-            case None       => None
-          }
+        case LargeBox(_) | SmallBox =>
+          calculateMovePackage(next, direction).map(next :: _)
       }
     }
 
     private def moveRobot(next: Coords2D): State =
-      if (field.at(next).contains(Empty)) {
+      if (field.at(next) contains Empty) {
         State(next, field)
       } else {
         sys.error(s"Tried to move robot to $next but failed")
@@ -145,7 +149,8 @@ object Advent15 {
   def parse(input: String): Input = {
     val (a, b)     = input.splitPairByDoubleNewline
     val charField  = Field2D.parseCharField(a)
-    val robot      = charField.findCoordsByValue('@').get
+    val robot      =
+      charField.findCoordsByValue('@').getOrElse("Robot not found".fail)
     val field      = charField.map(Square.parse)
     val state      = State(robot, field)
     val dirs       = b.splitLines.mkString
@@ -161,7 +166,7 @@ object Advent15 {
     }
     result.print("Final state:")
     result.field.allCoordsAndValues.map { case (c, v) =>
-      if (Set(LeftBox, SmallBox).contains(v)) {
+      if (Set(LargeBox(LeftSide), SmallBox) contains v) {
         100 * c.y + c.x
       } else {
         0
@@ -178,7 +183,9 @@ object Advent15 {
       case Wall     =>
         Field2D.fromLists[Square](List(List(Wall, Wall)))
       case SmallBox =>
-        Field2D.fromLists[Square](List(List(LeftBox, RightBox)))
+        Field2D.fromLists[Square](
+          List(List(LargeBox(LeftSide), LargeBox(RightSide)))
+        )
       case other    => s"Unexpected value: $other".fail
     }
 
