@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::convert::identity;
 
 use advent_of_code_common::direction::Direction;
 use advent_of_code_common::grid2d::{Coords, Grid2D, MatrixGrid2D};

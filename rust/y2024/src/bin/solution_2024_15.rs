@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Formatter};
 
 use advent_of_code_common::direction::Direction;
@@ -17,7 +17,7 @@ enum Side {
 
 impl Side {
     #[must_use]
-    pub fn other_direction(&self) -> Direction {
+    pub fn other_direction(self) -> Direction {
         match self {
             Side::Left => Direction::East,
             Side::Right => Direction::West,
@@ -49,12 +49,12 @@ impl<T: Grid2D<Square> + Clone> Clone for State<T> {
 }
 
 impl<T: Grid2D<Square>> State<T> {
-    fn calculate_move_package(&self, c: Coords, direction: Direction) -> Option<Vec<Coords>> {
+    fn calculate_move_package(&self, c: Coords, direction: Direction) -> Option<HashSet<Coords>> {
         let next = c + direction;
         let vertical_move = matches!(direction, Direction::North | Direction::South);
 
         match self.field.get_or_default(next) {
-            Square::Empty => Some(vec![]),
+            Square::Empty => Some(HashSet::new()),
             Square::Wall => None,
             Square::LargeBox(side) if vertical_move => {
                 let other_c = next + side.other_direction();
@@ -62,24 +62,34 @@ impl<T: Grid2D<Square>> State<T> {
                     self.calculate_move_package(next, direction),
                     self.calculate_move_package(other_c, direction),
                 ) {
-                    (Some(a), Some(b)) => Some(vec![vec![next, other_c], a, b].concat()),
+                    (Some(a), Some(b)) => {
+                        let mut result = HashSet::new();
+                        result.insert(next);
+                        result.insert(other_c);
+                        result.extend(a);
+                        result.extend(b);
+                        Some(result)
+                    },
                     _ => None,
                 }
             },
             Square::LargeBox(_) | Square::SmallBox => {
                 self.calculate_move_package(next, direction)
-                    .map(|result| vec![vec![next], result].concat())
+                    .map(|mut result| {
+                        result.insert(next);
+                        result
+                    })
             },
         }
     }
 
-    fn move_many(&mut self, move_package: Vec<Coords>, direction: Direction) {
+    fn move_many(&mut self, move_package: HashSet<Coords>, direction: Direction) {
         let mut pending = HashMap::new();
-        for c in &move_package {
-            if let Some(existing) = self.field.get(*c) {
-                pending.insert(*c, *existing);
+        for c in move_package {
+            if let Some(existing) = self.field.get(c) {
+                pending.insert(c, *existing);
             }
-            self.field.set(*c, Square::Empty);
+            self.field.set(c, Square::Empty);
         }
 
         for (c, v) in pending {
@@ -149,7 +159,7 @@ fn parse(input: &str) -> Result<Input, Error> {
     Ok(result)
 }
 
-fn solve_1<T: Grid2D<Square>>(data: &Input) -> R {
+fn solve_1(data: &Input) -> R {
     let (state, directions) = data;
     let mut state: State<MatrixGrid2D<Square>> = state.clone();
     println!("Initial state:\n{state:?}\n");
@@ -169,7 +179,7 @@ fn solve_1<T: Grid2D<Square>>(data: &Input) -> R {
         .sum()
 }
 
-fn solve_2<T: Grid2D<Square>>(data: &Input) -> R {
+fn solve_2(data: &Input) -> R {
     let (incoming_state, directions) = data;
     let incoming_field = &incoming_state.field;
     let field = incoming_field.flat_map_by_values(2, 1, |v| {
@@ -182,7 +192,7 @@ fn solve_2<T: Grid2D<Square>>(data: &Input) -> R {
                     Square::LargeBox(Side::Right),
                 ]])
             },
-            _ => panic!("Unexpected value"),
+            Square::LargeBox(_) => panic!("Unexpected LargeBox"),
         }
     });
     let new_robot = Coords::new(incoming_state.robot.x * 2, incoming_state.robot.y);
@@ -190,16 +200,16 @@ fn solve_2<T: Grid2D<Square>>(data: &Input) -> R {
         robot: new_robot,
         field,
     };
-    solve_1::<MatrixGrid2D<Square>>(&(state, directions.clone()))
+    solve_1(&(state, directions.clone()))
 }
 
 fn main() -> Result<(), Error> {
     let data = parse(DATA)?;
 
-    let result_1 = solve_1::<MatrixGrid2D<Square>>(&data);
+    let result_1 = solve_1(&data);
     println!("Part 1: {result_1}");
 
-    let result_2 = solve_2::<MatrixGrid2D<Square>>(&data);
+    let result_2 = solve_2(&data);
     println!("Part 2: {result_2}");
 
     Ok(())
@@ -231,31 +241,31 @@ mod tests {
 
     #[test]
     fn test_solve_1_test_0() {
-        assert_eq!(solve_1::<MatrixGrid2D<Square>>(&test_data_0()), 2028);
+        assert_eq!(solve_1(&test_data_0()), 2028);
     }
 
     #[test]
     fn test_solve_1_test_1() {
-        assert_eq!(solve_1::<MatrixGrid2D<Square>>(&test_data_1()), 10092);
+        assert_eq!(solve_1(&test_data_1()), 10092);
     }
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(solve_1::<MatrixGrid2D<Square>>(&real_data()), 1577255);
+        assert_eq!(solve_1(&real_data()), 1_577_255);
     }
 
     #[test]
     fn test_solve_2_test_1() {
-        assert_eq!(solve_2::<MatrixGrid2D<Square>>(&test_data_1()), 9021);
+        assert_eq!(solve_2(&test_data_1()), 9021);
     }
 
     #[test]
     fn test_solve_2_test_2() {
-        assert_eq!(solve_2::<MatrixGrid2D<Square>>(&test_data_2()), 618);
+        assert_eq!(solve_2(&test_data_2()), 618);
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(solve_2::<MatrixGrid2D<Square>>(&real_data()), 1597035);
+        assert_eq!(solve_2(&real_data()), 1_597_035);
     }
 }
