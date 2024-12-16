@@ -58,6 +58,8 @@ object Advent16 {
         _.position == end,
       )
       .get
+
+    println(s"Result: $result")
     result
   }
 
@@ -69,6 +71,7 @@ object Advent16 {
 
     implicit val c2i: ToInt[Coords2D] = coordsToInt(field)
 
+    var visited2 = Map.empty[State, Int]
     var visited = Set.empty[(State, BitSet)]
     var mega    = BitSet.empty
 
@@ -76,14 +79,22 @@ object Advent16 {
       (state, 0, BitSet.empty),
       { case (state, cost, path) =>
         if (cost < best) {
-          if (!visited.contains((state, path))) {
-            visited += ((state, path))
-
-            state
-              .successors(field)
-              .map(n => (n._1, cost + n._2, path + n._1.position.toInt))
-          } else {
+          if (cost > visited2.getOrElse(state, Int.MaxValue)) {
             Nil
+          } else {
+            visited2 += (state -> cost)
+            if (!visited.contains((state, path))) {
+              visited += ((state, path))
+              if (visited.size % 100_000 == 0) {
+                println(s"Visited: ${visited.size}, cost = $cost, best = $best")
+              }
+
+              state
+                .successors(field)
+                .map(n => (n._1, cost + n._2, path + n._1.position.toInt))
+            } else {
+              Nil
+            }
           }
         } else {
           Nil
@@ -93,6 +104,7 @@ object Advent16 {
 //        println(s"State: $state, End: $end, Cost: $cost, Path: $path")
         if ((state.position == end) && (cost == best)) {
           mega = mega ++ path
+          println(s"End state found: ${mega.size}")
         }
       },
     )
