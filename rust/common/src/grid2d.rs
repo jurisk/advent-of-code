@@ -131,7 +131,7 @@ pub struct MatrixGrid2D<T> {
 
 impl MatrixGrid2D<char> {
     #[must_use]
-    pub fn char_field(input: &str) -> Self {
+    pub fn parse_char_field(input: &str) -> Self {
         MatrixGrid2D::<char>::parse(input, identity)
     }
 }

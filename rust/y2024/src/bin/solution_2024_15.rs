@@ -138,7 +138,7 @@ fn parse(input: &str) -> Result<Input, Error> {
 
     let directions: Vec<Direction> = b.chars().flat_map(Direction::try_from_caret).collect();
 
-    let char_field: MatrixGrid2D<char> = MatrixGrid2D::char_field(&a);
+    let char_field: MatrixGrid2D<char> = MatrixGrid2D::parse_char_field(&a);
 
     let robot = char_field
         .find_coords_by_value(&'@')
