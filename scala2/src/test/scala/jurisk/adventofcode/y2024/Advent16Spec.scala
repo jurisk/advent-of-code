@@ -5,22 +5,31 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
 
 class Advent16Spec extends AnyFreeSpec {
-  private def testData = parseFile(fileName("-test-00"))
-  private def realData = parseFile(fileName(""))
+  private def testData0 = parseFile(fileName("-test-00"))
+  private def testData1 = parseFile(fileName("-test-01"))
+  private def realData  = parseFile(fileName(""))
 
   "part 1" - {
-    "test" in {
-      part1(testData) shouldEqual 0
+    "test 0" in {
+      part1(testData0) shouldEqual 7036
+    }
+
+    "test 1" in {
+      part1(testData1) shouldEqual 11048
     }
 
     "real" in {
-      part1(realData) shouldEqual 0
+      part1(realData) shouldEqual 74392
     }
   }
 
   "part 2" - {
-    "test" in {
-      part2(testData) shouldEqual 0
+    "test 0" in {
+      part2(testData0) shouldEqual 45
+    }
+
+    "test 1" in {
+      part2(testData1) shouldEqual 64
     }
 
     "real" in {
