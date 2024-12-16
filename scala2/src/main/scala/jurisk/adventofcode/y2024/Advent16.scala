@@ -1,27 +1,26 @@
 package jurisk.adventofcode.y2024
 
+import cats.implicits.{catsSyntaxOptionId, none}
 import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
-import jurisk.collections.mutable.MutableBitSet
+import jurisk.collections.immutable.ImmutableBitSet
 import jurisk.geometry.Direction2D.CardinalDirection2D
 import jurisk.geometry.Field2D.coordsToInt
 import jurisk.geometry.{Coords2D, Direction2D, Field2D, Rotation}
+import jurisk.utils.CollectionOps.OptionOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.ToInt
-import jurisk.utils.conversions.syntax.ToIntOps
-
-import scala.collection.immutable.BitSet
 
 object Advent16 {
-  type Input = (State, Field2D[Boolean], Coords2D)
-  type N     = Int
+  type Input        = (State, Field2D[Boolean], Coords2D)
+  private type Cost = Int
 
   final case class State(position: Coords2D, direction: CardinalDirection2D) {
-    def successors(field: Field2D[Boolean]): List[(State, N)] = {
+    def successors(field: Field2D[Boolean]): List[(State, Cost)] = {
       val next     = position + direction
       val straight = field.at(next) match {
-        case Some(false) => Option(State(next, direction))
-        case _           => None
+        case Some(false) => State(next, direction).some
+        case _           => none
       }
       val rotateL  = copy(direction = direction.rotate(Rotation.Left90))
       val rotateR  = copy(direction = direction.rotate(Rotation.Right90))
@@ -45,11 +44,8 @@ object Advent16 {
     (State(start, Direction2D.E), field, end)
   }
 
-  def part1(data: Input): N = {
+  def part1(data: Input): Cost = {
     val (state, field, end) = data
-
-//    println(s"State: $state, End: $end")
-    Field2D.printBooleanField(field)
 
     val (_, result) = Dijkstra
       .dijkstra[State, Int](
@@ -57,13 +53,12 @@ object Advent16 {
         state => state.successors(field),
         _.position == end,
       )
-      .get
+      .orFail("Path not found")
 
-    println(s"Result: $result")
     result
   }
 
-  def part2(data: Input): N = {
+  def part2(data: Input): Cost = {
     val best = part1(data)
     println(s"Best: $best")
 
@@ -71,45 +66,37 @@ object Advent16 {
 
     implicit val c2i: ToInt[Coords2D] = coordsToInt(field)
 
-    var visited2 = Map.empty[State, Int]
-    var visited = Set.empty[(State, BitSet)]
-    var mega    = BitSet.empty
+    var bestCostSoFar = Map.empty[State, Cost]
+    var visitedCoords = ImmutableBitSet.empty[Coords2D]
 
-    Bfs.bfsVisitAll[(State, N, BitSet)](
-      (state, 0, BitSet.empty),
+    // Note: Actually, `bfsVisitAll` keeps another "visited" set, which is a duplicate
+    Bfs.bfsVisitAll[(State, Cost, ImmutableBitSet[Coords2D])](
+      (state, 0, ImmutableBitSet.empty),
       { case (state, cost, path) =>
         if (cost < best) {
-          if (cost > visited2.getOrElse(state, Int.MaxValue)) {
+          if (cost > bestCostSoFar.getOrElse(state, Int.MaxValue)) {
             Nil
           } else {
-            visited2 += (state -> cost)
-            if (!visited.contains((state, path))) {
-              visited += ((state, path))
-              if (visited.size % 100_000 == 0) {
-                println(s"Visited: ${visited.size}, cost = $cost, best = $best")
+            bestCostSoFar += (state -> cost)
+            state
+              .successors(field)
+              .map { case (n, c) =>
+                (n, cost + c, path + n.position)
               }
-
-              state
-                .successors(field)
-                .map(n => (n._1, cost + n._2, path + n._1.position.toInt))
-            } else {
-              Nil
-            }
           }
         } else {
           Nil
         }
       },
       { case (state, cost, path) =>
-//        println(s"State: $state, End: $end, Cost: $cost, Path: $path")
         if ((state.position == end) && (cost == best)) {
-          mega = mega ++ path
-          println(s"End state found: ${mega.size}")
+          visitedCoords = visitedCoords ++ path
+          println(s"End state found: ${visitedCoords.size}")
         }
       },
     )
 
-    mega.size
+    visitedCoords.size
   }
 
   def parseFile(fileName: String): Input =
