@@ -1,13 +1,16 @@
 package jurisk.adventofcode.y2024
 
-import jurisk.algorithms.Backtracker
-import jurisk.algorithms.pathfinding.{Bfs, Dijkstra, Pathfinding}
+import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
+import jurisk.collections.mutable.MutableBitSet
 import jurisk.geometry.Direction2D.CardinalDirection2D
+import jurisk.geometry.Field2D.coordsToInt
 import jurisk.geometry.{Coords2D, Direction2D, Field2D, Rotation}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+import jurisk.utils.ToInt
+import jurisk.utils.conversions.syntax.ToIntOps
 
-import java.util
+import scala.collection.immutable.BitSet
 
 object Advent16 {
   type Input = (State, Field2D[Boolean], Coords2D)
@@ -57,28 +60,6 @@ object Advent16 {
       .get
     result
   }
-//
-//  private var megaVisited = Set.empty[(State, Set[Coords2D])]
-//  def f(state: State, field: Field2D[Boolean], end: Coords2D, best: Int, costSoFar: Int, visited: Set[Coords2D]): Set[Coords2D] = {
-//    println(s"State: $state, End: $end, Cost: $costSoFar, Visited: $visited, Megavisited: $megaVisited")
-//    megaVisited += ((state, visited))
-//    if (costSoFar > best) {
-//      Set.empty
-//    } else {
-//      if (state.position == end) {
-//        visited
-//      } else {
-//          state.successors(field).flatMap { case (n, cost) =>
-//            val newVisited = visited + n.position
-//            if (!megaVisited.contains((n, newVisited))) {
-//              f(n, field, end, best, costSoFar + cost, newVisited)
-//            } else {
-//              Set.empty
-//            }
-//          }.toSet
-//      }
-//    }
-//  }
 
   def part2(data: Input): N = {
     val best = part1(data)
@@ -86,19 +67,21 @@ object Advent16 {
 
     val (state, field, end) = data
 
-    var visited = Set.empty[(State, Set[Coords2D])]
-    var mega    = Set.empty[Coords2D]
+    implicit val c2i: ToInt[Coords2D] = coordsToInt(field)
 
-    Bfs.bfsVisitAll[(State, N, List[Coords2D])](
-      (state, 0, Nil),
+    var visited = Set.empty[(State, BitSet)]
+    var mega    = BitSet.empty
+
+    Bfs.bfsVisitAll[(State, N, BitSet)](
+      (state, 0, BitSet.empty),
       { case (state, cost, path) =>
         if (cost < best) {
-          if (!visited.contains((state, path.toSet))) {
-            visited += ((state, path.toSet))
+          if (!visited.contains((state, path))) {
+            visited += ((state, path))
 
             state
               .successors(field)
-              .map(n => (n._1, cost + n._2, n._1.position :: path))
+              .map(n => (n._1, cost + n._2, path + n._1.position.toInt))
           } else {
             Nil
           }
@@ -109,7 +92,7 @@ object Advent16 {
       { case (state, cost, path) =>
 //        println(s"State: $state, End: $end, Cost: $cost, Path: $path")
         if ((state.position == end) && (cost == best)) {
-          mega = mega ++ path.toSet
+          mega = mega ++ path
         }
       },
     )
