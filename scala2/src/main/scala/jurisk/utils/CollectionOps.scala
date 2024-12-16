@@ -153,4 +153,9 @@ object CollectionOps {
     def replaceAt(index: Int, slice: Vector[T]): Vector[T] =
       vector.slice(0, index) ++ slice ++ vector.slice(index + 1, vector.length)
   }
+
+  implicit class OptionOps[T](private val option: Option[T]) extends AnyVal {
+    def orFail(message: => String): T =
+      option.getOrElse(message.fail)
+  }
 }
