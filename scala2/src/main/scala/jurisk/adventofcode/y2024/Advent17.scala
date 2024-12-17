@@ -33,6 +33,13 @@ object Advent17 {
     "asdf".fail
   }
 
+  /* a => (new_a, output) */
+  def f(a: Long): (Long, Int) = {
+    val output = ((a % 8) ^ 0b011 ^ (a / fastPow2((a % 8) ^ 0b101)) % 8).toInt
+    val newA = a / 8
+    (newA, output)
+  }
+
   def run(initialA: N, expected: Array[Int]): Boolean = {
     var a: N = initialA
     var expectedIdx = 0
@@ -293,6 +300,9 @@ if (a != 0) Jump Start
     State(44374556, 0, 0, List(2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 1, 5, 5, 3, 0))
 
   def main(args: Array[String]): Unit = {
+    (0 to 1000) foreach { a =>
+      println(s"$a: ${calculateOutput(a)}")
+    }
 
     (0 to 7) foreach { output =>
       println(s"To get $output a has to be ${findA(output)}")
