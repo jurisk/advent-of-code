@@ -48,9 +48,15 @@ object Advent17 {
     expectations match {
       case Nil => a.some
       case h :: t =>
-        candidateA(a, h).find { candidate =>
-          mega(candidate, t).isDefined
+        candidateA(a, h).foreach { candidate =>
+          mega(candidate, t) match {
+            case Some(answer) =>
+              return answer.some
+            case None =>
+          }
         }
+
+        None
     }
   }
 
@@ -122,7 +128,7 @@ object Advent17 {
     program: List[Int],
     ip: Int = 0,
     output: List[Int] = Nil,
-    expectedOutput: List[Int] = Nil,
+//    expectedOutput: List[Int] = Nil,
   ) {
     def step: Either[State, State] = {
       (program.lift(ip), program.lift(ip + 1)) match {
@@ -134,17 +140,17 @@ object Advent17 {
             case (newState, res) =>
               res match {
                 case Some(res) =>
-                  val qq = newState.copy(output = res :: output)
-                  if (expectedOutput.headOption.contains(res)) {
-                    val t = expectedOutput.tail
-                    if (t.isEmpty) {
-                      qq.asLeft
-                    } else {
-                      qq.copy(expectedOutput = t).asRight
-                    }
-                  } else {
-                    qq.asLeft
-                  }
+                  newState.copy(output = res :: output).asRight
+//                  if (expectedOutput.headOption.contains(res)) {
+//                    val t = expectedOutput.tail
+//                    if (t.isEmpty) {
+//                      qq.asLeft
+//                    } else {
+//                      qq.copy(expectedOutput = t).asRight
+//                    }
+//                  } else {
+//                    qq.asLeft
+//                  }
                 case None =>
                   newState.asRight
               }
@@ -331,7 +337,7 @@ if (a != 0) Jump Start
       if (candidateA % 1_000_000 == 0) {
         println(s"Trying $candidateA")
       }
-      val adjusted = data.copy(a = candidateA, expectedOutput = data.program.take(N))
+      val adjusted = data.copy(a = candidateA)// , expectedOutput = data.program.take(N))
       val output = getOutput(adjusted)
 
       if (output.length > 8) {
@@ -349,6 +355,14 @@ if (a != 0) Jump Start
     State(44374556, 0, 0, List(2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 1, 5, 5, 3, 0))
 
   def main(args: Array[String]): Unit = {
+    (0 to 10000) foreach { a =>
+      if (runFormula(a) == List(2L, 4, 1, 5)) {
+        println(s"Found $a that matches")
+      }
+    }
+
+    System.exit(0)
+
     (0 to 1000) foreach { a =>
       val tmp = fastPow2((a % 8) ^ 0b101)
       println(s"a = $a, tmp = $tmp")
