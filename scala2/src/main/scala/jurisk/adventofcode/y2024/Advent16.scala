@@ -1,11 +1,16 @@
 package jurisk.adventofcode.y2024
 
-import cats.implicits.{catsSyntaxOptionId, none}
-import jurisk.algorithms.pathfinding.{Bfs, Dijkstra}
+import cats.implicits.catsSyntaxOptionId
+import cats.implicits.none
+import jurisk.algorithms.pathfinding.Bfs
+import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.collections.immutable.ImmutableBitSet
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.CardinalDirection2D
+import jurisk.geometry.Field2D
 import jurisk.geometry.Field2D.coordsToInt
-import jurisk.geometry.{Coords2D, Direction2D, Field2D, Rotation}
+import jurisk.geometry.Rotation
 import jurisk.utils.CollectionOps.OptionOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps

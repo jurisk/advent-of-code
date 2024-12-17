@@ -1,7 +1,9 @@
 package jurisk.adventofcode.y2024
 
-import cats.implicits.{catsSyntaxEitherId, catsSyntaxOptionId}
-import jurisk.math.{pow, pow2}
+import cats.implicits.catsSyntaxEitherId
+import cats.implicits.catsSyntaxOptionId
+import jurisk.math.pow
+import jurisk.math.pow2
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
 
@@ -21,7 +23,7 @@ object Advent17 {
     (newA, output)
   }
 
-  case class State(
+  final case class State(
     a: N,
     b: N,
     c: N,
@@ -62,7 +64,7 @@ object Advent17 {
         case 4 => a
         case 5 => b
         case 6 => c
-        case 7 => s"Invalid combo 7".fail
+        case 7 => "Invalid combo 7".fail
       }
 
     private def jumpIp: State = copy(ip = ip + 2)
@@ -136,7 +138,7 @@ object Advent17 {
       case Instruction.Bxl => s"b = b ^ $comboCode"
       case Instruction.Bst => s"b = ${explainCombo(comboCode)} % 8"
       case Instruction.Jnz => s"if (a != 0) Jump $comboCode"
-      case Instruction.Bxc => s"b = b ^ c"
+      case Instruction.Bxc => "b = b ^ c"
       case Instruction.Out => s"Out ${explainCombo(comboCode)}"
       case Instruction.Bdv => s"Bdv ${explainCombo(comboCode)}"
       case Instruction.Cdv => s"c = a / (2 ^ ${explainCombo(comboCode)})"
@@ -193,11 +195,9 @@ object Advent17 {
      */
     def search(a: Long, expectations: List[Int]): Option[Long] = {
       def reverseF(aNew: Long, output: Int): IndexedSeq[Long] = {
-        val EmpiricConstant = 10000
-        val results         = (aNew * 8 to aNew * 8 + EmpiricConstant).filter {
-          candidate =>
-            val (newA, out) = f(candidate)
-            out == output && newA == aNew
+        val results = (aNew * 8 until (aNew + 1) * 8).filter { candidate =>
+          val (newA, out) = f(candidate)
+          out == output && newA == aNew
         }
 
         println(
