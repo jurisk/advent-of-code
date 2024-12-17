@@ -19,7 +19,8 @@ object Advent17 {
   }
 
   def calculateOutput(a: Long): Long = {
-    (a % 8) ^ 0b011 ^ (a / fastPow2((a % 8) ^ 0b101)) % 8
+    val q = a / fastPow2((a % 8) ^ 0b101)
+    (a % 8) ^ 0b011 ^ (q % 8)
   }
 
   def findA(output: Int): Long = {
@@ -33,11 +34,59 @@ object Advent17 {
     "asdf".fail
   }
 
+  def candidateA(aNew: Long, output: Int): IndexedSeq[Long] = {
+    val results = (aNew * 8 to aNew * 8 + 10000).filter { candidate =>
+      val (newA, out) = f(candidate)
+      out == output && newA == aNew
+    }
+
+    println(s"Found ${results.length} candidates for $aNew, $output: $results")
+    results
+  }
+
+  def mega(a: Long, expectations: List[Int]): Option[Long] = {
+    expectations match {
+      case Nil => a.some
+      case h :: t =>
+        candidateA(a, h).find { candidate =>
+          mega(candidate, t).isDefined
+        }
+    }
+  }
+
+  def solver(list: List[Int]) = {
+    mega(0, list.reverse).get
+  }
+
   /* a => (new_a, output) */
   def f(a: Long): (Long, Int) = {
     val output = ((a % 8) ^ 0b011 ^ (a / fastPow2((a % 8) ^ 0b101)) % 8).toInt
     val newA = a / 8
     (newA, output)
+  }
+
+  /*
+    f(a15) = (a14, 2)
+    f(a14) = (a13, 4)
+    f(a13) = (a12, 1)
+    ...
+    f(a1) = (0, 0)
+
+    find min a15 such that all such is true
+
+  List(2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 1, 5, 5, 3, 0)
+
+   */
+
+  def runFormula(initialA: Int): Vector[Long] = {
+    var a: Long = initialA
+    var result = Vector.empty[Long]
+    while (a != 0) {
+      val (newA, output) = f(a)
+      result = result :+ output
+      a = newA
+    }
+    result
   }
 
   def run(initialA: N, expected: Array[Int]): Boolean = {
@@ -301,7 +350,14 @@ if (a != 0) Jump Start
 
   def main(args: Array[String]): Unit = {
     (0 to 1000) foreach { a =>
-      println(s"$a: ${calculateOutput(a)}")
+      val tmp = fastPow2((a % 8) ^ 0b101)
+      println(s"a = $a, tmp = $tmp")
+    }
+
+    (0 to 1000) foreach { a =>
+      val (newA, out) = f(a)
+
+      println(s"a = $a = 8 * ${a / 8} + ${a % 8}, output = $out, newA = $newA")
     }
 
     (0 to 7) foreach { output =>

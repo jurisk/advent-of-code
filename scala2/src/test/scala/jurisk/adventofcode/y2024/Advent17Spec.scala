@@ -27,9 +27,13 @@ class Advent17Spec extends AnyFreeSpec {
     "test" in {
       val expected = Array(1,5,0,3,7,3,0,3,1)
 
+      Advent17.solver(expected.toList) shouldEqual 44374556L
+
       Advent17.run(44374555L, expected) shouldEqual false
       Advent17.run(44374556L, expected) shouldEqual true
       Advent17.run(44374557L, expected) shouldEqual false
+
+      Advent17.runFormula(44374556) shouldEqual expected.map(_.toLong).toVector
     }
 
     "test 2" in {
