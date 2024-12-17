@@ -73,12 +73,10 @@ impl Directory {
         working_directory: &[String],
         output_lines: &[OutputLine],
     ) -> Directory {
-        let (h, t) = head_tail(working_directory);
-
         let mut new_directories = self.directories.clone();
         let mut new_files = self.files.clone();
 
-        match h {
+        match head_tail(working_directory) {
             None => {
                 for output_line in output_lines {
                     match output_line {
@@ -93,7 +91,7 @@ impl Directory {
                 }
             },
 
-            Some(dir) => {
+            Some((dir, t)) => {
                 let key = dir.to_string();
                 let found = new_directories.get(&key).unwrap();
                 let result = found.add_output_lines(t, output_lines);

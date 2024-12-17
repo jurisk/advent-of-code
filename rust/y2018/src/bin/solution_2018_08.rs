@@ -35,10 +35,9 @@ impl Node {
 
 /// Takes head of the list, or fails
 fn take_head<T: Clone>(input: &[T]) -> IResult<&[T], T> {
-    let (h, t) = head_tail(input);
-    match h {
+    match head_tail(input) {
         None => Err(Incomplete(Needed::Unknown)),
-        Some(h) => Ok((t, h.clone())),
+        Some((h, t)) => Ok((t, h.clone())),
     }
 }
 
