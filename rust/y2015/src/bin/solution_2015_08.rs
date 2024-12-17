@@ -9,10 +9,9 @@ fn unescape(input: &str) -> String {
     fn f(s: &[char]) -> Vec<char> {
         let mut result: Vec<char> = Vec::new();
 
-        let (h, t) = head_tail(s);
-        match h {
+        match head_tail(s) {
             None => {},
-            Some(&h) => {
+            Some((&h, t)) => {
                 let (ch, idx) = if h == '\\' {
                     match t[0] {
                         '\\' => ('\\', 1),

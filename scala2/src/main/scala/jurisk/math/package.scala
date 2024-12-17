@@ -51,6 +51,9 @@ package object math {
   def pow(a: Int, b: Int): Long =
     Math.pow(a, b).toLong
 
+  def pow2(n: Long): Long =
+    1L << n
+
   def positiveDivisors(n: Long): Seq[Long] =
     (1L to Math.sqrt(n.toDouble).toLong)
       .flatMap(i =>

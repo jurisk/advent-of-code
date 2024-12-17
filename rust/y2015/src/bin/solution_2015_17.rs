@@ -54,11 +54,10 @@ fn solve_1(data: Vec<u16>, target: u16) -> usize {
     if target == 0 {
         1
     } else {
-        let (h, t) = head_tail(&data);
-        match h {
+        match head_tail(&data) {
             None => 0,
-            Some(&h) => {
-                let using_h = if target < h {
+            Some((h, t)) => {
+                let using_h = if target < *h {
                     0
                 } else {
                     solve_1(t.to_vec(), target - h)
@@ -76,10 +75,9 @@ fn solve_2_int(data: Vec<u16>, target: u16, bottles_remaining: u16) -> usize {
     if bottles_remaining == 0 {
         usize::from(target == 0)
     } else {
-        let (h, t) = head_tail(&data);
-        match h {
+        match head_tail(&data) {
             None => 0,
-            Some(&h) => {
+            Some((&h, t)) => {
                 let using_h = if target < h {
                     0
                 } else {

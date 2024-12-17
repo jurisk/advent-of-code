@@ -74,10 +74,9 @@ impl Manual {
     }
 
     fn apply_next_instruction(&self) -> Manual {
-        let (head, tail) = head_tail(&self.instructions);
-        match head {
+        match head_tail(&self.instructions) {
             None => self.clone(),
-            Some(head) => {
+            Some((head, tail)) => {
                 Manual {
                     dots:         Manual::fold_dots(&self.dots, head),
                     instructions: tail.to_vec(),
