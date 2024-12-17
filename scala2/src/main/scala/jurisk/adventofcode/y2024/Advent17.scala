@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2024
 
-import cats.implicits.{catsSyntaxEitherId, catsSyntaxOptionId, none}
-import jurisk.math.pow
+import cats.implicits.{catsSyntaxEitherId, catsSyntaxOptionId}
+import jurisk.math.{pow, pow2}
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
 
@@ -10,115 +10,15 @@ object Advent17 {
   type Output = String
   type N      = Long
 
-  @inline
-  def fastPow2(n: Long): N = {
-    1L << n
-//    val result = 1L << n
-//    assert(result == pow(2, n.toInt))
-//    result
-  }
-
-  def calculateOutput(a: Long): Long = {
-    val q = a / fastPow2((a % 8) ^ 0b101)
-    (a % 8) ^ 0b011 ^ (q % 8)
-  }
-
-  def findA(output: Int): Long = {
-    var candidateA = 0
-    while (candidateA < Long.MaxValue) {
-      if (calculateOutput(candidateA) == output) {
-        return candidateA
-      }
-      candidateA += 1
-    }
-    "asdf".fail
-  }
-
-  def candidateA(aNew: Long, output: Int): IndexedSeq[Long] = {
-    val results = (aNew * 8 to aNew * 8 + 10000).filter { candidate =>
-      val (newA, out) = f(candidate)
-      out == output && newA == aNew
-    }
-
-    println(s"Found ${results.length} candidates for $aNew, $output: $results")
-    results
-  }
-
-  def mega(a: Long, expectations: List[Int]): Option[Long] = {
-    expectations match {
-      case Nil => a.some
-      case h :: t =>
-        candidateA(a, h).foreach { candidate =>
-          mega(candidate, t) match {
-            case Some(answer) =>
-              return answer.some
-            case None =>
-          }
-        }
-
-        None
-    }
-  }
-
-  def solver(list: List[Int]) = {
-    mega(0, list.reverse).get
-  }
-
-  /* a => (new_a, output) */
-  def f(a: Long): (Long, Int) = {
-    val output = ((a % 8) ^ 0b011 ^ (a / fastPow2((a % 8) ^ 0b101)) % 8).toInt
-    val newA = a / 8
-    (newA, output)
-  }
-
   /*
-    f(a15) = (a14, 2)
-    f(a14) = (a13, 4)
-    f(a13) = (a12, 1)
-    ...
-    f(a1) = (0, 0)
-
-    find min a15 such that all such is true
-
-  List(2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 1, 5, 5, 3, 0)
-
+   * a => (new_a, output)
+   *
+   * This is entirely bound to our specific program, obtained through reverse engineering it.
    */
-
-  def runFormula(initialA: Int): Vector[Long] = {
-    var a: Long = initialA
-    var result = Vector.empty[Long]
-    while (a != 0) {
-      val (newA, output) = f(a)
-      result = result :+ output
-      a = newA
-    }
-    result
-  }
-
-  def run(initialA: N, expected: Array[Int]): Boolean = {
-    var a: N = initialA
-    var expectedIdx = 0
-
-    while (a != 0) {
-      val output = (a % 8) ^ 0b011 ^ (a / fastPow2((a % 8) ^ 0b101)) % 8
-      println(s"output = $output")
-      if (expected(expectedIdx) != output) {
-        return false
-      } else {
-        expectedIdx += 1
-        if (expectedIdx > 10) {
-          println(s"Output $expectedIdx for $initialA ${BigInt(initialA).toString(3)}")
-        }
-        if (expectedIdx == expected.length) {
-          return true
-        }
-      }
-
-      println(s"$a => ${a / 8}")
-      a = a / 8
-    }
-
-    expectedIdx == expected.length
+  def f(a: Long): (Long, Int) = {
+    val output = ((a % 8) ^ 3 ^ (a / pow2((a % 8) ^ 5)) % 8).toInt
+    val newA   = a / 8
+    (newA, output)
   }
 
   case class State(
@@ -128,40 +28,32 @@ object Advent17 {
     program: List[Int],
     ip: Int = 0,
     output: List[Int] = Nil,
-//    expectedOutput: List[Int] = Nil,
   ) {
-    def step: Either[State, State] = {
+    def explanation: String = {
+      val instructions = program.grouped(2).toList
+      val lines        = instructions.map {
+        case List(instructionCode, comboCode) =>
+          val instructionName = Instruction.fromInt(instructionCode)
+          instructionName.debug(comboCode)
+        case _                                =>
+          "Unexpected".fail
+      }
+
+      lines.mkString("\n")
+    }
+
+    def step: Either[State, State] =
       (program.lift(ip), program.lift(ip + 1)) match {
         case (Some(instructionCode), Some(comboCode)) =>
           applyInstruction(
             Instruction.fromInt(instructionCode),
             comboCode,
-          ) match {
-            case (newState, res) =>
-              res match {
-                case Some(res) =>
-                  newState.copy(output = res :: output).asRight
-//                  if (expectedOutput.headOption.contains(res)) {
-//                    val t = expectedOutput.tail
-//                    if (t.isEmpty) {
-//                      qq.asLeft
-//                    } else {
-//                      qq.copy(expectedOutput = t).asRight
-//                    }
-//                  } else {
-//                    qq.asLeft
-//                  }
-                case None =>
-                  newState.asRight
-              }
-
-          }
+          ).asRight
         case _                                        =>
           this.asLeft
       }
-    }
 
-    def combo(comboCode: Int): N =
+    private def combo(comboCode: Int): N =
       comboCode match {
         case 0 => 0
         case 1 => 1
@@ -173,66 +65,59 @@ object Advent17 {
         case 7 => s"Invalid combo 7".fail
       }
 
-    def jumpIp: State = copy(ip = ip + 2)
+    private def jumpIp: State = copy(ip = ip + 2)
 
-    def applyInstruction(
+    private def applyInstruction(
       instruction: Instruction,
       comboOrLiteralCode: Int,
-    ): (State, Option[Int]) = {
-      instruction match {
-        case Instruction.Out =>
-          val result: Int = (combo(comboOrLiteralCode) % 8).toInt
-          (jumpIp, result.some)
-
-        case other =>
-          val result = applyInstruction2(other, comboOrLiteralCode)
-          (result, none)
+    ): State = {
+      def dv: (Long, State) = {
+        val numerator   = a
+        val denominator = pow(2, combo(comboOrLiteralCode).toInt)
+        val result      = numerator / denominator
+        (result, jumpIp)
       }
-    }
 
-    def applyInstruction2(
-      instruction: Instruction,
-      comboOrLiteralCode: Int,
-    ): State =
       instruction match {
         case Instruction.Adv =>
-          val numerator   = a
-          val denominator = pow(2, combo(comboOrLiteralCode).toInt)
-          val result      = numerator / denominator
-          copy(a = result).jumpIp
+          val (toWrite, newState) = dv
+          newState.copy(a = toWrite)
+
         case Instruction.Bxl =>
           val result = b ^ comboOrLiteralCode
           copy(b = result).jumpIp
+
         case Instruction.Bst =>
           val result = combo(comboOrLiteralCode) % 8
           copy(b = result).jumpIp
+
         case Instruction.Jnz =>
           if (a != 0) {
             copy(ip = comboOrLiteralCode)
           } else {
             jumpIp
           }
+
         case Instruction.Bxc =>
           val result = b ^ c
           copy(b = result).jumpIp
+
         case Instruction.Out =>
           val result = (combo(comboOrLiteralCode) % 8).toInt
           copy(output = result :: output).jumpIp
+
         case Instruction.Bdv =>
-          val numerator   = a
-          val denominator = pow(2, combo(comboOrLiteralCode).toInt)
-          val result      = numerator / denominator
-          copy(b = result).jumpIp
+          val (toWrite, newState) = dv
+          newState.copy(b = toWrite)
 
         case Instruction.Cdv =>
-          val numerator   = a
-          val denominator = pow(2, combo(comboOrLiteralCode).toInt)
-          val result      = numerator / denominator
-          copy(c = result).jumpIp
+          val (toWrite, newState) = dv
+          newState.copy(c = toWrite)
       }
+    }
   }
 
-  def explainCombo(comboCode: Int): String = {
+  private def explainCombo(comboCode: Int): String =
     comboCode match {
       case 0 => "0"
       case 1 => "1"
@@ -242,9 +127,8 @@ object Advent17 {
       case 5 => "b"
       case 6 => "c"
       case 7 => "7"
-      case _ => "asdf".fail
+      case _ => s"Unknown combo code $comboCode".fail
     }
-  }
 
   sealed trait Instruction {
     def debug(comboCode: Int): String = this match {
@@ -258,7 +142,7 @@ object Advent17 {
       case Instruction.Cdv => s"c = a / (2 ^ ${explainCombo(comboCode)})"
     }
   }
-  object Instruction {
+  object Instruction       {
     case object Adv extends Instruction
     case object Bxl extends Instruction
     case object Bst extends Instruction
@@ -289,96 +173,62 @@ object Advent17 {
     results.output.reverse
   }
 
-  def part1(data: Input): Output = {
+  def part1(data: Input): Output =
     getOutput(data).mkString(",")
+
+  def part2(): Long = {
+    println(RealData.explanation)
+    solver(RealData.program)
   }
 
-  /*
+  def solver(data: List[Int]): Long = {
+    /*
+      f(a15) = (a14, 2)
+      f(a14) = (a13, 4)
+      f(a13) = (a12, 1)
+      ...
+      f(a1) = (0, 0)
 
-a = x
-b = 0
-c = 0
+      find min a15 such that all such is true
+     */
+    def search(a: Long, expectations: List[Int]): Option[Long] = {
+      def reverseF(aNew: Long, output: Int): IndexedSeq[Long] = {
+        val EmpiricConstant = 10000
+        val results         = (aNew * 8 to aNew * 8 + EmpiricConstant).filter {
+          candidate =>
+            val (newA, out) = f(candidate)
+            out == output && newA == aNew
+        }
 
-b = (a % 8) ^ 5
-c = a / (2 ^ b)
-b = b ^ 6
-a = a / (2 ^ 3)
-b = b ^ c
-Out b
-if (a != 0) Jump Start
+        println(
+          s"Found ${results.length} candidates for $aNew, $output: $results"
+        )
+        results
+      }
 
-// Should output: 2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 1, 5, 5, 3, 0
+      expectations match {
+        case Nil    => a.some
+        case h :: t =>
+          reverseF(a, h).foreach { candidate =>
+            search(candidate, t) match {
+              case Some(answer) =>
+                return answer.some
+              case None         =>
+            }
+          }
 
-   */
-
-  def part2(data: Input): Long = {
-    data.program.zipWithIndex.grouped(2).foreach {
-      case List((a, aIdx), (b, bIdx)) =>
-        println(s"$aIdx: ${Instruction.fromInt(a).debug(b)}")
-      case _ => "asdf".fail
+          None
+      }
     }
 
-    val N = 5
-    val rray = data.program.take(N).toArray // .take(n)
-//    var candidateA: Long = 0 // 108400000000L // 0
-//    while (candidateA < Long.MaxValue) {
-//      if (candidateA % 100_000_000 == 0) {
-//        println(s"Trying $candidateA")
-//      }
-//      if (run(candidateA, rray)) {
-//        return candidateA
-//      }
-//        candidateA += 1
-//    }
-//    "asdf".fail
-
-    var candidateA = 0
-    while (candidateA < Long.MaxValue) {
-      if (candidateA % 1_000_000 == 0) {
-        println(s"Trying $candidateA")
-      }
-      val adjusted = data.copy(a = candidateA)// , expectedOutput = data.program.take(N))
-      val output = getOutput(adjusted)
-
-      if (output.length > 8) {
-        println(s"Output for $candidateA ${BigInt(candidateA).toString(3)}: $output")
-      }
-      if (output == data.program) {
-        return candidateA
-      }
-      candidateA += 1
-    }
-    "asdf".fail
+    search(0, data.reverse).getOrElse("No solution found".fail)
   }
 
   val RealData: State =
     State(44374556, 0, 0, List(2, 4, 1, 5, 7, 5, 1, 6, 0, 3, 4, 1, 5, 5, 3, 0))
 
   def main(args: Array[String]): Unit = {
-    (0 to 10000) foreach { a =>
-      if (runFormula(a) == List(2L, 4, 1, 5)) {
-        println(s"Found $a that matches")
-      }
-    }
-
-    System.exit(0)
-
-    (0 to 1000) foreach { a =>
-      val tmp = fastPow2((a % 8) ^ 0b101)
-      println(s"a = $a, tmp = $tmp")
-    }
-
-    (0 to 1000) foreach { a =>
-      val (newA, out) = f(a)
-
-      println(s"a = $a = 8 * ${a / 8} + ${a % 8}, output = $out, newA = $newA")
-    }
-
-    (0 to 7) foreach { output =>
-      println(s"To get $output a has to be ${findA(output)}")
-    }
-
-//    println(s"Part 1: ${part1(RealData)}")
-    println(s"Part 2: ${part2(RealData)}")
+    println(s"Part 1: ${part1(RealData)}")
+    println(s"Part 2: ${part2()}")
   }
 }
