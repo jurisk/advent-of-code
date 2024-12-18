@@ -32,7 +32,7 @@ object AStar {
     */
   def aStar[N, C: Numeric: Bounded](
     start: N,
-    neighbours: N => List[(N, C)],
+    neighbours: N => IterableOnce[(N, C)],
     heuristic: N => C,
     isGoal: N => Boolean,
   ): Option[(NonEmptyList[N], C)] = {
@@ -84,7 +84,7 @@ object AStar {
         if (isGoal(current))
           return (reconstructPath(cameFrom, current), gScore(current)).some
 
-        neighbours(current) foreach { case (neighbour, d) =>
+        neighbours(current).iterator foreach { case (neighbour, d) =>
           // d(current, neighbor) is the weight of the edge from current to neighbor
 
           // tentative_gScore is the distance from start to the neighbor through current

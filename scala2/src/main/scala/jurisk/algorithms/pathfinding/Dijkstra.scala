@@ -30,7 +30,7 @@ object Dijkstra {
   //  1  function Dijkstra(Graph, source):
   def dijkstraAll[N, C: Numeric: Bounded](
     start: N,
-    successors: N => List[(N, C)],
+    successors: N => IterableOnce[(N, C)],
     returnStart: Boolean = true,
   ): Map[N, (N, C)] = {
     val Zero     = implicitly[Numeric[C]].zero
@@ -62,7 +62,7 @@ object Dijkstra {
       if (dequeuedCostOfU <= dist(u)) {
 
         // 13          for each neighbor v of u still in Q:
-        successors(u) foreach { case (v, distance) =>
+        successors(u).iterator foreach { case (v, distance) =>
           // 14              alt ← dist[u] + Graph.Edges(u, v)
           val alt = dist(u) + distance
 
@@ -96,14 +96,14 @@ object Dijkstra {
 
   def dijkstra[N, C: Numeric: Bounded](
     start: N,
-    successors: N => List[(N, C)],
+    successors: N => IterableOnce[(N, C)],
     success: N => Boolean,
   ): Option[(NonEmptyList[N], C)] =
     dijkstraUsingAStar(start, successors, success)
 
   private def dijkstraUsingAStar[N, C: Numeric: Bounded](
     start: N,
-    successors: N => List[(N, C)],
+    successors: N => IterableOnce[(N, C)],
     success: N => Boolean,
   ): Option[(NonEmptyList[N], C)] = {
     val Zero = implicitly[Numeric[C]].zero
@@ -112,10 +112,10 @@ object Dijkstra {
 
   def dijkstraWithIdenticalCosts[N, C: Numeric: Bounded](
     start: N,
-    successors: N => List[N],
+    successors: N => IterableOnce[N],
     success: N => Boolean,
   ): Option[(NonEmptyList[N], C)] = {
     val One = implicitly[Numeric[C]].one
-    dijkstra[N, C](start, n => successors(n).map(r => (r, One)), success)
+    dijkstra[N, C](start, n => successors(n).iterator.map(r => (r, One)), success)
   }
 }

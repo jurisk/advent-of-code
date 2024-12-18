@@ -7,13 +7,13 @@ import jurisk.utils.Bounded._
 object Pathfinding {
   def shortestPathLength[N](
     start: N,
-    successors: N => List[N],
+    successors: N => IterableOnce[N],
     isGoal: N => Boolean,
   ): Option[Int] = shortestPath(start, successors, isGoal).map(_.length - 1)
 
   def shortestPath[N](
     start: N,
-    successors: N => List[N],
+    successors: N => IterableOnce[N],
     isGoal: N => Boolean,
   ): Option[NonEmptyList[N]] =
     dijkstraWithIdenticalCosts[N, Int](

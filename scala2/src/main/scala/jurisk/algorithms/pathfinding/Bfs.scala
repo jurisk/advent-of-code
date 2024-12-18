@@ -7,7 +7,7 @@ import scala.collection.mutable
 object Bfs {
   def bfsReachable[N](
     start: N,
-    successors: N => Seq[N],
+    successors: N => IterableOnce[N],
   ): List[N] = {
     var results: Vector[N] = Vector.empty
 
@@ -18,7 +18,7 @@ object Bfs {
 
   def bfsVisitAll[N](
     start: N,
-    successors: N => Seq[N],
+    successors: N => IterableOnce[N],
     visit: N => Unit,
   ): Unit = {
     val visited: mutable.Set[N] = mutable.Set()
@@ -30,7 +30,7 @@ object Bfs {
     while (queue.nonEmpty) {
       val next = queue.dequeue()
       visit(next)
-      successors(next) foreach { successor =>
+      successors(next).iterator foreach { successor =>
         if (!visited.contains(successor)) {
           visited.add(successor)
           queue.enqueue(successor)
@@ -41,7 +41,7 @@ object Bfs {
 
   def bfsLength[N](
     start: N,
-    successors: N => List[N],
+    successors: N => IterableOnce[N],
     isGoal: N => Boolean,
   ): Option[Int] =
     bfs(start, successors, isGoal).map(_.length - 1)
@@ -49,7 +49,7 @@ object Bfs {
   /** https://en.wikipedia.org/wiki/Breadth-first_search */
   def bfs[N](
     start: N,
-    successors: N => List[N],
+    successors: N => IterableOnce[N],
     isGoal: N => Boolean,
   ): Option[NonEmptyList[N]] = {
     val visited: mutable.Set[N]    = mutable.Set()
@@ -64,7 +64,7 @@ object Bfs {
       if (isGoal(next)) {
         return Some(reassemblePath(start, parents, next, Nil))
       } else {
-        successors(next) foreach { successor =>
+        successors(next).iterator foreach { successor =>
           if (!visited.contains(successor)) {
             visited.add(successor)
             parents.put(successor, next)
