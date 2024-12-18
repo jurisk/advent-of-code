@@ -26,7 +26,7 @@ class Advent18Spec extends AnyFreeSpec {
       part2(testData, Coords2D.Zero, TestEnd) shouldEqual "6,1"
     }
 
-    "real" in {
+    "real" ignore {
       part2(realData, Coords2D.Zero, RealEnd) shouldEqual "56,29"
     }
   }

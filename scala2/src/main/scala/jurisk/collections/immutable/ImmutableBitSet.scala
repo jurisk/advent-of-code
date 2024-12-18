@@ -14,6 +14,9 @@ final class ImmutableBitSet[T: ToInt](
   def size: Int =
     underlying.size
 
+  def contains(value: T): Boolean =
+    underlying.contains(value.toInt)
+
   def +(value: T): ImmutableBitSet[T] =
     new ImmutableBitSet(underlying + value.toInt)
 
@@ -22,5 +25,8 @@ final class ImmutableBitSet[T: ToInt](
 }
 
 object ImmutableBitSet {
+  def fromSpecific[T: ToInt](iterable: IterableOnce[T]): ImmutableBitSet[T] =
+    new ImmutableBitSet[T](BitSet.fromSpecific(iterable.iterator.map(_.toInt)))
+
   def empty[T: ToInt]: ImmutableBitSet[T] = new ImmutableBitSet[T]()
 }

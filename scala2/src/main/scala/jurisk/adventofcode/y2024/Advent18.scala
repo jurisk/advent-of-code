@@ -3,10 +3,12 @@ package jurisk.adventofcode.y2024
 import cats.implicits.catsSyntaxOptionId
 import cats.implicits.none
 import jurisk.algorithms.pathfinding.AStar
+import jurisk.collections.immutable.ImmutableBitSet
 import jurisk.geometry.Area2D
 import jurisk.geometry.Coords2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+import jurisk.utils.ToInt
 
 import scala.annotation.tailrec
 
@@ -18,7 +20,7 @@ object Advent18 {
     input.parseLines(Coords2D.parse)
 
   def solution(
-    set: Set[Coords2D],
+    set: ImmutableBitSet[Coords2D],
     start: Coords2D,
     end: Coords2D,
   ): Option[N] = {
@@ -37,13 +39,15 @@ object Advent18 {
   }
 
   def part1(data: Input, take: Int, start: Coords2D, end: Coords2D): N = {
-    val busy = data.take(take).toSet
+    val area                            = Area2D(start, end)
+    implicit val toInt: ToInt[Coords2D] = area.coordsToInt
+    val busy                            = ImmutableBitSet.fromSpecific(data.take(take))
     solution(busy, start, end).getOrElse("No solution".fail)
   }
 
   def part2(data: Input, start: Coords2D, end: Coords2D): String = {
     @tailrec
-    def f(remaining: Input, busy: Set[Coords2D]): Option[Coords2D] =
+    def f(remaining: Input, busy: ImmutableBitSet[Coords2D]): Option[Coords2D] =
       remaining match {
         case h :: t =>
           val newBusy = busy + h
@@ -57,7 +61,12 @@ object Advent18 {
         case Nil => none
       }
 
-    f(data, Set.empty).map(c => s"${c.x},${c.y}") getOrElse ("No solution".fail)
+    val area                            = Area2D(start, end)
+    implicit val toInt: ToInt[Coords2D] = area.coordsToInt
+
+    f(data, ImmutableBitSet.empty).map(c =>
+      s"${c.x},${c.y}"
+    ) getOrElse ("No solution".fail)
   }
 
   val RealEnd: Coords2D = Coords2D(70, 70)

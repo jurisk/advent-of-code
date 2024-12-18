@@ -2,6 +2,7 @@ package jurisk.geometry
 
 import jurisk.math.Enumerated
 import jurisk.math.Enumerated.EnumeratedOps
+import jurisk.utils.ToInt
 
 import scala.math.Numeric.Implicits.infixNumericOps
 import scala.math.Ordering.Implicits.infixOrderingOps
@@ -47,6 +48,9 @@ final case class Area2D[N: Numeric](
 
   def contains(c: Coordinates2D[N]): Boolean =
     c.x >= min.x && c.x <= max.x && c.y >= min.y && c.y <= max.y
+
+  def coordsToInt: ToInt[Coordinates2D[N]] = (value: Coordinates2D[N]) =>
+    (value.x + value.y * width).toInt
 }
 
 object Area2D {
