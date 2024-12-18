@@ -18,6 +18,13 @@ impl<T: Copy + Ord + Step> Area2D<T> {
         }
     }
 
+    pub fn contains(&self, point: Coords2D<T>) -> bool {
+        point.x >= self.min.x
+            && point.x <= self.max.x
+            && point.y >= self.min.y
+            && point.y <= self.max.y
+    }
+
     pub fn points(self) -> Vec<Coords2D<T>> {
         (self.min.x ..= self.max.x)
             .collect::<Vec<_>>()
