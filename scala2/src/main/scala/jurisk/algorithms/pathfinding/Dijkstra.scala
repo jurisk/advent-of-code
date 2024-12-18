@@ -116,6 +116,10 @@ object Dijkstra {
     success: N => Boolean,
   ): Option[(NonEmptyList[N], C)] = {
     val One = implicitly[Numeric[C]].one
-    dijkstra[N, C](start, n => successors(n).iterator.map(r => (r, One)), success)
+    dijkstra[N, C](
+      start,
+      n => successors(n).iterator.map(r => (r, One)),
+      success,
+    )
   }
 }

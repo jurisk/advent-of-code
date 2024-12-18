@@ -1,9 +1,14 @@
 package jurisk.adventofcode.y2024
 
+import cats.implicits.catsSyntaxOptionId
+import cats.implicits.none
 import jurisk.algorithms.pathfinding.AStar
-import jurisk.geometry.{Area2D, Coords2D}
+import jurisk.geometry.Area2D
+import jurisk.geometry.Coords2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
+
+import scala.annotation.tailrec
 
 object Advent18 {
   type Input = List[Coords2D]
@@ -18,11 +23,12 @@ object Advent18 {
     end: Coords2D,
   ): Option[N] = {
     val area                                           = Area2D(start, end)
-    def neighbours(c: Coords2D): List[(Coords2D, Int)] = {
-      c.adjacent4.filter { c =>
-        !set.contains(c) && area.contains(c)
-      }.map((_, 1))
-    }
+    def neighbours(c: Coords2D): List[(Coords2D, Int)] =
+      c.adjacent4
+        .filter { c =>
+          !set.contains(c) && area.contains(c)
+        }
+        .map((_, 1))
     def heuristic(c: Coords2D): Int                    =
       c.manhattanDistance(end)
     AStar.aStar[Coords2D, Int](start, neighbours, heuristic, _ == end).map {
@@ -36,15 +42,22 @@ object Advent18 {
   }
 
   def part2(data: Input, start: Coords2D, end: Coords2D): String = {
-    var busy: Set[Coords2D] = Set.empty
-    data.foreach { c =>
-      busy = busy + c
-      val failed = solution(busy, start, end).isEmpty
-      if (failed) {
-        return s"${c.x},${c.y}"
+    @tailrec
+    def f(remaining: Input, busy: Set[Coords2D]): Option[Coords2D] =
+      remaining match {
+        case h :: t =>
+          val newBusy = busy + h
+          val failed  = solution(newBusy, start, end).isEmpty
+          if (failed) {
+            h.some
+          } else {
+            f(t, newBusy)
+          }
+
+        case Nil => none
       }
-    }
-    "No solution".fail
+
+    f(data, Set.empty).map(c => s"${c.x},${c.y}") getOrElse ("No solution".fail)
   }
 
   val RealEnd: Coords2D = Coords2D(70, 70)
