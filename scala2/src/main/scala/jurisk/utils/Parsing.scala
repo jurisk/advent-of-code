@@ -77,7 +77,7 @@ object Parsing {
       s.split("\n\n").toList
 
     def splitLines: List[String] =
-      s.split("\n").toList
+      s.linesIterator.toList
 
     def parsePairUnsafe[A, B](
       c: Char,

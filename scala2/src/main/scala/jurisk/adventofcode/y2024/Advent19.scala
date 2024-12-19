@@ -1,37 +1,44 @@
 package jurisk.adventofcode.y2024
 
+import jurisk.utils.CollectionOps.IterableOnceOps
 import jurisk.utils.FileInput._
+import jurisk.utils.Memoize
 import jurisk.utils.Parsing.StringOps
+import mouse.all.booleanSyntaxMouse
 
 object Advent19 {
-  type Input = List[Command]
-  type N     = Long
+  final case class Input(
+    stripes: List[String],
+    towels: List[String],
+  )
+  type N = Long
 
-  sealed trait Command extends Product with Serializable
-  object Command {
-    case object Noop                      extends Command
-    final case class Something(
-      values: List[N]
-    ) extends Command
-    final case class Other(value: String) extends Command
-
-    def parse(s: String): Command =
-      s match {
-        case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractLongList)
-        case s if s.nonEmpty   => Other(s)
-        case _                 => s.failedToParse
-      }
+  def parse(input: String): Input = {
+    val (stripes, towels) = input.splitPairByDoubleNewline
+    Input(stripes.commaSeparatedList, towels.splitLines)
   }
 
-  def parse(input: String): Input =
-    input.parseLines(Command.parse)
+  def solve(data: Input, countF: N => N): N = {
+    lazy val waysMemoized = Memoize.memoize1(ways)
+
+    def ways(towel: String): N =
+      if (towel.isEmpty) 1L
+      else {
+        data.stripes.flatMap { stripe =>
+          towel.startsWith(stripe).option {
+            waysMemoized(towel.drop(stripe.length))
+          }
+        }.sum
+      }
+
+    data.towels.sumBy(waysMemoized andThen countF)
+  }
 
   def part1(data: Input): N =
-    0
+    solve(data, _ min 1)
 
   def part2(data: Input): N =
-    0
+    solve(data, identity)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
