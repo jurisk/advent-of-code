@@ -62,6 +62,13 @@ object CollectionOps {
     }
   }
 
+  implicit class IterableOnceOps[T](iterableOnce: IterableOnce[T]) {
+    def sumBy[U: Integral](f: T => U): U =
+      iterableOnce.iterator.map(f).sum
+
+    def toList: List[T] = iterableOnce.iterator.to(List)
+  }
+
   implicit class IterableOps[T](iterable: Iterable[T]) {
     def counts: Map[T, Int] = iterable.groupMapReduce(identity)(_ => 1)(_ + _)
 

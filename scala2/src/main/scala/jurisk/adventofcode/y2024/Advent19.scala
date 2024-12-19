@@ -1,7 +1,10 @@
 package jurisk.adventofcode.y2024
 
+import jurisk.utils.CollectionOps.IterableOnceOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Memoize
+import jurisk.utils.Parsing.StringOps
+import mouse.all.booleanSyntaxMouse
 
 object Advent19 {
   final case class Input(
@@ -11,12 +14,8 @@ object Advent19 {
   type N = Long
 
   def parse(input: String): Input = {
-    val (stripes, towels) = input.split("\n\n").toList match {
-      case List(stripes, towels) =>
-        (stripes.split(", ").toList, towels.linesIterator.toList)
-      case _                     => throw new Exception("Invalid input")
-    }
-    Input(stripes, towels)
+    val (stripes, towels) = input.splitPairByDoubleNewline
+    Input(stripes.commaSeparatedList, towels.splitLines)
   }
 
   def solve(data: Input, countF: N => N): N = {
@@ -25,16 +24,14 @@ object Advent19 {
     def ways(towel: String): N =
       if (towel.isEmpty) 1L
       else {
-        data.stripes.map { stripe =>
-          if (towel.startsWith(stripe)) {
+        data.stripes.flatMap { stripe =>
+          towel.startsWith(stripe).option {
             waysMemoized(towel.drop(stripe.length))
-          } else {
-            0L
           }
         }.sum
       }
 
-    data.towels.map(towel => countF(waysMemoized(towel))).sum
+    data.towels.sumBy(waysMemoized andThen countF)
   }
 
   def part1(data: Input): N =
