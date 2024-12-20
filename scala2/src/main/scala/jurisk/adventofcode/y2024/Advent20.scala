@@ -42,7 +42,6 @@ object Advent20 {
   def solve(data: Input, saveAtLeast: Int, maxCheat: Int): N = {
     val (state1, field, end) = data
 
-    // TODO: Move to AStar.astarAll
     val fromStart = Dijkstra.dijkstraAll[Coords2D, Int](
       state1.position,
       field
@@ -54,7 +53,6 @@ object Advent20 {
       returnStart = true,
     )
 
-    // TODO: Move to AStar.astarAll
     val fromEnd = Dijkstra.dijkstraAll[Coords2D, Int](
       end,
       field
