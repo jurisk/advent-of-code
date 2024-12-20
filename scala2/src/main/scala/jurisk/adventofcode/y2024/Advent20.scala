@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2024
 
-import jurisk.algorithms.pathfinding.{AStar, Bfs, Dijkstra}
-import jurisk.geometry.{Coords2D, Direction2D, Field2D}
+import jurisk.algorithms.pathfinding.Dijkstra
+import jurisk.geometry.{Coords2D, Field2D}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -9,7 +9,9 @@ object Advent20 {
   type Input = (State, Field2D[Boolean], Coords2D)
   type N     = Long
 
-  final case class Cheat(from: Coords2D, to: Coords2D)
+  final case class Cheat(from: Coords2D, to: Coords2D) {
+    def distance: Int = from manhattanDistance to
+  }
 
   final case class State(position: Coords2D, cheatUsed: Option[Cheat] = None) {
     def successors(field: Field2D[Boolean]): List[(State, Int)] =
@@ -17,45 +19,8 @@ object Advent20 {
         .neighboursFor(position, includeDiagonal = false)
         .filter(field.at(_).contains(false))
         .map { n =>
-          copy(position = n)
+          (copy(position = n), 1)
         }
-        .map { r =>
-          (r, 1)
-        }
-  }
-
-  final case class State2(
-    position: Coords2D,
-    cheatUsed: Option[Cheat] = None,
-    cost: Int = 0,
-  ) {
-    def successors(field: Field2D[Boolean]): List[State2] = {
-      val normal = field
-        .neighboursFor(position, includeDiagonal = false)
-        .filter(field.at(_).contains(false))
-        .map { n =>
-          copy(position = n, cost = cost + 1)
-        }
-
-      val cheatBased = cheatUsed match {
-        case None    =>
-          Direction2D.CardinalDirections
-            .map { d =>
-              position + d.diff * 2
-            }
-            .filter(field.at(_).contains(false))
-            .map { n =>
-              copy(
-                position = n,
-                cheatUsed = Some(Cheat(position, n)),
-                cost = cost + 2,
-              )
-            }
-        case Some(_) => Nil
-      }
-
-      cheatBased ::: normal
-    }
   }
 
   def parse(input: String): Input = {
@@ -74,19 +39,10 @@ object Advent20 {
     (State(start), field, end)
   }
 
-  def part1(data: Input, saveAtLeast: Int): N = {
+  def solve(data: Input, saveAtLeast: Int, maxCheat: Int): N = {
     val (state1, field, end) = data
-    val (_, cost)            = AStar
-      .aStar[State, Int](
-        state1,
-        state => state.successors(field),
-        state => state.position.manhattanDistance(end),
-        _.position == end,
-      )
-      .getOrElse("No path found".fail)
-    val goalCostThreshold    = cost - saveAtLeast
-    println(s"Without cheats = $cost, goal cost threshold = $goalCostThreshold")
 
+    // TODO: Move to AStar.astarAll
     val fromStart = Dijkstra.dijkstraAll[Coords2D, Int](
       state1.position,
       field
@@ -98,6 +54,7 @@ object Advent20 {
       returnStart = true,
     )
 
+    // TODO: Move to AStar.astarAll
     val fromEnd = Dijkstra.dijkstraAll[Coords2D, Int](
       end,
       field
@@ -109,31 +66,46 @@ object Advent20 {
       returnStart = true,
     )
 
+    val (_, cost)         = fromStart.getOrElse(end, "No path from start to end".fail)
+    val goalCostThreshold = cost - saveAtLeast
+
+    println(s"Without cheats = $cost, goal cost threshold = $goalCostThreshold")
+
     def validCheat(cheat: Cheat): Boolean =
       (fromStart.get(cheat.from), fromEnd.get(cheat.to)) match {
         case (Some((_, startCost)), Some((_, endCost))) =>
-          startCost + endCost + 2 <= goalCostThreshold
+          startCost + endCost + cheat.distance <= goalCostThreshold
         case _                                          =>
           false
       }
 
-    val cheats = field.allCoords
-      .flatMap { c =>
-        Direction2D.CardinalDirections
-          .map { d =>
-            c + d.diff * 2
-          }
-          .filter(field.at(_).contains(false))
-          .map(n => Cheat(c, n))
-      }
-      .filter(validCheat)
-      .toSet
+    val empties = field.allCoords
+      .filter(field.at(_).contains(false))
+    val cheats  =
+      for {
+        c1 <- empties
+        c2 <- empties
+        if c1.manhattanDistance(c2) <= maxCheat
+        if c1 != c2
+      } yield Cheat(c1, c2)
 
-    cheats.size
+    println(s"Cheats: ${cheats.size}")
+
+    val selectedCheats =
+      cheats
+        .filter(validCheat)
+        .toSet
+
+    println(s"Selected cheats: ${selectedCheats.size}")
+
+    selectedCheats.size
   }
 
-  def part2(data: Input): N =
-    0
+  def part1(data: Input, saveAtLeast: Int): N =
+    solve(data, saveAtLeast, 2)
+
+  def part2(data: Input, saveAtLeast: Int): N =
+    solve(data, saveAtLeast, 20)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
@@ -145,6 +117,6 @@ object Advent20 {
     val realData: Input = parseFile(fileName(""))
 
     println(s"Part 1: ${part1(realData, 100)}")
-    println(s"Part 2: ${part2(realData)}")
+    println(s"Part 2: ${part2(realData, 100)}")
   }
 }
