@@ -10,11 +10,21 @@ class Advent20Spec extends AnyFreeSpec {
 
   "part 1" - {
     "test" in {
-      part1(testData) shouldEqual 0
+      part1(testData, 64) shouldEqual 1
+      part1(testData, 40) shouldEqual 1 + 1
+      part1(testData, 38) shouldEqual 1 + 1 + 1
+      part1(testData, 36) shouldEqual 1 + 1 + 1 + 1
+      part1(testData, 20) shouldEqual 1 + 1 + 1 + 1 + 1
+      part1(testData, 12) shouldEqual 1 + 1 + 1 + 1 + 1 + 3
+      part1(testData, 10) shouldEqual 1 + 1 + 1 + 1 + 1 + 3 + 2
+      part1(testData, 8) shouldEqual 1 + 1 + 1 + 1 + 1 + 3 + 2 + 4
+      part1(testData, 6) shouldEqual 1 + 1 + 1 + 1 + 1 + 3 + 2 + 4 + 2
+      part1(testData, 4) shouldEqual 1 + 1 + 1 + 1 + 1 + 3 + 2 + 4 + 2 + 14
+      part1(testData, 2) shouldEqual 1 + 1 + 1 + 1 + 1 + 3 + 2 + 4 + 2 + 14 + 14
     }
 
     "real" in {
-      part1(realData) shouldEqual 0
+      part1(realData, 100) shouldEqual 1234567890
     }
   }
 
