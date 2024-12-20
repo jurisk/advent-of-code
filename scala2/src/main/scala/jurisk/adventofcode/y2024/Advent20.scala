@@ -1,6 +1,6 @@
 package jurisk.adventofcode.y2024
 
-import jurisk.algorithms.pathfinding.{AStar, Bfs}
+import jurisk.algorithms.pathfinding.{AStar, Bfs, Dijkstra}
 import jurisk.geometry.{Coords2D, Direction2D, Field2D}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -87,27 +87,49 @@ object Advent20 {
     val goalCostThreshold    = cost - saveAtLeast
     println(s"Without cheats = $cost, goal cost threshold = $goalCostThreshold")
 
-    val state = State2(state1.position)
-
-    var validCheats = Set.empty[Cheat]
-
-    def succ(state: State2): List[State2] =
-      state
-        .successors(field)
-        .filter(_.cost <= goalCostThreshold)
-
-    def visit(state: State2): Unit =
-      if (state.position == end && state.cost <= goalCostThreshold) {
-        state.cheatUsed.foreach(validCheats += _)
-      }
-
-    Bfs.bfsVisitAll[State2](
-      state,
-      succ,
-      visit,
+    val fromStart = Dijkstra.dijkstraAll[Coords2D, Int](
+      state1.position,
+      field
+        .neighboursFor(_, includeDiagonal = false)
+        .filter(field.at(_).contains(false))
+        .map { n =>
+          (n, 1)
+        },
+      returnStart = true,
     )
 
-    validCheats.size
+    val fromEnd = Dijkstra.dijkstraAll[Coords2D, Int](
+      end,
+      field
+        .neighboursFor(_, includeDiagonal = false)
+        .filter(field.at(_).contains(false))
+        .map { n =>
+          (n, 1)
+        },
+      returnStart = true,
+    )
+
+    def validCheat(cheat: Cheat): Boolean =
+      (fromStart.get(cheat.from), fromEnd.get(cheat.to)) match {
+        case (Some((_, startCost)), Some((_, endCost))) =>
+          startCost + endCost + 2 <= goalCostThreshold
+        case _                                          =>
+          false
+      }
+
+    val cheats = field.allCoords
+      .flatMap { c =>
+        Direction2D.CardinalDirections
+          .map { d =>
+            c + d.diff * 2
+          }
+          .filter(field.at(_).contains(false))
+          .map(n => Cheat(c, n))
+      }
+      .filter(validCheat)
+      .toSet
+
+    cheats.size
   }
 
   def part2(data: Input): N =

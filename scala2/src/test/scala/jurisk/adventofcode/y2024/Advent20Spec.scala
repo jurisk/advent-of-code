@@ -9,9 +9,15 @@ class Advent20Spec extends AnyFreeSpec {
   private def realData = parseFile(fileName(""))
 
   "part 1" - {
-    "test" in {
+    "test 64" in {
       part1(testData, 64) shouldEqual 1
+    }
+
+    "test 40" in {
       part1(testData, 40) shouldEqual 1 + 1
+    }
+
+    "test misc" in {
       part1(testData, 38) shouldEqual 1 + 1 + 1
       part1(testData, 36) shouldEqual 1 + 1 + 1 + 1
       part1(testData, 20) shouldEqual 1 + 1 + 1 + 1 + 1
@@ -24,7 +30,7 @@ class Advent20Spec extends AnyFreeSpec {
     }
 
     "real" in {
-      part1(realData, 100) shouldEqual 1234567890
+      part1(realData, 100) shouldEqual 1293
     }
   }
 
