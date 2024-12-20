@@ -1,32 +1,24 @@
 package jurisk.adventofcode.y2024
 
 import jurisk.algorithms.pathfinding.Dijkstra
-import jurisk.geometry.{Coords2D, Field2D}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent20 {
-  type Input = (State, Field2D[Boolean], Coords2D)
+  type Input = (Coords2D, Field2D[Boolean], Coords2D)
   type N     = Long
 
   final case class Cheat(from: Coords2D, to: Coords2D) {
     def distance: Int = from manhattanDistance to
   }
 
-  final case class State(position: Coords2D, cheatUsed: Option[Cheat] = None) {
-    def successors(field: Field2D[Boolean]): List[(State, Int)] =
-      field
-        .neighboursFor(position, includeDiagonal = false)
-        .filter(field.at(_).contains(false))
-        .map { n =>
-          (copy(position = n), 1)
-        }
-  }
-
   def parse(input: String): Input = {
     val charField = Field2D.parseCharField(input)
-    val start     = charField.findCoordsByValue('S').get
-    val end       = charField.findCoordsByValue('E').get
+    val start     =
+      charField.findCoordsByValue('S').getOrElse("Start not found".fail)
+    val end       = charField.findCoordsByValue('E').getOrElse("End not found".fail)
     val field     = charField.mapByCoordsWithValues { case (_, c) =>
       c match {
         case 'S' => false
@@ -36,32 +28,28 @@ object Advent20 {
         case _   => s"Unknown character $c in field".fail
       }
     }
-    (State(start), field, end)
+    (start, field, end)
   }
 
   def solve(data: Input, saveAtLeast: Int, maxCheat: Int): N = {
-    val (state1, field, end) = data
+    val (start, field, end) = data
 
-    val fromStart = Dijkstra.dijkstraAll[Coords2D, Int](
-      state1.position,
+    def successors(c: Coords2D): List[(Coords2D, Int)] =
       field
-        .neighboursFor(_, includeDiagonal = false)
+        .neighboursFor(c, includeDiagonal = false)
         .filter(field.at(_).contains(false))
         .map { n =>
           (n, 1)
-        },
-      returnStart = true,
+        }
+
+    val fromStart = Dijkstra.dijkstraAll[Coords2D, Int](
+      start,
+      successors,
     )
 
     val fromEnd = Dijkstra.dijkstraAll[Coords2D, Int](
       end,
-      field
-        .neighboursFor(_, includeDiagonal = false)
-        .filter(field.at(_).contains(false))
-        .map { n =>
-          (n, 1)
-        },
-      returnStart = true,
+      successors,
     )
 
     val (_, cost)         = fromStart.getOrElse(end, "No path from start to end".fail)
@@ -81,6 +69,7 @@ object Advent20 {
       .filter(field.at(_).contains(false))
     val cheats  =
       for {
+        // Could be optimised by avoiding processing all O(N^2), as if we know one coordinate, we can generate all others within maxCheat distance more efficiently
         c1 <- empties
         c2 <- empties
         if c1.manhattanDistance(c2) <= maxCheat
@@ -95,6 +84,7 @@ object Advent20 {
         .toSet
 
     println(s"Selected cheats: ${selectedCheats.size}")
+    selectedCheats.foreach(println)
 
     selectedCheats.size
   }

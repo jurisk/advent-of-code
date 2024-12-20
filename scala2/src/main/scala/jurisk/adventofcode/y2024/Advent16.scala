@@ -35,8 +35,9 @@ object Advent16 {
 
   def parse(input: String): Input = {
     val charField = Field2D.parseCharField(input)
-    val start     = charField.findCoordsByValue('S').get
-    val end       = charField.findCoordsByValue('E').get
+    val start     =
+      charField.findCoordsByValue('S').getOrElse("Start not found".fail)
+    val end       = charField.findCoordsByValue('E').getOrElse("End not found".fail)
     val field     = charField.mapByCoordsWithValues { case (_, c) =>
       c match {
         case 'S' => false

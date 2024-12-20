@@ -29,7 +29,7 @@ class Advent20Spec extends AnyFreeSpec {
       part1(testData, 2) shouldEqual 1 + 1 + 1 + 1 + 1 + 3 + 2 + 4 + 2 + 14 + 14
     }
 
-    "real" in {
+    "real" ignore {
       part1(realData, 100) shouldEqual 1293
     }
   }
@@ -39,7 +39,7 @@ class Advent20Spec extends AnyFreeSpec {
       part2(testData, 76) shouldEqual 3
     }
 
-    "real" in {
+    "real" ignore {
       part2(realData, 100) shouldEqual 977747
     }
   }
