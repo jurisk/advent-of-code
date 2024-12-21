@@ -9,13 +9,25 @@ import jurisk.utils.Parsing.StringOps
 object Advent21 {
   type N = Long
 
-  sealed trait DirectionalButton
+  sealed trait DirectionalButton extends Product with Serializable {
+    def diff: Coords2D
+  }
   object DirectionalButton {
-    case object Up       extends DirectionalButton
-    case object Down     extends DirectionalButton
-    case object Left     extends DirectionalButton
-    case object Right    extends DirectionalButton
-    case object Activate extends DirectionalButton
+    case object Up       extends DirectionalButton {
+      override def diff: Coords2D = Coords2D(0, -1)
+    }
+    case object Down     extends DirectionalButton {
+      override def diff: Coords2D = Coords2D(0, 1)
+    }
+    case object Left     extends DirectionalButton {
+      override def diff: Coords2D = Coords2D(-1, 0)
+    }
+    case object Right    extends DirectionalButton {
+      override def diff: Coords2D = Coords2D(1, 0)
+    }
+    case object Activate extends DirectionalButton {
+      override def diff: Coords2D = Coords2D(0, 0)
+    }
 
     def parseList(s: String): List[DirectionalButton] = s.map {
       case '^' => Up
@@ -30,6 +42,19 @@ object Advent21 {
     current: NumericButton,
     toPress: NumericButton,
   ): Set[List[DirectionalButton]] = {
+    def validDirections(directions: List[DirectionalButton]): Boolean = {
+      val InvalidLocation = Coords2D(0, 3)
+      var coords          = current.coords
+      directions foreach { d =>
+        val diff = d.diff
+        coords += diff
+        if (coords == InvalidLocation) {
+          return false
+        }
+      }
+      true
+    }
+
     val diff = toPress.coords - current.coords
     val forX = if (diff.x > 0) {
       List.fill(diff.x)(Right)
@@ -39,19 +64,17 @@ object Advent21 {
       Nil
     }
     val forY = if (diff.y > 0) {
-      List.fill(diff.y)(Up)
+      List.fill(diff.y)(Down)
     } else if (diff.y < 0) {
-      List.fill(-diff.y)(Down)
+      List.fill(-diff.y)(Up)
     } else {
       Nil
     }
 
-    // TODO: Need to avoid visiting the illegal gap!
-
     Set(
       forX ++ forY ++ List(DirectionalButton.Activate),
       forY ++ forX ++ List(DirectionalButton.Activate),
-    )
+    ).filter(validDirections)
   }
 
   sealed trait NumericButton extends Product with Serializable {
@@ -138,10 +161,8 @@ object Advent21 {
       numericButtons match {
         case h :: t =>
           val result = toPressNumericButton(current, h)
-          t.foldLeft(result) { (acc, nb) =>
-            acc.flatMap { presses =>
-              toPressNumericButton(h, nb).map(presses ++ _)
-            }
+          result.flatMap { presses =>
+            Code(t).firstLevelPresses(h).map(presses ++ _)
           }
         case Nil    =>
           Set(Nil)

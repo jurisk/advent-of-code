@@ -10,16 +10,32 @@ class Advent21Spec extends AnyFreeSpec {
 
   "overall" - {
     "toPressNumericButton" in {
-      val current = NumericButton.Activate
-      val toPress = NumericButton.Zero
-      toPressNumericButton(current, toPress) shouldEqual
+      toPressNumericButton(
+        NumericButton.Activate,
+        NumericButton.Zero,
+      ) shouldEqual
         Set(DirectionalButton.parseList("<A"))
+
+      toPressNumericButton(
+        NumericButton.Zero,
+        NumericButton.Two,
+      ) shouldEqual
+        Set(DirectionalButton.parseList("^A"))
+
+      toPressNumericButton(
+        NumericButton.Two,
+        NumericButton.Nine,
+      ) shouldEqual
+        Set(
+          DirectionalButton.parseList("^^>A"),
+          DirectionalButton.parseList(">^^A"),
+        )
     }
 
     "firstLevelPresses" in {
       Code("029A").firstLevelPresses() shouldEqual Set(
         DirectionalButton.parseList("<A^A>^^AvvvA"),
-        DirectionalButton.parseList("<A^A^>^AvvvA"),
+//      Deliberately skipping from example as it is suboptimal: DirectionalButton.parseList("<A^A^>^AvvvA"),
         DirectionalButton.parseList("<A^A^^>AvvvA"),
       )
     }
