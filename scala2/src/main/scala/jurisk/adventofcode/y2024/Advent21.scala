@@ -19,15 +19,9 @@ object Advent21 {
     invalid: Coords2D,
   ): Set[List[DirectionalButton]] = {
     def validDirections(directions: List[DirectionalButton]): Boolean = {
-      var coords = current
-      directions foreach { d =>
-        val diff = d.actionDiff
-        coords += diff
-        if (coords == invalid) {
-          return false
-        }
-      }
-      true
+      !directions.scanLeft(current) { (coords, d) =>
+        coords + d.actionDiff
+      }.contains(invalid)
     }
 
     val diff = toPress - current
@@ -100,6 +94,7 @@ object Advent21 {
     def pathTo(toPress: NumericButton): Set[List[DirectionalButton]] =
       pathBetweenCoords(this.coords, toPress.coords, InvalidNumericCoords)
   }
+
   object NumericButton {
     private val InvalidNumericCoords: Coords2D = Coords2D(0, 3)
 
