@@ -208,17 +208,19 @@ object Advent21 {
     def numericPart: N =
       numericButtons.flatMap(_.digit).map(_.toString).mkString.toLong
 
-    def complexity(robotDirectionalKeyboards: Int): N =
+    def complexity(robotDirectionalKeyboards: Int): N = {
+      println(s"Processing for ${this.numericButtons}")
       bestHumanPressesLength(robotDirectionalKeyboards) * numericPart
+    }
 
     def firstLevelPresses(
       current: NumericButton = NumericButton.Activate
-    ): Set[List[DirectionalButton]] =
+    ): Set[List[List[DirectionalButton]]] =
       numericButtons match {
         case h :: t =>
           val result = toPressNumericButton(current, h)
           result.flatMap { presses =>
-            Code(t).firstLevelPresses(h).map(presses ++ _)
+            Code(t).firstLevelPresses(h).map(presses :: _)
           }
         case Nil    =>
           Set(Nil)
@@ -261,8 +263,6 @@ object Advent21 {
       newResult
     }
 
-    val directionalsRequiredMemoized = Memoize.memoize2(directionalsRequired)
-
     // TODO: Move out
     def directionalsRequired(
       buttons: List[DirectionalButton],
@@ -271,15 +271,56 @@ object Advent21 {
       if (remaining == 0) {
         buttons.length
       } else {
-        directionalsRequiredMemoized(expandResults(buttons), remaining - 1)
+        directionalsRequired(expandResults(buttons), remaining - 1)
       }
+
+    def greedy(
+      list: List[DirectionalButton],
+      robotDirectionalKeyboards: Int,
+    ): N = {
+      println(list)
+      assert(list.last == DirectionalButton.Activate)
+      0
+//      var result = 0
+//      var current: DirectionalButton = DirectionalButton.Activate
+//      list.foreach { next =>
+//        val diff = if (robotDirectionalKeyboards == 0) {
+//
+//        } else {
+//
+//        }
+//        result += diff
+//        current = next
+//      }
+//      result + 1
+    }
+
+    val directionalsRequiredMemoized = Memoize.memoize2(directionalsRequired)
+
+    def doComparison(
+      list: List[DirectionalButton],
+      robotDirectionalKeyboards: Int,
+    ): N = {
+      val correctForComparison =
+        directionalsRequired(list, robotDirectionalKeyboards)
+      val greedyForComparison  =
+        greedy(list: List[DirectionalButton], robotDirectionalKeyboards)
+      if (correctForComparison != greedyForComparison) {
+        println(
+          s"Correct: $correctForComparison, Greedy: $greedyForComparison for: $list, $robotDirectionalKeyboards"
+        )
+      }
+      correctForComparison
+    }
 
     def bestHumanPressesLength(
       robotDirectionalKeyboards: Int
     ): N =
       firstLevelPresses()
         .map(list =>
-          directionalsRequiredMemoized(list, robotDirectionalKeyboards)
+          list.map { l =>
+            directionalsRequired(l, robotDirectionalKeyboards)
+          }.sum
         )
         .min
 
