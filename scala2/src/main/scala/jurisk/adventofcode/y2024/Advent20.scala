@@ -65,28 +65,17 @@ object Advent20 {
           false
       }
 
-    val empties = field.allCoords
-      .filter(field.at(_).contains(false))
-    val cheats  =
-      for {
-        // Could be optimised by avoiding processing all O(N^2), as if we know one coordinate, we can generate all others within maxCheat distance more efficiently
-        c1 <- empties
-        c2 <- empties
-        if c1.manhattanDistance(c2) <= maxCheat
-        if c1 != c2
-      } yield Cheat(c1, c2)
+    def isEmpty(c: Coords2D): Boolean =
+      field.at(c).contains(false)
 
-    println(s"Cheats: ${cheats.size}")
-
-    val selectedCheats =
-      cheats
-        .filter(validCheat)
-        .toSet
-
-    println(s"Selected cheats: ${selectedCheats.size}")
-    selectedCheats.foreach(println)
-
-    selectedCheats.size
+    (for {
+      c1   <- field.allCoords.filter(isEmpty)
+      c2   <- c1.allCoordsWithinManhattanDistance(maxCheat)
+      if isEmpty(c2)
+      if c1 != c2
+      cheat = Cheat(c1, c2)
+      if validCheat(cheat)
+    } yield cheat).distinct.size
   }
 
   def part1(data: Input, saveAtLeast: Int): N =

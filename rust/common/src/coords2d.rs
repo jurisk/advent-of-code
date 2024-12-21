@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use std::iter::Step;
 use std::ops::{Add, AddAssign, Neg, Sub};
 use std::str::FromStr;
 
@@ -124,6 +125,24 @@ where
 
     pub fn manhattan_distance_to_origin(self: Coords2D<T>) -> T {
         self.x.abs() + self.y.abs()
+    }
+
+    pub fn all_coords_within_manhattan_distance(
+        self: Coords2D<T>,
+        distance_inclusive: T,
+    ) -> Vec<Coords2D<T>>
+    where
+        T: Copy + Step,
+    {
+        let mut result = Vec::new();
+        for x in -distance_inclusive ..= distance_inclusive {
+            for y in -distance_inclusive ..= distance_inclusive {
+                if x.abs() + y.abs() <= distance_inclusive {
+                    result.push(self + Coords2D::new(x, y));
+                }
+            }
+        }
+        result
     }
 }
 

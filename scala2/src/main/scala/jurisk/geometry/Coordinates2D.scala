@@ -1,11 +1,12 @@
 package jurisk.geometry
 
-import cats.Functor
 import cats.implicits._
 import jurisk.math.Enumerated
+import jurisk.math.Enumerated._
 import jurisk.utils.Parsing.StringOps
 
 import scala.math.Numeric.Implicits.infixNumericOps
+import scala.math.Ordered.orderingToOrdered
 
 final case class Coordinates2D[N: Numeric](x: N, y: N) {
   def +(other: Coordinates2D[N]): Coordinates2D[N] =
@@ -24,6 +25,15 @@ final case class Coordinates2D[N: Numeric](x: N, y: N) {
     integral: Integral[N]
   ): N =
     (this - other).manhattanDistanceToOrigin
+
+  def allCoordsWithinManhattanDistance(
+    distanceInclusive: N
+  )(implicit enumerated: Enumerated[N]): Seq[Coordinates2D[N]] =
+    for {
+      x <- -distanceInclusive to distanceInclusive
+      y <- -distanceInclusive to distanceInclusive
+      if x.abs + y.abs <= distanceInclusive
+    } yield this + Coordinates2D.of(x, y)
 
   def adjacent4(implicit integral: Integral[N]): List[Coordinates2D[N]] =
     neighbours(includeDiagonal = false)

@@ -10,11 +10,19 @@ type N = i32;
 type R = usize;
 type Input = (Coords, MatrixGrid2D<bool>, Coords);
 
-#[derive(Eq, PartialEq, Hash, Debug)]
+#[derive(Eq, PartialEq, Hash, Debug, Clone, Copy)]
 struct Cheat {
-    from:     Coords,
-    to:       Coords,
-    distance: N,
+    from: Coords,
+    to:   Coords,
+}
+
+impl Cheat {
+    #[must_use]
+    fn distance(&self) -> N {
+        let from = self.from;
+        let to = self.to;
+        from.manhattan_distance(to)
+    }
 }
 
 fn parse(input: &str) -> Result<Input, Error> {
@@ -61,24 +69,17 @@ fn solve(data: &Input, save_at_least: N, max_cheat: N) -> R {
             .map(|(_, c)| *c)
             .unwrap_or_default();
         let end_cost = from_end.get(&cheat.to).map(|(_, c)| *c).unwrap_or_default();
-        start_cost + end_cost + cheat.distance <= goal_cost_threshold
+        start_cost + end_cost + cheat.distance() <= goal_cost_threshold
     };
 
-    let empties: Vec<_> = field
-        .coords()
-        .filter(|c| field.get(*c).is_some_and(|b| !*b))
-        .collect();
+    let is_empty = |c: &Coords| -> bool { field.get(*c).is_some_and(|b| !*b) };
 
     let mut valid_cheats = HashSet::new();
 
-    // Could be optimised by avoiding processing all O(N^2), as if we know one coordinate, we can generate all others within maxCheat distance more efficiently
-    for from in &empties {
-        for to in &empties {
-            let from = *from;
-            let to = *to;
-            let distance = from.manhattan_distance(to);
-            if (1 ..= max_cheat).contains(&distance) {
-                let cheat = Cheat { from, to, distance };
+    for c1 in field.coords().filter(is_empty) {
+        for c2 in c1.all_coords_within_manhattan_distance(max_cheat) {
+            if is_empty(&c2) && c1 != c2 {
+                let cheat = Cheat { from: c1, to: c2 };
                 if valid_cheat(&cheat) {
                     valid_cheats.insert(cheat);
                 }
@@ -139,7 +140,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_solve_1_real() {
         assert_eq!(solve_1(&real_data(), 100), 1293);
     }
