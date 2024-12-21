@@ -13,13 +13,55 @@ import jurisk.utils.Parsing.StringOps
 object Advent21 {
   type N = Long
 
+  private def pathBetweenCoords(
+    current: Coords2D,
+    toPress: Coords2D,
+    invalid: Coords2D,
+  ): Set[List[DirectionalButton]] = {
+    def validDirections(directions: List[DirectionalButton]): Boolean = {
+      var coords = current
+      directions foreach { d =>
+        val diff = d.actionDiff
+        coords += diff
+        if (coords == invalid) {
+          return false
+        }
+      }
+      true
+    }
+
+    val diff = toPress - current
+    val forX = if (diff.x > 0) {
+      List.fill(diff.x)(Right)
+    } else if (diff.x < 0) {
+      List.fill(-diff.x)(Left)
+    } else {
+      Nil
+    }
+    val forY = if (diff.y > 0) {
+      List.fill(diff.y)(Down)
+    } else if (diff.y < 0) {
+      List.fill(-diff.y)(Up)
+    } else {
+      Nil
+    }
+
+    Set(
+      forX ++ forY ++ List(DirectionalButton.Activate),
+      forY ++ forX ++ List(DirectionalButton.Activate),
+    ).filter(validDirections)
+  }
+
   sealed trait DirectionalButton extends Product with Serializable {
     def actionDiff: Coords2D
     def coords: Coords2D
+
+    def pathTo(toPress: DirectionalButton): Set[List[DirectionalButton]] =
+      pathBetweenCoords(this.coords, toPress.coords, InvalidDirectionalCoords)
   }
 
   object DirectionalButton {
-    val InvalidDirectionalCoords: Coords2D = Coords2D(0, 0)
+    private val InvalidDirectionalCoords: Coords2D = Coords2D(0, 0)
 
     case object Up       extends DirectionalButton {
       override def actionDiff: Coords2D = Coords2D(0, -1)
@@ -51,53 +93,15 @@ object Advent21 {
     }.toList
   }
 
-  def pathBetweenNumericButtons(
-    current: NumericButton,
-    toPress: NumericButton,
-  ): Set[List[DirectionalButton]] = {
-    def validDirections(directions: List[DirectionalButton]): Boolean = {
-      var coords = current.coords
-      directions foreach { d =>
-        val diff = d.actionDiff
-        coords += diff
-        if (coords == InvalidNumericCoords) {
-          return false
-        }
-      }
-      true
-    }
-
-    val diff = toPress.coords - current.coords
-    val forX = if (diff.x > 0) {
-      List.fill(diff.x)(Right)
-    } else if (diff.x < 0) {
-      List.fill(-diff.x)(Left)
-    } else {
-      Nil
-    }
-    val forY = if (diff.y > 0) {
-      List.fill(diff.y)(Down)
-    } else if (diff.y < 0) {
-      List.fill(-diff.y)(Up)
-    } else {
-      Nil
-    }
-
-    Set(
-      forX ++ forY ++ List(DirectionalButton.Activate),
-      forY ++ forX ++ List(DirectionalButton.Activate),
-    ).filter(validDirections)
-  }
-
   sealed trait NumericButton extends Product with Serializable {
     def coords: Coords2D
     def digit: Option[Int]
+
+    def pathTo(toPress: NumericButton): Set[List[DirectionalButton]] =
+      pathBetweenCoords(this.coords, toPress.coords, InvalidNumericCoords)
   }
   object NumericButton {
-    val All: Set[NumericButton] =
-      Set(Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Activate)
-
-    val InvalidNumericCoords: Coords2D = Coords2D(0, 3)
+    private val InvalidNumericCoords: Coords2D = Coords2D(0, 3)
 
     case object Zero     extends NumericButton {
       override def coords: Coords2D   = Coords2D(1, 3)
@@ -160,41 +164,6 @@ object Advent21 {
     }
   }
 
-  /** | ^ | A |   |
-    * |:--|:--|:--|
-    * | < | v | > |
-    */
-  def toPressDirectionalButton(
-    current: DirectionalButton,
-    toPress: DirectionalButton,
-  ): Set[List[DirectionalButton]] = {
-    val result = (current, toPress) match {
-      case (a, b) if a == b  => Set(Nil)
-      case (Left, Up)        => Set(Right :: Up :: Nil)
-      case (Left, Down)      => Set(Right :: Nil)
-      case (Left, Right)     => Set(Right :: Right :: Nil)
-      case (Left, Activate)  => Set(Right :: Right :: Up :: Nil)
-      case (Up, Left)        => Set(Down :: Left :: Nil)
-      case (Up, Down)        => Set(Down :: Nil)
-      case (Up, Right)       => Set(Down :: Right :: Nil, Right :: Down :: Nil)
-      case (Up, Activate)    => Set(Right :: Nil)
-      case (Down, Left)      => Set(Left :: Nil)
-      case (Down, Up)        => Set(Up :: Nil)
-      case (Down, Right)     => Set(Right :: Nil)
-      case (Down, Activate)  => Set(Right :: Up :: Nil, Up :: Right :: Nil)
-      case (Activate, Left)  => Set(Down :: Left :: Left :: Nil)
-      case (Activate, Up)    => Set(Left :: Nil)
-      case (Activate, Down)  => Set(Left :: Down :: Nil, Down :: Left :: Nil)
-      case (Activate, Right) => Set(Down :: Nil)
-      case (Right, Left)     => Set(Left :: Left :: Nil)
-      case (Right, Up)       => Set(Left :: Up :: Nil, Up :: Left :: Nil)
-      case (Right, Down)     => Set(Left :: Nil)
-      case (Right, Activate) => Set(Up :: Nil)
-      case (a, b)            => s"Invalid $a -> $b".fail
-    }
-    result.map(_ ::: List(DirectionalButton.Activate))
-  }
-
   private val countPairMemo: (DirectionalButton, DirectionalButton, Int) => N =
     Memoize.memoize3(countPair)
 
@@ -203,7 +172,7 @@ object Advent21 {
     b: DirectionalButton,
     level: Int,
   ): N =
-    toPressDirectionalButton(a, b).map { path =>
+    (a pathTo b).map { path =>
       countPath(path, level - 1)
     }.min
 
@@ -234,7 +203,7 @@ object Advent21 {
       robotDirectionalKeyboards: Int
     ): N =
       (NumericButton.Activate :: numericButtons).sliding2.map { case (a, b) =>
-        pathBetweenNumericButtons(a, b).map { path =>
+        (a pathTo b).map { path =>
           countPath(
             path,
             robotDirectionalKeyboards,

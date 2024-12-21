@@ -10,26 +10,16 @@ class Advent21Spec extends AnyFreeSpec {
 
   "utility" - {
     "toPressNumericButton" in {
-      pathBetweenNumericButtons(
-        NumericButton.Activate,
-        NumericButton.Zero,
-      ) shouldEqual
-        Set(DirectionalButton.parseList("<A"))
-
-      pathBetweenNumericButtons(
-        NumericButton.Zero,
-        NumericButton.Two,
-      ) shouldEqual
-        Set(DirectionalButton.parseList("^A"))
-
-      pathBetweenNumericButtons(
-        NumericButton.Two,
-        NumericButton.Nine,
-      ) shouldEqual
-        Set(
-          DirectionalButton.parseList("^^>A"),
-          DirectionalButton.parseList(">^^A"),
-        )
+      (NumericButton.Activate pathTo NumericButton.Zero) shouldEqual Set(
+        DirectionalButton.parseList("<A")
+      )
+      (NumericButton.Zero pathTo NumericButton.Two) shouldEqual Set(
+        DirectionalButton.parseList("^A")
+      )
+      (NumericButton.Two pathTo NumericButton.Nine) shouldEqual Set(
+        DirectionalButton.parseList("^^>A"),
+        DirectionalButton.parseList(">^^A"),
+      )
     }
   }
 
