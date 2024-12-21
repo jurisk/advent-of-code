@@ -158,6 +158,13 @@ object Advent21 {
     }
   }
 
+  /**
+   * +---+---+
+   *     | ^ | A |
+   * +---+---+---+
+   * | < | v | > |
+   * +---+---+---+
+   **/
   def toPressDirectionalButton(
     current: DirectionalButton,
     toPress: DirectionalButton,
@@ -172,7 +179,7 @@ object Advent21 {
       case (Up, Down)        => Set(Down :: Nil)
       case (Up, Right)       => Set(Down :: Right :: Nil, Right :: Down :: Nil)
       case (Up, Activate)    => Set(Right :: Nil)
-      case (Down, Left)      => Set(Right :: Nil)
+      case (Down, Left)      => Set(Left :: Nil)
       case (Down, Up)        => Set(Up :: Nil)
       case (Down, Right)     => Set(Right :: Nil)
       case (Down, Activate)  => Set(Right :: Up :: Nil, Up :: Right :: Nil)
@@ -292,7 +299,39 @@ object Advent21 {
 
     val directionalsRequiredMemoized = Memoize.memoize2(directionalsRequired)
 
+    val megaCoolMemoized = Memoize.memoize3(megaCool)
+
+    def megaCool(
+      a: DirectionalButton,
+      b: DirectionalButton,
+      level: Int
+    ): N = {
+      toPressDirectionalButton(a, b).map { q =>
+        megaNew(q, level - 1)
+      }.min
+    }
+
+    def megaNew(presses: List[DirectionalButton], level: Int): N = {
+      assert(presses.last == DirectionalButton.Activate)
+      if (level == 0) {
+        presses.length
+      } else {
+        (DirectionalButton.Activate :: presses).sliding2.map { case (a, b) =>
+          megaCoolMemoized(a, b, level)
+        }.sum
+      }
+    }
+
     def bestHumanPressesLength(
+      robotDirectionalKeyboards: Int
+    ): N =
+      (NumericButton.Activate :: numericButtons).sliding2.map { case (a, b) =>
+        toPressNumericButton(a, b).map { q =>
+          megaNew(q, robotDirectionalKeyboards)
+        }.min
+      }.sum
+
+    def bestHumanPressesLengthOld(
       robotDirectionalKeyboards: Int
     ): N =
       firstLevelPresses()

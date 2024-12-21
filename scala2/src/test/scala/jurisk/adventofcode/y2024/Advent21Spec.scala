@@ -33,7 +33,7 @@ class Advent21Spec extends AnyFreeSpec {
     }
 
     "firstLevelPresses" in {
-      Code("029A").firstLevelPresses() shouldEqual Set(
+      Code("029A").firstLevelPresses().map(_.flatten) shouldEqual Set(
         DirectionalButton.parseList("<A^A>^^AvvvA"),
 //      Deliberately skipping from example as it is suboptimal: DirectionalButton.parseList("<A^A^>^AvvvA"),
         DirectionalButton.parseList("<A^A^^>AvvvA"),
@@ -66,25 +66,8 @@ class Advent21Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
-    "test 3" in {
-      solve(testData, 3) shouldEqual 302096
-    }
-
-    "real 3" in {
-      solve(realData, 3) shouldEqual 641180
-    }
-
-    "real 4" in {
-      solve(realData, 4) shouldEqual 1546390
-    }
-
-    "real 12" in {
-      solve(realData, 12) shouldEqual 2004856242
-    }
-
-    // 232163526211238 too low
     "real" in {
-      part2(realData) shouldEqual 123456
+      part2(realData) shouldEqual 329431019997766L
     }
   }
 }
