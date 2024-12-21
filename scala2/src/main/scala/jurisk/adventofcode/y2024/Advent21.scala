@@ -5,6 +5,7 @@ import jurisk.adventofcode.y2024.Advent21.DirectionalButton._
 import jurisk.adventofcode.y2024.Advent21.NumericButton.InvalidNumericCoords
 import jurisk.geometry.Coords2D
 import jurisk.utils.FileInput._
+import jurisk.utils.Memoize
 import jurisk.utils.Parsing.StringOps
 
 object Advent21 {
@@ -221,6 +222,46 @@ object Advent21 {
           Set(Nil)
       }
 
+    // TODO: Move out
+    def directionalsRequiredNew(
+      buttons: List[DirectionalButton],
+      remaining: Int,
+    ): N = {
+      def directionalsToGo(
+        from: DirectionalButton,
+        to: DirectionalButton,
+        remaining: Int,
+      ): N =
+        toPressDirectionalButton(from, to).map { possibility =>
+          directionalsRequired(possibility, remaining - 1)
+        }.min
+
+      if (remaining == 0) {
+        buttons.length
+      } else {
+        buttons.sliding2.map { case (a, b) =>
+          directionalsToGo(a, b, remaining)
+        }.sum + 1
+      }
+    }
+
+    def directionalsRequiredAsdf(
+      buttons: List[DirectionalButton],
+      remaining: Int,
+    ): N = {
+      val oldResult = directionalsRequired(buttons, remaining)
+      val newResult = directionalsRequiredNew(buttons, remaining)
+      if (oldResult != newResult) {
+        println(
+          s"Old: $oldResult, New: $newResult for: directionalsRequired($buttons, $remaining)"
+        )
+      }
+      newResult
+    }
+
+    lazy val directionalsRequiredMemoized = Memoize.memoize2(directionalsRequired)
+
+    // TODO: Move out
     def directionalsRequired(
       buttons: List[DirectionalButton],
       remaining: Int,
@@ -229,7 +270,7 @@ object Advent21 {
         buttons.length
       } else {
         expandResults(buttons).map { possibility =>
-          directionalsRequired(possibility, remaining - 1)
+          directionalsRequiredMemoized(possibility, remaining - 1)
         }.min
       }
 
@@ -237,7 +278,7 @@ object Advent21 {
       robotDirectionalKeyboards: Int
     ): N =
       firstLevelPresses()
-        .map(list => directionalsRequired(list, robotDirectionalKeyboards))
+        .map(list => directionalsRequiredMemoized(list, robotDirectionalKeyboards))
         .min
 
     def expandResults(
