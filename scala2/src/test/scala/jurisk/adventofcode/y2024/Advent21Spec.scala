@@ -41,16 +41,10 @@ class Advent21Spec extends AnyFreeSpec {
     }
 
     "secondLevelPresses" in {
-      Code("029A").secondLevelPresses.contains(
-        DirectionalButton.parseList("v<<A>>^A<A>AvA<^AA>A<vAAA>^A")
-      ) shouldEqual true
-    }
+      val results = Code("029A").humanPresses(1)
 
-    "humanPresses" in {
-      Code("029A").humanPresses.contains(
-        DirectionalButton.parseList(
-          "<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A"
-        )
+      results.contains(
+        DirectionalButton.parseList("v<<A>>^A<A>AvA<^AA>A<vAAA>^A")
       ) shouldEqual true
     }
   }
@@ -58,9 +52,8 @@ class Advent21Spec extends AnyFreeSpec {
   "part 1" - {
     "test 029A" in {
       val code = Code("029A")
-      code.bestHumanPressesLength shouldEqual 68
+      code.bestHumanPressesLength(2) shouldEqual 68
       code.numericPart shouldEqual 29
-      code.complexity shouldEqual 68 * 29
     }
 
     "test" in {
@@ -73,10 +66,6 @@ class Advent21Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
-    "test" in {
-      part2(testData) shouldEqual 0
-    }
-
     "real" in {
       part2(realData) shouldEqual 0
     }

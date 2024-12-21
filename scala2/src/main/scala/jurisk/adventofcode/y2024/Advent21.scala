@@ -202,14 +202,15 @@ object Advent21 {
     }
 
   final case class Code(numericButtons: List[NumericButton]) {
-    def bestHumanPressesLength: Int =
+    def bestHumanPressesLength(robotDirectionalKeyboards: Int): Int =
       // All are equal, we can pick any
-      humanPresses.head.length
+      humanPresses(robotDirectionalKeyboards).head.length
 
     def numericPart: N =
       numericButtons.flatMap(_.digit).map(_.toString).mkString.toLong
 
-    def complexity: N = bestHumanPressesLength * numericPart
+    def complexity(robotDirectionalKeyboards: Int): N =
+      bestHumanPressesLength(robotDirectionalKeyboards) * numericPart
 
     def firstLevelPresses(
       current: NumericButton = NumericButton.Activate
@@ -224,22 +225,20 @@ object Advent21 {
           Set(Nil)
       }
 
-    def secondLevelPresses: Set[List[DirectionalButton]] = {
-      var results = Set.empty[List[DirectionalButton]]
-      firstLevelPresses() foreach { firstLevel =>
-        expand(firstLevel) foreach { expanded =>
-          results += expanded
-        }
+    def humanPresses(
+      robotDirectionalKeyboards: Int
+    ): Set[List[DirectionalButton]] = {
+      val todos = if (robotDirectionalKeyboards == 1) {
+        firstLevelPresses()
+      } else {
+        humanPresses(robotDirectionalKeyboards - 1)
       }
 
-      val best = results.map(_.length).min
+      println(s"$robotDirectionalKeyboards => ${todos.size}")
 
-      results.filter(_.length == best)
-    }
-
-    def humanPresses: Set[List[DirectionalButton]] = {
       var results = Set.empty[List[DirectionalButton]]
-      secondLevelPresses foreach { secondLevel =>
+
+      todos foreach { secondLevel =>
         expand(secondLevel) foreach { expanded =>
           results += expanded
         }
@@ -261,11 +260,14 @@ object Advent21 {
   def parse(input: String): Input =
     input.parseLines(Code(_))
 
+  def solve(data: Input, robotDirectionalKeyboards: Int): N =
+    data.map(_.complexity(robotDirectionalKeyboards)).sum
+
   def part1(data: Input): N =
-    data.map(_.complexity).sum
+    solve(data, 2)
 
   def part2(data: Input): N =
-    0
+    solve(data, 25)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
