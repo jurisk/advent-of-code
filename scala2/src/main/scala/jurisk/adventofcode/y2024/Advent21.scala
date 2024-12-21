@@ -1,6 +1,6 @@
 package jurisk.adventofcode.y2024
 
-import cats.implicits.{catsSyntaxOptionId, none}
+import cats.implicits.{catsSyntaxFoldableOps0, catsSyntaxOptionId, none}
 import jurisk.adventofcode.y2024.Advent21.DirectionalButton._
 import jurisk.adventofcode.y2024.Advent21.NumericButton.InvalidNumericCoords
 import jurisk.geometry.Coords2D
@@ -15,7 +15,7 @@ object Advent21 {
     def coords: Coords2D
   }
   object DirectionalButton {
-    val InvalidDirectionalCoords = Coords2D(0, 0)
+    val InvalidDirectionalCoords: Coords2D = Coords2D(0, 0)
 
     case object Up       extends DirectionalButton {
       override def actionDiff: Coords2D = Coords2D(0, -1)
@@ -94,7 +94,7 @@ object Advent21 {
       Set(Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Activate)
     val ByCoords: Map[Coords2D, NumericButton] =
       All.map(nb => nb.coords -> nb).toMap
-    val InvalidNumericCoords                   = Coords2D(0, 3)
+    val InvalidNumericCoords: Coords2D         = Coords2D(0, 3)
 
     case object Zero     extends NumericButton {
       override def coords: Coords2D   = Coords2D(1, 3)
@@ -201,6 +201,20 @@ object Advent21 {
         }
     }
 
+  def countJumps(presses: List[DirectionalButton]): Int =
+    presses.sliding2.count { case (a, b) =>
+      a != b
+    }
+
+  def selectBest(
+    choices: Set[List[DirectionalButton]]
+  ): Set[List[DirectionalButton]] = {
+    val best  = choices.map(_.length).min
+    val valid = choices.filter(_.length == best)
+//    valid.minBy(countJumps)
+    valid
+  }
+
   final case class Code(numericButtons: List[NumericButton]) {
     def bestHumanPressesLength(robotDirectionalKeyboards: Int): Int =
       // All are equal, we can pick any
@@ -228,6 +242,28 @@ object Advent21 {
     def humanPresses(
       robotDirectionalKeyboards: Int
     ): Set[List[DirectionalButton]] = {
+      var results: Set[List[DirectionalButton]] = firstLevelPresses()
+      (0 until robotDirectionalKeyboards).foreach { _ =>
+        results = expandResults(results)
+      }
+      results
+    }
+
+    def expandResults(
+      set: Set[List[DirectionalButton]]
+    ): Set[List[DirectionalButton]] = {
+      var results = Set.empty[List[DirectionalButton]]
+      set foreach { secondLevel =>
+        expand(secondLevel) foreach { expanded =>
+          results += expanded
+        }
+      }
+      selectBest(results)
+    }
+
+    def humanPressesOld(
+      robotDirectionalKeyboards: Int
+    ): Set[List[DirectionalButton]] = {
       val todos = if (robotDirectionalKeyboards == 1) {
         firstLevelPresses()
       } else {
@@ -244,9 +280,7 @@ object Advent21 {
         }
       }
 
-      val best = results.map(_.length).min
-
-      results.filter(_.length == best)
+      selectBest(results)
     }
   }
 
