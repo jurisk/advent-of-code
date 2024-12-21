@@ -8,8 +8,6 @@ import jurisk.utils.FileInput._
 import jurisk.utils.Memoize
 import jurisk.utils.Parsing.StringOps
 
-import scala.annotation.tailrec
-
 object Advent21 {
   type N = Long
 
@@ -263,6 +261,16 @@ object Advent21 {
       newResult
     }
 
+    def directionalsRequiredCorrect(
+      buttons: List[DirectionalButton],
+      remaining: Int,
+    ): N =
+      if (remaining == 0) {
+        buttons.length
+      } else {
+        directionalsRequiredCorrect(expandResults(buttons), remaining - 1)
+      }
+
     // TODO: Move out
     def directionalsRequired(
       buttons: List[DirectionalButton],
@@ -276,51 +284,13 @@ object Advent21 {
         val start: DirectionalButton = DirectionalButton.Activate
         (start :: buttons).sliding2.map { case (a, b) =>
           toPressDirectionalButton(a, b).map { q =>
-            directionalsRequired(q, remaining - 1)
+            directionalsRequiredMemoized(q, remaining - 1)
           }.min
         }.sum
-//        directionalsRequired(expandResults(buttons), remaining - 1)
       }
-    }
-
-    def greedy(
-      list: List[DirectionalButton],
-      robotDirectionalKeyboards: Int,
-    ): N = {
-      println(list)
-      assert(list.last == DirectionalButton.Activate)
-      0
-//      var result = 0
-//      var current: DirectionalButton = DirectionalButton.Activate
-//      list.foreach { next =>
-//        val diff = if (robotDirectionalKeyboards == 0) {
-//
-//        } else {
-//
-//        }
-//        result += diff
-//        current = next
-//      }
-//      result + 1
     }
 
     val directionalsRequiredMemoized = Memoize.memoize2(directionalsRequired)
-
-    def doComparison(
-      list: List[DirectionalButton],
-      robotDirectionalKeyboards: Int,
-    ): N = {
-      val correctForComparison =
-        directionalsRequired(list, robotDirectionalKeyboards)
-      val greedyForComparison  =
-        greedy(list: List[DirectionalButton], robotDirectionalKeyboards)
-      if (correctForComparison != greedyForComparison) {
-        println(
-          s"Correct: $correctForComparison, Greedy: $greedyForComparison for: $list, $robotDirectionalKeyboards"
-        )
-      }
-      correctForComparison
-    }
 
     def bestHumanPressesLength(
       robotDirectionalKeyboards: Int
@@ -328,7 +298,7 @@ object Advent21 {
       firstLevelPresses()
         .map(list =>
           list.map { l =>
-            directionalsRequired(l, robotDirectionalKeyboards)
+            directionalsRequiredMemoized(l, robotDirectionalKeyboards)
           }.sum
         )
         .min

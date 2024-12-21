@@ -82,6 +82,7 @@ class Advent21Spec extends AnyFreeSpec {
       solve(realData, 12) shouldEqual 2004856242
     }
 
+    // 232163526211238 too low
     "real" in {
       part2(realData) shouldEqual 123456
     }
