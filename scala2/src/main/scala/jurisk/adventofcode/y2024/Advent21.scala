@@ -18,11 +18,12 @@ object Advent21 {
     toPress: Coords2D,
     invalid: Coords2D,
   ): Set[List[DirectionalButton]] = {
-    def validDirections(directions: List[DirectionalButton]): Boolean = {
-      !directions.scanLeft(current) { (coords, d) =>
-        coords + d.actionDiff
-      }.contains(invalid)
-    }
+    def validDirections(directions: List[DirectionalButton]): Boolean =
+      !directions
+        .scanLeft(current) { (coords, d) =>
+          coords + d.actionDiff
+        }
+        .contains(invalid)
 
     val diff = toPress - current
     val forX = if (diff.x > 0) {
@@ -167,8 +168,14 @@ object Advent21 {
     b: DirectionalButton,
     level: Int,
   ): N =
-    (a pathTo b).map { path =>
-      countPath(path, level - 1)
+    countPaths(a pathTo b, level - 1)
+
+  private def countPaths(
+    paths: Set[List[DirectionalButton]],
+    level: Int,
+  ): N =
+    paths.map { path =>
+      countPath(path, level)
     }.min
 
   private def countPath(
@@ -198,12 +205,7 @@ object Advent21 {
       robotDirectionalKeyboards: Int
     ): N =
       (NumericButton.Activate :: numericButtons).sliding2.map { case (a, b) =>
-        (a pathTo b).map { path =>
-          countPath(
-            path,
-            robotDirectionalKeyboards,
-          )
-        }.min
+        countPaths(a pathTo b, robotDirectionalKeyboards)
       }.sum
   }
 
