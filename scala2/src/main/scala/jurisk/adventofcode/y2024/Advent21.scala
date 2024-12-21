@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2024
 
 import cats.implicits.{catsSyntaxOptionId, none}
 import jurisk.adventofcode.y2024.Advent21.DirectionalButton._
+import jurisk.adventofcode.y2024.Advent21.NumericButton.InvalidNumericCoords
 import jurisk.geometry.Coords2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -10,23 +11,31 @@ object Advent21 {
   type N = Long
 
   sealed trait DirectionalButton extends Product with Serializable {
-    def diff: Coords2D
+    def actionDiff: Coords2D
+    def coords: Coords2D
   }
   object DirectionalButton {
+    val InvalidDirectionalCoords = Coords2D(0, 0)
+
     case object Up       extends DirectionalButton {
-      override def diff: Coords2D = Coords2D(0, -1)
+      override def actionDiff: Coords2D = Coords2D(0, -1)
+      override def coords: Coords2D     = Coords2D(1, 0)
     }
     case object Down     extends DirectionalButton {
-      override def diff: Coords2D = Coords2D(0, 1)
+      override def actionDiff: Coords2D = Coords2D(0, 1)
+      override def coords: Coords2D     = Coords2D(1, 1)
     }
     case object Left     extends DirectionalButton {
-      override def diff: Coords2D = Coords2D(-1, 0)
+      override def actionDiff: Coords2D = Coords2D(-1, 0)
+      override def coords: Coords2D     = Coords2D(0, 1)
     }
     case object Right    extends DirectionalButton {
-      override def diff: Coords2D = Coords2D(1, 0)
+      override def actionDiff: Coords2D = Coords2D(1, 0)
+      override def coords: Coords2D     = Coords2D(2, 1)
     }
     case object Activate extends DirectionalButton {
-      override def diff: Coords2D = Coords2D(0, 0)
+      override def actionDiff: Coords2D = Coords2D(0, 0)
+      override def coords: Coords2D     = Coords2D(2, 0)
     }
 
     def parseList(s: String): List[DirectionalButton] = s.map {
@@ -43,12 +52,11 @@ object Advent21 {
     toPress: NumericButton,
   ): Set[List[DirectionalButton]] = {
     def validDirections(directions: List[DirectionalButton]): Boolean = {
-      val InvalidLocation = Coords2D(0, 3)
-      var coords          = current.coords
+      var coords = current.coords
       directions foreach { d =>
-        val diff = d.diff
+        val diff = d.actionDiff
         coords += diff
-        if (coords == InvalidLocation) {
+        if (coords == InvalidNumericCoords) {
           return false
         }
       }
@@ -86,6 +94,7 @@ object Advent21 {
       Set(Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Activate)
     val ByCoords: Map[Coords2D, NumericButton] =
       All.map(nb => nb.coords -> nb).toMap
+    val InvalidNumericCoords                   = Coords2D(0, 3)
 
     case object Zero     extends NumericButton {
       override def coords: Coords2D   = Coords2D(1, 3)
@@ -148,12 +157,59 @@ object Advent21 {
     }
   }
 
-  final case class Code(numericButtons: List[NumericButton]) {
-    def humanPresses: List[DirectionalButton] = Nil
-    def numericPart: N                        =
-      numericButtons.flatMap(_.digit.toString).mkString.toLong
+  def toPressDirectionalButton(
+    current: DirectionalButton,
+    toPress: DirectionalButton,
+  ): Set[List[DirectionalButton]] = {
+    val result = (current, toPress) match {
+      case (a, b) if a == b  => Set(Nil)
+      case (Left, Up)        => Set(Right :: Up :: Nil)
+      case (Left, Down)      => Set(Right :: Nil)
+      case (Left, Right)     => Set(Right :: Right :: Nil)
+      case (Left, Activate)  => Set(Right :: Right :: Up :: Nil)
+      case (Up, Left)        => Set(Down :: Left :: Nil)
+      case (Up, Down)        => Set(Down :: Nil)
+      case (Up, Right)       => Set(Down :: Right :: Nil, Right :: Down :: Nil)
+      case (Up, Activate)    => Set(Right :: Nil)
+      case (Down, Left)      => Set(Right :: Nil)
+      case (Down, Up)        => Set(Up :: Nil)
+      case (Down, Right)     => Set(Right :: Nil)
+      case (Down, Activate)  => Set(Right :: Up :: Nil, Up :: Right :: Nil)
+      case (Activate, Left)  => Set(Down :: Left :: Left :: Nil)
+      case (Activate, Up)    => Set(Left :: Nil)
+      case (Activate, Down)  => Set(Left :: Down :: Nil, Down :: Left :: Nil)
+      case (Activate, Right) => Set(Down :: Nil)
+      case (Right, Left)     => Set(Left :: Left :: Nil)
+      case (Right, Up)       => Set(Left :: Up :: Nil, Up :: Left :: Nil)
+      case (Right, Down)     => Set(Left :: Nil)
+      case (Right, Activate) => Set(Up :: Nil)
+      case (a, b)            => s"Invalid $a -> $b".fail
+    }
+    result.map(_ ::: List(DirectionalButton.Activate))
+  }
 
-    def complexity: N = humanPresses.length * numericPart
+  def expand(
+    presses: List[DirectionalButton],
+    current: DirectionalButton = DirectionalButton.Activate,
+  ): Set[List[DirectionalButton]] =
+    presses match {
+      case Nil    => Set(Nil)
+      case h :: t =>
+        val result = toPressDirectionalButton(current, h)
+        result.flatMap { presses =>
+          expand(t, h).map(presses ++ _)
+        }
+    }
+
+  final case class Code(numericButtons: List[NumericButton]) {
+    def bestHumanPressesLength: Int =
+      // All are equal, we can pick any
+      humanPresses.head.length
+
+    def numericPart: N =
+      numericButtons.flatMap(_.digit).map(_.toString).mkString.toLong
+
+    def complexity: N = bestHumanPressesLength * numericPart
 
     def firstLevelPresses(
       current: NumericButton = NumericButton.Activate
@@ -167,6 +223,32 @@ object Advent21 {
         case Nil    =>
           Set(Nil)
       }
+
+    def secondLevelPresses: Set[List[DirectionalButton]] = {
+      var results = Set.empty[List[DirectionalButton]]
+      firstLevelPresses() foreach { firstLevel =>
+        expand(firstLevel) foreach { expanded =>
+          results += expanded
+        }
+      }
+
+      val best = results.map(_.length).min
+
+      results.filter(_.length == best)
+    }
+
+    def humanPresses: Set[List[DirectionalButton]] = {
+      var results = Set.empty[List[DirectionalButton]]
+      secondLevelPresses foreach { secondLevel =>
+        expand(secondLevel) foreach { expanded =>
+          results += expanded
+        }
+      }
+
+      val best = results.map(_.length).min
+
+      results.filter(_.length == best)
+    }
   }
 
   object Code {
