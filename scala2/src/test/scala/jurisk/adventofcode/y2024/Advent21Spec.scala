@@ -39,14 +39,14 @@ class Advent21Spec extends AnyFreeSpec {
         DirectionalButton.parseList("<A^A^^>AvvvA"),
       )
     }
-
-    "secondLevelPresses" in {
-      val results = Code("029A").humanPresses(1)
-
-      results.contains(
-        DirectionalButton.parseList("v<<A>>^A<A>AvA<^AA>A<vAAA>^A")
-      ) shouldEqual true
-    }
+//
+//    "secondLevelPresses" in {
+//      val results = Code("029A").humanPresses(1)
+//
+//      results.contains(
+//        DirectionalButton.parseList("v<<A>>^A<A>AvA<^AA>A<vAAA>^A")
+//      ) shouldEqual true
+//    }
   }
 
   "part 1" - {

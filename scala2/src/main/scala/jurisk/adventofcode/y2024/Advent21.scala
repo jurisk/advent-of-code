@@ -216,10 +216,10 @@ object Advent21 {
   }
 
   final case class Code(numericButtons: List[NumericButton]) {
-    def bestHumanPressesLength(robotDirectionalKeyboards: Int): Int =
-      // All are equal, we can pick any
-      humanPresses(robotDirectionalKeyboards).head.length
-
+//    def bestHumanPressesLength(robotDirectionalKeyboards: Int): Int =
+//      // All are equal, we can pick any
+//      humanPresses(robotDirectionalKeyboards).head.length
+//
     def numericPart: N =
       numericButtons.flatMap(_.digit).map(_.toString).mkString.toLong
 
@@ -239,15 +239,24 @@ object Advent21 {
           Set(Nil)
       }
 
-    def humanPresses(
-      robotDirectionalKeyboards: Int
-    ): Set[List[DirectionalButton]] = {
-      var results: Set[List[DirectionalButton]] = firstLevelPresses()
-      (0 until robotDirectionalKeyboards).foreach { _ =>
-        results = expandResults(results)
+    def directionalsRequired(
+      buttons: List[DirectionalButton],
+      remaining: Int,
+    ): N =
+      if (remaining == 0) {
+        buttons.length
+      } else {
+        expandResults(Set(buttons)).map { possibility =>
+          directionalsRequired(possibility, remaining - 1)
+        }.min
       }
-      results
-    }
+
+    def bestHumanPressesLength(
+      robotDirectionalKeyboards: Int
+    ): N =
+      firstLevelPresses()
+        .map(list => directionalsRequired(list, robotDirectionalKeyboards))
+        .min
 
     def expandResults(
       set: Set[List[DirectionalButton]]
@@ -258,28 +267,6 @@ object Advent21 {
           results += expanded
         }
       }
-      selectBest(results)
-    }
-
-    def humanPressesOld(
-      robotDirectionalKeyboards: Int
-    ): Set[List[DirectionalButton]] = {
-      val todos = if (robotDirectionalKeyboards == 1) {
-        firstLevelPresses()
-      } else {
-        humanPresses(robotDirectionalKeyboards - 1)
-      }
-
-      println(s"$robotDirectionalKeyboards => ${todos.size}")
-
-      var results = Set.empty[List[DirectionalButton]]
-
-      todos foreach { secondLevel =>
-        expand(secondLevel) foreach { expanded =>
-          results += expanded
-        }
-      }
-
       selectBest(results)
     }
   }
