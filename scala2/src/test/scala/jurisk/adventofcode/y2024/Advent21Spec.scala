@@ -8,12 +8,29 @@ class Advent21Spec extends AnyFreeSpec {
   private def testData = parseFile(fileName("-test-00"))
   private def realData = parseFile(fileName(""))
 
+  "overall" - {
+    "toPressNumericButton" in {
+      val current = NumericButton.Activate
+      val toPress = NumericButton.Zero
+      toPressNumericButton(current, toPress) shouldEqual
+        Set(DirectionalButton.parseList("<A"))
+    }
+
+    "firstLevelPresses" in {
+      Code("029A").firstLevelPresses() shouldEqual Set(
+        DirectionalButton.parseList("<A^A>^^AvvvA"),
+        DirectionalButton.parseList("<A^A^>^AvvvA"),
+        DirectionalButton.parseList("<A^A^^>AvvvA"),
+      )
+    }
+  }
+
   "part 1" - {
     "test 029A" in {
-        val code = Code("029A")
-        code.humanPresses.length shouldEqual 68
-        code.numericPart shouldEqual 29
-        code.complexity shouldEqual 68 * 29
+      val code = Code("029A")
+      code.humanPresses.length shouldEqual 68
+      code.numericPart shouldEqual 29
+      code.complexity shouldEqual 68 * 29
     }
 
     "test" in {
