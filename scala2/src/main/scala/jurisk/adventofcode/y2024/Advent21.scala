@@ -201,25 +201,7 @@ object Advent21 {
         }
     }
 
-  def countJumps(presses: List[DirectionalButton]): Int =
-    presses.sliding2.count { case (a, b) =>
-      a != b
-    }
-
-  def selectBest(
-    choices: Set[List[DirectionalButton]]
-  ): Set[List[DirectionalButton]] = {
-    val best  = choices.map(_.length).min
-    val valid = choices.filter(_.length == best)
-//    valid.minBy(countJumps)
-    valid
-  }
-
   final case class Code(numericButtons: List[NumericButton]) {
-//    def bestHumanPressesLength(robotDirectionalKeyboards: Int): Int =
-//      // All are equal, we can pick any
-//      humanPresses(robotDirectionalKeyboards).head.length
-//
     def numericPart: N =
       numericButtons.flatMap(_.digit).map(_.toString).mkString.toLong
 
@@ -246,7 +228,7 @@ object Advent21 {
       if (remaining == 0) {
         buttons.length
       } else {
-        expandResults(Set(buttons)).map { possibility =>
+        expandResults(buttons).map { possibility =>
           directionalsRequired(possibility, remaining - 1)
         }.min
       }
@@ -259,15 +241,16 @@ object Advent21 {
         .min
 
     def expandResults(
-      set: Set[List[DirectionalButton]]
+      list: List[DirectionalButton]
     ): Set[List[DirectionalButton]] = {
-      var results = Set.empty[List[DirectionalButton]]
-      set foreach { secondLevel =>
-        expand(secondLevel) foreach { expanded =>
-          results += expanded
-        }
+      def selectBest(
+        choices: Set[List[DirectionalButton]]
+      ): Set[List[DirectionalButton]] = {
+        val best = choices.map(_.length).min
+        choices.filter(_.length == best)
       }
-      selectBest(results)
+
+      selectBest(expand(list))
     }
   }
 

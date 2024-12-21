@@ -66,6 +66,10 @@ class Advent21Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
+    "test" in {
+      solve(testData, 3) shouldEqual 0
+    }
+
     "real" in {
       part2(realData) shouldEqual 0
     }
