@@ -8,21 +8,21 @@ class Advent21Spec extends AnyFreeSpec {
   private def testData = parseFile(fileName("-test-00"))
   private def realData = parseFile(fileName(""))
 
-  "overall" - {
+  "utility" - {
     "toPressNumericButton" in {
-      toPressNumericButton(
+      pathBetweenNumericButtons(
         NumericButton.Activate,
         NumericButton.Zero,
       ) shouldEqual
         Set(DirectionalButton.parseList("<A"))
 
-      toPressNumericButton(
+      pathBetweenNumericButtons(
         NumericButton.Zero,
         NumericButton.Two,
       ) shouldEqual
         Set(DirectionalButton.parseList("^A"))
 
-      toPressNumericButton(
+      pathBetweenNumericButtons(
         NumericButton.Two,
         NumericButton.Nine,
       ) shouldEqual
@@ -31,22 +31,6 @@ class Advent21Spec extends AnyFreeSpec {
           DirectionalButton.parseList(">^^A"),
         )
     }
-
-    "firstLevelPresses" in {
-      Code("029A").firstLevelPresses().map(_.flatten) shouldEqual Set(
-        DirectionalButton.parseList("<A^A>^^AvvvA"),
-//      Deliberately skipping from example as it is suboptimal: DirectionalButton.parseList("<A^A^>^AvvvA"),
-        DirectionalButton.parseList("<A^A^^>AvvvA"),
-      )
-    }
-//
-//    "secondLevelPresses" in {
-//      val results = Code("029A").humanPresses(1)
-//
-//      results.contains(
-//        DirectionalButton.parseList("v<<A>>^A<A>AvA<^AA>A<vAAA>^A")
-//      ) shouldEqual true
-//    }
   }
 
   "part 1" - {

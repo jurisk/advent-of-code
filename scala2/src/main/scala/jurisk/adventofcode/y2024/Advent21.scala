@@ -1,6 +1,8 @@
 package jurisk.adventofcode.y2024
 
-import cats.implicits.{catsSyntaxFoldableOps0, catsSyntaxOptionId, none}
+import cats.implicits.catsSyntaxFoldableOps0
+import cats.implicits.catsSyntaxOptionId
+import cats.implicits.none
 import jurisk.adventofcode.y2024.Advent21.DirectionalButton._
 import jurisk.adventofcode.y2024.Advent21.NumericButton.InvalidNumericCoords
 import jurisk.geometry.Coords2D
@@ -15,6 +17,7 @@ object Advent21 {
     def actionDiff: Coords2D
     def coords: Coords2D
   }
+
   object DirectionalButton {
     val InvalidDirectionalCoords: Coords2D = Coords2D(0, 0)
 
@@ -48,7 +51,7 @@ object Advent21 {
     }.toList
   }
 
-  def toPressNumericButton(
+  def pathBetweenNumericButtons(
     current: NumericButton,
     toPress: NumericButton,
   ): Set[List[DirectionalButton]] = {
@@ -91,11 +94,10 @@ object Advent21 {
     def digit: Option[Int]
   }
   object NumericButton {
-    val All: Set[NumericButton]                =
+    val All: Set[NumericButton] =
       Set(Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Activate)
-    val ByCoords: Map[Coords2D, NumericButton] =
-      All.map(nb => nb.coords -> nb).toMap
-    val InvalidNumericCoords: Coords2D         = Coords2D(0, 3)
+
+    val InvalidNumericCoords: Coords2D = Coords2D(0, 3)
 
     case object Zero     extends NumericButton {
       override def coords: Coords2D   = Coords2D(1, 3)
@@ -158,13 +160,10 @@ object Advent21 {
     }
   }
 
-  /**
-   * +---+---+
-   *     | ^ | A |
-   * +---+---+---+
-   * | < | v | > |
-   * +---+---+---+
-   **/
+  /** | ^ | A |   |
+    * |:--|:--|:--|
+    * | < | v | > |
+    */
   def toPressDirectionalButton(
     current: DirectionalButton,
     toPress: DirectionalButton,
@@ -196,21 +195,34 @@ object Advent21 {
     result.map(_ ::: List(DirectionalButton.Activate))
   }
 
-  def expand(
+  private val countPairMemo: (DirectionalButton, DirectionalButton, Int) => N =
+    Memoize.memoize3(countPair)
+
+  private def countPair(
+    a: DirectionalButton,
+    b: DirectionalButton,
+    level: Int,
+  ): N =
+    toPressDirectionalButton(a, b).map { path =>
+      countPath(path, level - 1)
+    }.min
+
+  private def countPath(
     presses: List[DirectionalButton],
-    current: DirectionalButton = DirectionalButton.Activate,
-  ): Set[List[DirectionalButton]] =
-    presses match {
-      case Nil    => Set(Nil)
-      case h :: t =>
-        val result = toPressDirectionalButton(current, h)
-        result.flatMap { presses =>
-          expand(t, h).map(presses ++ _)
-        }
+    level: Int,
+  ): N = {
+    assert(presses.last == DirectionalButton.Activate)
+    if (level == 0) {
+      presses.length
+    } else {
+      (DirectionalButton.Activate :: presses).sliding2.map { case (a, b) =>
+        countPairMemo(a, b, level)
+      }.sum
     }
+  }
 
   final case class Code(numericButtons: List[NumericButton]) {
-    def numericPart: N =
+    val numericPart: N =
       numericButtons.flatMap(_.digit).map(_.toString).mkString.toLong
 
     def complexity(robotDirectionalKeyboards: Int): N = {
@@ -218,150 +230,17 @@ object Advent21 {
       bestHumanPressesLength(robotDirectionalKeyboards) * numericPart
     }
 
-    def firstLevelPresses(
-      current: NumericButton = NumericButton.Activate
-    ): Set[List[List[DirectionalButton]]] =
-      numericButtons match {
-        case h :: t =>
-          val result = toPressNumericButton(current, h)
-          result.flatMap { presses =>
-            Code(t).firstLevelPresses(h).map(presses :: _)
-          }
-        case Nil    =>
-          Set(Nil)
-      }
-
-    // TODO: Move out
-    def directionalsRequiredNew(
-      buttons: List[DirectionalButton],
-      remaining: Int,
-    ): N = {
-      def directionalsToGo(
-        from: DirectionalButton,
-        to: DirectionalButton,
-        remaining: Int,
-      ): N =
-        toPressDirectionalButton(from, to).map { possibility =>
-          directionalsRequiredNew(possibility, remaining - 1)
-        }.min
-
-      if (remaining == 0) {
-        buttons.length
-      } else {
-        buttons.sliding2.map { case (a, b) =>
-          directionalsToGo(a, b, remaining)
-        }.sum + 1
-      }
-    }
-
-    def directionalsRequiredAsdf(
-      buttons: List[DirectionalButton],
-      remaining: Int,
-    ): N = {
-      val oldResult = directionalsRequired(buttons, remaining)
-      val newResult = directionalsRequiredNew(buttons, remaining)
-      if (oldResult != newResult) {
-        println(
-          s"Old: $oldResult, New: $newResult for: directionalsRequired($buttons, $remaining)"
-        )
-      }
-      newResult
-    }
-
-    def directionalsRequiredCorrect(
-      buttons: List[DirectionalButton],
-      remaining: Int,
-    ): N =
-      if (remaining == 0) {
-        buttons.length
-      } else {
-        directionalsRequiredCorrect(expandResults(buttons), remaining - 1)
-      }
-
-    // TODO: Move out
-    def directionalsRequired(
-      buttons: List[DirectionalButton],
-      remaining: Int,
-    ): N = {
-      assert(buttons.last == DirectionalButton.Activate)
-
-      if (remaining == 0) {
-        buttons.length
-      } else {
-        val start: DirectionalButton = DirectionalButton.Activate
-        (start :: buttons).sliding2.map { case (a, b) =>
-          toPressDirectionalButton(a, b).map { q =>
-            directionalsRequiredMemoized(q, remaining - 1)
-          }.min
-        }.sum
-      }
-    }
-
-    val directionalsRequiredMemoized = Memoize.memoize2(directionalsRequired)
-
-    val megaCoolMemoized = Memoize.memoize3(megaCool)
-
-    def megaCool(
-      a: DirectionalButton,
-      b: DirectionalButton,
-      level: Int
-    ): N = {
-      toPressDirectionalButton(a, b).map { q =>
-        megaNew(q, level - 1)
-      }.min
-    }
-
-    def megaNew(presses: List[DirectionalButton], level: Int): N = {
-      assert(presses.last == DirectionalButton.Activate)
-      if (level == 0) {
-        presses.length
-      } else {
-        (DirectionalButton.Activate :: presses).sliding2.map { case (a, b) =>
-          megaCoolMemoized(a, b, level)
-        }.sum
-      }
-    }
-
     def bestHumanPressesLength(
       robotDirectionalKeyboards: Int
     ): N =
       (NumericButton.Activate :: numericButtons).sliding2.map { case (a, b) =>
-        toPressNumericButton(a, b).map { q =>
-          megaNew(q, robotDirectionalKeyboards)
+        pathBetweenNumericButtons(a, b).map { path =>
+          countPath(
+            path,
+            robotDirectionalKeyboards,
+          )
         }.min
       }.sum
-
-    def bestHumanPressesLengthOld(
-      robotDirectionalKeyboards: Int
-    ): N =
-      firstLevelPresses()
-        .map(list =>
-          list.map { l =>
-            directionalsRequiredMemoized(l, robotDirectionalKeyboards)
-          }.sum
-        )
-        .min
-
-    def expandResults(
-      list: List[DirectionalButton]
-    ): List[DirectionalButton] = {
-      def costEstimate(presses: List[DirectionalButton]): N =
-        presses.sliding2.map { case (a, b) =>
-          toPressDirectionalButton(a, b).map(_.length).min
-        }.sum
-
-      def selectBest(
-        choices: Set[List[DirectionalButton]]
-      ): List[DirectionalButton] = {
-        val best         = choices.map(_.length).min
-        val validChoices = choices.filter(_.length == best)
-        validChoices.minBy(costEstimate)
-      }
-
-      val result = selectBest(expand(list))
-      println(s"Expanded ${list.size} to ${result.size}")
-      result
-    }
   }
 
   object Code {
