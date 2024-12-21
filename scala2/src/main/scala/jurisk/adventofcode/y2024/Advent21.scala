@@ -267,12 +267,21 @@ object Advent21 {
     def directionalsRequired(
       buttons: List[DirectionalButton],
       remaining: Int,
-    ): N =
+    ): N = {
+      assert(buttons.last == DirectionalButton.Activate)
+
       if (remaining == 0) {
         buttons.length
       } else {
-        directionalsRequired(expandResults(buttons), remaining - 1)
+        val start: DirectionalButton = DirectionalButton.Activate
+        (start :: buttons).sliding2.map { case (a, b) =>
+          toPressDirectionalButton(a, b).map { q =>
+            directionalsRequired(q, remaining - 1)
+          }.min
+        }.sum
+//        directionalsRequired(expandResults(buttons), remaining - 1)
       }
+    }
 
     def greedy(
       list: List[DirectionalButton],
