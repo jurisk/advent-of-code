@@ -8,6 +8,8 @@ import jurisk.utils.FileInput._
 import jurisk.utils.Memoize
 import jurisk.utils.Parsing.StringOps
 
+import scala.annotation.tailrec
+
 object Advent21 {
   type N = Long
 
@@ -233,7 +235,7 @@ object Advent21 {
         remaining: Int,
       ): N =
         toPressDirectionalButton(from, to).map { possibility =>
-          directionalsRequired(possibility, remaining - 1)
+          directionalsRequiredNew(possibility, remaining - 1)
         }.min
 
       if (remaining == 0) {
@@ -259,6 +261,8 @@ object Advent21 {
       newResult
     }
 
+    val directionalsRequiredMemoized = Memoize.memoize2(directionalsRequired)
+
     // TODO: Move out
     def directionalsRequired(
       buttons: List[DirectionalButton],
@@ -267,21 +271,21 @@ object Advent21 {
       if (remaining == 0) {
         buttons.length
       } else {
-        expandResults(buttons).map { possibility =>
-          directionalsRequired(possibility, remaining - 1)
-        }.min
+        directionalsRequiredMemoized(expandResults(buttons), remaining - 1)
       }
 
     def bestHumanPressesLength(
       robotDirectionalKeyboards: Int
     ): N =
       firstLevelPresses()
-        .map(list => directionalsRequired(list, robotDirectionalKeyboards))
+        .map(list =>
+          directionalsRequiredMemoized(list, robotDirectionalKeyboards)
+        )
         .min
 
     def expandResults(
       list: List[DirectionalButton]
-    ): Set[List[DirectionalButton]] = {
+    ): List[DirectionalButton] = {
       def costEstimate(presses: List[DirectionalButton]): N =
         presses.sliding2.map { case (a, b) =>
           toPressDirectionalButton(a, b).map(_.length).min
@@ -289,13 +293,15 @@ object Advent21 {
 
       def selectBest(
         choices: Set[List[DirectionalButton]]
-      ): Set[List[DirectionalButton]] = {
+      ): List[DirectionalButton] = {
         val best         = choices.map(_.length).min
         val validChoices = choices.filter(_.length == best)
-        Set(validChoices.minBy(costEstimate))
+        validChoices.minBy(costEstimate)
       }
 
-      selectBest(expand(list))
+      val result = selectBest(expand(list))
+      println(s"Expanded ${list.size} to ${result.size}")
+      result
     }
   }
 
