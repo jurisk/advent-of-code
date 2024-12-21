@@ -259,8 +259,6 @@ object Advent21 {
       newResult
     }
 
-    lazy val directionalsRequiredMemoized = Memoize.memoize2(directionalsRequired)
-
     // TODO: Move out
     def directionalsRequired(
       buttons: List[DirectionalButton],
@@ -270,7 +268,7 @@ object Advent21 {
         buttons.length
       } else {
         expandResults(buttons).map { possibility =>
-          directionalsRequiredMemoized(possibility, remaining - 1)
+          directionalsRequired(possibility, remaining - 1)
         }.min
       }
 
@@ -278,17 +276,23 @@ object Advent21 {
       robotDirectionalKeyboards: Int
     ): N =
       firstLevelPresses()
-        .map(list => directionalsRequiredMemoized(list, robotDirectionalKeyboards))
+        .map(list => directionalsRequired(list, robotDirectionalKeyboards))
         .min
 
     def expandResults(
       list: List[DirectionalButton]
     ): Set[List[DirectionalButton]] = {
+      def costEstimate(presses: List[DirectionalButton]): N =
+        presses.sliding2.map { case (a, b) =>
+          toPressDirectionalButton(a, b).map(_.length).min
+        }.sum
+
       def selectBest(
         choices: Set[List[DirectionalButton]]
       ): Set[List[DirectionalButton]] = {
-        val best = choices.map(_.length).min
-        choices.filter(_.length == best)
+        val best         = choices.map(_.length).min
+        val validChoices = choices.filter(_.length == best)
+        Set(validChoices.minBy(costEstimate))
       }
 
       selectBest(expand(list))
