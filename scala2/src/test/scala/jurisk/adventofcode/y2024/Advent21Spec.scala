@@ -9,8 +9,15 @@ class Advent21Spec extends AnyFreeSpec {
   private def realData = parseFile(fileName(""))
 
   "part 1" - {
+    "test 029A" in {
+        val code = Code("029A")
+        code.humanPresses.length shouldEqual 68
+        code.numericPart shouldEqual 29
+        code.complexity shouldEqual 68 * 29
+    }
+
     "test" in {
-      part1(testData) shouldEqual 0
+      part1(testData) shouldEqual 126384
     }
 
     "real" in {
