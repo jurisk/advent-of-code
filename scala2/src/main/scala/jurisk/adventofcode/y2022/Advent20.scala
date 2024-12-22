@@ -1,5 +1,6 @@
 package jurisk.adventofcode.y2022
 
+import jurisk.utils.CollectionOps.SeqOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
@@ -34,8 +35,7 @@ object Advent20 {
     val vector  = Vector.fill(timesToMix)(indices).flatten
 
     val result = vector.foldLeft(indices) { case (acc, idx) =>
-      val index = acc.indexOf(idx)
-      require(index != -1)
+      val index = acc.firstIndexOf(idx).getOrElse("Not found".fail)
       moveNumber(acc, index, lookup(idx))
     }
 
@@ -49,8 +49,7 @@ object Advent20 {
   ): Long = {
     val mixed: Vector[Long] = mix(lookup.map(_ * decryptionKey), timesToMix)
     require(mixed.length == lookup.length)
-    val indexOf0            = mixed.indexOf(0L)
-    require(indexOf0 != -1)
+    val indexOf0            = mixed.firstIndexOf(0L).getOrElse("Not found".fail)
     List(1000, 2000, 3000).map { x =>
       mixed((indexOf0 + x) % mixed.length)
     }.sum

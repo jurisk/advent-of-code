@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2022
 
 import jurisk.adventofcode.y2022.Advent13.Packet.Lst
 import jurisk.adventofcode.y2022.Advent13.Packet.Nmb
+import jurisk.utils.CollectionOps.SeqOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import mouse.all._
@@ -100,8 +101,8 @@ object Advent13 {
 
     val sorted = allPackets.sorted
 
-    val indexA = sorted.indexOf(DividerA)
-    val indexB = sorted.indexOf(DividerB)
+    val indexA = sorted.firstIndexOfUnsafe(DividerA)
+    val indexB = sorted.firstIndexOfUnsafe(DividerB)
 
     (indexA + 1) * (indexB + 1)
   }

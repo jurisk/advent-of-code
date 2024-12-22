@@ -1,5 +1,6 @@
 package jurisk.adventofcode.y2022
 
+import jurisk.utils.CollectionOps.CollectionStringOps
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput.readLineGroups
 import jurisk.utils.Parsing.StringOps
@@ -55,8 +56,8 @@ object Advent05 {
 
         SortedMap.from {
           stackIdChars map { stackIdChar =>
-            val index    = stackIdLine.indexOf(stackIdChar)
-            require(index != -1)
+            val index    =
+              stackIdLine.firstIndexOf(stackIdChar).getOrElse("Not found".fail)
             val contents = stackContents.map(_.lift(index))
             (
               stackIdChar - '0',
