@@ -53,7 +53,7 @@ class Advent22Spec extends AnyFreeSpec {
     }
 
     "theMap" in {
-      val seq: List[N] = List(-2, 1, -1, 3)
+      val seq: IndexedSeq[N] = IndexedSeq(-2, 1, -1, 3)
       createBananaMap(1).get(seq) shouldEqual Some(7)
       createBananaMap(2).get(seq) shouldEqual Some(7)
       createBananaMap(3).get(seq) shouldEqual None

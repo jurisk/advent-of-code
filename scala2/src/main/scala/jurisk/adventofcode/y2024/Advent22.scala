@@ -5,7 +5,6 @@ import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 import scala.annotation.tailrec
-import scala.collection.immutable.ArraySeq
 import scala.collection.mutable.ArrayBuffer
 
 object Advent22 {
@@ -63,24 +62,25 @@ object Advent22 {
     None
   }
 
-  def createBananaMap(secret: N): Map[List[N], N] = {
-    var map: Map[List[N], N] = Map.empty
-    val (bananas, diffs)     = bananasAndDiffs(secret)
-    diffs.sliding(SequenceLength).zipWithIndex.foreach { case (diffs4, i) =>
-      val result    = bananas(i + SequenceLength)
-      val diffsList = diffs4.toList
-      map = map.updatedWith(diffsList)(_.getOrElse(result).some)
-    }
-    map
+  def createBananaMap(secret: N): Map[IndexedSeq[N], N] = {
+    val (bananas, diffs) = bananasAndDiffs(secret)
+
+    diffs
+      .sliding(SequenceLength)
+      .zipWithIndex
+      .foldLeft(Map.empty[IndexedSeq[N], N]) { case (acc, (diffs, i)) =>
+        val result = bananas(i + SequenceLength)
+        acc.updatedWith(diffs)(_.getOrElse(result).some)
+      }
   }
 
   def part1(data: Input): N =
     data.map(n => nthSecretNumber(n, 2000)).sum
 
   def part2(data: Input): N = {
-    val maps                           = data.map(createBananaMap)
-    val keys                           = maps.flatMap(_.keys).toSet
-    def bananasForKey(key: List[N]): N = maps.flatMap(_.get(key)).sum
+    val maps                                 = data.map(createBananaMap)
+    val keys                                 = maps.flatMap(_.keys).toSet
+    def bananasForKey(key: IndexedSeq[N]): N = maps.flatMap(_.get(key)).sum
     keys.map(bananasForKey).max
   }
 
