@@ -4,31 +4,31 @@ import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent22 {
-  type Input = List[Command]
+  type Input = List[N]
   type N     = Long
 
-  sealed trait Command extends Product with Serializable
-  object Command {
-    case object Noop                      extends Command
-    final case class Something(
-      values: List[N]
-    ) extends Command
-    final case class Other(value: String) extends Command
+  def parse(input: String): Input =
+    input.parseLines(_.toLong)
 
-    def parse(s: String): Command =
-      s match {
-        case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractLongList)
-        case s if s.nonEmpty   => Other(s)
-        case _                 => s.failedToParse
-      }
+  def mixPrune(a: N, b: N): N =
+    (a ^ b) % 16777216
+
+  def next(n: N): N = {
+    val a = mixPrune(n * 64, n)
+    val b = mixPrune(a / 32, a)
+    val c = mixPrune(b * 2048, b)
+    c
   }
 
-  def parse(input: String): Input =
-    input.parseLines(Command.parse)
+  def nthSecretNumber(n: N, nth: Int): N = {
+    var current = n
+    for (_ <- 0 until nth)
+      current = next(current)
+    current
+  }
 
   def part1(data: Input): N =
-    0
+    data.map(n => nthSecretNumber(n, 2000)).sum
 
   def part2(data: Input): N =
     0
