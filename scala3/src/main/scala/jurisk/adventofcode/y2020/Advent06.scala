@@ -4,8 +4,6 @@ import cats.implicits.*
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.MultiLineAdventApp
 
-import scala.io.Source
-
 type Answer = Char
 type Form = Set[Answer]
 type Group = Set[Form]

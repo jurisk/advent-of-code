@@ -1,11 +1,8 @@
 package jurisk.adventofcode.y2020
 
-import cats.effect.*
 import cats.implicits.*
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.SingleLineAdventApp
-
-import scala.io.Source
 
 object Advent05 extends SingleLineAdventApp[Int, Int, Int]:
   override val year: Int = 2020

@@ -54,7 +54,7 @@ trait SingleLineAdventApp[TestCase, Output1, Output2] extends AdventApp[TestCase
     (lines map parseLine).sequence
 
 trait MultiLineAdventApp[TestCase, Output1, Output2] extends AdventApp[TestCase, Output1, Output2]:
-  def parseLines(line: List[String]): Either[ErrorMessage, TestCase]
+  def parseLines(lines: List[String]): Either[ErrorMessage, TestCase]
 
   def parseTestCases(lines: List[String]): Either[ErrorMessage, List[TestCase]] =
     lines

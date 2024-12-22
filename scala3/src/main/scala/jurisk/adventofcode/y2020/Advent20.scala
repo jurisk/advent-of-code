@@ -1,14 +1,20 @@
 package jurisk.adventofcode.y2020
 
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.MultiLineAdventApp
+import jurisk.adventofcode.y2020.Advent20.{TileData, TileId}
+import cats.implicits.*
 import scala.annotation.tailrec
-import scala.io.Source
 import scala.math.sqrt
 
-object Advent20 extends App:
+object Advent20 extends MultiLineAdventApp[(TileId, TileData), Long, Int]:
+  override val year: TileId = 2020
+  override val exercise: TileId = 20
+
   opaque type TileId = Int
 
   opaque type Edge = String
-  type Pixel = Char
+  private type Pixel = Char
 
   final case class TileData(lines: List[String]):
     override def toString: String = "\n" + lines.mkString("\n") + "\n"
@@ -74,25 +80,6 @@ object Advent20 extends App:
     case F270
 
   final case class OrientedTile(orientation: Orientation, tileId: TileId)
-
-  private def readTiles(fileName: String): Map[TileId, TileData] =
-    val TileIdRe = """Tile (\d+):""".r
-    def parseLines(lines: List[String]): (TileId, TileData) = lines match
-      case Nil => sys.error("Empty lines")
-      case x :: xs =>
-        val tileId: Int = x match
-          case TileIdRe(id) => id.toInt
-          case _ => sys.error("Failed to match $x")
-        (tileId, TileData(xs))
-
-    Source
-      .fromResource(fileName)
-      .getLines()
-      .mkString("\n")
-      .split("\n\n")
-      .map(_.split("\n").toList)
-      .map(parseLines)
-      .toMap
 
   private def findTopLeftCorner(tiles: Map[TileId, TileData]): OrientedTile =
     val allEdges = tiles.values.flatMap(_.allEdges)
@@ -235,18 +222,26 @@ object Advent20 extends App:
     )
   )
 
-  def run(fileName: String, expected1: Long, expected2: Int): Unit =
-    val tiles = readTiles(fileName)
-    val arranged = arrangeTiles(tiles)
-    val solution1 = solve1(arranged)
-    println(solution1)
-    assert(solution1 == expected1)
+  private val TileIdRe = """Tile (\d+):""".r
+
+  override def parseLines(lines: List[String]): Either[ErrorMessage, (TileId, TileData)] =
+    lines match
+      case Nil => ErrorMessage("Empty lines").asLeft
+      case x :: xs =>
+        val tileId: Int = x match
+          case TileIdRe(id) => id.toInt
+          case _ => sys.error("Failed to match $x")
+        (tileId, TileData(xs)).asRight
+
+  override def solution1(input: List[(TileId, TileData)]): Long = {
+    val tiles = input.toMap
+    val arranged = arrangeTiles(input.toMap)
+    solve1(arranged)
+  }
+
+  override def solution2(input: List[(TileId, TileData)]): TileId = {
+    val tiles = input.toMap
+    val arranged = arrangeTiles(input.toMap)
     val merged = mergeArrangement(tiles, arranged)
-    val solution2 = solve2(monster, merged)
-    println(solution2)
-    assert(solution2 == expected2)
-
-  run("2020/20-test.txt", 20899048083289L, 273)
-  run("2020/20.txt", 60145080587029L, 1901)
-
-  println("Passed")
+    solve2(monster, merged)
+  }
