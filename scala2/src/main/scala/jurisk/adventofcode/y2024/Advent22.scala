@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2024
 
 import cats.implicits.catsSyntaxOptionId
+import jurisk.utils.CollectionUtils.mergeMaps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -77,12 +78,8 @@ object Advent22 {
   def part1(data: Input): N =
     data.map(n => nthSecretNumber(n, 2000)).sum
 
-  def part2(data: Input): N = {
-    val maps                                 = data.map(createBananaMap)
-    val keys                                 = maps.flatMap(_.keys).toSet
-    def bananasForKey(key: IndexedSeq[N]): N = maps.flatMap(_.get(key)).sum
-    keys.map(bananasForKey).max
-  }
+  def part2(data: Input): N =
+    mergeMaps(data.map(createBananaMap)).values.map(_.sum).max
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
