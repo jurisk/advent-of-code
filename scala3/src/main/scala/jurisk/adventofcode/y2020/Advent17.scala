@@ -7,7 +7,7 @@ import jurisk.adventofcode.y2020.Advent17.Coordinates.{Coordinates3D, Coordinate
 
 import scala.annotation.targetName
 
-object Advent17 extends SingleLineAdventApp[List[Boolean], Int]:
+object Advent17 extends SingleLineAdventApp[List[Boolean], Int, Int]:
   val year: Int = 2020
   val exercise: Int = 17
 

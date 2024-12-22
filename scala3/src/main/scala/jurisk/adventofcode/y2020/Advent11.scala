@@ -7,7 +7,7 @@ import jurisk.adventofcode.y2020.Advent11.{Line, Seat}
 
 import scala.annotation.tailrec
 
-object Advent11 extends SingleLineAdventApp[Line, Int]:
+object Advent11 extends SingleLineAdventApp[Line, Int, Int]:
   val year: Int = 2020
   val exercise: Int = 11
 

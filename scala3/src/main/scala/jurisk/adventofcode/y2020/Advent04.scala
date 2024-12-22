@@ -7,7 +7,7 @@ import jurisk.adventofcode.y2020.Advent04.Passport
 
 import scala.util.Try
 
-object Advent04 extends MultiLineAdventApp[Passport, Int]:
+object Advent04 extends MultiLineAdventApp[Passport, Int, Int]:
   override val year: Int = 2020
   override val exercise: Int = 4
 

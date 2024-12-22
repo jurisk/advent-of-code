@@ -5,10 +5,10 @@ import jurisk.adventofcode.SingleLineAdventApp
 import jurisk.adventofcode.y2020.Advent24.Flip
 import cats.implicits.*
 
-object Advent24 extends SingleLineAdventApp[Flip, Int]:
+object Advent24 extends SingleLineAdventApp[Flip, Int, Int]:
   override val year: Int = 2020
   override val exercise: Int = 24
-  
+
   enum Move:
     case E
     case SE
@@ -56,7 +56,7 @@ object Advent24 extends SingleLineAdventApp[Flip, Int]:
 
     private def nextDay: Field = Field(interestingTiles.filter(willSurvive))
     def days(n: Int): Field = (0 until n).foldLeft(this)((acc, _) => acc.nextDay)
-  
+
   override def parseLine(line: String): Either[ErrorMessage, Flip] = {
     def parseMoves(line: List[Char]): List[Move] = line match
       case Nil => Nil
@@ -67,7 +67,7 @@ object Advent24 extends SingleLineAdventApp[Flip, Int]:
       case 'n' :: 'w' :: rem => Move.NW :: parseMoves(rem)
       case 'n' :: 'e' :: rem => Move.NE :: parseMoves(rem)
       case _ => sys.error(s"Unexpected: $line")
-      
+
     Flip(parseMoves(line.toList)).asRight
   }
 

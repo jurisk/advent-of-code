@@ -4,7 +4,7 @@ import cats.implicits._
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.SingleLineAdventApp
 
-object Advent03 extends SingleLineAdventApp[String, Long]:
+object Advent03 extends SingleLineAdventApp[String, Long, Long]:
   override val year: Int = 2020
   override val exercise: Int = 3
 

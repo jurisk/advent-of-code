@@ -3,7 +3,7 @@ package jurisk.adventofcode.y2020
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.SingleLineAdventApp
 
-object Advent01 extends SingleLineAdventApp[Int, Int]:
+object Advent01 extends SingleLineAdventApp[Int, Int, Int]:
   val year: Int = 2020
   val exercise: Int = 1
 

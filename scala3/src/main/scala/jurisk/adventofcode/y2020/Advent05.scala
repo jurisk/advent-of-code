@@ -7,7 +7,7 @@ import jurisk.adventofcode.SingleLineAdventApp
 
 import scala.io.Source
 
-object Advent05 extends SingleLineAdventApp[Int, Int]:
+object Advent05 extends SingleLineAdventApp[Int, Int, Int]:
   override val year: Int = 2020
   override val exercise: Int = 5
 

@@ -12,7 +12,7 @@ type Group = Set[Form]
 
 type MergeFunction[T] = (Set[T], Set[T]) => Set[T]
 
-object Advent06 extends MultiLineAdventApp[Group, Int]:
+object Advent06 extends MultiLineAdventApp[Group, Int, Int]:
   val year: Int = 2020
   val exercise: Int = 6
 

@@ -5,7 +5,7 @@ import jurisk.adventofcode.SingleLineAdventApp
 import cats.implicits.*
 import jurisk.adventofcode.y2020.Advent02.Item
 
-object Advent02 extends SingleLineAdventApp[Item, Int]:
+object Advent02 extends SingleLineAdventApp[Item, Int, Int]:
   val year: Int = 2020
   val exercise: Int = 2
 

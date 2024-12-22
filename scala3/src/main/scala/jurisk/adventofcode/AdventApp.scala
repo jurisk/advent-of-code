@@ -11,7 +11,7 @@ object AdventApp:
   object ErrorMessage:
     def apply(message: String): ErrorMessage = message
 
-sealed private trait AdventApp[TestCase, Output] extends IOApp:
+sealed private trait AdventApp[TestCase, Output1, Output2] extends IOApp:
   def year: Int
   def exercise: Int
 
@@ -19,8 +19,8 @@ sealed private trait AdventApp[TestCase, Output] extends IOApp:
 
   def parseTestCases(lines: List[String]): Either[ErrorMessage, List[TestCase]]
 
-  def solution1(input: List[TestCase]): Output
-  def solution2(input: List[TestCase]): Output
+  def solution1(input: List[TestCase]): Output1
+  def solution2(input: List[TestCase]): Output2
 
   def parseRealData: IO[Either[ErrorMessage, List[TestCase]]] =
     parseData(makeFilePath(none))
@@ -35,7 +35,7 @@ sealed private trait AdventApp[TestCase, Output] extends IOApp:
     yield testCases
 
   def run(args: List[String]): IO[ExitCode] = {
-    def printOutput(answer: Either[ErrorMessage, Output]): IO[Unit] =
+    def printOutput[Output](answer: Either[ErrorMessage, Output]): IO[Unit] =
       IO(println(answer.bimap(x => s"Error: $x", _.toString).merge))
 
     for
@@ -47,13 +47,13 @@ sealed private trait AdventApp[TestCase, Output] extends IOApp:
     yield ExitCode.Success
   }
 
-trait SingleLineAdventApp[TestCase, Output] extends AdventApp[TestCase, Output]:
+trait SingleLineAdventApp[TestCase, Output1, Output2] extends AdventApp[TestCase, Output1, Output2]:
   def parseLine(line: String): Either[ErrorMessage, TestCase]
 
-  def parseTestCases(lines: List[String]): Either[ErrorMessage, List[TestCase]] = 
+  def parseTestCases(lines: List[String]): Either[ErrorMessage, List[TestCase]] =
     (lines map parseLine).sequence
 
-trait MultiLineAdventApp[TestCase, Output] extends AdventApp[TestCase, Output]:
+trait MultiLineAdventApp[TestCase, Output1, Output2] extends AdventApp[TestCase, Output1, Output2]:
   def parseLines(line: List[String]): Either[ErrorMessage, TestCase]
 
   def parseTestCases(lines: List[String]): Either[ErrorMessage, List[TestCase]] =
