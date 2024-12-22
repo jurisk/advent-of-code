@@ -4,33 +4,39 @@ import cats.implicits.catsSyntaxOptionId
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
+import scala.annotation.tailrec
+import scala.collection.immutable.ArraySeq
 import scala.collection.mutable.ArrayBuffer
 
 object Advent22 {
   type Input = List[N]
   type N     = Long
+  private val SequenceLength = 4
 
   def parse(input: String): Input =
     input.parseLines(_.toLong)
 
-  def mixPrune(a: N, b: N): N =
-    (a ^ b) % 16777216
-
   def next(n: N): N = {
+    def mixPrune(a: N, b: N): N =
+      (a ^ b) % 16777216
+
     val a = mixPrune(n * 64, n)
     val b = mixPrune(a / 32, a)
-    val c = mixPrune(b * 2048, b)
-    c
+    mixPrune(b * 2048, b)
   }
 
-  def nthSecretNumber(n: N, nth: Int): N = {
-    var current = n
-    for (_ <- 0 until nth)
-      current = next(current)
-    current
-  }
+  @tailrec
+  def nthSecretNumber(n: N, nth: Int): N =
+    if (nth == 0) {
+      n
+    } else {
+      nthSecretNumber(next(n), nth - 1)
+    }
 
-  def bananasAndDiffs(secret: N, howMany: Int = 2000): (Array[N], Array[N]) = {
+  def bananasAndDiffs(
+    secret: N,
+    howMany: Int = 2000,
+  ): (IndexedSeq[N], IndexedSeq[N]) = {
     val bananas = ArrayBuffer.fill(howMany + 1)(Long.MaxValue)
     bananas(0) = secret
     for (i <- 0 until howMany)
@@ -40,18 +46,18 @@ object Advent22 {
     for (i <- 0 until howMany)
       diffs(i) = bananas(i + 1) % 10 - bananas(i) % 10
 
-    (bananas.map(_ % 10).toArray, diffs.toArray)
+    (bananas.map(_ % 10).toIndexedSeq, diffs.toIndexedSeq)
   }
 
   def bananasFromSequence(
-    bananasAndDiffs: (Array[N], Array[N]),
-    sequence: Array[N],
+    bananasAndDiffs: (IndexedSeq[N], IndexedSeq[N]),
+    sequence: IndexedSeq[N],
   ): Option[N] = {
-    assert(sequence.length == 4)
+    assert(sequence.length == SequenceLength)
     val (bananas, diffs) = bananasAndDiffs
-    diffs.sliding(4).zipWithIndex.foreach { case (diffs4, i) =>
-      if (diffs4.sameElements(sequence)) {
-        return Some(bananas(i + 4))
+    diffs.sliding(SequenceLength).zipWithIndex.foreach { case (diffs, i) =>
+      if (diffs == sequence) {
+        return bananas(i + SequenceLength).some
       }
     }
     None
@@ -60,12 +66,10 @@ object Advent22 {
   def createBananaMap(secret: N): Map[List[N], N] = {
     var map: Map[List[N], N] = Map.empty
     val (bananas, diffs)     = bananasAndDiffs(secret)
-    diffs.sliding(4).zipWithIndex.foreach { case (diffs4, i) =>
-      val result    = bananas(i + 4)
+    diffs.sliding(SequenceLength).zipWithIndex.foreach { case (diffs4, i) =>
+      val result    = bananas(i + SequenceLength)
       val diffsList = diffs4.toList
-      if (!map.contains(diffsList)) {
-        map = map + (diffsList -> result)
-      }
+      map = map.updatedWith(diffsList)(_.getOrElse(result).some)
     }
     map
   }
@@ -74,15 +78,9 @@ object Advent22 {
     data.map(n => nthSecretNumber(n, 2000)).sum
 
   def part2(data: Input): N = {
-    val maps = data.map(createBananaMap)
-
-    val keys = maps.flatMap(_.keys).toSet
-
-    def bananasForKey(key: List[N]): N =
-      maps.flatMap { map =>
-        map.get(key)
-      }.sum
-
+    val maps                           = data.map(createBananaMap)
+    val keys                           = maps.flatMap(_.keys).toSet
+    def bananasForKey(key: List[N]): N = maps.flatMap(_.get(key)).sum
     keys.map(bananasForKey).max
   }
 

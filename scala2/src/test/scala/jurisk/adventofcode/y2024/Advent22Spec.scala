@@ -42,10 +42,10 @@ class Advent22Spec extends AnyFreeSpec {
     "bananasFromSequence" in {
       bananasFromSequence(
         bananasAndDiffs(123),
-        Array(-1, -2, 0, 2),
+        IndexedSeq(-1, -2, 0, 2),
       ) shouldEqual Some(6)
 
-      val seq: Array[N] = Array(-2, 1, -1, 3)
+      val seq: IndexedSeq[N] = IndexedSeq(-2, 1, -1, 3)
       bananasFromSequence(bananasAndDiffs(1), seq) shouldEqual Some(7)
       bananasFromSequence(bananasAndDiffs(2), seq) shouldEqual Some(7)
       bananasFromSequence(bananasAndDiffs(3), seq) shouldEqual None
