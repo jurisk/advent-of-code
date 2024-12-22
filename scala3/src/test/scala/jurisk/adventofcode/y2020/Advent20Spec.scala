@@ -1,17 +1,13 @@
 package jurisk.adventofcode.y2020
 
-import cats.effect.testing.scalatest.AsyncIOSpec
-import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers.*
 import Advent20.*
+import jurisk.adventofcode.AdventAppSpec
 
-class Advent20Spec extends AsyncFreeSpec with AsyncIOSpec:
-  private val testData = parseTestData("00").unsafeRunSync().getOrElse(sys.error("failed"))
-  private val realData = parseRealData.unsafeRunSync().getOrElse(sys.error("failed"))
-
+class Advent20Spec extends AdventAppSpec(Advent20):
   "solution1" - {
     "test" in {
-      solution1(testData) shouldEqual 20899048083289L
+      solution1(testData00) shouldEqual 20899048083289L
     }
 
     "real" in {
@@ -21,7 +17,7 @@ class Advent20Spec extends AsyncFreeSpec with AsyncIOSpec:
 
   "solution2" - {
     "test" in {
-      solution2(testData) shouldEqual 273
+      solution2(testData00) shouldEqual 273
     }
 
     "real" in {

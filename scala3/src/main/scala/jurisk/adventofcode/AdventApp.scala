@@ -28,7 +28,7 @@ sealed private trait AdventApp[TestCase, Output1, Output2] extends IOApp:
   def parseTestData(suffix: String): IO[Either[ErrorMessage, List[TestCase]]] =
     parseData(makeFilePath(s"test-$suffix".some))
 
-  def parseData(path: String): IO[Either[ErrorMessage, List[TestCase]]] =
+  private def parseData(path: String): IO[Either[ErrorMessage, List[TestCase]]] =
     for
       lines <- IO(Source.fromResource(path).getLines().toList)
       testCases = parseTestCases(lines)
