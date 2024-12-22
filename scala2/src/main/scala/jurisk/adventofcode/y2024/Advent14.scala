@@ -1,9 +1,12 @@
 package jurisk.adventofcode.y2024
 
-import cats.implicits.catsSyntaxEitherId
-import cats.implicits.catsSyntaxOptionId
-import cats.implicits.none
-import cats.implicits.toFunctorOps
+import cats.implicits.{
+  catsSyntaxEitherId,
+  catsSyntaxOptionId,
+  none,
+  toFunctorOps,
+  toUnorderedFoldableOps,
+}
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.NE
@@ -100,8 +103,6 @@ object Advent14 {
 
     val (finalCounter, result) = Simulation.runWithIterationCount(field) {
       case (state, counter) =>
-        println(s"counter: $counter")
-
         var newState = Field2D.ofSize(wide, tall, BitSet.empty)
         state.allCoordsAndValues.foreach { case (c, set) =>
           set foreach { robotId =>
@@ -135,7 +136,8 @@ object Advent14 {
   }
 
   def part2(robots: Input, wide: Int, tall: Int): N = {
-    def isChristmasTree(field: Field2D[BitSet]): Boolean = {
+    def isChristmasTreeUsingSegments(field: Field2D[BitSet]): Boolean = {
+      // Could also do some clustering here
       val segments    = calculateSegments(field)
       val symmetry    = segments(NW) + segments(SW) - segments(SE) - segments(NE)
       val bottomHeavy =
@@ -144,6 +146,17 @@ object Advent14 {
       // Found empirically
       (symmetry == 0) && (bottomHeavy > 200)
     }
+
+    def isChristmasTreeUsingNoOverlaps(field: Field2D[BitSet]): Boolean =
+      field.forall { set =>
+        set.size <= 1
+      }
+
+    def isChristmasTree(field: Field2D[BitSet]): Boolean =
+      // Calculating Shannon entropy is another avenue I didn't explore
+      isChristmasTreeUsingNoOverlaps(field) && isChristmasTreeUsingSegments(
+        field
+      )
 
     val (counter, result) =
       solve(robots, wide, tall, (_, state) => isChristmasTree(state))

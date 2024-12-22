@@ -23,11 +23,11 @@ class Advent18Spec extends AnyFreeSpec {
 
   "part 2" - {
     "test" in {
-      part2(testData, Coords2D.Zero, TestEnd) shouldEqual "6,1"
+      part2(testData, 12, Coords2D.Zero, TestEnd) shouldEqual "6,1"
     }
 
-    "real" ignore {
-      part2(realData, Coords2D.Zero, RealEnd) shouldEqual "56,29"
+    "real" in {
+      part2(realData, 1024, Coords2D.Zero, RealEnd) shouldEqual "56,29"
     }
   }
 }

@@ -1,5 +1,6 @@
 package jurisk.adventofcode.y2024
 
+import cats.data.NonEmptyList
 import cats.implicits.catsSyntaxOptionId
 import cats.implicits.none
 import jurisk.algorithms.pathfinding.AStar
@@ -23,7 +24,7 @@ object Advent18 {
     set: ImmutableBitSet[Coords2D],
     start: Coords2D,
     end: Coords2D,
-  ): Option[N] = {
+  ): Option[(NonEmptyList[Coords2D], N)] = {
     val area                                           = Area2D(start, end)
     def neighbours(c: Coords2D): List[(Coords2D, Int)] =
       c.adjacent4
@@ -34,39 +35,51 @@ object Advent18 {
     def heuristic(c: Coords2D): Int                    =
       c.manhattanDistance(end)
     AStar.aStar[Coords2D, Int](start, neighbours, heuristic, _ == end).map {
-      case (_, distance) => distance
+      case (path, distance) => (path, distance)
     }
   }
 
   def part1(data: Input, take: Int, start: Coords2D, end: Coords2D): N = {
     val area                            = Area2D(start, end)
     implicit val toInt: ToInt[Coords2D] = area.coordsToInt
-    val busy                            = ImmutableBitSet.fromSpecific(data.take(take))
-    solution(busy, start, end).getOrElse("No solution".fail)
+
+    val busy = ImmutableBitSet.fromSpecific(data.take(take))
+    solution(busy, start, end)
+      .map { case (_, distance) => distance }
+      .getOrElse("No solution".fail)
   }
 
-  def part2(data: Input, start: Coords2D, end: Coords2D): String = {
-    @tailrec
-    def f(remaining: Input, busy: ImmutableBitSet[Coords2D]): Option[Coords2D] =
-      remaining match {
-        case h :: t =>
-          val newBusy = busy + h
-          val failed  = solution(newBusy, start, end).isEmpty
-          if (failed) {
-            h.some
-          } else {
-            f(t, newBusy)
-          }
-
-        case Nil => none
-      }
-
+  def part2(data: Input, take: Int, start: Coords2D, end: Coords2D): String = {
     val area                            = Area2D(start, end)
     implicit val toInt: ToInt[Coords2D] = area.coordsToInt
 
-    f(data, ImmutableBitSet.empty).map(c =>
-      s"${c.x},${c.y}"
-    ) getOrElse ("No solution".fail)
+    val busy        = ImmutableBitSet.fromSpecific(data.take(take))
+    val initialPath = solution(busy, start, end)
+      .map { case (path, _) => path }
+      .getOrElse("No initial solution".fail)
+
+    @tailrec
+    def updatePath(
+      busy: ImmutableBitSet[Coords2D],
+      path: NonEmptyList[Coords2D],
+      remaining: List[Coords2D],
+    ): Coords2D =
+      remaining match {
+        case Nil    => "No solution".fail
+        case h :: t =>
+          val newBusy = busy + h
+          if (path.iterator.contains(h)) {
+            solution(newBusy, start, end) match {
+              case Some((newPath, _)) => updatePath(newBusy, newPath, t)
+              case None               => h
+            }
+          } else {
+            updatePath(newBusy, path, t)
+          }
+      }
+
+    val c = updatePath(busy, initialPath, data.drop(take))
+    s"${c.x},${c.y}"
   }
 
   val RealEnd: Coords2D = Coords2D(70, 70)
@@ -81,6 +94,6 @@ object Advent18 {
     val realData: Input = parseFile(fileName(""))
 
     println(s"Part 1: ${part1(realData, 1024, Coords2D.Zero, RealEnd)}")
-    println(s"Part 2: ${part2(realData, Coords2D.Zero, RealEnd)}")
+    println(s"Part 2: ${part2(realData, 1024, Coords2D.Zero, RealEnd)}")
   }
 }
