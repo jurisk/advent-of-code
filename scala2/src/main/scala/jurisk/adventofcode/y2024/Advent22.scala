@@ -1,6 +1,7 @@
 package jurisk.adventofcode.y2024
 
 import cats.implicits.catsSyntaxOptionId
+import jurisk.utils.CollectionOps.IteratorOps
 import jurisk.utils.CollectionUtils.mergeMaps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -55,12 +56,10 @@ object Advent22 {
   ): Option[N] = {
     assert(sequence.length == SequenceLength)
     val (bananas, diffs) = bananasAndDiffs
-    diffs.sliding(SequenceLength).zipWithIndex.foreach { case (diffs, i) =>
-      if (diffs == sequence) {
-        return bananas(i + SequenceLength).some
-      }
-    }
-    None
+    diffs
+      .sliding(SequenceLength)
+      .firstIndexOf(sequence)
+      .map(i => bananas(i + SequenceLength))
   }
 
   def createBananaMap(secret: N): Map[IndexedSeq[N], N] = {

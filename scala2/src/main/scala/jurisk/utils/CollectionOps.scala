@@ -2,7 +2,7 @@ package jurisk.utils
 
 import cats.Eq
 import cats.implicits._
-import jurisk.utils.Parsing.StringOps
+import jurisk.utils.Parsing.{StringOps => ParsingStringOps}
 
 import scala.annotation.tailrec
 import scala.collection.immutable.ArraySeq
@@ -46,20 +46,33 @@ object CollectionOps {
       List.fill(times)(list).flatten
   }
 
+  private val NotFound = -1
+
+  private def excludeNotFound(index: Int): Option[Int] =
+    index.some.filter(_ != NotFound)
+
+  implicit class CollectionStringOps(s: String) {
+    def firstIndexOf(value: Char): Option[Int] =
+      excludeNotFound(s.indexOf(value))
+
+    def firstIndexWhere(p: Char => Boolean, from: Int = 0): Option[Int] =
+      excludeNotFound(s.indexWhere(p, from))
+  }
+
   implicit class SeqOps[T](seq: Seq[T]) {
-    private val NotFound = -1
-
     def firstIndexOf(value: T): Option[Int] =
-      seq.indexOf(value).some.filter(_ != NotFound)
+      excludeNotFound(seq.indexOf(value))
 
-    def firstIndexWhere(p: T => Boolean, from: Int = 0): Option[Int] = {
-      val result = seq.indexWhere(p, from)
-      if (result == -1) {
-        none
-      } else {
-        result.some
-      }
-    }
+    def firstIndexWhere(p: T => Boolean, from: Int = 0): Option[Int] =
+      excludeNotFound(seq.indexWhere(p, from))
+  }
+
+  implicit class IteratorOps[T](iterator: Iterator[T]) {
+    def firstIndexOf(value: T): Option[Int] =
+      excludeNotFound(iterator.indexOf(value))
+
+    def firstIndexWhere(p: T => Boolean, from: Int = 0): Option[Int] =
+      excludeNotFound(iterator.indexWhere(p, from))
   }
 
   implicit class IterableOnceOps[T](iterableOnce: IterableOnce[T]) {

@@ -8,6 +8,7 @@ import jurisk.adventofcode.y2018.Advent17.State.isSolid
 import jurisk.geometry.Coordinates2D
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Field2D
+import jurisk.utils.CollectionOps.SeqOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
@@ -121,21 +122,20 @@ object Advent17 {
       searchValue: T,
       offset: Int = 0,
       acc: List[(Int, Int)] = Nil,
-    ): List[(Int, Int)] = {
-      val start = vector.indexOf(searchValue)
-      if (start == -1) {
-        acc
-      } else {
-        val taken = vector.drop(start).takeWhile(_ == searchValue).length
-        val added = (offset + start, offset + start + taken - 1)
-        consecutiveRanges(
-          vector.drop(start + taken),
-          searchValue,
-          offset + start + taken,
-          added :: acc,
-        )
+    ): List[(Int, Int)] =
+      vector.firstIndexOf(searchValue) match {
+        case None        =>
+          acc
+        case Some(start) =>
+          val taken = vector.drop(start).takeWhile(_ == searchValue).length
+          val added = (offset + start, offset + start + taken - 1)
+          consecutiveRanges(
+            vector.drop(start + taken),
+            searchValue,
+            offset + start + taken,
+            added :: acc,
+          )
       }
-    }
   }
 
   private def parsePoints(s: String): Seq[Coords2D] =
