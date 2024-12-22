@@ -1,11 +1,14 @@
 package jurisk.adventofcode.y2020
 
-import jurisk.adventofcode.y2020.Advent24.Move
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.SingleLineAdventApp
+import jurisk.adventofcode.y2020.Advent24.Flip
+import cats.implicits.*
 
-import scala.annotation.tailrec
-import scala.io.Source
-
-object Advent24 extends App:
+object Advent24 extends SingleLineAdventApp[Flip, Int]:
+  override val year: Int = 2020
+  override val exercise: Int = 24
+  
   enum Move:
     case E
     case SE
@@ -53,8 +56,8 @@ object Advent24 extends App:
 
     private def nextDay: Field = Field(interestingTiles.filter(willSurvive))
     def days(n: Int): Field = (0 until n).foldLeft(this)((acc, _) => acc.nextDay)
-
-  private def readCommands(fileName: String): List[Flip] =
+  
+  override def parseLine(line: String): Either[ErrorMessage, Flip] = {
     def parseMoves(line: List[Char]): List[Move] = line match
       case Nil => Nil
       case 'e' :: rem => Move.E :: parseMoves(rem)
@@ -64,21 +67,14 @@ object Advent24 extends App:
       case 'n' :: 'w' :: rem => Move.NW :: parseMoves(rem)
       case 'n' :: 'e' :: rem => Move.NE :: parseMoves(rem)
       case _ => sys.error(s"Unexpected: $line")
+      
+    Flip(parseMoves(line.toList)).asRight
+  }
 
-    Source
-      .fromResource(fileName)
-      .getLines()
-      .map(x => Flip(parseMoves(x.toList)))
-      .toList
+  override def solution1(commands: List[Flip]): Int = {
+    Field().applyCommands(commands).black.size
+  }
 
-  def run(fileName: String, expected1: Int, expected2: Int): Unit =
-    val realCommands = readCommands(fileName)
-    val realResult = Field().applyCommands(realCommands)
-    println(realResult.black.size)
-    assert(realResult.black.size == expected1)
-    val realAfter100Days = realResult.days(100)
-    println(realAfter100Days.black.size)
-    assert(realAfter100Days.black.size == expected2)
-
-  run("2020/24-test.txt", 10, 2208)
-  run("2020/24.txt", 275, 3537)
+  override def solution2(commands: List[Flip]): Int = {
+    Field().applyCommands(commands).days(100).black.size
+  }
