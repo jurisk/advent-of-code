@@ -24,11 +24,16 @@ class Advent13Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
-    "test #0" in {
+    "test #0 Z3" ignore {
       val example  = testData.head
       val expected = Some(80 * 3 + 40)
       example.solve(Z3(Internal)) shouldEqual expected
       example.solve(Z3(External)) shouldEqual expected
+    }
+
+    "test #0 linear equations" in {
+      val example  = testData.head
+      val expected = Some(80 * 3 + 40)
       example.solve(LinearEquations) shouldEqual expected
     }
 

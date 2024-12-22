@@ -68,8 +68,10 @@ object Advent20 {
     def isEmpty(c: Coords2D): Boolean =
       field.at(c).contains(false)
 
+    val emptyCoords = field.allCoords.filter(isEmpty)
+
     (for {
-      c1   <- field.allCoords.filter(isEmpty)
+      c1   <- emptyCoords
       c2   <- c1.allCoordsWithinManhattanDistance(maxCheat)
       if isEmpty(c2)
       if c1 != c2

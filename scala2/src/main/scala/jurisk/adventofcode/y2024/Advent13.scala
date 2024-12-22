@@ -143,7 +143,7 @@ object Advent13 {
     input.parseSections(Machine.parse)
 
   def part1(data: Input): N =
-    data.flatMap(_.solve(BruteForce(100))).sum
+    data.flatMap(_.solve(LinearEquations)).sum
 
   def part2(data: Input): N = {
     val adjusted = data.map(m =>

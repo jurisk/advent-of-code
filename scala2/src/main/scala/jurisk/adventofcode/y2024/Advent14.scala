@@ -1,12 +1,10 @@
 package jurisk.adventofcode.y2024
 
-import cats.implicits.{
-  catsSyntaxEitherId,
-  catsSyntaxOptionId,
-  none,
-  toFunctorOps,
-  toUnorderedFoldableOps,
-}
+import cats.implicits.catsSyntaxEitherId
+import cats.implicits.catsSyntaxOptionId
+import cats.implicits.none
+import cats.implicits.toFunctorOps
+import cats.implicits.toUnorderedFoldableOps
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Direction2D
 import jurisk.geometry.Direction2D.NE
