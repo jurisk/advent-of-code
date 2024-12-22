@@ -29,12 +29,43 @@ class Advent22Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
+    "bananasAndDiffs" in {
+      val (bananas123, diffs123) = bananasAndDiffs(123)
+      bananas123.length shouldEqual 2001
+      diffs123.length shouldEqual 2000
+      bananas123.take(10) shouldEqual Array(3, 0, 6, 5, 4, 4, 6, 4, 4, 2)
+      bananas123.contains(Long.MaxValue) shouldEqual false
+      diffs123.take(9) shouldEqual Array(-3, 6, -1, -1, 0, 2, -2, 0, -2)
+      diffs123.contains(Long.MaxValue) shouldEqual false
+    }
+
+    "bananasFromSequence" in {
+      bananasFromSequence(
+        bananasAndDiffs(123),
+        Array(-1, -2, 0, 2),
+      ) shouldEqual Some(6)
+
+      val seq: Array[N] = Array(-2, 1, -1, 3)
+      bananasFromSequence(bananasAndDiffs(1), seq) shouldEqual Some(7)
+      bananasFromSequence(bananasAndDiffs(2), seq) shouldEqual Some(7)
+      bananasFromSequence(bananasAndDiffs(3), seq) shouldEqual None
+      bananasFromSequence(bananasAndDiffs(2024), seq) shouldEqual Some(9)
+    }
+
+    "theMap" in {
+      val seq: List[N] = List(-2, 1, -1, 3)
+      createBananaMap(1).get(seq) shouldEqual Some(7)
+      createBananaMap(2).get(seq) shouldEqual Some(7)
+      createBananaMap(3).get(seq) shouldEqual None
+      createBananaMap(2024).get(seq) shouldEqual Some(9)
+    }
+
     "test" in {
       part2(testData1) shouldEqual 7 + 7 + 9
     }
 
     "real" in {
-      part2(realData) shouldEqual 0
+      part2(realData) shouldEqual 1555
     }
   }
 }
