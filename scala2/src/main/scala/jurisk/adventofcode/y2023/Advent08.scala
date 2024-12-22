@@ -2,7 +2,7 @@ package jurisk.adventofcode.y2023
 
 import cats.implicits._
 import jurisk.math.lcmMany
-import jurisk.utils.CollectionOps.IndexedSeqOps
+import jurisk.utils.CollectionOps.{IndexedSeqOps, SeqOps}
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 import jurisk.utils.Simulation
@@ -48,14 +48,8 @@ object Advent08 {
     ): IndexedSeq[NodeId] =
       mappings.indices.filter(index => predicate(mapping(index).name))
 
-    def findNodeByName(name: NodeName): NodeId = {
-      val result = mappings.indexWhere(_.name === name)
-      if (result === -1) {
-        s"Did not find node $name".fail
-      } else {
-        result
-      }
-    }
+    def findNodeByName(name: NodeName): NodeId =
+      mappings.firstIndexWhereUnsafe(_.name === name)
 
     def mapping(nodeId: NodeId): Mapping = mappings(nodeId)
   }

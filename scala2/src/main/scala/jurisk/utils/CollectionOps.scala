@@ -60,8 +60,14 @@ object CollectionOps {
   }
 
   implicit class SeqOps[T](seq: Seq[T]) {
+    def firstIndexOfUnsafe(value: T): Int =
+      firstIndexOf(value).orFail(s"Value $value not found in $seq")
+
     def firstIndexOf(value: T): Option[Int] =
       excludeNotFound(seq.indexOf(value))
+
+    def firstIndexWhereUnsafe(p: T => Boolean, from: Int = 0): Int =
+      firstIndexWhere(p, from).orFail(s"Value not found in $seq")
 
     def firstIndexWhere(p: T => Boolean, from: Int = 0): Option[Int] =
       excludeNotFound(seq.indexWhere(p, from))

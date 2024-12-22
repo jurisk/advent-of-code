@@ -9,6 +9,7 @@ import jurisk.geometry.Direction2D.CardinalDirection2D
 import jurisk.geometry.Field2D
 import jurisk.math.absForWrappingAround
 import jurisk.math.lcm
+import jurisk.utils.CollectionOps.SeqOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Memoize.memoize1
 import jurisk.utils.Parsing.StringOps
@@ -75,9 +76,13 @@ object Advent24 {
     def parse(s: String): Maze = {
       val charField = Field2D.parseCharField(s)
 
-      val start = Coords2D.of(charField.firstRowValues.indexOf('.'), 0)
+      val start =
+        Coords2D.of(charField.firstRowValues.firstIndexOfUnsafe('.'), 0)
       val goal  =
-        Coords2D.of(charField.lastRowValues.indexOf('.'), charField.height - 1)
+        Coords2D.of(
+          charField.lastRowValues.firstIndexOfUnsafe('.'),
+          charField.height - 1,
+        )
 
       val blizzards = charField.entries.flatMap { case (c, ch) =>
         val direction = Direction2D.parseCaretToOption(ch)
