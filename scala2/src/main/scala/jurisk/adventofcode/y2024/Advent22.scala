@@ -63,9 +63,9 @@ object Advent22 {
   }
 
   def createBananaMap(secret: N): Map[IndexedSeq[N], N] = {
-    val (bananas, diffs) = bananasAndDiffs(secret)
+    val (bananas, allDiffs) = bananasAndDiffs(secret)
 
-    diffs
+    allDiffs
       .sliding(SequenceLength)
       .zipWithIndex
       .foldLeft(Map.empty[IndexedSeq[N], N]) { case (acc, (diffs, i)) =>
