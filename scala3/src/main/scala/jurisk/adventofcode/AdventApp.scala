@@ -11,27 +11,27 @@ object AdventApp:
   object ErrorMessage:
     def apply(message: String): ErrorMessage = message
 
-sealed private trait AdventApp[TestCase, Output1, Output2] extends IOApp:
+sealed private trait AdventApp[Input, Output1, Output2] extends IOApp:
   def year: Int
   def exercise: Int
 
   private def makeFilePath(suffix: Option[String]): String = f"$year/$exercise%02d${suffix.fold("")(s => s"-$s")}.txt"
 
-  def parseTestCases(lines: List[String]): Either[ErrorMessage, List[TestCase]]
+  def parseInput(lines: Iterator[String]): Either[ErrorMessage, Input]
 
-  def solution1(input: List[TestCase]): Output1
-  def solution2(input: List[TestCase]): Output2
+  def solution1(input: Input): Output1
+  def solution2(input: Input): Output2
 
-  def parseRealData: IO[Either[ErrorMessage, List[TestCase]]] =
+  def parseRealData: IO[Either[ErrorMessage, Input]] =
     parseData(makeFilePath(none))
 
-  def parseTestData(suffix: String): IO[Either[ErrorMessage, List[TestCase]]] =
+  def parseTestData(suffix: String): IO[Either[ErrorMessage, Input]] =
     parseData(makeFilePath(s"test-$suffix".some))
 
-  private def parseData(path: String): IO[Either[ErrorMessage, List[TestCase]]] =
+  private def parseData(path: String): IO[Either[ErrorMessage, Input]] =
     for
-      lines <- IO(Source.fromResource(path).getLines().toList)
-      testCases = parseTestCases(lines)
+      input <- IO(Source.fromResource(path).getLines())
+      testCases = parseInput(input)
     yield testCases
 
   def run(args: List[String]): IO[ExitCode] = {
@@ -47,16 +47,16 @@ sealed private trait AdventApp[TestCase, Output1, Output2] extends IOApp:
     yield ExitCode.Success
   }
 
-trait SingleLineAdventApp[TestCase, Output1, Output2] extends AdventApp[TestCase, Output1, Output2]:
+trait SingleLineAdventApp[TestCase, Output1, Output2] extends AdventApp[List[TestCase], Output1, Output2]:
   def parseLine(line: String): Either[ErrorMessage, TestCase]
 
-  def parseTestCases(lines: List[String]): Either[ErrorMessage, List[TestCase]] =
-    (lines map parseLine).sequence
+  def parseInput(lines: Iterator[String]): Either[ErrorMessage, List[TestCase]] =
+    (lines.toList map parseLine).sequence
 
-trait MultiLineAdventApp[TestCase, Output1, Output2] extends AdventApp[TestCase, Output1, Output2]:
+trait MultiLineAdventApp[TestCase, Output1, Output2] extends AdventApp[List[TestCase], Output1, Output2]:
   def parseLines(lines: List[String]): Either[ErrorMessage, TestCase]
 
-  def parseTestCases(lines: List[String]): Either[ErrorMessage, List[TestCase]] =
+  def parseInput(lines: Iterator[String]): Either[ErrorMessage, List[TestCase]] =
     lines
       .mkString("\n")
       .split("\n\n")

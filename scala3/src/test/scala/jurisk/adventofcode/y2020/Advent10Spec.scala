@@ -20,7 +20,7 @@ class Advent10Spec extends AnyFreeSpec:
     |4
     |""".stripMargin
   
-  private def parse(x: String) = Advent10.parseTestCases(x.split(Properties.lineSeparator).filter(_.nonEmpty).toList)
+  private def parse(x: String) = Advent10.parseInput(x.split(Properties.lineSeparator).filter(_.nonEmpty).iterator)
   
   private val testsA = parse(inputA).getOrElse(sys.error("failed"))
 

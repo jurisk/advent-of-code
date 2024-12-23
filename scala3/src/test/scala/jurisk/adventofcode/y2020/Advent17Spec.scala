@@ -11,8 +11,8 @@ class Advent17Spec extends AnyFreeSpec:
     |..#
     |###
     |""".stripMargin
-  
-  private def parse(x: String) = parseTestCases(x.split(Properties.lineSeparator).filter(_.nonEmpty).toList)
+
+  private def parse(x: String) = parseInput(x.split(Properties.lineSeparator).filter(_.nonEmpty).iterator)
 
   private val testsA = parse(inputA).fold(e => sys.error(s"$e"), identity)
 

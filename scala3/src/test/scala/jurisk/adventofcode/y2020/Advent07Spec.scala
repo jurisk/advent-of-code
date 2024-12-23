@@ -16,9 +16,9 @@ class Advent07Spec extends AnyFreeSpec:
     |vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
     |faded blue bags contain no other bags.
     |dotted black bags contain no other bags.""".stripMargin
-  
-  private def parse(x: String) = Advent07.parseTestCases(x.split(Properties.lineSeparator).filter(_.nonEmpty).toList)
-  
+
+  private def parse(x: String) = Advent07.parseInput(x.split(Properties.lineSeparator).filter(_.nonEmpty).iterator)
+
   private val testCases1 = parse(tests1)
 
   "solution1" in {

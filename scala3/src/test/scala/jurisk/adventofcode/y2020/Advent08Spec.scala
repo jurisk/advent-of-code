@@ -19,7 +19,7 @@ class Advent08Spec extends AnyFreeSpec:
     |acc +6
     |""".stripMargin
 
-  private def parse(x: String) = Advent08.parseTestCases(x.split(Properties.lineSeparator).filter(_.nonEmpty).toList)
+  private def parse(x: String) = Advent08.parseInput(x.split(Properties.lineSeparator).filter(_.nonEmpty).iterator)
 
   private val testCases1 = parse(tests1).getOrElse(sys.error("failed"))
 
