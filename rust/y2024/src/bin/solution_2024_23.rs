@@ -1,8 +1,12 @@
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::{Debug, Formatter};
 use std::str::FromStr;
+
+use advent_of_code_common::parsing::{
+    Error, parse_lines_to_vec, parse_lines_to_vec_passing_parser, parse_str, split_into_two_strings,
+};
 use itertools::Itertools;
-use advent_of_code_common::parsing::{Error, parse_lines_to_vec, parse_lines_to_vec_passing_parser, split_into_two_strings, parse_str};
+use memoize::memoize;
 use pathfinding::prelude::{strongly_connected_components, strongly_connected_components_from};
 
 const DATA: &str = include_str!("../../resources/23.txt");
@@ -47,24 +51,29 @@ fn solve_1(data: &Input) -> R {
     data.len()
 }
 
-fn check(start: Computer, nodes: &HashSet<Computer>, connections: &HashMap<Computer, BTreeSet<Computer>>) -> Vec<Computer> {
-    let comp = strongly_connected_components(&[start], |node: &Computer| {
-        connections.get(&node).unwrap().iter().map(|n| *n)
-    });
-
-    for q in &comp {
-        println!("{:?}", q);
+fn f(
+    current: &mut HashSet<Computer>,
+    remaining: &mut HashSet<Computer>,
+    connections: &HashMap<Computer, BTreeSet<Computer>>,
+) -> HashSet<Computer> {
+    println!("{:?}", current);
+    let mut best = current.clone();
+    let todos: Vec<_> = remaining.iter().cloned().collect();
+    for node in todos {
+        if current
+            .iter()
+            .all(|c| connections.get(c).unwrap().contains(&node))
+        {
+            current.insert(node);
+            remaining.remove(&node);
+            let b = f(current, remaining, connections);
+            if b.len() > best.len() {
+                best = b;
+            }
+            current.remove(&node);
+            remaining.insert(node);
+        }
     }
-
-    let mut best = comp.iter()
-        .max_by_key(|c| c.len())
-        .unwrap()
-        .clone();
-
-    best.sort();
-
-    println!("for {start:?} {}: {:?}", best.len(), best);
-
     best
 }
 
@@ -88,16 +97,9 @@ fn solve_2(data: &Input) -> String {
 
     println!("{:?}", connections);
 
-    let starts = nodes.iter().copied().collect_vec();
-
-    let mut best = Vec::new();
-    for s in starts {
-        let result = check(s, &nodes, &connections);
-        if result.len() > best.len() {
-            best = result;
-        }
-    }
-
+    let best = f(&mut HashSet::new(), &mut nodes, &connections);
+    let mut best: Vec<_> = best.into_iter().collect();
+    best.sort();
     best.iter().map(|c| format!("{c:?}")).join(",")
 }
 
