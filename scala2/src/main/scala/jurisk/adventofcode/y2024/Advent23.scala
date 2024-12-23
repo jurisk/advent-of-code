@@ -1,37 +1,68 @@
 package jurisk.adventofcode.y2024
 
+import jurisk.algorithms.graph.GraphAlgorithms.createAdjacencyMap
+import jurisk.algorithms.graph.GraphAlgorithms.enumerateMaximumCliques
+import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent23 {
-  type Input = List[Command]
-  type N     = Long
+  type Input = Map[Computer, Set[Computer]]
+  type N     = Int
 
-  sealed trait Command extends Product with Serializable
-  object Command {
-    case object Noop                      extends Command
-    final case class Something(
-      values: List[N]
-    ) extends Command
-    final case class Other(value: String) extends Command
-
-    def parse(s: String): Command =
-      s match {
-        case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractLongList)
-        case s if s.nonEmpty   => Other(s)
-        case _                 => s.failedToParse
-      }
+  final case class Computer(a: Char, b: Char) {
+    def startsWith(char: Char): Boolean = a == char
+    override def toString: String       = s"$a$b"
   }
 
-  def parse(input: String): Input =
-    input.parseLines(Command.parse)
+  object Computer {
+    implicit val computerOrdering: Ordering[Computer] =
+      Ordering.by[Computer, Char](_.a).orElseBy(_.b)
 
-  def part1(data: Input): N =
-    0
+    def parse(s: String): Computer = {
+      val (a, b) = s.toList.twoElementsUnsafe
+      Computer(a, b)
+    }
+  }
 
-  def part2(data: Input): N =
-    0
+  def parse(input: String): Input = {
+    val connections = input.parseLines { s =>
+      s.parsePairUnsafe("-", Computer.parse, Computer.parse)
+    }
+
+    createAdjacencyMap(connections)
+  }
+
+  def part1(connections: Input): N = {
+    var results = Set.empty[Set[Computer]]
+
+    enumerateMaximumCliques[Computer](
+      connections,
+      clique =>
+        clique.toSeq.combinations(3) foreach { triplet =>
+          println(triplet)
+          if (triplet.exists(_.startsWith('t'))) {
+            results += triplet.toSet
+          }
+        },
+    )
+
+    results.size
+  }
+
+  def part2(data: Input): String = {
+    var best = Set.empty[Computer]
+
+    enumerateMaximumCliques[Computer](
+      data,
+      clique =>
+        if (clique.size > best.size) {
+          best = clique
+        },
+    )
+
+    best.toList.sorted.mkString(",")
+  }
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
