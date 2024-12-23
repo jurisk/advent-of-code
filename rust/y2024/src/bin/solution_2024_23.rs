@@ -3,11 +3,9 @@ use std::fmt::{Debug, Formatter};
 use std::str::FromStr;
 
 use advent_of_code_common::parsing::{
-    Error, parse_lines_to_vec, parse_lines_to_vec_passing_parser, parse_str, split_into_two_strings,
+    Error, parse_lines_to_vec_passing_parser, parse_str, split_into_two_strings,
 };
 use itertools::Itertools;
-use memoize::memoize;
-use pathfinding::prelude::{strongly_connected_components, strongly_connected_components_from};
 
 const DATA: &str = include_str!("../../resources/23.txt");
 
@@ -52,27 +50,35 @@ fn solve_1(data: &Input) -> R {
 }
 
 fn f(
-    current: &mut HashSet<Computer>,
-    remaining: &mut HashSet<Computer>,
+    current: &mut BTreeSet<Computer>,
     connections: &HashMap<Computer, BTreeSet<Computer>>,
-) -> HashSet<Computer> {
-    println!("{:?}", current);
+    cache: &mut HashMap<BTreeSet<Computer>, BTreeSet<Computer>>,
+) -> BTreeSet<Computer> {
+    if let Some(c) = cache.get(current) {
+        return c.clone();
+    }
+    // println!("{:?}", current);
     let mut best = current.clone();
-    let todos: Vec<_> = remaining.iter().cloned().collect();
+    let todos = connections
+        .keys()
+        .filter(|n| !current.contains(n))
+        .collect_vec();
     for node in todos {
         if current
             .iter()
             .all(|c| connections.get(c).unwrap().contains(&node))
         {
-            current.insert(node);
-            remaining.remove(&node);
-            let b = f(current, remaining, connections);
+            current.insert(*node);
+            let b = f(current, connections, cache);
             if b.len() > best.len() {
                 best = b;
             }
             current.remove(&node);
-            remaining.insert(node);
         }
+    }
+    cache.insert(current.clone(), best.clone());
+    if cache.len() % 10_000 == 0 {
+        println!("Cache size: {:?}", cache.len());
     }
     best
 }
@@ -95,9 +101,11 @@ fn solve_2(data: &Input) -> String {
             .insert(a.clone());
     }
 
-    println!("{:?}", connections);
+    for (c, cc) in &connections {
+        println!("{:?} {:?}", c, cc);
+    }
 
-    let best = f(&mut HashSet::new(), &mut nodes, &connections);
+    let best = f(&mut BTreeSet::new(), &connections, &mut HashMap::new());
     let mut best: Vec<_> = best.into_iter().collect();
     best.sort();
     best.iter().map(|c| format!("{c:?}")).join(",")
@@ -146,6 +154,9 @@ mod tests {
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(solve_2(&real_data()), "asdf");
+        assert_eq!(
+            solve_2(&real_data()),
+            "az,cj,kp,lm,lt,nj,rf,rx,sn,ty,ui,wp,zo"
+        );
     }
 }
