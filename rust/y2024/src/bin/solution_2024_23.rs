@@ -1,7 +1,9 @@
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeSet, HashSet};
 use std::fmt::{Debug, Formatter};
+use std::hash::Hash;
 use std::str::FromStr;
 
+use advent_of_code_common::graph::{create_adjacency_hashmap, enumerate_maximum_cliques};
 use advent_of_code_common::parsing::{
     Error, parse_lines_to_vec_passing_parser, parse_str, split_into_two_strings,
 };
@@ -13,6 +15,13 @@ const DATA: &str = include_str!("../../resources/23.txt");
 struct Computer {
     a: char,
     b: char,
+}
+
+impl Computer {
+    #[must_use]
+    pub fn starts_with(self, c: char) -> bool {
+        self.a == c
+    }
 }
 
 impl Debug for Computer {
@@ -32,7 +41,6 @@ impl FromStr for Computer {
     }
 }
 
-type N = u32;
 type R = usize;
 type Input = Vec<(Computer, Computer)>;
 
@@ -46,66 +54,36 @@ fn parse(input: &str) -> Result<Input, Error> {
 }
 
 fn solve_1(data: &Input) -> R {
-    data.len()
-}
+    let neighbours = create_adjacency_hashmap(data);
 
-fn f(
-    current: &mut BTreeSet<Computer>,
-    connections: &HashMap<Computer, BTreeSet<Computer>>,
-    cache: &mut HashMap<BTreeSet<Computer>, BTreeSet<Computer>>,
-) -> BTreeSet<Computer> {
-    if let Some(c) = cache.get(current) {
-        return c.clone();
-    }
-    // println!("{:?}", current);
-    let mut best = current.clone();
-    let todos = connections
-        .keys()
-        .filter(|n| !current.contains(n))
-        .collect_vec();
-    for node in todos {
-        if current
-            .iter()
-            .all(|c| connections.get(c).unwrap().contains(&node))
-        {
-            current.insert(*node);
-            let b = f(current, connections, cache);
-            if b.len() > best.len() {
-                best = b;
+    let mut results: HashSet<BTreeSet<Computer>> = HashSet::new();
+    let mut f = |clique: &HashSet<Computer>| {
+        for triplet in clique.iter().combinations(3) {
+            assert_eq!(triplet.len(), 3);
+
+            if triplet.iter().any(|c| c.starts_with('t')) {
+                let btree_set: BTreeSet<_> = triplet.into_iter().copied().collect();
+                results.insert(btree_set);
             }
-            current.remove(&node);
         }
-    }
-    cache.insert(current.clone(), best.clone());
-    if cache.len() % 10_000 == 0 {
-        println!("Cache size: {:?}", cache.len());
-    }
-    best
+    };
+    enumerate_maximum_cliques(&neighbours, &mut f);
+
+    results.len()
 }
 
 fn solve_2(data: &Input) -> String {
-    let mut nodes: HashSet<Computer> = HashSet::new();
-    let mut connections: HashMap<Computer, BTreeSet<Computer>> = HashMap::new();
+    let neighbours = create_adjacency_hashmap(data);
 
-    for (a, b) in data {
-        nodes.insert(*a);
-        nodes.insert(b.clone());
+    let mut best: HashSet<Computer> = HashSet::new();
+    let mut f = |clique: &HashSet<Computer>| {
+        if clique.len() > best.len() {
+            best.clone_from(clique);
+        }
+    };
 
-        connections
-            .entry(a.clone())
-            .or_insert(BTreeSet::new())
-            .insert(b.clone());
-        connections
-            .entry(b.clone())
-            .or_insert(BTreeSet::new())
-            .insert(a.clone());
-    }
+    enumerate_maximum_cliques(&neighbours, &mut f);
 
-    for (c, cc) in &connections {
-        println!("{:?} {:?}", c, cc);
-    }
-
-    let best = f(&mut BTreeSet::new(), &connections, &mut HashMap::new());
     let mut best: Vec<_> = best.into_iter().collect();
     best.sort();
     best.iter().map(|c| format!("{c:?}")).join(",")
@@ -139,12 +117,12 @@ mod tests {
 
     #[test]
     fn test_solve_1_test() {
-        assert_eq!(solve_1(&test_data()), 0);
+        assert_eq!(solve_1(&test_data()), 7);
     }
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(solve_1(&real_data()), 0);
+        assert_eq!(solve_1(&real_data()), 1230);
     }
 
     #[test]

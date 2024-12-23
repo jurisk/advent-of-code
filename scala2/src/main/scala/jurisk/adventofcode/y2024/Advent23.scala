@@ -1,87 +1,65 @@
 package jurisk.adventofcode.y2024
 
-import jurisk.algorithms.pathfinding.ConnectedComponents
-import jurisk.collections.immutable.SetOfTwo
-import jurisk.collections.mutable.DisjointSets
+import jurisk.algorithms.graph.GraphAlgorithms.createAdjacencyMap
+import jurisk.algorithms.graph.GraphAlgorithms.enumerateMaximumCliques
+import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
-import scala.annotation.tailrec
-import scala.collection.mutable
-
 object Advent23 {
-  type Input      = List[Connection]
-  type Computer   = String
-  type Connection = SetOfTwo[Computer]
-  type N          = Long
+  type Input = Map[Computer, Set[Computer]]
+  type N     = Int
 
-  def parse(input: String): Input =
-    input.parseLines { s =>
-      val (a, b) = s.splitPairUnsafe("-")
-      SetOfTwo(a, b)
+  final case class Computer(a: Char, b: Char) {
+    def startsWith(char: Char): Boolean = a == char
+    override def toString: String       = s"$a$b"
+  }
+
+  object Computer {
+    implicit val computerOrdering: Ordering[Computer] =
+      Ordering.by[Computer, Char](_.a).orElseBy(_.b)
+
+    def parse(s: String): Computer = {
+      val (a, b) = s.toList.twoElementsUnsafe
+      Computer(a, b)
+    }
+  }
+
+  def parse(input: String): Input = {
+    val connections = input.parseLines { s =>
+      s.parsePairUnsafe("-", Computer.parse, Computer.parse)
     }
 
-  def part1(data: Input): N = {
-    val computers = data.flatMap(_.toSet).toSet
-    println(computers)
+    createAdjacencyMap(connections)
+  }
 
-    val connections = computers.map { c =>
-      c -> data.filter(_.contains(c)).flatMap(_.toSet).toSet
-    }.toMap
+  def part1(connections: Input): N = {
+    var results = Set.empty[Set[Computer]]
 
-    val withT =
-      computers.toList.combinations(3).filter(_.exists(_.startsWith("t")))
+    enumerateMaximumCliques[Computer](
+      connections,
+      clique =>
+        clique.toSeq.combinations(3) foreach { triplet =>
+          println(triplet)
+          if (triplet.exists(_.startsWith('t'))) {
+            results += triplet.toSet
+          }
+        },
+    )
 
-    withT.filter {
-      case List(a, b, c) =>
-        connections(a).contains(b) && connections(b).contains(c) && connections(
-          c
-        ).contains(a)
-      case _             => "fail".fail
-
-    }.size
+    results.size
   }
 
   def part2(data: Input): String = {
-    val computers = data.flatMap(_.toSet).toSet
+    var best = Set.empty[Computer]
 
-    val connections = computers.map { c =>
-      c -> data.filter(_.contains(c)).flatMap(_.toSet).toSet
-    }.toMap
-
-    val disjointSets = DisjointSets(computers.toList: _*)
-    data foreach { d =>
-      val (a, b) = d.tupleInArbitraryOrder
-      disjointSets.union(a, b)
-    }
-
-    @tailrec
-    def f(current: Set[Computer], remaining: Set[Computer]): Set[Computer] =
-      remaining.find { candidate =>
-        current.forall(connections(candidate).contains)
-      } match {
-        case Some(next) =>
-          f(current + next, remaining - next)
-        case None       =>
-          current
-      }
-
-    def findSingleClique(remaining: Set[Computer]): Set[Computer] = {
-      val first = remaining.head
-      val rem   = remaining - first
-      f(Set(first), rem)
-    }
-
-    var best      = Set.empty[Computer]
-    var toProcess = computers
-    while (toProcess != Set.empty) {
-      var singleClique = findSingleClique(toProcess)
-      println(singleClique)
-      if (singleClique.size > best.size) {
-        best = singleClique
-      }
-      toProcess --= singleClique
-    }
+    enumerateMaximumCliques[Computer](
+      data,
+      clique =>
+        if (clique.size > best.size) {
+          best = clique
+        },
+    )
 
     best.toList.sorted.mkString(",")
   }

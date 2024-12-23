@@ -11,6 +11,7 @@ pub mod cuboid;
 pub mod direction;
 pub mod direction_hex;
 pub mod direction_with_diagonals;
+pub mod graph;
 pub mod grid2d;
 pub mod itertools;
 pub mod math;
