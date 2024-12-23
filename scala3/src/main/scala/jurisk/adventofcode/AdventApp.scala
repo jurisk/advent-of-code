@@ -11,7 +11,7 @@ object AdventApp:
   object ErrorMessage:
     def apply(message: String): ErrorMessage = message
 
-sealed private trait AdventApp[Input, Output1, Output2] extends IOApp:
+private trait AdventApp[Input, Output1, Output2] extends IOApp:
   def year: Int
   def exercise: Int
 
