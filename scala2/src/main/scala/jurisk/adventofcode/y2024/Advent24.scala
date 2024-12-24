@@ -17,7 +17,14 @@ object Advent24 {
 
     def name: String
 
-    def rename(what: String, toWhat: String): Operation
+    def rename(what: Wire, toWhat: Wire): Operation
+    def swap(a: Wire, b: Wire): Operation =
+      rename(a, "foundA")
+        .rename(b, "foundB")
+        .rename("foundA", b)
+        .rename("foundB", a)
+
+    def swapOutput(what: Wire, toWhat: Wire): Operation
 
     def wiresMentioned: Set[Wire] =
       this match {
@@ -44,6 +51,15 @@ object Advent24 {
         } else {
           this
         }
+
+      override def swapOutput(what: Wire, toWhat: Wire): Operation =
+        if (out == what) {
+          And(a, b, toWhat)
+        } else if (out == toWhat) {
+          And(a, b, what)
+        } else {
+          this
+        }
     }
 
     final case class Or(
@@ -60,6 +76,15 @@ object Advent24 {
           Or(a, toWhat, out)
         } else if (out == what) {
           Or(a, b, toWhat)
+        } else {
+          this
+        }
+
+      override def swapOutput(what: Wire, toWhat: Wire): Operation =
+        if (out == what) {
+          Or(a, b, toWhat)
+        } else if (out == toWhat) {
+          Or(a, b, what)
         } else {
           this
         }
@@ -82,16 +107,28 @@ object Advent24 {
         } else {
           this
         }
+
+      override def swapOutput(what: Wire, toWhat: Wire): Operation =
+        if (out == what) {
+          Xor(a, b, toWhat)
+        } else if (out == toWhat) {
+          Xor(a, b, what)
+        } else {
+          this
+        }
     }
 
     private val RegEx               = "(\\w+) (\\w+) (\\w+) -> (\\w+)".r
     def parse(s: String): Operation =
       s match {
         case RegEx(a, op, b, out) =>
+          val lowest  = List(a, b).min
+          val highest = List(a, b).max
+
           op match {
-            case "AND" => And(a, b, out)
-            case "OR"  => Or(a, b, out)
-            case "XOR" => Xor(a, b, out)
+            case "AND" => And(lowest, highest, out)
+            case "OR"  => Or(lowest, highest, out)
+            case "XOR" => Xor(lowest, highest, out)
             case _     => s.failedToParse
           }
         case _                    => s.failedToParse
@@ -183,7 +220,13 @@ object Advent24 {
       .mkString("\n")
     val zNodes = allWires
       .filter(_.startsWith("z"))
-      .map(w => s"""$w [shape=box, color=red];""")
+      .map { w =>
+//        val digits = w.drop(1).toInt
+//        val posX = digits * 20
+//        val posY = digits * 40
+        // , pos = "$posX,$posY!"
+        s"""$w [shape=box, color=red];"""
+      }
       .mkString("\n")
 
     val output = s"""
@@ -317,14 +360,28 @@ object Advent24 {
 
   def part2(data: Input): String = {
     val (wires, operations) = data
-    val simplified          = simplify(operations)
+
+    val swaps =
+      List(("hbk", "z14"), ("kvn", "z18"), ("dbb", "z23"), ("cvh", "tfn"))
+
+    val swapped = swaps.foldLeft(operations) { case (acc, (a, b)) =>
+      acc.map(_.swapOutput(a, b))
+    }
+
+    val simplified = simplify(swapped)
     debugWrite(simplified)
+//    debugWrite(swapped)
 
-//    (0 until InputBits) foreach { bit =>
-//      testAddition(bit, simplified)
-//    }
+    (0 until InputBits) foreach { bit =>
+      testAddition(bit, swapped)
+    }
 
-    "asdf"
+    swaps
+      .flatMap { case (a, b) =>
+        List(a, b)
+      }
+      .sorted
+      .mkString(",")
   }
 
   def parseFile(fileName: String): Input =
