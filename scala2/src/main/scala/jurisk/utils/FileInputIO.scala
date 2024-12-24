@@ -3,7 +3,8 @@ package jurisk.utils
 import cats.effect.IO
 import cats.effect.Resource
 
-import java.io.{File, FileWriter}
+import java.io.File
+import java.io.FileWriter
 import scala.io.BufferedSource
 import scala.io.Source
 

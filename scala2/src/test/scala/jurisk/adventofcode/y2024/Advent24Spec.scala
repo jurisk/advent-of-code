@@ -20,7 +20,7 @@ class Advent24Spec extends AnyFreeSpec {
 
   "part 2" - {
     "real" in {
-      part2(realData) shouldEqual 0
+      part2(realData) shouldEqual "cvh,dbb,hbk,kvn,tfn,z14,z18,z23"
     }
   }
 }
