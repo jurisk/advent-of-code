@@ -19,10 +19,6 @@ class Advent24Spec extends AnyFreeSpec {
   }
 
   "part 2" - {
-    "test" in {
-      part2(testData) shouldEqual 0
-    }
-
     "real" in {
       part2(realData) shouldEqual 0
     }
