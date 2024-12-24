@@ -92,10 +92,11 @@ object Advent24 {
     (wires.toMap, ops)
   }
 
-  def resolveUnknown(
+  private def propagate(
     wires: Map[Wire, Boolean],
     connections: Set[Connection],
   ): Map[Wire, Boolean] = {
+    // TODO: Would https://en.wikipedia.org/wiki/Topological_sorting be more efficient?
     var results = wires
     var queue   = wires.keySet ++ connections.flatMap { q: Connection =>
       q.wiresMentioned
@@ -119,9 +120,10 @@ object Advent24 {
 
   def part1(data: Input): BigInt = {
     val (wires, operations) = data
-    val results             = resolveUnknown(wires, operations)
+    val results             = propagate(wires, operations)
     val z                   = results.filter { case (k, _) => k.startsWith("z") }.toList
-    val sor                 = z.sorted.map(_._2).map(b => if (b) "1" else "0").mkString.reverse
+    val sor                 =
+      z.sorted.map { case (_, b) => if (b) "1" else "0" }.mkString.reverse
     println(sor)
     BigInt(sor, 2)
   }
@@ -178,6 +180,7 @@ object Advent24 {
       )
     }.toMap
 
+  // TODO: Calculate this metric for all bits
   private def testAddition(bit: Int, operations: Set[Connection]): Unit =
     List(
       (false, false, false, false),
@@ -186,7 +189,7 @@ object Advent24 {
       (true, true, false, true),
     ) foreach { case (x, y, r, c) =>
       val m         = zeroWires ++ Map(xReg(bit) -> x, yReg(bit) -> y)
-      val o         = resolveUnknown(m, operations)
+      val o         = propagate(m, operations)
       val validR    = o.getOrElse(zReg(bit), false) == r
       val carryBit  = bit + 1
       val validC    = o.getOrElse(zReg(carryBit), false) == c
@@ -219,6 +222,7 @@ object Advent24 {
     operations: Set[Connection],
     bit: Int,
   ): Set[Connection] = {
+    // TODO: Refactor to simplify
     val foundAnd = operations.find { op =>
       op match {
         case Connection(a, b, And, _) =>
@@ -264,6 +268,7 @@ object Advent24 {
   def part2(data: Input): String = {
     val (_, operations) = data
 
+    // TODO: Find these automatically, by checking if the error count is lower if you swap nearby outputs
     val swaps =
       List(("hbk", "z14"), ("kvn", "z18"), ("dbb", "z23"), ("cvh", "tfn"))
 
