@@ -24,9 +24,12 @@ object FileInputIO {
     lines <- readFileLines(fileName)
   } yield lines.mkString("\n")
 
-  def writeFileText(fileName: String, text: String): Unit = {
-    val fileWriter = new FileWriter(new File(fileName))
-    fileWriter.write(text)
-    fileWriter.close()
-  }
+  def writeFileText(fileName: String, text: String): IO[Unit] =
+    Resource
+      .make(IO(new FileWriter(new File(fileName)))) { writer =>
+        IO(writer.close())
+      }
+      .use { writer =>
+        IO(writer.write(text))
+      }
 }
