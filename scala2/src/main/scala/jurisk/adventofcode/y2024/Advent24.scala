@@ -47,14 +47,15 @@ object Advent24 extends IOApp.Simple {
 
   // TODO: Make it a Map[Wire, (Wire, Operation, Wire)] as you are filtering by `out` a lot
   final case class Connections private (map: Map[Wire, Connection]) {
-    val outputWires: Set[Wire] = map.keySet
-    val allWires: Set[Wire]    = map.values.flatMap(_.wiresMentioned).toSet
+    val allWires: Set[Wire]   = map.values.flatMap(_.wiresMentioned).toSet
+    val allOutputs: Set[Wire] = map.keySet
 
     def foreach(f: Connection => Unit): Unit          = map.values foreach f
     def map(f: Connection => Connection): Connections =
       Connections.fromIterable((map.values map f).toSet)
     def -(c: Connection): Connections                 = new Connections(map - c.out)
 
+    // TODO: This doesn't do a sufficient test, as these bit-by-bit tests don't catch all issues that could happen. Consider adding random numbers.
     private def errorsOnAddition: Int = {
       def errorsAddingBit(bit: Int): Int = {
         def zeroWires: Map[Wire, Boolean] =
@@ -185,9 +186,10 @@ object Advent24 extends IOApp.Simple {
             SetOfTwo("kvn", "z18"),
             SetOfTwo("dbb", "z23"),
             SetOfTwo("cvh", "tfn"),
-            SetOfTwo("z13", "z12"), // This one just to mess things up
+//            SetOfTwo("z13", "z12"), // This one just to mess things up
           )
           val candidates = swaps.flatMap(_.toSet)
+//          val candidates = current.allOutputs
           (for {
             a      <- candidates
             b      <- candidates
@@ -196,7 +198,9 @@ object Advent24 extends IOApp.Simple {
             swapped = current.swapOutputs(swap)
             if swapped.isValid
           } yield (swap, swapped))
-            .map { case (swap, c) => (c, c.errorsOnAddition, swap) }
+            .map { case (swap, c) =>
+              (c, c.errorsOnAddition, swap)
+            }
             .minBy { case (_, score, _) => score } match {
             case (c, score, swap) if score < currentScore =>
               f(c, score, currentSwaps + swap)
