@@ -23,7 +23,7 @@ object Advent24 extends IOApp.Simple {
   type Input = (Map[Wire, Boolean], Connections)
 
   sealed trait Wire extends Product with Serializable
-  object Wire {
+  private object Wire {
     final case class X(i: Int)                         extends Wire {
       override def toString: String = f"x$i%02d"
     }
@@ -62,26 +62,25 @@ object Advent24 extends IOApp.Simple {
     def parse(s: String): Connections =
       Connections.fromIterable(s.splitLines.toSet map Connection.parse)
 
-    private def fromIterable(set: Iterable[Connection]): Connections =
+    private def fromIterable(set: Iterable[(Connection, Wire)]): Connections =
       new Connections(
         set
-          .groupBy(_.out)
+          .groupBy { case (_, out) => out }
           .view
           .mapValues { connections =>
             assert(connections.size == 1)
-            connections.head
+            val (connection, _) = connections.head
+            connection
           }
           .toMap
       )
   }
 
   final case class Connections private (map: Map[Wire, Connection]) {
-    val allWires: Set[Wire]   = map.values.flatMap(_.wiresMentioned).toSet
+    val allWires: Set[Wire]   = map.flatMap { case (k, v) => Set(k, v.a, v.b) }.toSet
     val allOutputs: Set[Wire] = map.keySet
 
     def foreach(f: Connection => Unit): Unit = map.values foreach f
-
-    def -(c: Connection): Connections = new Connections(map - c.out)
 
     // TODO: This doesn't do a sufficient test, as these bit-by-bit tests don't catch all issues that could happen. Consider adding random numbers.
     private def errorsOnAddition: Int = {
@@ -129,8 +128,8 @@ object Advent24 extends IOApp.Simple {
     private def isValid: Boolean = topologicallySortedWires.isDefined
 
     private val topologicallySortedWires: Option[List[Wire]] = {
-      val edges = map.values.flatMap { c =>
-        Set(c.a -> c.out, c.b -> c.out)
+      val edges = map.toSeq.flatMap { case (out, c) =>
+        Set(c.a -> out, c.b -> out)
       }
 
       val graph = GraphAlgorithms.createAdjacencyMapDirected(edges.toSeq)
@@ -146,65 +145,18 @@ object Advent24 extends IOApp.Simple {
             values
           } else {
             val connection = map(wire)
-            values + (connection.out -> connection.result(values))
+            values + (wire -> connection.result(values))
           }
         }
       }
-
-    def simplify: Connections = {
-      def rename(
-        connections: Set[Connection],
-        what: Wire,
-        toWhat: Wire,
-      ): Set[Connection] =
-        connections.map(_.rename(what, toWhat))
-
-      def simplifyBit(
-        connections: Set[Connection],
-        bit: Int,
-      ): Set[Connection] = {
-
-        def simplifyOp(
-          operation: Operation,
-          connections: Set[Connection],
-        ): Set[Connection] =
-          connections.find {
-            case Connection(a, b, `operation`, _) =>
-              Set(a, b) == Set(Wire.X(bit), Wire.Y(bit))
-            case _                                =>
-              false
-          } match {
-            case Some(a @ Connection(_, _, `operation`, out)) =>
-              rename(
-                connections - a,
-                out,
-                Wire.Debug(f"${operation.name}_$bit%02d_$out"),
-              )
-            case _                                            =>
-              println(s"Bit $bit: $operation not found")
-              connections
-          }
-
-        List(Xor, And).foldLeft(connections) { case (acc, op) =>
-          simplifyOp(op, acc)
-        }
-      }
-
-      Connections.fromIterable {
-        (0 until InputBits).foldLeft(map.values.toSet) {
-          case (connections, bit) =>
-            simplifyBit(connections, bit)
-        }
-      }
-    }
 
     private def swapOutputs(swap: SetOfTwo[Wire]): Connections = {
       val (a, b) = swap.tupleInArbitraryOrder
       val aC     = map(a)
       val bC     = map(b)
       val newMap = map ++ Map(
-        a -> bC.copy(out = a),
-        b -> aC.copy(out = b),
+        a -> bC,
+        b -> aC,
       )
       new Connections(newMap)
     }
@@ -231,8 +183,8 @@ object Advent24 extends IOApp.Simple {
           val candidates = swaps.flatMap(_.toSet).map(Wire.parse).toIndexedSeq
 //          val candidates = current.allOutputs
           (for {
-            aIdx   <- 0 until candidates.size
-            bIdx   <- 0 until candidates.size
+            aIdx   <- candidates.indices
+            bIdx   <- candidates.indices
             if aIdx < bIdx
             a       = candidates(aIdx)
             b       = candidates(bIdx)
@@ -257,9 +209,7 @@ object Advent24 extends IOApp.Simple {
     }
   }
 
-  final case class Connection(a: Wire, b: Wire, op: Operation, out: Wire) {
-    def wiresMentioned: Set[Wire] = Set(a, b, out)
-
+  final case class Connection(a: Wire, b: Wire, op: Operation) {
     def result(values: Map[Wire, Boolean]): Boolean = {
       val aV = values.getOrElse(a, false)
       val bV = values.getOrElse(b, false)
@@ -268,11 +218,6 @@ object Advent24 extends IOApp.Simple {
         case Or  => aV || bV
         case Xor => aV ^ bV
       }
-    }
-
-    def rename(what: Wire, toWhat: Wire): Connection = {
-      val m = Map(what -> toWhat)
-      copy(a = replace(a, m), b = replace(b, m), out = replace(out, m))
     }
 
     def name: String = s"$a ${op.name} $b"
@@ -293,7 +238,7 @@ object Advent24 extends IOApp.Simple {
 
   private object Connection {
     private val RegEx                = "(\\w+) (\\w+) (\\w+) -> (\\w+)".r
-    def parse(s: String): Connection =
+    def parse(s: String): (Connection, Wire) =
       s match {
         case RegEx(a, op, b, out) =>
           val operation: Operation = op match {
@@ -307,12 +252,13 @@ object Advent24 extends IOApp.Simple {
           val lowest  = List(a, b).min
           val highest = List(a, b).max
 
-          Connection(
+          val connection = Connection(
             Wire.parse(lowest),
             Wire.parse(highest),
             operation,
-            Wire.parse(out),
           )
+          val output = Wire.parse(out)
+          (connection, output)
         case _                    => s.failedToParse
       }
   }
@@ -346,12 +292,12 @@ object Advent24 extends IOApp.Simple {
       }
       .mkString("\n\n")
 
-    val ops = connections.map.values map { connection =>
+    val ops = connections.map map { case (out, connection) =>
       val opName = s""""${connection.name}""""
       s"""
          |  ${connection.a} -> $opName
          |  ${connection.b} -> $opName
-         |  $opName -> ${connection.out}
+         |  $opName -> $out
          |
          |""".stripMargin
     }
@@ -385,14 +331,8 @@ object Advent24 extends IOApp.Simple {
   def fileName(suffix: String): String =
     s"2024/24$suffix.txt"
 
-  private val DebugWrite     = false
   override def run: IO[Unit] = for {
     (wires, connections) <- IO(parseFile(fileName("")))
-    _                    <- DebugWrite.whenA {
-                              val (fixed, _) = connections.fix
-                              val simplified = fixed.simplify
-                              debugWrite(simplified)
-                            }
     _                    <- IO.println(s"Part 1: ${part1((wires, connections))}")
     _                    <- IO.println(s"Part 2: ${part2((wires, connections))}")
   } yield ()
