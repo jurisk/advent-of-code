@@ -8,12 +8,14 @@ package object math {
     def parity: Int           = n % 2
     def halfRoundingUp: Int   = n - halfRoundingDown
     def halfRoundingDown: Int = n / 2
+    def bitCount: Int         = java.lang.Integer.bitCount(n)
   }
 
   implicit class LongOps(n: Long) {
     def parity: Long           = n % 2
     def halfRoundingUp: Long   = n - halfRoundingDown
     def halfRoundingDown: Long = n / 2
+    def bitCount: Int          = java.lang.Long.bitCount(n)
   }
 
   def absForWrappingAround[N: Integral](x: N, y: N): N =

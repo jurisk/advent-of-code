@@ -7,6 +7,7 @@ import jurisk.adventofcode.y2024.Advent24.Operation.Or
 import jurisk.adventofcode.y2024.Advent24.Operation.Xor
 import jurisk.algorithms.graph.GraphAlgorithms
 import jurisk.collections.immutable.SetOfTwo
+import jurisk.math.LongOps
 import jurisk.utils.CollectionOps.OptionOps
 import jurisk.utils.ConversionOps.BooleanOps
 import jurisk.utils.ConversionOps.IntOps
@@ -16,6 +17,7 @@ import jurisk.utils.Parsing.StringOps
 import mouse.all.booleanSyntaxMouse
 
 import scala.annotation.tailrec
+import scala.util.Random
 
 object Advent24 extends IOApp.Simple {
   private val InputBits  = 45
@@ -29,11 +31,27 @@ object Advent24 extends IOApp.Simple {
     def +(pair: (Wire, Boolean)): Values = new Values(map + pair)
     def ++(other: Values): Values        = new Values(map ++ other.map)
 
+    private def bitsToLong(bits: Map[Int, Boolean]) = {
+      val bitsStr = bits.toSeq.sorted
+        .map { case (_, b) => if (b) "1" else "0" }
+        .mkString
+        .reverse
+      java.lang.Long.parseLong(bitsStr, 2)
+    }
+
+    def xValue: Long = {
+      val z = map.collect { case (Wire.X(zIdx), v) => (zIdx, v) }
+      bitsToLong(z)
+    }
+
+    def yValue: Long = {
+      val z = map.collect { case (Wire.Y(zIdx), v) => (zIdx, v) }
+      bitsToLong(z)
+    }
+
     def zValue: Long = {
-      val z     = map.collect { case (Wire.Z(zIdx), v) => (zIdx, v) }.toList
-      val zBits =
-        z.sorted.map { case (_, b) => if (b) "1" else "0" }.mkString.reverse
-      java.lang.Long.parseLong(zBits, 2)
+      val z = map.collect { case (Wire.Z(zIdx), v) => (zIdx, v) }
+      bitsToLong(z)
     }
   }
 
@@ -43,6 +61,15 @@ object Advent24 extends IOApp.Simple {
         List(
           Wire.X(b) -> false,
           Wire.Y(b) -> false,
+        )
+      }.toMap
+    }
+
+    def randomXY: Values = Values {
+      (0 until InputBits).flatMap { b =>
+        List(
+          Wire.X(b) -> Random.nextBoolean(),
+          Wire.Y(b) -> Random.nextBoolean(),
         )
       }.toMap
     }
@@ -105,15 +132,33 @@ object Advent24 extends IOApp.Simple {
   }
 
   final case class Connections private (map: Map[Wire, Connection]) {
-    val allWires: Set[Wire]   = map.flatMap { case (k, v) =>
+    val allWires: Set[Wire]           = map.flatMap { case (k, v) =>
       Set(k, v.a, v.b)
     }.toSet
-    val allOutputs: Set[Wire] = map.keySet
+    private val allOutputs: Set[Wire] = map.keySet
 
     def foreach(f: Connection => Unit): Unit = map.values foreach f
 
-    // TODO: This doesn't do a sufficient test, as these bit-by-bit tests don't catch all issues that could happen. Consider adding random numbers.
-    private def errorsOnAddition: Int = {
+    private def errorsOnAddition: Int =
+      // We care more about `errorsBitByBit`, but since they didn't catch everything, we also care about `errorsOnRandomAddition`
+      128 * errorsBitByBit + errorsOnRandomAddition
+
+    private def errorsOnRandomAddition: Int = {
+      val Samples = 16
+      (for {
+        _             <- 0 until Samples
+        r              = Values.randomXY
+        x              = r.xValue
+        y              = r.yValue
+        expectedZ      = x + y
+        solved         = propagate(r).orFail("Failed to propagate")
+        z              = solved.zValue
+        wrongBits      = z ^ expectedZ
+        wrongBitsCount = wrongBits.bitCount
+      } yield wrongBitsCount).sum
+    }
+
+    private def errorsBitByBit: Int = {
       def errorsAddingBit(bit: Int): Int =
         List(
           (false, false, false, false),
@@ -194,15 +239,12 @@ object Advent24 extends IOApp.Simple {
           (current, currentSwaps)
         } else {
           // TODO: Try to apply Genetic Algorithm or similar...
-          // TODO: Have a wider set of swaps to pick from!
-          val swaps      = Set(
-            SetOfTwo("hbk", "z14"),
-            SetOfTwo("kvn", "z18"),
-            SetOfTwo("dbb", "z23"),
-            SetOfTwo("cvh", "tfn"),
-          )
-          val candidates = swaps.flatMap(_.toSet).map(Wire.parse).toIndexedSeq
-//          val candidates = current.allOutputs
+          // Note: The swaps for our data are:
+          // 1. hbk <-> z14
+          // 2. kvn <-> z18
+          // 3. dbb <-> z23
+          // 4. cvh <-> tfn
+          val candidates = current.allOutputs.toIndexedSeq
           (for {
             aIdx   <- candidates.indices
             bIdx   <- candidates.indices
