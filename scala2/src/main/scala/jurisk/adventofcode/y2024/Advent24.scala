@@ -5,18 +5,91 @@ import cats.effect.IOApp
 import jurisk.adventofcode.y2024.Advent24.Operation.And
 import jurisk.adventofcode.y2024.Advent24.Operation.Or
 import jurisk.adventofcode.y2024.Advent24.Operation.Xor
+import jurisk.collections.immutable.SetOfTwo
 import jurisk.utils.ConversionOps.BooleanOps
 import jurisk.utils.ConversionOps.IntOps
 import jurisk.utils.FileInput._
 import jurisk.utils.FileInputIO
 import jurisk.utils.Parsing.StringOps
+import mouse.all.booleanSyntaxMouse
 
 object Advent24 extends IOApp.Simple {
   private type Wire = String
-  type Input        = (Map[Wire, Boolean], Set[Connection])
+  type Input        = (Map[Wire, Boolean], Connections)
 
   private def replace(s: Wire, replacements: Map[Wire, Wire]): Wire =
     replacements.getOrElse(s, s)
+
+  final case class Connections(set: Set[Connection]) {
+    def allWires: Set[Wire]                           = set.flatMap(_.wiresMentioned)
+    def foreach(f: Connection => Unit): Unit          = set foreach f
+    def map(f: Connection => Connection): Connections = copy(set = set map f)
+    def -(c: Connection): Connections                 = copy(set = set - c)
+
+    def simplify: Connections = {
+      def rename(
+        connections: Set[Connection],
+        what: Wire,
+        toWhat: Wire,
+      ): Set[Connection] =
+        connections.map(_.rename(what, toWhat))
+
+      def simplifyBit(
+        connections: Set[Connection],
+        bit: Int,
+      ): Set[Connection] = {
+
+        def simplifyOp(
+          operation: Operation,
+          connections: Set[Connection],
+        ): Set[Connection] =
+          connections.find {
+            case Connection(a, b, `operation`, _) =>
+              Set(a, b) == Set(xReg(bit), yReg(bit))
+            case _                                =>
+              false
+          } match {
+            case Some(a @ Connection(_, _, `operation`, out)) =>
+              rename(connections - a, out, f"${operation.name}_$bit%02d_$out")
+            case _                                            =>
+              println(s"Bit $bit: $operation not found")
+              connections
+          }
+
+        List(Xor, And).foldLeft(connections) { case (acc, op) =>
+          simplifyOp(op, acc)
+        }
+      }
+
+      Connections {
+        (0 until InputBits).foldLeft(set) { case (ops, bit) =>
+          simplifyBit(ops, bit)
+        }
+      }
+    }
+
+    def fix: (Connections, List[SetOfTwo[Wire]]) = {
+      // TODO: pick random (or non-random, use bits you know are bad) swap, try it, if it is better than before, continue with that, if it is 0 errors then return, if it is worse, continue with this
+
+      // These were found by reviewing the generated DOT file
+      val swaps = List(
+        SetOfTwo("hbk", "z14"),
+        SetOfTwo("kvn", "z18"),
+        SetOfTwo("dbb", "z23"),
+        SetOfTwo("cvh", "tfn"),
+      )
+
+      val swapped = swaps.foldLeft(set) { case (acc, swap) =>
+        acc.map(_.swapOutput(swap))
+      }
+
+      val result = Connections(swapped)
+      val errors = errorsOnAddition(result)
+      assert(errors == 0)
+
+      (result, swaps)
+    }
+  }
 
   final case class Connection(a: Wire, b: Wire, op: Operation, out: Wire) {
     def wiresMentioned: Set[Wire] = Set(a, b, out)
@@ -36,8 +109,11 @@ object Advent24 extends IOApp.Simple {
       copy(a = replace(a, m), b = replace(b, m), out = replace(out, m))
     }
 
-    def swapOutput(what: Wire, toWhat: Wire): Connection =
-      copy(out = replace(out, Map(what -> toWhat, toWhat -> what)))
+    def swapOutput(swap: SetOfTwo[Wire]): Connection = {
+      val (a, b) = swap.tupleInArbitraryOrder
+      val m      = Map(a -> b, b -> a)
+      copy(out = replace(out, m))
+    }
 
     def name: String = s"$a ${op.name} $b"
   }
@@ -83,16 +159,16 @@ object Advent24 extends IOApp.Simple {
           _.parsePairUnsafe(": ", identity, _.toInt.toBooleanStrict01Unsafe)
         )
         .toMap,
-      _.splitLines.toSet map Connection.parse,
+      s => Connections(s.splitLines.toSet map Connection.parse),
     )
 
   private def propagate(
     wires: Map[Wire, Boolean],
-    connections: Set[Connection],
+    connections: Connections,
   ): Map[Wire, Boolean] = {
     // TODO: Would https://en.wikipedia.org/wiki/Topological_sorting be more efficient?
     var results = wires
-    var queue   = connections.flatMap(_.wiresMentioned)
+    var queue   = connections.allWires
     var useful  = true
     while (useful) {
       useful = false
@@ -119,19 +195,17 @@ object Advent24 extends IOApp.Simple {
     BigInt(zBits, 2)
   }
 
-  private def debugWrite(connections: Set[Connection]): IO[Unit] = {
-    val allWires = connections.flatMap(_.wiresMentioned)
-
+  private def debugWrite(connections: Connections): IO[Unit] = {
     val nodeStrings = List(("x", "blue"), ("y", "green"), ("z", "red"))
       .map { case (prefix, colour) =>
-        allWires
+        connections.allWires
           .filter(_.startsWith(prefix))
           .map(w => s"""  $w [shape=box, color=$colour];""")
           .mkString("\n")
       }
       .mkString("\n\n")
 
-    val ops = connections map { connection =>
+    val ops = connections.set map { connection =>
       val opName = s""""${connection.name}""""
       s"""
          |  ${connection.a} -> $opName
@@ -158,46 +232,8 @@ object Advent24 extends IOApp.Simple {
   private val InputBits  = 45
   private val OutputBits = InputBits + 1
 
-  private def simplifyBit(
-    connections: Set[Connection],
-    bit: Int,
-  ): Set[Connection] = {
-    def rename(
-      ops: Set[Connection],
-      what: Wire,
-      toWhat: Wire,
-    ): Set[Connection] =
-      ops.map(_.rename(what, toWhat))
-
-    def simplifyOp(
-      operation: Operation,
-      connections: Set[Connection],
-    ): Set[Connection] =
-      connections.find {
-        case Connection(a, b, `operation`, _) =>
-          Set(a, b) == Set(xReg(bit), yReg(bit))
-        case _                                =>
-          false
-      } match {
-        case Some(a @ Connection(_, _, `operation`, out)) =>
-          rename(connections - a, out, f"${operation.name}_$bit%02d_$out")
-        case _                                            =>
-          println(s"Bit $bit: $operation not found")
-          connections
-      }
-
-    List(Xor, And).foldLeft(connections) { case (acc, op) =>
-      simplifyOp(op, acc)
-    }
-  }
-
-  def simplify(connections: Set[Connection]): Set[Connection] =
-    (0 until InputBits).foldLeft(connections) { case (ops, bit) =>
-      simplifyBit(ops, bit)
-    }
-
-  private def testAdditions(connections: Set[Connection]): Int = {
-    def testAddition(bit: Int, connections: Set[Connection]): Int = {
+  private def errorsOnAddition(connections: Connections): Int = {
+    def errorsAddingBit(bit: Int, connections: Connections): Int = {
       def zeroWires: Map[Wire, Boolean] =
         (0 until InputBits).flatMap { b =>
           List(
@@ -233,40 +269,18 @@ object Advent24 extends IOApp.Simple {
     }
 
     (0 until InputBits).map { bit =>
-      testAddition(bit, connections)
+      errorsAddingBit(bit, connections)
     }.sum
-  }
-
-  private def fixConnections(
-    connections: Set[Connection]
-  ): (Set[Connection], List[(Wire, Wire)]) = {
-    // TODO: Find these automatically, by checking if the error count is lower if you swap nearby outputs
-    // These were found by reviewing the generated DOT file
-    val swaps = List(
-      ("hbk", "z14"),
-      ("kvn", "z18"),
-      ("dbb", "z23"),
-      ("cvh", "tfn"),
-    )
-
-    val swapped = swaps.foldLeft(connections) { case (acc, (a, b)) =>
-      acc.map(_.swapOutput(a, b))
-    }
-
-    val errors = testAdditions(swapped)
-    assert(errors == 0)
-
-    (swapped, swaps)
   }
 
   def part2(data: Input): String = {
     val (_, connections) = data
 
-    val (_, swaps) = fixConnections(connections)
+    val (_, swaps) = connections.fix
 
     swaps
-      .flatMap { case (a, b) =>
-        List(a, b)
+      .flatMap { swap =>
+        swap.toSet
       }
       .sorted
       .mkString(",")
@@ -281,12 +295,10 @@ object Advent24 extends IOApp.Simple {
   private val DebugWrite     = false
   override def run: IO[Unit] = for {
     (wires, connections) <- IO(parseFile(fileName("")))
-    _                    <- if (DebugWrite) {
-                              val (fixed, _) = fixConnections(connections)
-                              val simplified = simplify(fixed)
+    _                    <- DebugWrite.whenA {
+                              val (fixed, _) = connections.fix
+                              val simplified = fixed.simplify
                               debugWrite(simplified)
-                            } else {
-                              IO.unit
                             }
     _                    <- IO.println(s"Part 1: ${part1((wires, connections))}")
     _                    <- IO.println(s"Part 2: ${part2((wires, connections))}")
