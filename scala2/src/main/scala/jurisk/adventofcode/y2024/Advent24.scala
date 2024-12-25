@@ -2,8 +2,6 @@ package jurisk.adventofcode.y2024
 
 import cats.effect.IO
 import cats.effect.IOApp
-import jurisk.adventofcode.y2024.Advent24.Connections.InputBits
-import jurisk.adventofcode.y2024.Advent24.Connections.OutputBits
 import jurisk.adventofcode.y2024.Advent24.Operation.And
 import jurisk.adventofcode.y2024.Advent24.Operation.Or
 import jurisk.adventofcode.y2024.Advent24.Operation.Xor
@@ -20,8 +18,46 @@ import mouse.all.booleanSyntaxMouse
 import scala.annotation.tailrec
 
 object Advent24 extends IOApp.Simple {
-  private type Values = Map[Wire, Boolean]
-  type Input          = (Values, Connections)
+  private val InputBits  = 45
+  private val OutputBits = InputBits + 1
+
+  type Input = (Values, Connections)
+
+  final case class Values private (map: Map[Wire, Boolean]) {
+    def getOrFalse(wire: Wire): Boolean  = map.getOrElse(wire, false)
+    def contains(wire: Wire): Boolean    = map.contains(wire)
+    def +(pair: (Wire, Boolean)): Values = new Values(map + pair)
+    def ++(other: Values): Values        = new Values(map ++ other.map)
+
+    def zValue: Long = {
+      val z     = map.collect { case (Wire.Z(zIdx), v) => (zIdx, v) }.toList
+      val zBits =
+        z.sorted.map { case (_, b) => if (b) "1" else "0" }.mkString.reverse
+      java.lang.Long.parseLong(zBits, 2)
+    }
+  }
+
+  private object Values {
+    val Zero: Values = Values {
+      (0 until InputBits).flatMap { b =>
+        List(
+          Wire.X(b) -> false,
+          Wire.Y(b) -> false,
+        )
+      }.toMap
+    }
+
+    def apply(pairs: (Wire, Boolean)*): Values = Values(pairs.toMap)
+
+    def parse(s: String): Values = {
+      val map = s.splitLines
+        .map(
+          _.parsePairUnsafe(": ", Wire.parse, _.toInt.toBooleanStrict01Unsafe)
+        )
+        .toMap
+      new Values(map)
+    }
+  }
 
   sealed trait Wire extends Product with Serializable
   private object Wire {
@@ -50,13 +86,7 @@ object Advent24 extends IOApp.Simple {
     }
   }
 
-  private def replace(s: Wire, replacements: Map[Wire, Wire]): Wire =
-    replacements.getOrElse(s, s)
-
   object Connections {
-    private val InputBits  = 45
-    private val OutputBits = InputBits + 1
-
     def parse(s: String): Connections =
       Connections.fromIterable(s.splitLines.toSet map Connection.parse)
 
@@ -84,32 +114,24 @@ object Advent24 extends IOApp.Simple {
 
     // TODO: This doesn't do a sufficient test, as these bit-by-bit tests don't catch all issues that could happen. Consider adding random numbers.
     private def errorsOnAddition: Int = {
-      def errorsAddingBit(bit: Int): Int = {
-        def zeroWires: Values =
-          (0 until InputBits).flatMap { b =>
-            List(
-              Wire.X(b) -> false,
-              Wire.Y(b) -> false,
-            )
-          }.toMap
-
+      def errorsAddingBit(bit: Int): Int =
         List(
           (false, false, false, false),
           (false, true, true, false),
           (true, false, true, false),
           (true, true, false, true),
         ).map { case (x, y, r, c) =>
-          val values     = zeroWires ++ Map(Wire.X(bit) -> x, Wire.Y(bit) -> y)
+          val values     = Values.Zero ++ Values(Wire.X(bit) -> x, Wire.Y(bit) -> y)
           val output     = propagate(values).orFail("Failed to propagate")
-          val invalidR   = output.getOrElse(Wire.Z(bit), false) != r
+          val invalidR   = output.getOrFalse(Wire.Z(bit)) != r
           val carryBit   = bit + 1
-          val invalidC   = output.getOrElse(Wire.Z(carryBit), false) != c
+          val invalidC   = output.getOrFalse(Wire.Z(carryBit)) != c
           val extraBits  = (0 until OutputBits)
             .filter { b =>
               b != bit && b != carryBit
             }
             .count { i =>
-              output.getOrElse(Wire.Z(i), false)
+              output.getOrFalse(Wire.Z(i))
             }
           val DebugPrint = false
           if (DebugPrint && (invalidR || invalidC || extraBits > 0)) {
@@ -118,7 +140,6 @@ object Advent24 extends IOApp.Simple {
           }
           invalidR.toInt + invalidC.toInt + extraBits
         }.sum
-      }
 
       (0 until InputBits).map { bit =>
         errorsAddingBit(bit)
@@ -211,8 +232,8 @@ object Advent24 extends IOApp.Simple {
 
   final case class Connection(a: Wire, b: Wire, op: Operation) {
     def result(values: Values): Boolean = {
-      val aV = values.getOrElse(a, false)
-      val bV = values.getOrElse(b, false)
+      val aV = values.getOrFalse(a)
+      val bV = values.getOrFalse(b)
       op match {
         case And => aV && bV
         case Or  => aV || bV
@@ -265,21 +286,14 @@ object Advent24 extends IOApp.Simple {
 
   def parse(input: String): Input =
     input.parsePairByDoubleNewline(
-      _.splitLines
-        .map(
-          _.parsePairUnsafe(": ", Wire.parse, _.toInt.toBooleanStrict01Unsafe)
-        )
-        .toMap,
+      Values.parse,
       Connections.parse,
     )
 
-  def part1(data: Input): BigInt = {
+  def part1(data: Input): Long = {
     val (wires, connections) = data
     val results              = connections.propagate(wires).orFail("Failed to propagate")
-    val z                    = results.collect { case (Wire.Z(zIdx), v) => (zIdx, v) }.toList
-    val zBits                =
-      z.sorted.map { case (_, b) => if (b) "1" else "0" }.mkString.reverse
-    BigInt(zBits, 2)
+    results.zValue
   }
 
   private def debugWrite(connections: Connections): IO[Unit] = {
