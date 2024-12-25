@@ -31,17 +31,29 @@ object Advent24 extends IOApp.Simple {
     private val OutputBits = InputBits + 1
 
     def parse(s: String): Connections =
-      Connections(s.splitLines.toSet map Connection.parse)
+      Connections.fromIterable(s.splitLines.toSet map Connection.parse)
+
+    def fromIterable(set: Iterable[Connection]): Connections = new Connections(
+      set
+        .groupBy(_.out)
+        .view
+        .mapValues { connections =>
+          assert(connections.size == 1)
+          connections.head
+        }
+        .toMap
+    )
   }
 
   // TODO: Make it a Map[Wire, (Wire, Operation, Wire)] as you are filtering by `out` a lot
-  final case class Connections(set: Set[Connection]) {
-    val outputWires: Set[Wire] = set.map(_.out)
-    val allWires: Set[Wire]    = set.flatMap(_.wiresMentioned)
+  final case class Connections private (map: Map[Wire, Connection]) {
+    val outputWires: Set[Wire] = map.keySet
+    val allWires: Set[Wire]    = map.values.flatMap(_.wiresMentioned).toSet
 
-    def foreach(f: Connection => Unit): Unit          = set foreach f
-    def map(f: Connection => Connection): Connections = copy(set = set map f)
-    def -(c: Connection): Connections                 = copy(set = set - c)
+    def foreach(f: Connection => Unit): Unit          = map.values foreach f
+    def map(f: Connection => Connection): Connections =
+      Connections.fromIterable((map.values map f).toSet)
+    def -(c: Connection): Connections                 = new Connections(map - c.out)
 
     private def errorsOnAddition: Int = {
       def errorsAddingBit(bit: Int): Int = {
@@ -88,7 +100,7 @@ object Advent24 extends IOApp.Simple {
     private def isValid: Boolean = topologicallySortedWires.isDefined
 
     private val topologicallySortedWires: Option[List[Wire]] = {
-      val edges = set.flatMap { c =>
+      val edges = map.values.flatMap { c =>
         Set(c.a -> c.out, c.b -> c.out)
       }
 
@@ -104,12 +116,8 @@ object Advent24 extends IOApp.Simple {
           if (values.contains(wire)) {
             values
           } else {
-            val connections = set.filter(_.out == wire)
-            val newValues   = connections.foldLeft(values) {
-              case (values, connection) =>
-                values + (connection.out -> connection.result(values))
-            }
-            newValues
+            val connection = map(wire)
+            values + (connection.out -> connection.result(values))
           }
         }
       }
@@ -149,9 +157,10 @@ object Advent24 extends IOApp.Simple {
         }
       }
 
-      Connections {
-        (0 until InputBits).foldLeft(set) { case (ops, bit) =>
-          simplifyBit(ops, bit)
+      Connections.fromIterable {
+        (0 until InputBits).foldLeft(map.values.toSet) {
+          case (connections, bit) =>
+            simplifyBit(connections, bit)
         }
       }
     }
@@ -292,7 +301,7 @@ object Advent24 extends IOApp.Simple {
       }
       .mkString("\n\n")
 
-    val ops = connections.set map { connection =>
+    val ops = connections.map.values map { connection =>
       val opName = s""""${connection.name}""""
       s"""
          |  ${connection.a} -> $opName
