@@ -176,7 +176,7 @@ object Advent24 extends IOApp.Simple {
             swap = SetOfTwo(a, b)
           } yield (swap, current.swapOutputs(swap)))
             .map { case (swap, c) => (c, c.errorsOnAddition, swap) }
-            .minBy(_._2) match {
+            .minBy { case (_, score, _) => score } match {
             case (c, score, swap) if score < currentScore =>
               f(c, score, currentSwaps + swap)
             case _                                        =>
