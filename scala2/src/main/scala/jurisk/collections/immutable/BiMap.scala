@@ -1,5 +1,6 @@
 package jurisk.collections.immutable
 
+import jurisk.utils.CollectionOps.OptionOps
 import jurisk.utils.Parsing.StringOps
 
 class BiMap[A, B] private (
@@ -10,9 +11,9 @@ class BiMap[A, B] private (
   def rightToLeft(right: B): Option[A] = rightToLeftUnderlying.get(right)
 
   def leftToRightUnsafe(left: A): B  =
-    leftToRight(left).getOrElse(s"Failed to find $left".fail)
+    leftToRight(left).orFail(s"Failed to find $left")
   def rightToLeftUnsafe(right: B): A =
-    rightToLeft(right).getOrElse(s"Failed to find $right".fail)
+    rightToLeft(right).orFail(s"Failed to find $right")
 
   def leftKeys: Iterable[A]  = leftToRightUnderlying.keys
   def rightKeys: Iterable[B] = rightToLeftUnderlying.keys

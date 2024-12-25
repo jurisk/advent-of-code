@@ -7,6 +7,7 @@ import jurisk.utils.Parsing.StringOps
 
 import scala.annotation.tailrec
 
+// TODO: This should use topological sort and you have it in `GraphAlgorithms`
 object Advent05 {
   private type Page = Int
 

@@ -10,6 +10,7 @@ import jurisk.optimization.ImplicitConversions.RichExprIntSort
 import jurisk.optimization.ImplicitConversions.RichLong
 import jurisk.optimization.ImplicitConversions.RichString
 import jurisk.optimization.Optimizer
+import jurisk.utils.CollectionOps.OptionOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -184,7 +185,7 @@ object Advent21 {
       }
     }
 
-    val List(result) = runExternal(calculate).getOrElse("Failed".fail)
+    val List(result) = runExternal(calculate).orFail("Failed")
     resultToLong(result)
   }
 

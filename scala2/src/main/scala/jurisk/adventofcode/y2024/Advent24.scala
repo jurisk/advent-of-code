@@ -7,7 +7,9 @@ import jurisk.adventofcode.y2024.Advent24.Connections.OutputBits
 import jurisk.adventofcode.y2024.Advent24.Operation.And
 import jurisk.adventofcode.y2024.Advent24.Operation.Or
 import jurisk.adventofcode.y2024.Advent24.Operation.Xor
+import jurisk.algorithms.graph.GraphAlgorithms
 import jurisk.collections.immutable.SetOfTwo
+import jurisk.utils.CollectionOps.OptionOps
 import jurisk.utils.ConversionOps.BooleanOps
 import jurisk.utils.ConversionOps.IntOps
 import jurisk.utils.FileInput._
@@ -32,15 +34,16 @@ object Advent24 extends IOApp.Simple {
       Connections(s.splitLines.toSet map Connection.parse)
   }
 
+  // TODO: Make it a Map[Wire, (Wire, Operation, Wire)] as you are filtering by `out` a lot
   final case class Connections(set: Set[Connection]) {
     val outputWires: Set[Wire] = set.map(_.out)
-    def allWires: Set[Wire]    = set.flatMap(_.wiresMentioned)
+    val allWires: Set[Wire]    = set.flatMap(_.wiresMentioned)
 
     def foreach(f: Connection => Unit): Unit          = set foreach f
     def map(f: Connection => Connection): Connections = copy(set = set map f)
     def -(c: Connection): Connections                 = copy(set = set - c)
 
-    def errorsOnAddition: Int = {
+    private def errorsOnAddition: Int = {
       def errorsAddingBit(bit: Int): Int = {
         def zeroWires: Map[Wire, Boolean] =
           (0 until InputBits).flatMap { b =>
@@ -57,7 +60,7 @@ object Advent24 extends IOApp.Simple {
           (true, true, false, true),
         ).map { case (x, y, r, c) =>
           val values     = zeroWires ++ Map(xReg(bit) -> x, yReg(bit) -> y)
-          val output     = propagate(values)
+          val output     = propagate(values).orFail("Failed to propagate")
           val invalidR   = output.getOrElse(zReg(bit), false) != r
           val carryBit   = bit + 1
           val invalidC   = output.getOrElse(zReg(carryBit), false) != c
@@ -82,28 +85,34 @@ object Advent24 extends IOApp.Simple {
       }.sum
     }
 
+    private def isValid: Boolean = topologicallySortedWires.isDefined
+
+    private val topologicallySortedWires: Option[List[Wire]] = {
+      val edges = set.flatMap { c =>
+        Set(c.a -> c.out, c.b -> c.out)
+      }
+
+      val graph = GraphAlgorithms.createAdjacencyMapDirected(edges.toSeq)
+      GraphAlgorithms.topologicalSort(graph)
+    }
+
     def propagate(
       wires: Map[Wire, Boolean]
-    ): Map[Wire, Boolean] = {
-      // TODO: Would https://en.wikipedia.org/wiki/Topological_sorting be more efficient?
-      var results = wires
-      var queue   = allWires
-      var useful  = true
-      while (useful) {
-        useful = false
-        set foreach { c =>
-          if (
-            results.contains(c.a) && results
-              .contains(c.b) && !results.contains(c.out)
-          ) {
-            results += (c.out -> c.result(results))
-            queue -= c.out
-            useful = true
+    ): Option[Map[Wire, Boolean]] =
+      topologicallySortedWires map { sorted =>
+        sorted.foldLeft(wires) { case (values, wire) =>
+          if (values.contains(wire)) {
+            values
+          } else {
+            val connections = set.filter(_.out == wire)
+            val newValues   = connections.foldLeft(values) {
+              case (values, connection) =>
+                values + (connection.out -> connection.result(values))
+            }
+            newValues
           }
         }
       }
-      results
-    }
 
     def simplify: Connections = {
       def rename(
@@ -147,7 +156,7 @@ object Advent24 extends IOApp.Simple {
       }
     }
 
-    def swapOutputs(swap: SetOfTwo[Wire]): Connections =
+    private def swapOutputs(swap: SetOfTwo[Wire]): Connections =
       map(_.swapOutput(swap))
 
     def fix: (Connections, Set[SetOfTwo[Wire]]) = {
@@ -167,14 +176,17 @@ object Advent24 extends IOApp.Simple {
             SetOfTwo("kvn", "z18"),
             SetOfTwo("dbb", "z23"),
             SetOfTwo("cvh", "tfn"),
+            SetOfTwo("z13", "z12"), // This one just to mess things up
           )
           val candidates = swaps.flatMap(_.toSet)
           (for {
-            a   <- candidates
-            b   <- candidates
+            a      <- candidates
+            b      <- candidates
             if a < b
-            swap = SetOfTwo(a, b)
-          } yield (swap, current.swapOutputs(swap)))
+            swap    = SetOfTwo(a, b)
+            swapped = current.swapOutputs(swap)
+            if swapped.isValid
+          } yield (swap, swapped))
             .map { case (swap, c) => (c, c.errorsOnAddition, swap) }
             .minBy { case (_, score, _) => score } match {
             case (c, score, swap) if score < currentScore =>
@@ -263,7 +275,7 @@ object Advent24 extends IOApp.Simple {
 
   def part1(data: Input): BigInt = {
     val (wires, connections) = data
-    val results              = connections.propagate(wires)
+    val results              = connections.propagate(wires).orFail("Failed to propagate")
     val z                    = results.filter { case (k, _) => k.startsWith("z") }.toList
     val zBits                =
       z.sorted.map { case (_, b) => if (b) "1" else "0" }.mkString.reverse

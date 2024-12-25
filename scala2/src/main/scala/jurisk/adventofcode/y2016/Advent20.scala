@@ -4,6 +4,7 @@ import cats.effect.IO
 import cats.effect.IOApp
 import jurisk.math.DiscreteInterval
 import jurisk.math.DiscreteIntervalSet
+import jurisk.utils.CollectionOps.OptionOps
 import jurisk.utils.FileInputIO.readFileLines
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
@@ -29,7 +30,7 @@ object Advent20 extends IOApp.Simple {
   }
 
   private def part1(lines: List[String]): Long =
-    solve(lines).minOption.getOrElse("Failed to solve".fail)
+    solve(lines).minOption.orFail("Failed to solve")
 
   private def part2(lines: List[String]): Long =
     solve(lines).size

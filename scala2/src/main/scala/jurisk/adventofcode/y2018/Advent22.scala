@@ -11,6 +11,7 @@ import jurisk.algorithms.pathfinding.AStar
 import jurisk.geometry.Area2D
 import jurisk.geometry.Coords2D
 import jurisk.utils.CollectionOps.IterableOps
+import jurisk.utils.CollectionOps.OptionOps
 import jurisk.utils.Memoize.memoize1
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.matchers.should.Matchers._
@@ -121,7 +122,7 @@ object Advent22 {
         heuristic,
         _ == target,
       )
-      .getOrElse("Did not find".fail)
+      .orFail("Did not find")
     println(cost)
     cost
   }

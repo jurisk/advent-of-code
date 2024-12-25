@@ -1,7 +1,8 @@
 package jurisk.adventofcode.y2024
 
-import jurisk.algorithms.graph.GraphAlgorithms.createAdjacencyMap
+import jurisk.algorithms.graph.GraphAlgorithms.createAdjacencyMapUndirected
 import jurisk.algorithms.graph.GraphAlgorithms.enumerateMaximumCliques
+import jurisk.collections.immutable.SetOfTwo
 import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -26,11 +27,15 @@ object Advent23 {
   }
 
   def parse(input: String): Input = {
-    val connections = input.parseLines { s =>
-      s.parsePairUnsafe("-", Computer.parse, Computer.parse)
-    }
+    val connections = input
+      .parseLines { s =>
+        s.parsePairUnsafe("-", Computer.parse, Computer.parse)
+      }
+      .map { case (a, b) =>
+        SetOfTwo(a, b)
+      }
 
-    createAdjacencyMap(connections)
+    createAdjacencyMapUndirected(connections)
   }
 
   def part1(connections: Input): N = {
