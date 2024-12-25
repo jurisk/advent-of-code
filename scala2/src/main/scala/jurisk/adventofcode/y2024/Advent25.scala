@@ -1,37 +1,46 @@
 package jurisk.adventofcode.y2024
 
+import cats.implicits.{catsSyntaxEitherId, toFoldableOps}
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent25 {
-  type Input = List[Command]
+  type Input = List[Field2D[Boolean]]
   type N     = Long
 
-  sealed trait Command extends Product with Serializable
-  object Command {
-    case object Noop                      extends Command
-    final case class Something(
-      values: List[N]
-    ) extends Command
-    final case class Other(value: String) extends Command
+  def parse(input: String): Input =
+    input.parseSections(s => Field2D.parseBooleanField(s))
 
-    def parse(s: String): Command =
-      s match {
-        case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractLongList)
-        case s if s.nonEmpty   => Other(s)
-        case _                 => s.failedToParse
+  sealed trait Schematic
+  object Schematic {
+    final case class Lock(heights: List[Int]) extends Schematic
+    final case class Key(heights: List[Int])  extends Schematic
+
+    def convert(field: Field2D[Boolean]): Either[Lock, Key] =
+      if (field.firstRowValues.forall(_ == true)) {
+        Lock(field.columns.map(_.count(identity) - 1)).asLeft
+      } else if (field.firstRowValues.forall(_ == false)) {
+        Key(field.columns.map(_.count(identity) - 1)).asRight
+      } else {
+        "Invalid field".fail
       }
+
+    def fits(lock: Lock, key: Key): Boolean = {
+      val Height = 7
+      lock.heights.zip(key.heights).forall { case (l, k) =>
+        l + k <= Height - 2
+      }
+    }
   }
 
-  def parse(input: String): Input =
-    input.parseLines(Command.parse)
-
-  def part1(data: Input): N =
-    0
-
-  def part2(data: Input): N =
-    0
+  def part1(data: Input): N = {
+    val (locks, keys) = data.map(Schematic.convert).partitionEither(identity)
+    (for {
+      lock <- locks
+      key  <- keys
+    } yield Schematic.fits(lock, key)).count(identity)
+  }
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
@@ -43,6 +52,5 @@ object Advent25 {
     val realData: Input = parseFile(fileName(""))
 
     println(s"Part 1: ${part1(realData)}")
-    println(s"Part 2: ${part2(realData)}")
   }
 }
