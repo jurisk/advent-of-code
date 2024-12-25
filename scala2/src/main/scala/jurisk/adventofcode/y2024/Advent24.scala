@@ -2,6 +2,8 @@ package jurisk.adventofcode.y2024
 
 import cats.effect.IO
 import cats.effect.IOApp
+import jurisk.adventofcode.y2024.Advent24.Connections.InputBits
+import jurisk.adventofcode.y2024.Advent24.Connections.OutputBits
 import jurisk.adventofcode.y2024.Advent24.Operation.And
 import jurisk.adventofcode.y2024.Advent24.Operation.Or
 import jurisk.adventofcode.y2024.Advent24.Operation.Xor
@@ -13,6 +15,8 @@ import jurisk.utils.FileInputIO
 import jurisk.utils.Parsing.StringOps
 import mouse.all.booleanSyntaxMouse
 
+import scala.annotation.tailrec
+
 object Advent24 extends IOApp.Simple {
   private type Wire = String
   type Input        = (Map[Wire, Boolean], Connections)
@@ -20,11 +24,86 @@ object Advent24 extends IOApp.Simple {
   private def replace(s: Wire, replacements: Map[Wire, Wire]): Wire =
     replacements.getOrElse(s, s)
 
+  object Connections {
+    private val InputBits  = 45
+    private val OutputBits = InputBits + 1
+
+    def parse(s: String): Connections =
+      Connections(s.splitLines.toSet map Connection.parse)
+  }
+
   final case class Connections(set: Set[Connection]) {
-    def allWires: Set[Wire]                           = set.flatMap(_.wiresMentioned)
+    val outputWires: Set[Wire] = set.map(_.out)
+    def allWires: Set[Wire]    = set.flatMap(_.wiresMentioned)
+
     def foreach(f: Connection => Unit): Unit          = set foreach f
     def map(f: Connection => Connection): Connections = copy(set = set map f)
     def -(c: Connection): Connections                 = copy(set = set - c)
+
+    def errorsOnAddition: Int = {
+      def errorsAddingBit(bit: Int): Int = {
+        def zeroWires: Map[Wire, Boolean] =
+          (0 until InputBits).flatMap { b =>
+            List(
+              xReg(b) -> false,
+              yReg(b) -> false,
+            )
+          }.toMap
+
+        List(
+          (false, false, false, false),
+          (false, true, true, false),
+          (true, false, true, false),
+          (true, true, false, true),
+        ).map { case (x, y, r, c) =>
+          val values     = zeroWires ++ Map(xReg(bit) -> x, yReg(bit) -> y)
+          val output     = propagate(values)
+          val invalidR   = output.getOrElse(zReg(bit), false) != r
+          val carryBit   = bit + 1
+          val invalidC   = output.getOrElse(zReg(carryBit), false) != c
+          val extraBits  = (0 until OutputBits)
+            .filter { b =>
+              b != bit && b != carryBit
+            }
+            .count { i =>
+              output.getOrElse(zReg(i), false)
+            }
+          val DebugPrint = false
+          if (DebugPrint && (invalidR || invalidC || extraBits > 0)) {
+            println(s"bit: $bit, x: $x, y: $y, r: $r")
+            println(s"output: $output")
+          }
+          invalidR.toInt + invalidC.toInt + extraBits
+        }.sum
+      }
+
+      (0 until InputBits).map { bit =>
+        errorsAddingBit(bit)
+      }.sum
+    }
+
+    def propagate(
+      wires: Map[Wire, Boolean]
+    ): Map[Wire, Boolean] = {
+      // TODO: Would https://en.wikipedia.org/wiki/Topological_sorting be more efficient?
+      var results = wires
+      var queue   = allWires
+      var useful  = true
+      while (useful) {
+        useful = false
+        set foreach { c =>
+          if (
+            results.contains(c.a) && results
+              .contains(c.b) && !results.contains(c.out)
+          ) {
+            results += (c.out -> c.result(results))
+            queue -= c.out
+            useful = true
+          }
+        }
+      }
+      results
+    }
 
     def simplify: Connections = {
       def rename(
@@ -68,26 +147,46 @@ object Advent24 extends IOApp.Simple {
       }
     }
 
-    def fix: (Connections, List[SetOfTwo[Wire]]) = {
-      // TODO: pick random (or non-random, use bits you know are bad) swap, try it, if it is better than before, continue with that, if it is 0 errors then return, if it is worse, continue with this
+    def swapOutputs(swap: SetOfTwo[Wire]): Connections =
+      map(_.swapOutput(swap))
 
-      // These were found by reviewing the generated DOT file
-      val swaps = List(
-        SetOfTwo("hbk", "z14"),
-        SetOfTwo("kvn", "z18"),
-        SetOfTwo("dbb", "z23"),
-        SetOfTwo("cvh", "tfn"),
-      )
-
-      val swapped = swaps.foldLeft(set) { case (acc, swap) =>
-        acc.map(_.swapOutput(swap))
+    def fix: (Connections, Set[SetOfTwo[Wire]]) = {
+      @tailrec
+      def f(
+        current: Connections,
+        currentScore: Int,
+        currentSwaps: Set[SetOfTwo[Wire]],
+      ): (Connections, Set[SetOfTwo[Wire]]) = {
+        println(s"Current score: $currentScore, Current swaps: $currentSwaps")
+        if (currentScore == 0) {
+          (current, currentSwaps)
+        } else {
+          // TODO: Have a wider set of swaps to pick from!
+          val swaps      = Set(
+            SetOfTwo("hbk", "z14"),
+            SetOfTwo("kvn", "z18"),
+            SetOfTwo("dbb", "z23"),
+            SetOfTwo("cvh", "tfn"),
+          )
+          val candidates = swaps.flatMap(_.toSet)
+          (for {
+            a   <- candidates
+            b   <- candidates
+            if a < b
+            swap = SetOfTwo(a, b)
+          } yield (swap, current.swapOutputs(swap)))
+            .map { case (swap, c) => (c, c.errorsOnAddition, swap) }
+            .minBy(_._2) match {
+            case (c, score, swap) if score < currentScore =>
+              f(c, score, currentSwaps + swap)
+            case _                                        =>
+              println("No more improvements")
+              (current, currentSwaps)
+          }
+        }
       }
 
-      val result = Connections(swapped)
-      val errors = errorsOnAddition(result)
-      assert(errors == 0)
-
-      (result, swaps)
+      f(this, errorsOnAddition, Set.empty)
     }
   }
 
@@ -159,36 +258,12 @@ object Advent24 extends IOApp.Simple {
           _.parsePairUnsafe(": ", identity, _.toInt.toBooleanStrict01Unsafe)
         )
         .toMap,
-      s => Connections(s.splitLines.toSet map Connection.parse),
+      Connections.parse,
     )
-
-  private def propagate(
-    wires: Map[Wire, Boolean],
-    connections: Connections,
-  ): Map[Wire, Boolean] = {
-    // TODO: Would https://en.wikipedia.org/wiki/Topological_sorting be more efficient?
-    var results = wires
-    var queue   = connections.allWires
-    var useful  = true
-    while (useful) {
-      useful = false
-      connections foreach { c =>
-        if (
-          results.contains(c.a) && results
-            .contains(c.b) && !results.contains(c.out)
-        ) {
-          results += (c.out -> c.result(results))
-          queue -= c.out
-          useful = true
-        }
-      }
-    }
-    results
-  }
 
   def part1(data: Input): BigInt = {
     val (wires, connections) = data
-    val results              = propagate(wires, connections)
+    val results              = connections.propagate(wires)
     val z                    = results.filter { case (k, _) => k.startsWith("z") }.toList
     val zBits                =
       z.sorted.map { case (_, b) => if (b) "1" else "0" }.mkString.reverse
@@ -229,59 +304,14 @@ object Advent24 extends IOApp.Simple {
   private def yReg(i: Int): Wire = f"y$i%02d"
   private def zReg(i: Int): Wire = f"z$i%02d"
 
-  private val InputBits  = 45
-  private val OutputBits = InputBits + 1
-
-  private def errorsOnAddition(connections: Connections): Int = {
-    def errorsAddingBit(bit: Int, connections: Connections): Int = {
-      def zeroWires: Map[Wire, Boolean] =
-        (0 until InputBits).flatMap { b =>
-          List(
-            xReg(b) -> false,
-            yReg(b) -> false,
-          )
-        }.toMap
-
-      List(
-        (false, false, false, false),
-        (false, true, true, false),
-        (true, false, true, false),
-        (true, true, false, true),
-      ).map { case (x, y, r, c) =>
-        val values    = zeroWires ++ Map(xReg(bit) -> x, yReg(bit) -> y)
-        val output    = propagate(values, connections)
-        val invalidR  = output.getOrElse(zReg(bit), false) != r
-        val carryBit  = bit + 1
-        val invalidC  = output.getOrElse(zReg(carryBit), false) != c
-        val extraBits = (0 until OutputBits)
-          .filter { b =>
-            b != bit && b != carryBit
-          }
-          .count { i =>
-            output.getOrElse(zReg(i), false)
-          }
-        if (invalidR || invalidC || extraBits > 0) {
-          println(s"bit: $bit, x: $x, y: $y, r: $r")
-          println(s"output: $output")
-        }
-        invalidR.toInt + invalidC.toInt + extraBits
-      }.sum
-    }
-
-    (0 until InputBits).map { bit =>
-      errorsAddingBit(bit, connections)
-    }.sum
-  }
-
   def part2(data: Input): String = {
     val (_, connections) = data
 
     val (_, swaps) = connections.fix
 
     swaps
-      .flatMap { swap =>
-        swap.toSet
-      }
+      .flatMap(_.toSet)
+      .toList
       .sorted
       .mkString(",")
   }
