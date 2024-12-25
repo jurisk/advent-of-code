@@ -3,6 +3,7 @@ package jurisk.adventofcode.y2024
 import jurisk.adventofcode.y2024.Advent24.Operation.And
 import jurisk.adventofcode.y2024.Advent24.Operation.Or
 import jurisk.adventofcode.y2024.Advent24.Operation.Xor
+import jurisk.utils.ConversionOps.IntOps
 import jurisk.utils.FileInput._
 import jurisk.utils.FileInputIO
 import jurisk.utils.Parsing.StringOps
@@ -46,10 +47,16 @@ object Advent24 {
         this
       }
 
-    def name: String = s"$a ${op.toString.toUpperCase} $b"
+    def name: String = s"$a ${op.name} $b"
   }
 
-  sealed trait Operation extends Product with Serializable
+  sealed trait Operation extends Product with Serializable {
+    def name: String = this match {
+      case And => "AND"
+      case Or  => "OR"
+      case Xor => "XOR"
+    }
+  }
   object Operation {
     case object And extends Operation
     case object Or  extends Operation
@@ -71,24 +78,21 @@ object Advent24 {
             case _     => s.failedToParse
           }
 
+          // All these operations are commutative, so we can sort the inputs to gain more symmetries
           Connection(lowest, highest, operation, out)
         case _                    => s.failedToParse
       }
   }
 
   def parse(input: String): Input = {
-    val (wiresS, operations) = input.splitPairByDoubleNewline
-    val wires                = wiresS.splitLines map { w: String =>
+    val (wiresS, connections) = input.splitPairByDoubleNewline
+    val wires                 = wiresS.splitLines map { w: String =>
       val (q, bbg) = w.splitPairUnsafe(": ")
       val i        = bbg.toInt
-      val b        = i match {
-        case 0 => false
-        case 1 => true
-        case _ => "fail".fail
-      }
+      val b        = i.toBooleanStrict01Unsafe
       (q, b)
     }
-    val ops                  = operations.splitLines.toSet map Connection.parse
+    val ops                   = connections.splitLines.toSet map Connection.parse
     (wires.toMap, ops)
   }
 
@@ -98,9 +102,7 @@ object Advent24 {
   ): Map[Wire, Boolean] = {
     // TODO: Would https://en.wikipedia.org/wiki/Topological_sorting be more efficient?
     var results = wires
-    var queue   = wires.keySet ++ connections.flatMap { q: Connection =>
-      q.wiresMentioned
-    }
+    var queue   = connections.flatMap(_.wiresMentioned)
     var useful  = true
     while (useful) {
       useful = false
@@ -119,49 +121,40 @@ object Advent24 {
   }
 
   def part1(data: Input): BigInt = {
-    val (wires, operations) = data
-    val results             = propagate(wires, operations)
-    val z                   = results.filter { case (k, _) => k.startsWith("z") }.toList
-    val sor                 =
+    val (wires, connections) = data
+    val results              = propagate(wires, connections)
+    val z                    = results.filter { case (k, _) => k.startsWith("z") }.toList
+    val sor                  =
       z.sorted.map { case (_, b) => if (b) "1" else "0" }.mkString.reverse
-    println(sor)
     BigInt(sor, 2)
   }
 
-  private def debugWrite(operations: Set[Connection]): Unit = {
-    val allWires = operations.flatMap { q: Connection => q.wiresMentioned }
-    val ops      = operations map { op =>
-      val opName = s""""${op.name}""""
+  private def debugWrite(connections: Set[Connection]): Unit = {
+    val allWires = connections.flatMap { q: Connection => q.wiresMentioned }
+
+    val nodeStrings = List(("x", "blue"), ("y", "green"), ("z", "red"))
+      .map { case (prefix, colour) =>
+        allWires
+          .filter(_.startsWith(prefix))
+          .map(w => s"""  $w [shape=box, color=$colour];""")
+          .mkString("\n")
+      }
+      .mkString("\n\n")
+
+    val ops = connections map { connection =>
+      val opName = s""""${connection.name}""""
       s"""
-         | ${op.a} -> $opName
-         | ${op.b} -> $opName
-         | $opName -> ${op.out}
+         |  ${connection.a} -> $opName
+         |  ${connection.b} -> $opName
+         |  $opName -> ${connection.out}
          |
          |""".stripMargin
     }
 
-    val xNodes = allWires
-      .filter(_.startsWith("x"))
-      .map(w => s"""$w [shape=box, color=blue];""")
-      .mkString("\n")
-    val yNodes = allWires
-      .filter(_.startsWith("y"))
-      .map(w => s"""$w [shape=box, color=green];""")
-      .mkString("\n")
-    val zNodes = allWires
-      .filter(_.startsWith("z"))
-      .map { w =>
-        s"""$w [shape=box, color=red];"""
-      }
-      .mkString("\n")
-
-    val output = s"""
-                    |digraph G {
-                    | $xNodes
-                    | $yNodes
-                    | $zNodes
+    val output = s"""digraph G {
+                    |$nodeStrings
                     |
-                    | ${ops.mkString}
+                    |${ops.mkString}
                     |}
                     |""".stripMargin
 
@@ -181,7 +174,7 @@ object Advent24 {
     }.toMap
 
   // TODO: Calculate this metric for all bits
-  private def testAddition(bit: Int, operations: Set[Connection]): Unit =
+  private def testAddition(bit: Int, connections: Set[Connection]): Unit =
     List(
       (false, false, false, false),
       (false, true, true, false),
@@ -189,7 +182,7 @@ object Advent24 {
       (true, true, false, true),
     ) foreach { case (x, y, r, c) =>
       val m         = zeroWires ++ Map(xReg(bit) -> x, yReg(bit) -> y)
-      val o         = propagate(m, operations)
+      val o         = propagate(m, connections)
       val validR    = o.getOrElse(zReg(bit), false) == r
       val carryBit  = bit + 1
       val validC    = o.getOrElse(zReg(carryBit), false) == c
@@ -209,70 +202,55 @@ object Advent24 {
   private val InputBits  = 45
   private val OutputBits = InputBits + 1
 
-  def rename(
-    ops: Set[Connection],
-    what: Wire,
-    toWhat: Wire,
-  ): Set[Connection] = {
-    println(s"renaming $what to $toWhat")
-    ops.map(_.rename(what, toWhat))
-  }
-
   private def simplifyBit(
-    operations: Set[Connection],
+    connections: Set[Connection],
     bit: Int,
   ): Set[Connection] = {
-    // TODO: Refactor to simplify
-    val foundAnd = operations.find { op =>
-      op match {
-        case Connection(a, b, And, _) =>
-          (a == xReg(bit) && b == yReg(bit)) || (a == yReg(bit) && b == xReg(
-            bit
-          ))
-        case _                        => false
+    def rename(
+      ops: Set[Connection],
+      what: Wire,
+      toWhat: Wire,
+    ): Set[Connection] = {
+      println(s"Renaming $what to $toWhat")
+      ops.map(_.rename(what, toWhat))
+    }
+
+    def simplifyOp(
+      operation: Operation,
+      connections: Set[Connection],
+    ): Set[Connection] =
+      connections.find {
+        case Connection(a, b, `operation`, _) =>
+          Set(a, b) == Set(xReg(bit), yReg(bit))
+        case _                                =>
+          false
+      } match {
+        case Some(a @ Connection(_, _, `operation`, out)) =>
+          rename(connections - a, out, f"${operation.name}_$bit%02d_$out")
+        case _                                            =>
+          println(s"Bit $bit: $operation not found")
+          connections
       }
-    }
 
-    val intermediate = foundAnd match {
-      case Some(a @ Connection(_, _, And, out)) =>
-        rename(operations - a, out, f"AND_$bit%02d")
-      case _                                    =>
-        println(s"bit: $bit, AND not found")
-        operations
-    }
-
-    val foundXor = intermediate.find { op =>
-      op match {
-        case Connection(a, b, Xor, _) =>
-          (a == xReg(bit) && b == yReg(bit)) || (a == yReg(bit) && b == xReg(
-            bit
-          ))
-        case _                        => false
-      }
-    }
-
-    foundXor match {
-      case Some(a @ Connection(_, _, Xor, out)) if out != "z00" =>
-        rename(intermediate - a, out, f"XOR_$bit%02d")
-      case _                                                    =>
-        println(s"bit: $bit, XOR not found")
-        intermediate
+    List(Xor, And).foldLeft(connections) { case (acc, op) =>
+      simplifyOp(op, acc)
     }
   }
 
-  def simplify(operations: Set[Connection]): Set[Connection] =
-    (0 until InputBits).foldLeft(operations) { case (ops, bit) =>
+  def simplify(connections: Set[Connection]): Set[Connection] =
+    (0 until InputBits).foldLeft(connections) { case (ops, bit) =>
       simplifyBit(ops, bit)
     }
 
   def part2(data: Input): String = {
-    val (_, operations) = data
+    val (_, connections) = data
 
     // TODO: Find these automatically, by checking if the error count is lower if you swap nearby outputs
+    // These were found by reviewing the generated DOT file
     val swaps =
       List(("hbk", "z14"), ("kvn", "z18"), ("dbb", "z23"), ("cvh", "tfn"))
 
-    val swapped = swaps.foldLeft(operations) { case (acc, (a, b)) =>
+    val swapped = swaps.foldLeft(connections) { case (acc, (a, b)) =>
       acc.map(_.swapOutput(a, b))
     }
 
