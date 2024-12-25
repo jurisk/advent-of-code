@@ -10,4 +10,8 @@ object ConversionOps {
       case _ => s"Cannot convert $value to boolean".fail
     }
   }
+
+  implicit class BooleanOps(value: Boolean) {
+    def toInt: Int = if (value) 1 else 0
+  }
 }

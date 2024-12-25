@@ -97,6 +97,11 @@ object Parsing {
       (parserLeft(a), parserRight(b))
     }
 
+    def parsePairByDoubleNewline[A, B](
+      parserLeft: String => A,
+      parserRight: String => B,
+    ): (A, B) = s.parsePairUnsafe("\n\n", parserLeft, parserRight)
+
     def parsePairUnsafe[T](
       separator: String,
       parser: String => T,

@@ -1,7 +1,9 @@
 package jurisk.adventofcode.y2024
 
-import cats.implicits.{catsSyntaxEitherId, toFoldableOps}
+import cats.implicits.catsSyntaxEitherId
+import cats.implicits.toFoldableOps
 import jurisk.geometry.Field2D
+import jurisk.utils.CollectionOps.BooleanIterableOnceOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -13,33 +15,41 @@ object Advent25 {
     input.parseSections(s => Field2D.parseBooleanField(s))
 
   sealed trait Schematic
-  object Schematic {
+  private object Schematic {
     final case class Lock(heights: List[Int]) extends Schematic
-    final case class Key(heights: List[Int])  extends Schematic
+    final case class Key(heights: List[Int])  extends Schematic {
+      def fits(lock: Lock): Boolean = {
+        val Height = 7
 
-    def convert(field: Field2D[Boolean]): Either[Lock, Key] =
-      if (field.firstRowValues.forall(_ == true)) {
-        Lock(field.columns.map(_.count(identity) - 1)).asLeft
-      } else if (field.firstRowValues.forall(_ == false)) {
-        Key(field.columns.map(_.count(identity) - 1)).asRight
-      } else {
-        "Invalid field".fail
+        lock.heights.zip(heights).forall { case (l, k) =>
+          l + k <= Height - 2
+        }
       }
+    }
 
-    def fits(lock: Lock, key: Key): Boolean = {
-      val Height = 7
-      lock.heights.zip(key.heights).forall { case (l, k) =>
-        l + k <= Height - 2
+    def convert(field: Field2D[Boolean]): Either[Lock, Key] = {
+      val heights  = field.columns.map(_.countTrues - 1)
+      val firstRow = field.firstRowValues
+      val lastRow  = field.lastRowValues
+      (
+        firstRow.forall(_ == true) && lastRow.forall(_ == false),
+        firstRow.forall(_ == false) && lastRow.forall(_ == true),
+      ) match {
+        case (true, false) =>
+          Lock(heights).asLeft
+        case (false, true) =>
+          Key(heights).asRight
+        case _             => "Invalid field".fail
       }
     }
   }
 
   def part1(data: Input): N = {
-    val (locks, keys) = data.map(Schematic.convert).partitionEither(identity)
+    val (locks, keys) = (data map Schematic.convert).partitionEither(identity)
     (for {
       lock <- locks
       key  <- keys
-    } yield Schematic.fits(lock, key)).count(identity)
+    } yield key fits lock).countTrues
   }
 
   def parseFile(fileName: String): Input =

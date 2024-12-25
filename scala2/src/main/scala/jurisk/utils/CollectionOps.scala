@@ -88,6 +88,10 @@ object CollectionOps {
     def toList: List[T] = iterableOnce.iterator.to(List)
   }
 
+  implicit class BooleanIterableOnceOps(iterableOnce: IterableOnce[Boolean]) {
+    def countTrues: Int = iterableOnce.iterator.count(identity)
+  }
+
   implicit class IterableOps[T](iterable: Iterable[T]) {
     def counts: Map[T, Int] = iterable.groupMapReduce(identity)(_ => 1)(_ + _)
 

@@ -3,6 +3,7 @@ package jurisk.adventofcode.y2024
 import jurisk.adventofcode.y2024.Advent24.Operation.And
 import jurisk.adventofcode.y2024.Advent24.Operation.Or
 import jurisk.adventofcode.y2024.Advent24.Operation.Xor
+import jurisk.utils.ConversionOps.BooleanOps
 import jurisk.utils.ConversionOps.IntOps
 import jurisk.utils.FileInput._
 import jurisk.utils.FileInputIO
@@ -13,6 +14,9 @@ object Advent24 {
   type Input        = (Map[Wire, Boolean], Set[Connection])
 
   type N = Long
+
+  private def replace(s: Wire, replacements: Map[Wire, Wire]): Wire =
+    replacements.getOrElse(s, s)
 
   final case class Connection(a: Wire, b: Wire, op: Operation, out: Wire) {
     def wiresMentioned: Set[Wire] = Set(a, b, out)
@@ -27,25 +31,13 @@ object Advent24 {
       }
     }
 
-    def rename(what: Wire, toWhat: Wire): Connection =
-      if (a == what) {
-        copy(a = toWhat)
-      } else if (b == what) {
-        copy(b = toWhat)
-      } else if (out == what) {
-        copy(out = toWhat)
-      } else {
-        this
-      }
+    def rename(what: Wire, toWhat: Wire): Connection = {
+      val m = Map(what -> toWhat)
+      copy(a = replace(a, m), b = replace(b, m), out = replace(out, m))
+    }
 
     def swapOutput(what: Wire, toWhat: Wire): Connection =
-      if (out == what) {
-        copy(out = toWhat)
-      } else if (out == toWhat) {
-        copy(out = what)
-      } else {
-        this
-      }
+      copy(out = replace(out, Map(what -> toWhat, toWhat -> what)))
 
     def name: String = s"$a ${op.name} $b"
   }
@@ -68,9 +60,6 @@ object Advent24 {
     def parse(s: String): Connection =
       s match {
         case RegEx(a, op, b, out) =>
-          val lowest  = List(a, b).min
-          val highest = List(a, b).max
-
           val operation: Operation = op match {
             case "AND" => And
             case "OR"  => Or
@@ -79,22 +68,23 @@ object Advent24 {
           }
 
           // All these operations are commutative, so we can sort the inputs to gain more symmetries
+          val lowest  = List(a, b).min
+          val highest = List(a, b).max
+
           Connection(lowest, highest, operation, out)
         case _                    => s.failedToParse
       }
   }
 
-  def parse(input: String): Input = {
-    val (wiresS, connections) = input.splitPairByDoubleNewline
-    val wires                 = wiresS.splitLines map { w: String =>
-      val (q, bbg) = w.splitPairUnsafe(": ")
-      val i        = bbg.toInt
-      val b        = i.toBooleanStrict01Unsafe
-      (q, b)
-    }
-    val ops                   = connections.splitLines.toSet map Connection.parse
-    (wires.toMap, ops)
-  }
+  def parse(input: String): Input =
+    input.parsePairByDoubleNewline(
+      _.splitLines
+        .map(
+          _.parsePairUnsafe(": ", identity, _.toInt.toBooleanStrict01Unsafe)
+        )
+        .toMap,
+      _.splitLines.toSet map Connection.parse,
+    )
 
   private def propagate(
     wires: Map[Wire, Boolean],
@@ -124,13 +114,13 @@ object Advent24 {
     val (wires, connections) = data
     val results              = propagate(wires, connections)
     val z                    = results.filter { case (k, _) => k.startsWith("z") }.toList
-    val sor                  =
+    val zBits                =
       z.sorted.map { case (_, b) => if (b) "1" else "0" }.mkString.reverse
-    BigInt(sor, 2)
+    BigInt(zBits, 2)
   }
 
   private def debugWrite(connections: Set[Connection]): Unit = {
-    val allWires = connections.flatMap { q: Connection => q.wiresMentioned }
+    val allWires = connections.flatMap(_.wiresMentioned)
 
     val nodeStrings = List(("x", "blue"), ("y", "green"), ("z", "red"))
       .map { case (prefix, colour) =>
@@ -161,9 +151,9 @@ object Advent24 {
     FileInputIO.writeFileText("temp.dot", output)
   }
 
-  def xReg(i: Int): Wire = f"x$i%02d"
-  def yReg(i: Int): Wire = f"y$i%02d"
-  def zReg(i: Int): Wire = f"z$i%02d"
+  private def xReg(i: Int): Wire = f"x$i%02d"
+  private def yReg(i: Int): Wire = f"y$i%02d"
+  private def zReg(i: Int): Wire = f"z$i%02d"
 
   private def zeroWires: Map[Wire, Boolean] =
     (0 until InputBits).flatMap { b =>
@@ -174,30 +164,31 @@ object Advent24 {
     }.toMap
 
   // TODO: Calculate this metric for all bits
-  private def testAddition(bit: Int, connections: Set[Connection]): Unit =
+  private def testAddition(bit: Int, connections: Set[Connection]): Int =
     List(
       (false, false, false, false),
       (false, true, true, false),
       (true, false, true, false),
       (true, true, false, true),
-    ) foreach { case (x, y, r, c) =>
-      val m         = zeroWires ++ Map(xReg(bit) -> x, yReg(bit) -> y)
-      val o         = propagate(m, connections)
-      val validR    = o.getOrElse(zReg(bit), false) == r
+    ).map { case (x, y, r, c) =>
+      val values    = zeroWires ++ Map(xReg(bit) -> x, yReg(bit) -> y)
+      val output    = propagate(values, connections)
+      val invalidR  = output.getOrElse(zReg(bit), false) != r
       val carryBit  = bit + 1
-      val validC    = o.getOrElse(zReg(carryBit), false) == c
+      val invalidC  = output.getOrElse(zReg(carryBit), false) != c
       val extraBits = (0 until OutputBits)
         .filter { b =>
           b != bit && b != carryBit
         }
         .count { i =>
-          o.getOrElse(zReg(i), false)
+          output.getOrElse(zReg(i), false)
         }
-      if (!validR || !validC || extraBits > 0) {
+      if (invalidR || invalidC || extraBits > 0) {
         println(s"bit: $bit, x: $x, y: $y, r: $r")
-        println(s"o: $o")
+        println(s"output: $output")
       }
-    }
+      invalidR.toInt + invalidC.toInt + extraBits
+    }.sum
 
   private val InputBits  = 45
   private val OutputBits = InputBits + 1
@@ -210,10 +201,8 @@ object Advent24 {
       ops: Set[Connection],
       what: Wire,
       toWhat: Wire,
-    ): Set[Connection] = {
-      println(s"Renaming $what to $toWhat")
+    ): Set[Connection] =
       ops.map(_.rename(what, toWhat))
-    }
 
     def simplifyOp(
       operation: Operation,
@@ -242,13 +231,22 @@ object Advent24 {
       simplifyBit(ops, bit)
     }
 
+  def testAdditions(connections: Set[Connection]): Int =
+    (0 until InputBits).map { bit =>
+      testAddition(bit, connections)
+    }.sum
+
   def part2(data: Input): String = {
     val (_, connections) = data
 
     // TODO: Find these automatically, by checking if the error count is lower if you swap nearby outputs
     // These were found by reviewing the generated DOT file
-    val swaps =
-      List(("hbk", "z14"), ("kvn", "z18"), ("dbb", "z23"), ("cvh", "tfn"))
+    val swaps = List(
+      ("hbk", "z14"),
+      ("kvn", "z18"),
+      ("dbb", "z23"),
+      ("cvh", "tfn"),
+    )
 
     val swapped = swaps.foldLeft(connections) { case (acc, (a, b)) =>
       acc.map(_.swapOutput(a, b))
@@ -257,9 +255,8 @@ object Advent24 {
     val simplified = simplify(swapped)
     debugWrite(simplified)
 
-    (0 until InputBits) foreach { bit =>
-      testAddition(bit, swapped)
-    }
+    val errors = testAdditions(swapped)
+    assert(errors == 0)
 
     swaps
       .flatMap { case (a, b) =>
