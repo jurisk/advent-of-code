@@ -20,7 +20,8 @@ import mouse.all.booleanSyntaxMouse
 import scala.annotation.tailrec
 
 object Advent24 extends IOApp.Simple {
-  type Input = (Map[Wire, Boolean], Connections)
+  private type Values = Map[Wire, Boolean]
+  type Input          = (Values, Connections)
 
   sealed trait Wire extends Product with Serializable
   private object Wire {
@@ -36,9 +37,6 @@ object Advent24 extends IOApp.Simple {
     final case class Middle(a: Char, b: Char, c: Char) extends Wire {
       override def toString: String = s"$a$b$c"
     }
-    final case class Debug(s: String)                  extends Wire {
-      override def toString: String = s
-    }
 
     def parse(s: String): Wire = s match {
       case s"x$i" => X(i.toInt)
@@ -47,7 +45,7 @@ object Advent24 extends IOApp.Simple {
       case s      =>
         s.toList match {
           case List(a, b, c) => Middle(a, b, c)
-          case _             => Debug(s)
+          case _             => s"Failed to parse $s".fail
         }
     }
   }
@@ -77,7 +75,9 @@ object Advent24 extends IOApp.Simple {
   }
 
   final case class Connections private (map: Map[Wire, Connection]) {
-    val allWires: Set[Wire]   = map.flatMap { case (k, v) => Set(k, v.a, v.b) }.toSet
+    val allWires: Set[Wire]   = map.flatMap { case (k, v) =>
+      Set(k, v.a, v.b)
+    }.toSet
     val allOutputs: Set[Wire] = map.keySet
 
     def foreach(f: Connection => Unit): Unit = map.values foreach f
@@ -85,7 +85,7 @@ object Advent24 extends IOApp.Simple {
     // TODO: This doesn't do a sufficient test, as these bit-by-bit tests don't catch all issues that could happen. Consider adding random numbers.
     private def errorsOnAddition: Int = {
       def errorsAddingBit(bit: Int): Int = {
-        def zeroWires: Map[Wire, Boolean] =
+        def zeroWires: Values =
           (0 until InputBits).flatMap { b =>
             List(
               Wire.X(b) -> false,
@@ -132,13 +132,13 @@ object Advent24 extends IOApp.Simple {
         Set(c.a -> out, c.b -> out)
       }
 
-      val graph = GraphAlgorithms.createAdjacencyMapDirected(edges.toSeq)
+      val graph = GraphAlgorithms.createAdjacencyMapDirected(edges)
       GraphAlgorithms.topologicalSort(graph)
     }
 
     def propagate(
-      wires: Map[Wire, Boolean]
-    ): Option[Map[Wire, Boolean]] =
+      wires: Values
+    ): Option[Values] =
       topologicallySortedWires map { sorted =>
         sorted.foldLeft(wires) { case (values, wire) =>
           if (values.contains(wire)) {
@@ -172,13 +172,13 @@ object Advent24 extends IOApp.Simple {
         if (currentScore == 0) {
           (current, currentSwaps)
         } else {
+          // TODO: Try to apply Genetic Algorithm or similar...
           // TODO: Have a wider set of swaps to pick from!
           val swaps      = Set(
             SetOfTwo("hbk", "z14"),
             SetOfTwo("kvn", "z18"),
             SetOfTwo("dbb", "z23"),
             SetOfTwo("cvh", "tfn"),
-//            SetOfTwo("z13", "z12"), // This one just to mess things up
           )
           val candidates = swaps.flatMap(_.toSet).map(Wire.parse).toIndexedSeq
 //          val candidates = current.allOutputs
@@ -210,7 +210,7 @@ object Advent24 extends IOApp.Simple {
   }
 
   final case class Connection(a: Wire, b: Wire, op: Operation) {
-    def result(values: Map[Wire, Boolean]): Boolean = {
+    def result(values: Values): Boolean = {
       val aV = values.getOrElse(a, false)
       val bV = values.getOrElse(b, false)
       op match {
@@ -237,7 +237,7 @@ object Advent24 extends IOApp.Simple {
   }
 
   private object Connection {
-    private val RegEx                = "(\\w+) (\\w+) (\\w+) -> (\\w+)".r
+    private val RegEx                        = "(\\w+) (\\w+) (\\w+) -> (\\w+)".r
     def parse(s: String): (Connection, Wire) =
       s match {
         case RegEx(a, op, b, out) =>
@@ -257,7 +257,7 @@ object Advent24 extends IOApp.Simple {
             Wire.parse(highest),
             operation,
           )
-          val output = Wire.parse(out)
+          val output     = Wire.parse(out)
           (connection, output)
         case _                    => s.failedToParse
       }
@@ -331,8 +331,10 @@ object Advent24 extends IOApp.Simple {
   def fileName(suffix: String): String =
     s"2024/24$suffix.txt"
 
+  private val DebugWrite     = false
   override def run: IO[Unit] = for {
     (wires, connections) <- IO(parseFile(fileName("")))
+    _                    <- DebugWrite.whenA(debugWrite(connections))
     _                    <- IO.println(s"Part 1: ${part1((wires, connections))}")
     _                    <- IO.println(s"Part 2: ${part2((wires, connections))}")
   } yield ()
