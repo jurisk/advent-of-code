@@ -20,8 +20,37 @@ import mouse.all.booleanSyntaxMouse
 import scala.annotation.tailrec
 
 object Advent24 extends IOApp.Simple {
-  private type Wire = String
-  type Input        = (Map[Wire, Boolean], Connections)
+  type Input = (Map[Wire, Boolean], Connections)
+
+  sealed trait Wire extends Product with Serializable
+  object Wire {
+    final case class X(i: Int)                         extends Wire {
+      override def toString: String = f"x$i%02d"
+    }
+    final case class Y(i: Int)                         extends Wire {
+      override def toString: String = f"y$i%02d"
+    }
+    final case class Z(i: Int)                         extends Wire {
+      override def toString: String = f"z$i%02d"
+    }
+    final case class Middle(a: Char, b: Char, c: Char) extends Wire {
+      override def toString: String = s"$a$b$c"
+    }
+    final case class Debug(s: String)                  extends Wire {
+      override def toString: String = s
+    }
+
+    def parse(s: String): Wire = s match {
+      case s"x$i" => X(i.toInt)
+      case s"y$i" => Y(i.toInt)
+      case s"z$i" => Z(i.toInt)
+      case s      =>
+        s.toList match {
+          case List(a, b, c) => Middle(a, b, c)
+          case _             => Debug(s)
+        }
+    }
+  }
 
   private def replace(s: Wire, replacements: Map[Wire, Wire]): Wire =
     replacements.getOrElse(s, s)
@@ -33,27 +62,26 @@ object Advent24 extends IOApp.Simple {
     def parse(s: String): Connections =
       Connections.fromIterable(s.splitLines.toSet map Connection.parse)
 
-    def fromIterable(set: Iterable[Connection]): Connections = new Connections(
-      set
-        .groupBy(_.out)
-        .view
-        .mapValues { connections =>
-          assert(connections.size == 1)
-          connections.head
-        }
-        .toMap
-    )
+    private def fromIterable(set: Iterable[Connection]): Connections =
+      new Connections(
+        set
+          .groupBy(_.out)
+          .view
+          .mapValues { connections =>
+            assert(connections.size == 1)
+            connections.head
+          }
+          .toMap
+      )
   }
 
-  // TODO: Make it a Map[Wire, (Wire, Operation, Wire)] as you are filtering by `out` a lot
   final case class Connections private (map: Map[Wire, Connection]) {
     val allWires: Set[Wire]   = map.values.flatMap(_.wiresMentioned).toSet
     val allOutputs: Set[Wire] = map.keySet
 
-    def foreach(f: Connection => Unit): Unit          = map.values foreach f
-    def map(f: Connection => Connection): Connections =
-      Connections.fromIterable((map.values map f).toSet)
-    def -(c: Connection): Connections                 = new Connections(map - c.out)
+    def foreach(f: Connection => Unit): Unit = map.values foreach f
+
+    def -(c: Connection): Connections = new Connections(map - c.out)
 
     // TODO: This doesn't do a sufficient test, as these bit-by-bit tests don't catch all issues that could happen. Consider adding random numbers.
     private def errorsOnAddition: Int = {
@@ -61,8 +89,8 @@ object Advent24 extends IOApp.Simple {
         def zeroWires: Map[Wire, Boolean] =
           (0 until InputBits).flatMap { b =>
             List(
-              xReg(b) -> false,
-              yReg(b) -> false,
+              Wire.X(b) -> false,
+              Wire.Y(b) -> false,
             )
           }.toMap
 
@@ -72,17 +100,17 @@ object Advent24 extends IOApp.Simple {
           (true, false, true, false),
           (true, true, false, true),
         ).map { case (x, y, r, c) =>
-          val values     = zeroWires ++ Map(xReg(bit) -> x, yReg(bit) -> y)
+          val values     = zeroWires ++ Map(Wire.X(bit) -> x, Wire.Y(bit) -> y)
           val output     = propagate(values).orFail("Failed to propagate")
-          val invalidR   = output.getOrElse(zReg(bit), false) != r
+          val invalidR   = output.getOrElse(Wire.Z(bit), false) != r
           val carryBit   = bit + 1
-          val invalidC   = output.getOrElse(zReg(carryBit), false) != c
+          val invalidC   = output.getOrElse(Wire.Z(carryBit), false) != c
           val extraBits  = (0 until OutputBits)
             .filter { b =>
               b != bit && b != carryBit
             }
             .count { i =>
-              output.getOrElse(zReg(i), false)
+              output.getOrElse(Wire.Z(i), false)
             }
           val DebugPrint = false
           if (DebugPrint && (invalidR || invalidC || extraBits > 0)) {
@@ -142,12 +170,16 @@ object Advent24 extends IOApp.Simple {
         ): Set[Connection] =
           connections.find {
             case Connection(a, b, `operation`, _) =>
-              Set(a, b) == Set(xReg(bit), yReg(bit))
+              Set(a, b) == Set(Wire.X(bit), Wire.Y(bit))
             case _                                =>
               false
           } match {
             case Some(a @ Connection(_, _, `operation`, out)) =>
-              rename(connections - a, out, f"${operation.name}_$bit%02d_$out")
+              rename(
+                connections - a,
+                out,
+                Wire.Debug(f"${operation.name}_$bit%02d_$out"),
+              )
             case _                                            =>
               println(s"Bit $bit: $operation not found")
               connections
@@ -166,8 +198,16 @@ object Advent24 extends IOApp.Simple {
       }
     }
 
-    private def swapOutputs(swap: SetOfTwo[Wire]): Connections =
-      map(_.swapOutput(swap))
+    private def swapOutputs(swap: SetOfTwo[Wire]): Connections = {
+      val (a, b) = swap.tupleInArbitraryOrder
+      val aC     = map(a)
+      val bC     = map(b)
+      val newMap = map ++ Map(
+        a -> bC.copy(out = a),
+        b -> aC.copy(out = b),
+      )
+      new Connections(newMap)
+    }
 
     def fix: (Connections, Set[SetOfTwo[Wire]]) = {
       @tailrec
@@ -188,12 +228,14 @@ object Advent24 extends IOApp.Simple {
             SetOfTwo("cvh", "tfn"),
 //            SetOfTwo("z13", "z12"), // This one just to mess things up
           )
-          val candidates = swaps.flatMap(_.toSet)
+          val candidates = swaps.flatMap(_.toSet).map(Wire.parse).toIndexedSeq
 //          val candidates = current.allOutputs
           (for {
-            a      <- candidates
-            b      <- candidates
-            if a < b
+            aIdx   <- 0 until candidates.size
+            bIdx   <- 0 until candidates.size
+            if aIdx < bIdx
+            a       = candidates(aIdx)
+            b       = candidates(bIdx)
             swap    = SetOfTwo(a, b)
             swapped = current.swapOutputs(swap)
             if swapped.isValid
@@ -233,12 +275,6 @@ object Advent24 extends IOApp.Simple {
       copy(a = replace(a, m), b = replace(b, m), out = replace(out, m))
     }
 
-    def swapOutput(swap: SetOfTwo[Wire]): Connection = {
-      val (a, b) = swap.tupleInArbitraryOrder
-      val m      = Map(a -> b, b -> a)
-      copy(out = replace(out, m))
-    }
-
     def name: String = s"$a ${op.name} $b"
   }
 
@@ -271,7 +307,12 @@ object Advent24 extends IOApp.Simple {
           val lowest  = List(a, b).min
           val highest = List(a, b).max
 
-          Connection(lowest, highest, operation, out)
+          Connection(
+            Wire.parse(lowest),
+            Wire.parse(highest),
+            operation,
+            Wire.parse(out),
+          )
         case _                    => s.failedToParse
       }
   }
@@ -280,7 +321,7 @@ object Advent24 extends IOApp.Simple {
     input.parsePairByDoubleNewline(
       _.splitLines
         .map(
-          _.parsePairUnsafe(": ", identity, _.toInt.toBooleanStrict01Unsafe)
+          _.parsePairUnsafe(": ", Wire.parse, _.toInt.toBooleanStrict01Unsafe)
         )
         .toMap,
       Connections.parse,
@@ -289,7 +330,7 @@ object Advent24 extends IOApp.Simple {
   def part1(data: Input): BigInt = {
     val (wires, connections) = data
     val results              = connections.propagate(wires).orFail("Failed to propagate")
-    val z                    = results.filter { case (k, _) => k.startsWith("z") }.toList
+    val z                    = results.collect { case (Wire.Z(zIdx), v) => (zIdx, v) }.toList
     val zBits                =
       z.sorted.map { case (_, b) => if (b) "1" else "0" }.mkString.reverse
     BigInt(zBits, 2)
@@ -299,7 +340,7 @@ object Advent24 extends IOApp.Simple {
     val nodeStrings = List(("x", "blue"), ("y", "green"), ("z", "red"))
       .map { case (prefix, colour) =>
         connections.allWires
-          .filter(_.startsWith(prefix))
+          .filter(_.toString.startsWith(prefix))
           .map(w => s"""  $w [shape=box, color=$colour];""")
           .mkString("\n")
       }
@@ -325,10 +366,6 @@ object Advent24 extends IOApp.Simple {
     FileInputIO.writeFileText("temp.dot", output)
   }
 
-  private def xReg(i: Int): Wire = f"x$i%02d"
-  private def yReg(i: Int): Wire = f"y$i%02d"
-  private def zReg(i: Int): Wire = f"z$i%02d"
-
   def part2(data: Input): String = {
     val (_, connections) = data
 
@@ -337,6 +374,7 @@ object Advent24 extends IOApp.Simple {
     swaps
       .flatMap(_.toSet)
       .toList
+      .map(_.toString)
       .sorted
       .mkString(",")
   }
