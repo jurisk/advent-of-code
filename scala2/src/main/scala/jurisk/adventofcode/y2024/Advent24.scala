@@ -21,7 +21,7 @@ import scala.util.Random
 
 // Notes:
 // - I actually solved this by simplifying the output DOT file and then finding irregularities manually.
-// - Later, I tried to apply a genetic algorithm, but failed to get this to converge.
+// - I tried to apply a genetic algorithm, but failed to get this to converge.
 object Advent24 extends IOApp.Simple {
   private val InputBits  = 45
   private val OutputBits = InputBits + 1
@@ -90,7 +90,7 @@ object Advent24 extends IOApp.Simple {
   }
 
   sealed trait Wire extends Product with Serializable
-  private object Wire {
+  object Wire {
     final case class X(i: Int)                         extends Wire {
       override def toString: String = f"x$i%02d"
     }
@@ -135,19 +135,19 @@ object Advent24 extends IOApp.Simple {
   }
 
   final case class Connections private (map: Map[Wire, Connection]) {
-    val allWires: Set[Wire]           = map.flatMap { case (k, v) =>
+    val allWires: Set[Wire]   = map.flatMap { case (k, v) =>
       Set(k, v.a, v.b)
     }.toSet
-    private val allOutputs: Set[Wire] = map.keySet
+    val allOutputs: Set[Wire] = map.keySet
 
     def foreach(f: Connection => Unit): Unit = map.values foreach f
 
-    private def errorsOnAddition: Option[Int] =
+    def errorsOnAddition: Option[Int] =
       // We care more about `errorsBitByBit`, but since they didn't catch everything, we also care about `errorsOnRandomAddition`
-      isValid.option(128 * errorsBitByBit + errorsOnRandomAddition)
+      isValid.option(4096 * errorsBitByBit + errorsOnRandomAddition)
 
     private def errorsOnRandomAddition: Int = {
-      val Samples = 16
+      val Samples = 8
       (for {
         _             <- 0 until Samples
         r              = Values.randomXY
@@ -194,7 +194,7 @@ object Advent24 extends IOApp.Simple {
       }.sum
     }
 
-    private def isValid: Boolean = topologicallySortedWires.isDefined
+    def isValid: Boolean = topologicallySortedWires.isDefined
 
     private val topologicallySortedWires: Option[List[Wire]] = {
       val edges = map.toSeq.flatMap { case (out, c) =>
@@ -230,22 +230,50 @@ object Advent24 extends IOApp.Simple {
       new Connections(newMap)
     }
 
-    def fix: (Connections, Set[SetOfTwo[Wire]]) = {
-      @tailrec
+    def applySwaps(swaps: Set[SetOfTwo[Wire]]): Connections =
+      swaps.foldLeft(this) { case (current, swap) =>
+        current.swapOutputs(swap)
+      }
+
+    private def errorScore(swaps: Set[SetOfTwo[Wire]]): Int = {
+      val swapped = applySwaps(swaps)
+      swapped.errorsOnAddition.orFail("Failed to get errors")
+    }
+
+    def bestSwaps: Set[SetOfTwo[Wire]] = {
       def f(
-        current: Connections,
         currentScore: Int,
         currentSwaps: Set[SetOfTwo[Wire]],
-      ): (Connections, Set[SetOfTwo[Wire]]) = {
+      ): Set[SetOfTwo[Wire]] = {
+        def backtracking = {
+          println("Unexpected: No more improvements, trying to backtrack")
+          val selected = currentSwaps.toIndexedSeq
+            .combinations(3)
+            .map(_.toSet)
+            .filter(applySwaps(_).isValid)
+            .minBy(attempt => errorScore(attempt))
+          val adjusted = applySwaps(selected)
+          f(
+            adjusted.errorsOnAddition.orFail("Failed to get errors"),
+            selected,
+          )
+        }
+
         println(s"Current score: $currentScore, Current swaps: $currentSwaps")
         if (currentScore == 0) {
-          (current, currentSwaps)
+          val ExpectedSwaps = 4
+          if (currentSwaps.size == ExpectedSwaps) {
+            currentSwaps
+          } else {
+            backtracking
+          }
         } else {
           // Note: The swaps for our data are:
           // 1. hbk <-> z14
           // 2. kvn <-> z18
           // 3. dbb <-> z23
           // 4. cvh <-> tfn
+          val current    = applySwaps(currentSwaps)
           val candidates = current.allOutputs.toIndexedSeq
           (for {
             aIdx   <- candidates.indices
@@ -258,19 +286,18 @@ object Advent24 extends IOApp.Simple {
             if swapped.isValid
           } yield (swap, swapped))
             .map { case (swap, c) =>
-              (c, c.errorsOnAddition.orFail("Failed to get errors"), swap)
+              (c.errorsOnAddition.orFail("Failed to get errors"), swap)
             }
-            .minBy { case (_, score, _) => score } match {
-            case (c, score, swap) if score < currentScore =>
-              f(c, score, currentSwaps + swap)
-            case _                                        =>
-              println("No more improvements")
-              (current, currentSwaps)
+            .minBy { case (score, _) => score } match {
+            case (score, swap) if score < currentScore =>
+              f(score, currentSwaps + swap)
+            case _                                     =>
+              backtracking
           }
         }
       }
 
-      f(this, errorsOnAddition.orFail("Failed"), Set.empty)
+      f(errorsOnAddition.orFail("Failed"), Set.empty)
     }
   }
 
@@ -373,7 +400,7 @@ object Advent24 extends IOApp.Simple {
   def part2(data: Input): String = {
     val (_, connections) = data
 
-    val (_, swaps) = connections.fix
+    val swaps = connections.bestSwaps
 
     swaps
       .flatMap(_.toSet)

@@ -10,7 +10,15 @@ final case class SetOfTwo[T](private val underlying: Set[T]) {
 
   def toSet: Set[T] = underlying
 
-  override def toString: String = tupleInArbitraryOrder.toString()
+  override def toString: String = {
+    val (a, b)  = tupleInArbitraryOrder
+    val aStr    = a.toString
+    val bStr    = b.toString
+    val both    = Set(aStr, bStr)
+    val lowest  = both.min
+    val highest = both.max
+    s"($lowest, $highest)"
+  }
 
   def mapUnsafe[B](f: T => B): SetOfTwo[B] = SetOfTwo(toSet.map(f))
   def map[B](f: T => B): Set[B]            = toSet.map(f)
