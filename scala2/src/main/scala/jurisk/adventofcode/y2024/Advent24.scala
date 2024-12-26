@@ -19,6 +19,9 @@ import mouse.all.booleanSyntaxMouse
 import scala.annotation.tailrec
 import scala.util.Random
 
+// Notes:
+// - I actually solved this by simplifying the output DOT file and then finding irregularities manually.
+// - Later, I tried to apply a genetic algorithm, but failed to get this to converge.
 object Advent24 extends IOApp.Simple {
   private val InputBits  = 45
   private val OutputBits = InputBits + 1
@@ -139,9 +142,9 @@ object Advent24 extends IOApp.Simple {
 
     def foreach(f: Connection => Unit): Unit = map.values foreach f
 
-    private def errorsOnAddition: Int =
+    private def errorsOnAddition: Option[Int] =
       // We care more about `errorsBitByBit`, but since they didn't catch everything, we also care about `errorsOnRandomAddition`
-      128 * errorsBitByBit + errorsOnRandomAddition
+      isValid.option(128 * errorsBitByBit + errorsOnRandomAddition)
 
     private def errorsOnRandomAddition: Int = {
       val Samples = 16
@@ -238,7 +241,6 @@ object Advent24 extends IOApp.Simple {
         if (currentScore == 0) {
           (current, currentSwaps)
         } else {
-          // TODO: Try to apply Genetic Algorithm or similar...
           // Note: The swaps for our data are:
           // 1. hbk <-> z14
           // 2. kvn <-> z18
@@ -256,7 +258,7 @@ object Advent24 extends IOApp.Simple {
             if swapped.isValid
           } yield (swap, swapped))
             .map { case (swap, c) =>
-              (c, c.errorsOnAddition, swap)
+              (c, c.errorsOnAddition.orFail("Failed to get errors"), swap)
             }
             .minBy { case (_, score, _) => score } match {
             case (c, score, swap) if score < currentScore =>
@@ -268,7 +270,7 @@ object Advent24 extends IOApp.Simple {
         }
       }
 
-      f(this, errorsOnAddition, Set.empty)
+      f(this, errorsOnAddition.orFail("Failed"), Set.empty)
     }
   }
 

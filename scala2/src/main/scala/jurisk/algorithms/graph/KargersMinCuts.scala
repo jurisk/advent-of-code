@@ -4,7 +4,6 @@ import jurisk.collections.immutable.SetOfTwo
 import jurisk.collections.immutable.graph.Graph
 import jurisk.collections.immutable.graph.Graph.VertexId
 import jurisk.collections.mutable.DisjointSets
-import jurisk.utils.CollectionOps.VectorOps
 
 import scala.annotation.tailrec
 import scala.util.Random
