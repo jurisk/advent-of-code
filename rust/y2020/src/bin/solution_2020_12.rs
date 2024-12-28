@@ -46,7 +46,7 @@ impl Location {
                 90 => n,
                 180 => 0,
                 270 => -n,
-                _ => panic!("{}", "Didn't expect {bearing}"),
+                _ => panic!("Didn't expect {bearing}"),
             }
         }
 
@@ -56,7 +56,7 @@ impl Location {
                 90 => 0,
                 180 => -n,
                 270 => 0,
-                _ => panic!("{}", "Didn't expect {bearing}"),
+                _ => panic!("Didn't expect {bearing}"),
             }
         }
 
@@ -152,7 +152,7 @@ fn parse_line(line: &str) -> Command {
         'L' => Left(number),
         'R' => Right(number),
         'F' => Forward(number),
-        _ => panic!("{}", "Unrecognized char {first_char}"),
+        _ => panic!("Unrecognized char {first_char}"),
     }
 }
 

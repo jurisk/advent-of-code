@@ -62,7 +62,7 @@ impl FromStr for Vent {
             let to = Coords2D::from_str(v[1])?;
             Ok(Vent { from, to })
         } else {
-            Err("Invalid vent {s}".to_string())
+            Err(format!("Invalid vent {s}").to_string())
         }
     }
 }

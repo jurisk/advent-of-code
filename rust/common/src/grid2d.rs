@@ -94,6 +94,58 @@ pub trait Grid2D<T> {
         self.rows()
     }
 
+    fn row_values(&self, row: usize) -> Vec<T>
+    where
+        T: Clone,
+    {
+        (0 .. self.columns())
+            .map(|c| self.get(Coords::new(c as i32, row as i32)).unwrap().clone())
+            .collect()
+    }
+
+    fn all_row_values(&self) -> Vec<Vec<T>>
+    where
+        T: Clone,
+    {
+        (0 .. self.rows()).map(|r| self.row_values(r)).collect()
+    }
+
+    fn first_row_values(&self) -> Vec<T>
+    where
+        T: Clone,
+    {
+        self.row_values(0)
+    }
+
+    fn last_row_values(&self) -> Vec<T>
+    where
+        T: Clone,
+    {
+        self.row_values(self.rows() - 1)
+    }
+
+    fn all_column_values(&self) -> Vec<Vec<T>>
+    where
+        T: Clone,
+    {
+        (0 .. self.columns())
+            .map(|c| self.column_values(c))
+            .collect()
+    }
+
+    fn column_values(&self, column: usize) -> Vec<T>
+    where
+        T: Clone,
+    {
+        (0 .. self.rows())
+            .map(|r| {
+                self.get(Coords::new(column as i32, r as i32))
+                    .unwrap()
+                    .clone()
+            })
+            .collect()
+    }
+
     fn columns(&self) -> usize;
     fn width(&self) -> usize {
         self.columns()
@@ -133,6 +185,20 @@ impl MatrixGrid2D<char> {
     #[must_use]
     pub fn parse_char_field(input: &str) -> Self {
         MatrixGrid2D::<char>::parse(input, identity)
+    }
+}
+
+impl MatrixGrid2D<bool> {
+    #[must_use]
+    #[expect(clippy::missing_panics_doc)]
+    pub fn parse_bool_field(input: &str) -> Self {
+        MatrixGrid2D::<bool>::parse(input, |ch| {
+            match ch {
+                '.' => false,
+                '#' => true,
+                _ => panic!("Invalid character {ch}"),
+            }
+        })
     }
 }
 
