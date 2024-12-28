@@ -1,9 +1,15 @@
 package jurisk.adventofcode.y2020
 
+import jurisk.adventofcode.AdventApp
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.y2020.Advent22.Game
+import cats.implicits.*
 import scala.annotation.tailrec
-import scala.io.Source
 
-object Advent22 extends App:
+object Advent22 extends AdventApp[Game, Long, Long]:
+  override val year: Card = 2020
+  override val exercise: Card = 22
+
   opaque type Card = Int
   opaque type Deck = List[Card]
 
@@ -54,33 +60,24 @@ object Advent22 extends App:
       case (Nil, deckB) => deckB
       case (headA :: _, headB :: _) => cycle(compare(headA, headB)).simpleGame
 
-  private def readGame(fileName: String): Game =
-    val decks: List[Deck] = Source
-      .fromResource(fileName)
-      .getLines()
+  override def parseInput(lines: Iterator[String]): Either[ErrorMessage, Game] =
+    val decks: List[Deck] = lines
       .mkString("\n")
-      .split("\n\n")
-      .map(_.split("\n").toList)
-      .map(_.tail.map(_.toInt))
-      .toList
+        .split("\n\n")
+        .map(_.split("\n").toList)
+        .map(_.tail.map(_.toInt))
+        .toList
 
-    decks match
-      case a :: b :: Nil => Game(a, b, Set.empty)
-      case _ => sys.error(s"Failed to read: $decks")
+      decks match
+        case a :: b :: Nil => Game(a, b, Set.empty).asRight
+        case _ => ErrorMessage.left(s"Failed to read: $decks")
 
-  def run(fileName: String, expected1: Long, expected2: Long): Unit =
-    val game = readGame(fileName)
-    val winner1 = game.simpleGame
-    val solution1 = score(winner1)
-    println(solution1)
-    assert(solution1 == expected1)
 
-    val (_, winner2) = game.recursiveGame
-    val solution2 = score(winner2)
-    println(solution2)
-    assert(solution2 == expected2)
+  override def solution1(input: Game): Long = {
+    score(input.simpleGame)
+  }
 
-  run("2020/22-test.txt", 306, 291)
-  run("2020/22.txt", 34566, 31854)
+  override def solution2(input: Game): Long =
+    val (_, winner2) = input.recursiveGame
+    score(winner2)
 
-  println("Passed")
