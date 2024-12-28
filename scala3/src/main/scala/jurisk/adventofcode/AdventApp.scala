@@ -10,6 +10,7 @@ object AdventApp:
   opaque type ErrorMessage = String
   object ErrorMessage:
     def apply(message: String): ErrorMessage = message
+    def left(message: String): Either[ErrorMessage, Nothing] = ErrorMessage(message).asLeft
 
 private trait AdventApp[Input, Output1, Output2] extends IOApp:
   def year: Int

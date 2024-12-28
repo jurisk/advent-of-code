@@ -1,32 +1,21 @@
 package jurisk.adventofcode.y2020
 
+import jurisk.adventofcode.AdventApp.ErrorMessage
+import jurisk.adventofcode.SingleLineAdventApp
+import jurisk.adventofcode.y2020.Advent21.Entry
+import cats.implicits.*
 import scala.annotation.tailrec
-import scala.io.Source
 
-object Advent21 extends App:
+object Advent21 extends SingleLineAdventApp[Entry, Int, String]:
+  override val year: Int = 2020
+  override val exercise: Int = 21
+
   opaque type Allergen = String
   opaque type Ingredient = String
 
-  private def readRules(fileName: String): Rules =
-    val RegEx = """(.+) \(contains (.+)\)""".r
-    def readLine(line: String): Entry = line match
-      case RegEx(ingredients, allergens) => Entry(
-          ingredients.split(' ').toSet.map(x => new Ingredient(x)),
-          allergens.split(", ").toSet.map(x => new Allergen(x)),
-        )
-      case _ => sys.error(s"Couldn't parse $line")
-
-    val entries = Source
-      .fromResource(fileName)
-      .getLines()
-      .toSet
-      .map(readLine)
-
-    Rules(entries)
-
   final case class Entry(ingredients: Set[Ingredient], allergens: Set[Allergen])
 
-  private final case class Rules(entries: Set[Entry]):
+  final case class Rules(entries: Set[Entry]):
     val ingredients: Set[Ingredient] = entries.flatMap(_.ingredients)
     val allergens: Set[Allergen] = entries.flatMap(_.allergens)
 
@@ -37,6 +26,9 @@ object Advent21 extends App:
         .reduce { case (a, b) =>
           a intersect b
         }
+
+  object Rules:
+    def apply(list: List[Entry]): Rules = Rules(list.toSet)
 
   private def findCanonical(rules: Rules): Map[Allergen, Ingredient] =
     val simplified: Map[Allergen, Set[Ingredient]] = rules
@@ -66,21 +58,31 @@ object Advent21 extends App:
     val allergicIngredients = canonical.values.toSet
     rules.ingredients -- allergicIngredients
 
-  def run(fileName: String, expected1: Int, expected2: String): Unit =
-    val rules = readRules(fileName)
+  private val RegEx = """(.+) \(contains (.+)\)""".r
+  override def parseLine(line: String): Either[ErrorMessage, Entry] =
+    line match
+      case RegEx(ingredients, allergens) => Entry(
+        ingredients.split(' ').toSet.map(x => new Ingredient(x)),
+        allergens.split(", ").toSet.map(x => new Allergen(x)),
+      ).asRight
+      case _ => ErrorMessage.left(s"Couldn't parse $line")
+
+  override def solution1(input: List[Entry]): Int =
+    val rules = Rules(input)
     val canonical = findCanonical(rules)
     val safe = findSafe(rules, canonical)
-    val solution1 = safe
+    safe
       .toList
       .map { ingredient =>
         rules.entries.count(_.ingredients.contains(ingredient))
       }
       .sum
 
-    println(solution1)
-    assert(solution1 == expected1)
 
-    val solution2 = canonical
+  override def solution2(input: List[Entry]): Ingredient =
+    val rules = Rules(input)
+    val canonical = findCanonical(rules)
+    canonical
       .toList
       .sortBy { case (allergen, _) =>
         allergen
@@ -90,10 +92,3 @@ object Advent21 extends App:
       }
       .mkString(",")
 
-    assert(solution2 == expected2)
-    println(solution2)
-
-  run("2020/21-test.txt", 5, "mxmxvkd,sqjhc,fvjkl")
-  run("2020/21.txt", 2826, "pbhthx,sqdsxhb,dgvqv,csnfnl,dnlsjr,xzb,lkdg,rsvlb")
-
-  println("Passed")
