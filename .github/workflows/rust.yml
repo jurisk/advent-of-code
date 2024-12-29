@@ -20,18 +20,25 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Decrypt
+      run: sudo apt-get install git-crypt && git-crypt unlock ./git-crypt.key
+
     - name: Install latest nightly
       uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly
         override: true
         components: rustfmt, clippy
+
     - name: Build
       working-directory: ./rust
       run: cargo +nightly build --verbose
+
     - name: Run tests
       working-directory: ./rust
       run: cargo +nightly test --verbose
+
     - name: Clippy
       working-directory: ./rust
       run: cargo +nightly clippy -- -W clippy::pedantic

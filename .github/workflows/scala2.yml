@@ -20,6 +20,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Decrypt
+      run: sudo apt-get install git-crypt && git-crypt unlock ./git-crypt.key
+
     - uses: graalvm/setup-graalvm@v1
       with:
         java-version: '21'
