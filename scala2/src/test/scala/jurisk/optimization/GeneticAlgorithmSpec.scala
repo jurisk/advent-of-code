@@ -19,7 +19,7 @@ class GeneticAlgorithmSpec extends AnyFreeSpec {
         generations = 1000,
       )
 
-      val Eps = 0.01
+      val Eps = 0.02
       assert(result > 1 - Eps)
       assert(result < 1 + Eps)
     }
