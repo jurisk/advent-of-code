@@ -18,3 +18,4 @@ memoize.workspace = true
 pathfinding.workspace = true
 recap.workspace = true
 serde.workspace = true
+rand.workspace = true

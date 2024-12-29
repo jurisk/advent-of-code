@@ -21,5 +21,6 @@ pub mod pairing;
 pub mod parsing;
 pub mod rotation;
 pub mod set;
+pub mod set_of_two;
 pub mod simulate;
 pub mod utils;

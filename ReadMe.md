@@ -4,8 +4,11 @@
 
 # Advent of Code
 
-| Year-Day | Task                                                                           |                                  Scala                                  |                      Rust                      |                                 Others                                 |
+| Year-Day | Task                                                                           |                                  Scala                                  |                    Rust                        |                  Others                                                |
 |----------|:-------------------------------------------------------------------------------|:-----------------------------------------------------------------------:|:----------------------------------------------:|:----------------------------------------------------------------------:|
+| 2024-25  | [Code Chronicle](https://adventofcode.com/2024/day/25)                         | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2024/Advent25.scala) | [Rust](rust/y2024/src/bin/solution_2024_25.rs) |                                                                        |
+| 2024-24  | [Crossed Wires](https://adventofcode.com/2024/day/24)                          | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2024/Advent24.scala) | [Rust](rust/y2024/src/bin/solution_2024_24.rs) |                                                                        |
+| 2024-23  | [LAN Party](https://adventofcode.com/2024/day/23)                              | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2024/Advent23.scala) | [Rust](rust/y2024/src/bin/solution_2024_23.rs) |                                                                        |
 | 2024-22  | [Monkey Market](https://adventofcode.com/2024/day/22)                          | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2024/Advent22.scala) | [Rust](rust/y2024/src/bin/solution_2024_22.rs) |                                                                        |
 | 2024-21  | [Keypad Conundrum](https://adventofcode.com/2024/day/21)                       | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2024/Advent21.scala) | [Rust](rust/y2024/src/bin/solution_2024_21.rs) |
 | 2024-20  | [Race Condition](https://adventofcode.com/2024/day/20)                         | [Scala](scala2/src/main/scala/jurisk/adventofcode/y2024/Advent20.scala) | [Rust](rust/y2024/src/bin/solution_2024_20.rs) |                                                                        |
