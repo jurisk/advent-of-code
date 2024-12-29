@@ -1,0 +1,1 @@
+data/[0-9][0-9][0-9][0-9]_[0-9][0-9]_real.txt filter=git-crypt diff=git-crypt

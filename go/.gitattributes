@@ -1,0 +1,1 @@
+y[0-9][0-9][0-9][0-9]/d[0-9][0-9]/real.txt filter=git-crypt diff=git-crypt

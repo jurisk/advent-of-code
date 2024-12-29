@@ -18,25 +18,25 @@ internal class Day19Test {
 
     @Test
     fun part1Test() {
-        val result = part1(readFile("test.txt"))
+        val result = part1(readFile("19-test.txt"))
         assertEquals("ABCDEF", result)
     }
 
     @Test
     fun part1Real() {
-        val result = part1(readFile("real.txt"))
+        val result = part1(readFile("19.txt"))
         assertEquals("DTOUFARJQ", result)
     }
 
     @Test
     fun part2Test() {
-        val result = part2(readFile("test.txt"))
+        val result = part2(readFile("19-test.txt"))
         assertEquals(38, result)
     }
 
     @Test
     fun part2Real() {
-        val result = part2(readFile("real.txt"))
+        val result = part2(readFile("19.txt"))
         assertEquals(16_642, result)
     }
 }
