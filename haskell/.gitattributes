@@ -1,0 +1,2 @@
+src/Year[0-9][0-9][0-9][0-9]/Day[0-9][0-9]/input.txt filter=git-crypt diff=git-crypt
+test/Year[0-9][0-9][0-9][0-9]/Day[0-9][0-9]/real.txt filter=git-crypt diff=git-crypt
