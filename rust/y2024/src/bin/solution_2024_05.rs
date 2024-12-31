@@ -175,12 +175,12 @@ mod tests {
 
     #[test]
     fn test_solve_1_test() {
-        assert_eq!(solve_1(test_data()), 143);
+        assert_eq!(solve_1(&test_data()), 143);
     }
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(solve_1(real_data()), 4924);
+        assert_eq!(solve_1(&real_data()), 4924);
     }
 
     #[test]
