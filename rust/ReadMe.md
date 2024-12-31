@@ -72,3 +72,13 @@ sudo cargo flamegraph --bin=solution_<XY>
 ```shell
 time cargo run --release --bin=solution_<XY>
 ```
+
+# Benchmarking
+
+Note - I was considering to use Criterion, but we have the functions to be profiled in `bin` and not in `lib`.
+
+```shell
+brew install hyperfine
+cargo build --release
+hyperfine --shell=none --warmup 20 'target/release/solution_<XY>'
+```

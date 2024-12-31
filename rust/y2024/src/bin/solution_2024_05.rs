@@ -3,6 +3,8 @@ use std::collections::{BTreeSet, HashMap};
 
 use advent_of_code_common::parsing::Error;
 use chumsky::prelude::*;
+use rayon::iter::IntoParallelRefIterator;
+use rayon::iter::ParallelIterator;
 
 const DATA: &str = include_str!("../../resources/05.txt");
 
@@ -46,7 +48,7 @@ impl Update {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct PageOrderingRules {
     preconditions: HashMap<Page, BTreeSet<Page>>,
 }
@@ -83,7 +85,7 @@ impl PageOrderingRules {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Data {
     page_ordering_rules: PageOrderingRules,
     updates:             Vec<Update>,
@@ -127,19 +129,17 @@ fn parse(input: &str) -> Result<Data, Error> {
 
 fn solve_1(data: &Data) -> R {
     data.updates
-        .iter()
+        .par_iter()
         .filter(|update| data.page_ordering_rules.valid_for(update))
         .map(Update::middle_page)
         .sum()
 }
 
-fn solve_2(data: &Data) -> R {
-    let invalids: Vec<_> = data
+fn solve_2(data: Data) -> R {
+    let invalids = data
         .updates
-        .iter()
-        .filter(|update| !data.page_ordering_rules.valid_for(update))
-        .cloned()
-        .collect();
+        .into_iter()
+        .filter(|update| !data.page_ordering_rules.valid_for(update));
     let fixed = invalids.into_iter().map(|mut update| {
         update.fix_invalid(&data.page_ordering_rules);
         update
@@ -153,7 +153,7 @@ fn main() -> Result<(), Error> {
     let result_1 = solve_1(&data);
     println!("Part 1: {result_1}");
 
-    let result_2 = solve_2(&data);
+    let result_2 = solve_2(data);
     println!("Part 2: {result_2}");
 
     Ok(())
@@ -175,21 +175,21 @@ mod tests {
 
     #[test]
     fn test_solve_1_test() {
-        assert_eq!(solve_1(&test_data()), 143);
+        assert_eq!(solve_1(test_data()), 143);
     }
 
     #[test]
     fn test_solve_1_real() {
-        assert_eq!(solve_1(&real_data()), 4924);
+        assert_eq!(solve_1(real_data()), 4924);
     }
 
     #[test]
     fn test_solve_2_test() {
-        assert_eq!(solve_2(&test_data()), 123);
+        assert_eq!(solve_2(test_data()), 123);
     }
 
     #[test]
     fn test_solve_2_real() {
-        assert_eq!(solve_2(&real_data()), 6085);
+        assert_eq!(solve_2(real_data()), 6085);
     }
 }
