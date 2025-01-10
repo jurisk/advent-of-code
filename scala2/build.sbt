@@ -19,7 +19,7 @@ lazy val root = (project in file("."))
       "co.fs2"        %% "fs2-core"                      % "3.11.0",
       "dev.optics"    %% "monocle-core"                  % "3.3.0",
       "dev.optics"    %% "monocle-macro"                 % "3.3.0",
-      "tools.aqua"     % "z3-turnkey"                    % "4.13.0.1",
+      "tools.aqua"     % "z3-turnkey"                    % "4.13.4",
       "org.typelevel" %% "cats-effect-testing-scalatest" % "1.6.0" % Test,
       "org.scalatest" %% "scalatest"                     % "3.2.19", // Not "test" on purpose as it is more convenient to keep everything together
     ),
@@ -36,7 +36,7 @@ lazy val root = (project in file("."))
   )
 
 ThisBuild / scalafixDependencies ++= List(
-  "org.typelevel"       %% "typelevel-scalafix" % "0.3.1",
+  "org.typelevel"       %% "typelevel-scalafix" % "0.4.0",
   "com.github.vovapolu" %% "scaluzzi"           % "0.1.23",
 )
 
