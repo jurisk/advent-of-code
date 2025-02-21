@@ -1,12 +1,10 @@
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
+use std::sync::LazyLock;
 
 use regex::Regex;
 
 use crate::Command::{SetMask, SetMemory};
-
-#[macro_use]
-extern crate lazy_static;
 
 #[derive(Debug)]
 enum Command {
@@ -44,9 +42,9 @@ impl Mask {
 type ErrorMessage = String;
 
 fn parse_mask(line: &str) -> Result<Command, ErrorMessage> {
-    lazy_static! {
-        static ref RE: Regex = regex::Regex::new(r"mask = (\w+)").expect("Failed to parse RegEx");
-    }
+    static RE: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"mask = (\w+)").expect("Failed to parse RegEx"));
+
     let elems = &RE.captures(line).ok_or("Failed to match mask")?;
 
     let bits: &str = &elems[1];
@@ -76,9 +74,8 @@ fn parse_mask(line: &str) -> Result<Command, ErrorMessage> {
 }
 
 fn parse_set_memory(line: &str) -> Result<Command, ErrorMessage> {
-    lazy_static! {
-        static ref RE: Regex = Regex::new(r"^mem\[(\d+)] = (\d+)$").expect("Failed to parse RegEx");
-    }
+    static RE: LazyLock<Regex> =
+        LazyLock::new(|| Regex::new(r"^mem\[(\d+)] = (\d+)$").expect("Failed to parse RegEx"));
 
     let caps = RE.captures(line).ok_or("Invalid command")?;
     let address: u64 = caps[1].parse().map_err(|_| "Invalid address")?;

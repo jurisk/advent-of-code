@@ -332,9 +332,12 @@ impl WithSubroutines {
             let candidate = &steps_to_allocate[0 .. n];
             let this_name = subroutine_names_remaining[0];
             let mut new_subroutines = acc.subroutines.clone();
-            new_subroutines.insert(this_name, Route {
-                steps: Vec::from(candidate),
-            });
+            new_subroutines.insert(
+                this_name,
+                Route {
+                    steps: Vec::from(candidate),
+                },
+            );
             let result = WithSubroutines::extract_subroutines(
                 &steps_to_allocate[n ..],
                 &subroutine_names_remaining[1 ..],

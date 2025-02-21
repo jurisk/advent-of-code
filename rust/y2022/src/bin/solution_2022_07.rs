@@ -97,7 +97,7 @@ impl Directory {
                 let result = found.add_output_lines(t, output_lines);
                 new_directories.insert(key, result);
             },
-        };
+        }
 
         Directory {
             directories: new_directories,
@@ -184,10 +184,13 @@ fn parse(input: &str) -> Result<Data, Error> {
         let (input, size) = parse_u32(input)?;
         let (input, _) = char(' ')(input)?;
         let (input, name) = name(input)?;
-        Ok((input, OutputLine::File {
-            name: name.to_string(),
-            size,
-        }))
+        Ok((
+            input,
+            OutputLine::File {
+                name: name.to_string(),
+                size,
+            },
+        ))
     }
 
     fn output_line(input: &str) -> IResult<&str, OutputLine> {

@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use advent_of_code_common::parsing::{Error, parse_lines_to_nonempty, split_into_two_strings};
 use itertools::Itertools;
-use nonempty::{NonEmpty, nonempty};
+use nonempty::NonEmpty;
 use pathfinding::prelude::bfs_reach;
 
 const DATA: &str = include_str!("../../resources/12.txt");
@@ -75,7 +75,7 @@ type SmallVertexValidContinuationF = fn(&Path, &Vertex) -> bool;
 impl Path {
     fn start() -> Path {
         Path {
-            vertices: nonempty![Vertex::Start],
+            vertices: NonEmpty::new(Vertex::Start),
         }
     }
 

@@ -2,12 +2,12 @@ use std::cmp;
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Formatter};
 use std::str::FromStr;
+use std::sync::LazyLock;
 
 use advent_of_code_common::parsing::{
     Error, parse_lines_to_vec, parse_str, split_into_two_strings,
 };
 use itertools::Itertools;
-use memoize::lazy_static::lazy_static;
 use regex::Regex;
 
 use crate::Address::{Bot, Output};
@@ -109,12 +109,11 @@ impl FromStr for Instruction {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        lazy_static! {
-            static ref BOT_GIVES_RE: Regex =
-                Regex::new(r"bot (\d+) gives low to ([a-z]+ \d+) and high to ([a-z]+ \d+)")
-                    .unwrap();
-            static ref VALUE_GOES_RE: Regex = Regex::new(r"value (\d+) goes to bot (\d+)").unwrap();
-        }
+        static BOT_GIVES_RE: LazyLock<Regex> = LazyLock::new(|| {
+            Regex::new(r"bot (\d+) gives low to ([a-z]+ \d+) and high to ([a-z]+ \d+)").unwrap()
+        });
+        static VALUE_GOES_RE: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"value (\d+) goes to bot (\d+)").unwrap());
 
         if let Some(captures) = BOT_GIVES_RE.captures(s) {
             assert_eq!(captures.len(), 4);
@@ -212,10 +211,13 @@ fn solve(
         match instruction {
             ValueXGoesToBotY { value, bot_id } => add_to_mailbox(&mut mailboxes, *bot_id, *value),
             BotNGiveLowToXAndHighToY { bot_id, low, high } => {
-                definitions.insert(*bot_id, BotDefinition {
-                    low:  *low,
-                    high: *high,
-                });
+                definitions.insert(
+                    *bot_id,
+                    BotDefinition {
+                        low:  *low,
+                        high: *high,
+                    },
+                );
             },
         }
     }
@@ -251,12 +253,12 @@ fn solve(
                 match definition.low {
                     Bot(target) => add_to_mailbox(&mut mailboxes, target, low),
                     Output(target) => _ = outputs.insert(target, low),
-                };
+                }
 
                 match definition.high {
                     Bot(target) => add_to_mailbox(&mut mailboxes, target, high),
                     Output(target) => _ = outputs.insert(target, high),
-                };
+                }
 
                 mailboxes.insert(bot_id, MailboxState::Empty);
             }

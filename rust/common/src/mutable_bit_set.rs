@@ -61,7 +61,6 @@ impl<T: Clone> Set<T> for MutableBitSet<'_, T> {
         self.underlying.insert(value as usize)
     }
 
-    #[must_use]
     fn contains(&self, value: &T) -> bool {
         let value = (self.to_u32)(value.clone());
         self.underlying.contains(value as usize)

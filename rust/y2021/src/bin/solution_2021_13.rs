@@ -150,27 +150,27 @@ mod tests {
     #[test]
     fn test_fold_y() {
         let fold = AlongY(7);
-        assert_eq!(fold.apply_to_coords(Coords { x: 4, y: 14 }), Coords {
-            x: 4,
-            y: 0,
-        });
-        assert_eq!(fold.apply_to_coords(Coords { x: 3, y: 13 }), Coords {
-            x: 3,
-            y: 1,
-        });
+        assert_eq!(
+            fold.apply_to_coords(Coords { x: 4, y: 14 }),
+            Coords { x: 4, y: 0 }
+        );
+        assert_eq!(
+            fold.apply_to_coords(Coords { x: 3, y: 13 }),
+            Coords { x: 3, y: 1 }
+        );
     }
 
     #[test]
     fn test_fold_x() {
         let fold = AlongX(5);
-        assert_eq!(fold.apply_to_coords(Coords { x: 6, y: 0 }), Coords {
-            x: 4,
-            y: 0,
-        });
-        assert_eq!(fold.apply_to_coords(Coords { x: 9, y: 0 }), Coords {
-            x: 1,
-            y: 0,
-        });
+        assert_eq!(
+            fold.apply_to_coords(Coords { x: 6, y: 0 }),
+            Coords { x: 4, y: 0 }
+        );
+        assert_eq!(
+            fold.apply_to_coords(Coords { x: 9, y: 0 }),
+            Coords { x: 1, y: 0 }
+        );
     }
 
     #[test]

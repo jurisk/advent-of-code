@@ -225,7 +225,6 @@ impl From<Coords> for (usize, usize) {
 }
 
 impl<T> Grid2D<T> for MatrixGrid2D<T> {
-    #[must_use]
     fn from_vec(data: Vec<Vec<T>>) -> Self {
         let rows = data.len();
         let columns = data.first().map_or(0, Vec::len);
@@ -235,7 +234,6 @@ impl<T> Grid2D<T> for MatrixGrid2D<T> {
         }
     }
 
-    #[must_use]
     fn new(width: usize, height: usize, default: T) -> Self
     where
         T: Clone,

@@ -450,7 +450,10 @@ fn solve_2(data: Input) -> String {
         |current| success(current, &connections, &names),
     )
     .expect("Expected a solution");
-    let result = result.into_iter().last().expect("Expected a last element");
+    let result = result
+        .into_iter()
+        .next_back()
+        .expect("Expected a last element");
     let mut names: Vec<_> = result
         .into_iter()
         .flat_map(IntoIterator::into_iter)

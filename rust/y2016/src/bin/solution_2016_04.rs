@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::str::FromStr;
+use std::sync::LazyLock;
 
 use advent_of_code_common::parsing::{Error, parse_lines_to_vec, parse_str};
 use advent_of_code_common::utils::additive_hashmap_from_vec;
 use itertools::Itertools;
-use memoize::lazy_static::lazy_static;
 use regex::Regex;
 
 #[derive(Debug)]
@@ -18,9 +18,8 @@ impl FromStr for Room {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(r"([\w\-]+)-(\d+)\[(\w+)\]").unwrap();
-        }
+        static RE: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"([\w\-]+)-(\d+)\[(\w+)\]").unwrap());
 
         let captures = RE.captures(s).unwrap();
         let groups = (captures.get(1), captures.get(2), captures.get(3));

@@ -58,7 +58,6 @@ impl Image {
         }
     }
 
-    #[expect(clippy::precedence)]
     fn enhance_pixel(&self, r: i32, c: i32, algorithm: &ImageEnhancementAlgorithm) -> Pixel {
         let idx = self.bit_at(r - 1, c - 1) << 8
             | self.bit_at(r - 1, c) << 7

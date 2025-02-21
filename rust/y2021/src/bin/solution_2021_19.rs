@@ -9,7 +9,7 @@ use advent_of_code_common::parsing::{
     parse_separated_nonempty,
 };
 use nalgebra::{Matrix3, Vector3};
-use nonempty::{NonEmpty, nonempty};
+use nonempty::NonEmpty;
 use num_traits::abs;
 
 type N = i32;
@@ -200,12 +200,12 @@ impl Solution {
         let aligned_beacons: HashSet<Vector3<N>> =
             sensors.sensors.head.beacons.iter().copied().collect();
 
-        let aligned_sensors: NonEmpty<AlignedSensor> = nonempty![
+        let aligned_sensors: NonEmpty<AlignedSensor> = NonEmpty::new(
             sensors
                 .sensors
                 .head
-                .aligned_at(Rotation3D::identity(), &Vector3::zeros())
-        ];
+                .aligned_at(Rotation3D::identity(), &Vector3::zeros()),
+        );
 
         let pending_sensors: HashSet<Sensor> = sensors.sensors.tail.clone().into_iter().collect();
 

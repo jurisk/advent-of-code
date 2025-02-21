@@ -83,10 +83,13 @@ impl State {
                 .iter()
                 .map(|input| {
                     let z = subroutine.solve(self.z, *input);
-                    (*input, State {
-                        instruction_pointer,
-                        z,
-                    })
+                    (
+                        *input,
+                        State {
+                            instruction_pointer,
+                            z,
+                        },
+                    )
                 })
                 .collect()
         } else {
@@ -121,11 +124,17 @@ fn parse(input: &str) -> Result<Vec<Subroutine>, Error> {
 
     let mut subroutines: Vec<Subroutine> = Vec::new();
     for chunk in chunks {
-        let line_4 = chunk[4].split(' ').last().ok_or("Failed to split Line 4")?;
-        let line_5 = chunk[5].split(' ').last().ok_or("Failed to split Line 5")?;
+        let line_4 = chunk[4]
+            .split(' ')
+            .next_back()
+            .ok_or("Failed to split Line 4")?;
+        let line_5 = chunk[5]
+            .split(' ')
+            .next_back()
+            .ok_or("Failed to split Line 5")?;
         let line_15 = chunk[15]
             .split(' ')
-            .last()
+            .next_back()
             .ok_or("Failed to split Line 4")?;
         let subroutine = Subroutine {
             line_4:  line_4.parse().unwrap(),

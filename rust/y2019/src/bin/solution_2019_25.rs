@@ -3,7 +3,7 @@ use std::ops::Add;
 
 use advent_of_code_2019::intcode::{MachineCode, Process, parse_machine_code};
 use advent_of_code_common::direction::Direction;
-use rand::prelude::SliceRandom;
+use rand::prelude::IndexedMutRandom;
 
 #[derive(Debug)]
 struct Output {
@@ -101,7 +101,7 @@ const FORBIDDEN: [&str; 5] = [
 
 fn attempt() -> Option<String> {
     let mut process = Process::new(&machine_code());
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let mut taken_items: HashSet<String> = HashSet::new();
     let mut ignored_items: HashSet<String> = HashSet::new();
 
@@ -109,7 +109,7 @@ fn attempt() -> Option<String> {
         process.run_to_unsatisfied_input();
         let output = process.read_output_as_ascii();
 
-        let parsed = Output::parse(&output);
+        let mut parsed = Output::parse(&output);
 
         if parsed.password.is_some() {
             return parsed.password;
@@ -135,7 +135,7 @@ fn attempt() -> Option<String> {
             }
         }
 
-        let chosen_direction = *parsed.doors_to.choose(&mut rng).unwrap();
+        let chosen_direction = *parsed.doors_to.choose_mut(&mut rng).unwrap();
         process.provide_input_as_string(&direction_to_command(chosen_direction));
     }
 }

@@ -113,9 +113,11 @@ fn path_between_coords(
     };
 
     vec![
-        [for_x.clone(), for_y.clone(), vec![
-            DirectionalButton::Activate,
-        ]]
+        [
+            for_x.clone(),
+            for_y.clone(),
+            vec![DirectionalButton::Activate],
+        ]
         .concat(),
         [for_y, for_x, vec![DirectionalButton::Activate]].concat(),
     ]

@@ -1,9 +1,9 @@
 use std::str::FromStr;
+use std::sync::LazyLock;
 
 use advent_of_code_common::coords3d::Coords3D;
 use advent_of_code_common::cuboid::Cuboid;
 use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
-use memoize::lazy_static::lazy_static;
 use regex::Regex;
 
 const DATA: &str = include_str!("../../resources/22.txt");
@@ -69,12 +69,10 @@ impl FromStr for Step {
     type Err = Error;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(
-                r"(\w+)\sx=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)"
-            )
-            .unwrap();
-        }
+        static RE: LazyLock<Regex> = LazyLock::new(|| {
+            Regex::new(r"(\w+)\sx=(-?\d+)\.\.(-?\d+),y=(-?\d+)\.\.(-?\d+),z=(-?\d+)\.\.(-?\d+)")
+                .unwrap()
+        });
 
         let c = RE.captures(input).unwrap();
         let groups = (
