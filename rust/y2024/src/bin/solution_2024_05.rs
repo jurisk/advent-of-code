@@ -91,9 +91,9 @@ struct Data {
     updates:             Vec<Update>,
 }
 
-fn parser() -> impl Parser<char, Data, Error = Simple<char>> {
+fn parser<'a>() -> impl Parser<'a, &'a str, Data> {
     // Note - cannot handle missing newline at end of file
-    let number = text::int(10).from_str().unwrapped();
+    let number = text::int(10).from_str().unwrapped().map(|n: u32| n);
 
     let page_pair = number
         .then_ignore(just('|'))
@@ -101,10 +101,11 @@ fn parser() -> impl Parser<char, Data, Error = Simple<char>> {
         .then_ignore(text::newline())
         .map(|(a, b)| (a, b));
 
-    let page_ordering_rules = page_pair.repeated().at_least(1).map(PageOrderingRules::new);
+    let page_ordering_rules = page_pair.repeated().at_least(1).collect::<Vec<_>>().map(PageOrderingRules::new);
 
     let page_list = number
         .separated_by(just(','))
+        .collect::<Vec<_>>()
         .then_ignore(text::newline())
         .map(Update::new);
 
@@ -112,7 +113,7 @@ fn parser() -> impl Parser<char, Data, Error = Simple<char>> {
 
     page_ordering_rules
         .then_ignore(text::newline().repeated().at_least(1))
-        .then(updates)
+        .then(updates.collect::<Vec<_>>())
         .then_ignore(end())
         .map(|(page_ordering_rules, updates)| {
             Data {
@@ -123,7 +124,7 @@ fn parser() -> impl Parser<char, Data, Error = Simple<char>> {
 }
 
 fn parse(input: &str) -> Result<Data, Error> {
-    let (result, error) = parser().parse_recovery_verbose(input);
+    let (result, error) = parser().parse(input).into_output_errors();
     result.ok_or(format!("{error:?}"))
 }
 
