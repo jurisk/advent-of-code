@@ -436,7 +436,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Slow
+    #[ignore = "Slow"]
     fn test_solve_2_real() {
         assert_eq!(solve(&hack_to_convert_part_1_to_part_2(DATA)), Some(1992));
     }

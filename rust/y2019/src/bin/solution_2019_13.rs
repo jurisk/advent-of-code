@@ -76,7 +76,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_2() {
         solve_2();
     }

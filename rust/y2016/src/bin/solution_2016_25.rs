@@ -51,7 +51,7 @@ fn main() -> Result<(), Error> {
 mod tests {
     use super::*;
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_1_real() {
         assert_eq!(parse_and_solve(DATA), Ok(196));
     }

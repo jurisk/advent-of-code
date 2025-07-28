@@ -377,7 +377,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_2_real() {
         assert_eq!(solve(&real_data_2()), Some(61));
     }

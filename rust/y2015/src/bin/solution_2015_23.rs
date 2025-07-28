@@ -36,7 +36,6 @@ enum Instruction {
 impl FromStr for Instruction {
     type Err = Error;
 
-    #[allow(clippy::match_on_vec_items)]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let v: Vec<_> = s.split_whitespace().collect();
         if v.len() < 2 {

@@ -671,28 +671,28 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Slow
+    #[ignore = "Slow"]
     fn test_solve_1() {
         let result = solve_1(TEST);
         assert_eq!(result, Ok(12521));
     }
 
     #[test]
-    #[ignore] // Slow
+    #[ignore = "Slow"]
     fn real_solve_1() {
         let result = solve_1(DATA);
         assert_eq!(result, Ok(19167));
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_2() {
         let result = solve_2(TEST);
         assert_eq!(result, Ok(44169));
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn real_solve_2() {
         let result = solve_2(DATA);
         assert_eq!(result, Ok(47665));

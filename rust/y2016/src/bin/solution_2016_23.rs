@@ -40,7 +40,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_2_real() {
         assert_eq!(parse_and_solve(DATA, 12), Ok(479_007_586));
     }

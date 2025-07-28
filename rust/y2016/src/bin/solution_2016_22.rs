@@ -338,7 +338,7 @@ mod tests {
     const TEST: &str = include_str!("../../resources/22-test.txt");
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_1_real() {
         assert_eq!(part_1(DATA), Ok(901));
     }
@@ -349,7 +349,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_2_real() {
         assert_eq!(part_2(DATA, 450), Ok(Some(238)));
     }

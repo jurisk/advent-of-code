@@ -156,7 +156,7 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test() {
         main();
     }

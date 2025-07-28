@@ -132,13 +132,13 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_1_real() {
         assert_eq!(part_1(DATA), Ok(569_999));
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_2_real() {
         assert_eq!(part_2(DATA), Ok(17_836_115));
     }

@@ -227,7 +227,7 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve() {
         assert_eq!(
             solve_both(DATA),

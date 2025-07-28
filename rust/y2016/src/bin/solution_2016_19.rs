@@ -120,7 +120,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_1_real() {
         assert_eq!(part_1(DATA), 1_808_357);
     }
@@ -163,13 +163,13 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_2_test_2() {
         assert_eq!(part_2(10_000), 3_439);
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_2_real() {
         assert_eq!(part_2(DATA), 1_407_007);
     }

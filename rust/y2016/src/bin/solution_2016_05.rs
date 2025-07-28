@@ -86,25 +86,25 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_1_test() {
         assert_eq!(solve_1("abc"), "18f47a30");
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_1_real() {
         assert_eq!(solve_1(DATA), "1a3099aa");
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_2_test() {
         assert_eq!(solve_1("abc"), "05ace8e3");
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_2_real() {
         assert_eq!(solve_2(DATA), "694190cd");
     }

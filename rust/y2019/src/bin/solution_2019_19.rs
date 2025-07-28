@@ -89,13 +89,13 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_1() {
         solve_1();
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_2() {
         solve_2();
     }

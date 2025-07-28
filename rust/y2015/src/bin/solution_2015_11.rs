@@ -123,7 +123,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Weird test case provided, I think this should be valid
+    #[ignore = "Weird test case provided, I think this should be valid"]
     fn test_1_7() {
         assert!(!is_valid_str_1("ghjaaabb"));
     }
@@ -134,7 +134,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // Weird test case provided, I think "ghjaaabb" should be valid
+    #[ignore = "Weird test case provided, I think 'ghjaaabb' should be valid"]
     fn test_solve_1_test_2() {
         assert_eq!(solve_1("ghjaaaaa"), "ghjaabcc");
     }

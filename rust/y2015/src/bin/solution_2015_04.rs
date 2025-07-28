@@ -38,7 +38,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_1_test_2() {
         assert_eq!(solve_1("pqrstuv"), Some(1_048_970));
     }
@@ -49,7 +49,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_2_real() {
         assert_eq!(solve_2(DATA), Some(1_038_736));
     }

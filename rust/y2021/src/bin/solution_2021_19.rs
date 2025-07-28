@@ -372,13 +372,13 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Slow"]
     fn test_solve_test() {
         assert_eq!(solve(TEST), Ok((79, 3621)));
     }
 
-    #[ignore] // Slow
     #[test]
+    #[ignore = "Slow"]
     fn test_solve_real() {
         assert_eq!(solve(DATA), Ok((434, 11906)));
     }

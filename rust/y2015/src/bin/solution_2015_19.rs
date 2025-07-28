@@ -187,7 +187,7 @@ HOHOHO";
     }
 
     #[test]
-    #[ignore] // Works quickly in enough in production builds
+    #[ignore = "Slow"]
     fn test_solve_2_real() {
         assert_eq!(part_2(DATA), Ok(212));
     }
