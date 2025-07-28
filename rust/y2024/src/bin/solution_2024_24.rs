@@ -477,6 +477,7 @@ fn main() -> Result<(), Error> {
 
 #[cfg(test)]
 mod tests {
+    use std::slice::from_ref;
     use super::*;
 
     const TEST_DATA: &str = include_str!("../../resources/24-test-00.txt");
@@ -524,7 +525,7 @@ mod tests {
         ]);
 
         for swap in &swaps {
-            let fixed_one = connections.apply_swaps(&[swap.clone()]).unwrap();
+            let fixed_one = connections.apply_swaps(from_ref(swap)).unwrap();
             let errors = fixed_one.bits_with_errors(&names);
             println!("{} errors after {}", errors, debug_swap(swap, &names));
         }
