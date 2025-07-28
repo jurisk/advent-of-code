@@ -9,9 +9,9 @@ lazy val root = project
       "-source", "3.3",
       "-deprecation",
     ),
-    scalaVersion := "3.5.2",
+    scalaVersion := "3.7.1",
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-effect" % "3.5.7",
+      "org.typelevel" %% "cats-effect" % "3.6.3",
       "org.typelevel" %% "cats-effect-testing-scalatest" % "1.6.0" % Test,
       "org.scalatest" %% "scalatest" % "3.2.19" % Test,
     ),
