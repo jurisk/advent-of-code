@@ -478,6 +478,7 @@ fn main() -> Result<(), Error> {
 #[cfg(test)]
 mod tests {
     use std::slice::from_ref;
+
     use super::*;
 
     const TEST_DATA: &str = include_str!("../../resources/24-test-00.txt");
