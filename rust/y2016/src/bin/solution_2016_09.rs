@@ -2,7 +2,6 @@ use std::str;
 
 use advent_of_code_common::parsing;
 use advent_of_code_common::parsing::split_into_two_strings;
-use nom::Err;
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 use nom::combinator::{complete, map};
@@ -10,6 +9,7 @@ use nom::error::ParseError;
 use nom::error::{Error, ErrorKind};
 use nom::multi::many0;
 use nom::sequence::delimited;
+use nom::{Err, Parser};
 use nom::{Finish, IResult};
 
 const DATA: &str = include_str!("../../resources/09.txt");
@@ -63,7 +63,8 @@ fn sequence_element(input: &str) -> IResult<&str, Element> {
         let count: usize = a.parse().unwrap();
         let times: usize = b.parse().unwrap();
         (count, times)
-    })(input)?;
+    })
+    .parse(input)?;
     let (a, b) = more.split_at(count);
     let chars = a.to_string();
     let result = Element::Sequence { chars, times };
@@ -74,16 +75,16 @@ fn chars_element(input: &str) -> IResult<&str, Element> {
     if input.is_empty() {
         Err(Err::Error(Error::from_error_kind(input, ErrorKind::Many0)))
     } else {
-        map(is_not("("), |chars: &str| Element::Chars(chars.to_string()))(input)
+        map(is_not("("), |chars: &str| Element::Chars(chars.to_string())).parse(input)
     }
 }
 
 fn element(input: &str) -> IResult<&str, Element> {
-    alt((sequence_element, chars_element))(input)
+    alt((sequence_element, chars_element)).parse(input)
 }
 
 fn parse_1(input: &str) -> Result<Data, parsing::Error> {
-    let parsed = complete(many0(element))(input);
+    let parsed = complete(many0(element)).parse(input);
     let (_, result) = Finish::finish(parsed).map_err(|err| format!("{err:?} {:?}", err.code))?;
     Ok(result)
 }

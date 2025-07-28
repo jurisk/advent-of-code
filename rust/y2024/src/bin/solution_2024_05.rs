@@ -101,7 +101,11 @@ fn parser<'a>() -> impl Parser<'a, &'a str, Data> {
         .then_ignore(text::newline())
         .map(|(a, b)| (a, b));
 
-    let page_ordering_rules = page_pair.repeated().at_least(1).collect::<Vec<_>>().map(PageOrderingRules::new);
+    let page_ordering_rules = page_pair
+        .repeated()
+        .at_least(1)
+        .collect::<Vec<_>>()
+        .map(PageOrderingRules::new);
 
     let page_list = number
         .separated_by(just(','))

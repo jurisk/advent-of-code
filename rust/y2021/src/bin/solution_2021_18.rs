@@ -6,7 +6,7 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::digit1;
 use nom::combinator::map_res;
-use nom::{Finish, IResult};
+use nom::{Finish, IResult, Parser};
 use nonempty::NonEmpty;
 
 const DATA: &str = include_str!("../../resources/18.txt");
@@ -47,7 +47,7 @@ impl Debug for SnailfishNumber {
 }
 
 fn literal_snailfish_number(input: &str) -> IResult<&str, SnailfishNumber> {
-    map_res(digit1, |s| str::parse(s).map(SnailfishNumber::literal))(input)
+    map_res(digit1, |s| str::parse(s).map(SnailfishNumber::literal)).parse(input)
 }
 
 fn pair_snailfish_number(input: &str) -> IResult<&str, SnailfishNumber> {
@@ -60,7 +60,7 @@ fn pair_snailfish_number(input: &str) -> IResult<&str, SnailfishNumber> {
 }
 
 fn snailfish_number(input: &str) -> IResult<&str, SnailfishNumber> {
-    alt((literal_snailfish_number, pair_snailfish_number))(input)
+    alt((literal_snailfish_number, pair_snailfish_number)).parse(input)
 }
 
 impl FromStr for SnailfishNumber {

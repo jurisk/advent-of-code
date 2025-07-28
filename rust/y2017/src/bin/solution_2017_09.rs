@@ -7,7 +7,7 @@ use nom::character::complete::{anychar, char};
 use nom::combinator::{complete, map};
 use nom::multi::{many0, separated_list0};
 use nom::sequence::delimited;
-use nom::{Finish, IResult};
+use nom::{Finish, IResult, Parser};
 
 use crate::Thing::{Garbage, Group};
 
@@ -52,7 +52,7 @@ fn garbage_char(input: &str) -> IResult<&str, &str> {
 }
 
 fn garbage_component(input: &str) -> IResult<&str, &str> {
-    alt((ignored, garbage_char))(input)
+    alt((ignored, garbage_char)).parse(input)
 }
 
 fn garbage(input: &str) -> IResult<&str, Thing> {
@@ -63,22 +63,24 @@ fn garbage(input: &str) -> IResult<&str, Thing> {
                 contents: vec.concat(),
             }
         },
-    )(input)
+    )
+    .parse(input)
 }
 
 fn group(input: &str) -> IResult<&str, Thing> {
     map(
         delimited(tag("{"), separated_list0(tag(","), thing), tag("}")),
         |things| Group { things },
-    )(input)
+    )
+    .parse(input)
 }
 
 fn thing(input: &str) -> IResult<&str, Thing> {
-    alt((group, garbage))(input)
+    alt((group, garbage)).parse(input)
 }
 
 fn parse(input: &str) -> Result<Thing, parsing::Error> {
-    let parsed = complete(thing)(input);
+    let parsed = complete(thing).parse(input);
     let (_, result) = Finish::finish(parsed).map_err(|err| format!("{err:?} {:?}", err.code))?;
     Ok(result)
 }

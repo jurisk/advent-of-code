@@ -11,7 +11,7 @@ use nom::combinator::{complete, map, map_res};
 use nom::error::ErrorKind;
 use nom::multi::{many0, many1};
 use nom::sequence::{pair, preceded, terminated};
-use nom::{AsChar, IResult, InputTakeAtPosition};
+use nom::{AsChar, IResult, Input, Parser};
 
 const DATA: &str = include_str!("../../resources/07.txt");
 
@@ -144,7 +144,7 @@ fn process(data: &Data) -> Directory {
 
 fn parse(input: &str) -> Result<Data, Error> {
     fn ls(input: &str) -> IResult<&str, Command> {
-        map(tag("$ ls"), |_| Command::Ls)(input)
+        map(tag("$ ls"), |_| Command::Ls).parse(input)
     }
 
     fn cd_command(input: &str) -> IResult<&str, Command> {
@@ -152,15 +152,16 @@ fn parse(input: &str) -> Result<Data, Error> {
             map(tag(".."), |_| Command::CdUp),
             map(tag("/"), |_| Command::CdRoot),
             map(name, |result| Command::CdDir(result.to_string())),
-        ))(input)
+        ))
+        .parse(input)
     }
 
     fn cd(input: &str) -> IResult<&str, Command> {
-        preceded(tag("$ cd "), cd_command)(input)
+        preceded(tag("$ cd "), cd_command).parse(input)
     }
 
     fn cmd(input: &str) -> IResult<&str, Command> {
-        terminated(alt((ls, cd)), newline)(input)
+        terminated(alt((ls, cd)), newline).parse(input)
     }
 
     fn name(input: &str) -> IResult<&str, &str> {
@@ -173,11 +174,12 @@ fn parse(input: &str) -> Result<Data, Error> {
             OutputLine::Dir {
                 name: s.to_string(),
             }
-        })(input)
+        })
+        .parse(input)
     }
 
     fn parse_u32(input: &str) -> IResult<&str, u32> {
-        map_res(digit1, str::parse)(input)
+        map_res(digit1, str::parse).parse(input)
     }
 
     fn file(input: &str) -> IResult<&str, OutputLine> {
@@ -194,17 +196,18 @@ fn parse(input: &str) -> Result<Data, Error> {
     }
 
     fn output_line(input: &str) -> IResult<&str, OutputLine> {
-        terminated(alt((dir, file)), newline)(input)
+        terminated(alt((dir, file)), newline).parse(input)
     }
 
     fn command_and_n_output(input: &str) -> IResult<&str, CommandWithOutput> {
         map(pair(cmd, many0(output_line)), |(command, output)| {
             CommandWithOutput { command, output }
-        })(input)
+        })
+        .parse(input)
     }
 
     fn parser(input: &str) -> IResult<&str, Data> {
-        complete(many1(command_and_n_output))(input)
+        complete(many1(command_and_n_output)).parse(input)
     }
 
     let mut input_finishing_on_newline = normalize_newlines(input);

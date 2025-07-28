@@ -5,7 +5,7 @@ use advent_of_code_common::utils::head_tail;
 use nom::Err::Incomplete;
 use nom::combinator::complete;
 use nom::multi::count;
-use nom::{Finish, IResult, Needed};
+use nom::{Finish, IResult, Needed, Parser};
 
 const DATA: &str = include_str!("../../resources/08.txt");
 
@@ -44,8 +44,8 @@ fn take_head<T: Clone>(input: &[T]) -> IResult<&[T], T> {
 fn node(input: &[usize]) -> IResult<&[usize], Node> {
     let (input, children_count) = take_head(input)?;
     let (input, metadata_count) = take_head(input)?;
-    let (input, children) = count(node, children_count)(input)?;
-    let (input, metadata) = count(take_head, metadata_count)(input)?;
+    let (input, children) = count(node, children_count).parse(input)?;
+    let (input, metadata) = count(take_head, metadata_count).parse(input)?;
     Ok((input, Node { children, metadata }))
 }
 
@@ -54,7 +54,7 @@ impl FromStr for Node {
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let numbers: Vec<usize> = parse_separated_vec(input, " ")?;
-        let parsed = complete(node)(&numbers);
+        let parsed = complete(node).parse(&numbers);
         let (_, result) = Finish::finish(parsed).map_err(|err| format!("{:?}", err.code))?;
         Ok(result)
     }

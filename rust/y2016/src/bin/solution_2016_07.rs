@@ -5,6 +5,7 @@ use advent_of_code_common::parsing;
 use advent_of_code_common::parsing::parse_lines_to_vec;
 use itertools::Itertools;
 use nom::Err;
+use nom::Parser;
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 use nom::combinator::{complete, map};
@@ -33,7 +34,8 @@ fn super_net(input: &str) -> IResult<&str, Element> {
             Element::SuperNet {
                 value: chars.to_string(),
             }
-        })(input)
+        })
+        .parse(input)
     }
 }
 
@@ -42,18 +44,19 @@ fn hyper_net(input: &str) -> IResult<&str, Element> {
         Element::HyperNet {
             value: chars.to_string(),
         }
-    })(input)
+    })
+    .parse(input)
 }
 
 fn element(input: &str) -> IResult<&str, Element> {
-    alt((hyper_net, super_net))(input)
+    alt((hyper_net, super_net)).parse(input)
 }
 
 impl FromStr for Ipv7Addr {
     type Err = parsing::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parsed = complete(many0(element))(s);
+        let parsed = complete(many0(element)).parse(s);
         let (_, result) =
             Finish::finish(parsed).map_err(|err| format!("{err:?} {:?}", err.code))?;
         Ok(Ipv7Addr { elements: result })
