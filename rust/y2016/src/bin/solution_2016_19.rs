@@ -20,7 +20,7 @@ impl State {
         if count == 1 {
             Some(*self.tree.iter().next().unwrap().0)
         } else {
-            if count % 1000 == 0 {
+            if count.is_multiple_of(1000) {
                 println!("{count} remaining...");
             }
 

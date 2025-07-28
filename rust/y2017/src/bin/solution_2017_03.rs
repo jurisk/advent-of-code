@@ -11,7 +11,11 @@ fn location_1(n: u32) -> Coords {
     if sqrt * sqrt == n && sqrt % 2 == 1 {
         Coords::new((sqrt / 2) as i32, (sqrt / 2) as i32)
     } else {
-        let s = if sqrt % 2 == 0 { sqrt - 1 } else { sqrt };
+        let s = if sqrt.is_multiple_of(2) {
+            sqrt - 1
+        } else {
+            sqrt
+        };
         let extra = (n - s * s) as i32;
 
         let east_x = (s / 2 + 1) as i32;

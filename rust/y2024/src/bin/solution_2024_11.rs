@@ -13,7 +13,7 @@ type R = usize;
 )]
 fn halves(n: N) -> Option<(N, N)> {
     let digits = (n as f64).log10() as usize + 1;
-    (digits % 2 == 0).then_some({
+    digits.is_multiple_of(2).then_some({
         let half_length = digits / 2;
         let divisor = 10u64.pow(half_length as u32);
         let left = n / divisor;

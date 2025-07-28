@@ -146,7 +146,7 @@ fn fuel_from_mega_ore(conversions: &HashMap<Ingredient, Conversion>) -> Number {
         if end - start == 1 {
             return start;
         } else {
-            let mid: Number = (start + end) / 2;
+            let mid: Number = u64::midpoint(start, end);
             let required_ore = ore_for_n_fuel(conversions, mid);
             if required_ore > MEGA_ORE {
                 end = mid;

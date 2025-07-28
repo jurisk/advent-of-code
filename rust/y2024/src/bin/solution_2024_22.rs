@@ -46,7 +46,9 @@ fn create_bananas_and_diffs(n: N, how_many: usize) -> (Vec<N>, Vec<Diff>) {
         diffs.push((bananas[i + 1] % 10) as Diff - (bananas[i] % 10) as Diff);
     }
 
-    bananas.iter_mut().for_each(|b| *b %= 10);
+    for b in &mut bananas {
+        *b %= 10;
+    }
 
     (bananas, diffs)
 }

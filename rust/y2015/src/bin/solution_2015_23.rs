@@ -109,7 +109,7 @@ impl State {
             Jmp(offset) => self.jump(offset),
             Jie(register, offset) => {
                 self.jump(
-                    if self.register(register) % 2 == 0 {
+                    if self.register(register).is_multiple_of(2) {
                         offset
                     } else {
                         1

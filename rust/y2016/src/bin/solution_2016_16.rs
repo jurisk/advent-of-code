@@ -43,7 +43,7 @@ fn checksum(data: &[Digit]) -> Vec<Digit> {
         .tuples()
         .map(|(a, b)| if a == b { One } else { Zero })
         .collect();
-    if result.len() % 2 == 0 {
+    if result.len().is_multiple_of(2) {
         checksum(&result)
     } else {
         result

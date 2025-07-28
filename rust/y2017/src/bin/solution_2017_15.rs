@@ -15,7 +15,7 @@ fn next_value_with_constraint(value: Value, factor: Value, constraint: Value) ->
     let mut current = value;
     loop {
         current = next_value(current, factor);
-        if current % constraint == 0 {
+        if current.is_multiple_of(constraint) {
             return current;
         }
     }

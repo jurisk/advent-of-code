@@ -15,7 +15,7 @@ struct Disc {
 impl Disc {
     fn valid_at(&self, time: usize) -> bool {
         let effective_time = self.id + time;
-        (self.at_time_0 + effective_time) % self.positions == 0
+        (self.at_time_0 + effective_time).is_multiple_of(self.positions)
     }
 }
 

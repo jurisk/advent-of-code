@@ -17,7 +17,7 @@ impl Maze {
             false
         } else {
             let x = c.x * c.x + 3 * c.x + 2 * c.x * c.y + c.y + c.y * c.y + self.favourite_number;
-            x.count_ones() % 2 == 0
+            x.count_ones().is_multiple_of(2)
         }
     }
 
