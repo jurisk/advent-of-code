@@ -6,6 +6,7 @@ brew install sbt
 brew install git-crypt
 brew install gpg
 git-crypt unlock ../git-crypt.key
+brew install z3
 ```
 
 # Useful Commands
