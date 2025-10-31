@@ -4,6 +4,7 @@
 brew install openjdk
 brew install sbt
 brew install git-crypt
+brew install gpg
 git-crypt unlock
 ```
 
