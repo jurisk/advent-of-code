@@ -3,6 +3,8 @@
 ```shell
 brew install openjdk
 brew install sbt
+brew install git-crypt
+git-crypt unlock
 ```
 
 # Useful Commands
