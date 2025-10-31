@@ -60,7 +60,7 @@ object Parsing {
 
     def parseCoords2D: Coords2D = {
       val (x, y): (Int, Int) =
-        s.parsePairUnsafe(',', _.trim.toInt, _.trim.toInt)
+        this.parsePairUnsafe(',', _.trim.toInt, _.trim.toInt)
       Coords2D.of(x, y)
     }
 
@@ -71,7 +71,7 @@ object Parsing {
       s.split(separator).toList.twoElementsUnsafe
 
     def splitPairByDoubleNewline: (String, String) =
-      s.splitPairUnsafe("\n\n")
+      this.splitPairUnsafe("\n\n")
 
     def splitByDoubleNewline: List[String] =
       s.split("\n\n").toList
@@ -84,7 +84,7 @@ object Parsing {
       parserLeft: String => A,
       parserRight: String => B,
     ): (A, B) = {
-      val (a, b) = s.splitPairUnsafe(c)
+      val (a, b) = this.splitPairUnsafe(c)
       (parserLeft(a), parserRight(b))
     }
 
@@ -93,20 +93,20 @@ object Parsing {
       parserLeft: String => A,
       parserRight: String => B,
     ): (A, B) = {
-      val (a, b) = s.splitPairUnsafe(separator)
+      val (a, b) = this.splitPairUnsafe(separator)
       (parserLeft(a), parserRight(b))
     }
 
     def parsePairByDoubleNewline[A, B](
       parserLeft: String => A,
       parserRight: String => B,
-    ): (A, B) = s.parsePairUnsafe("\n\n", parserLeft, parserRight)
+    ): (A, B) = this.parsePairUnsafe("\n\n", parserLeft, parserRight)
 
     def parsePairUnsafe[T](
       separator: String,
       parser: String => T,
     ): (T, T) =
-      s.parsePairUnsafe(separator, parser, parser)
+      this.parsePairUnsafe(separator, parser, parser)
 
     def parseList[T](
       separator: String,
