@@ -1,3 +1,10 @@
+# Setup
+
+```shell
+brew install openjdk
+brew install sbt
+```
+
 # Useful Commands
 
 ```shell
