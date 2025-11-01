@@ -31,6 +31,14 @@ jobs:
 
       - uses: sbt/setup-sbt@v1
 
+      - name: Check Scalafmt formatting
+        working-directory: ./scala3
+        run: sbt scalafmtCheckAll
+
+      - name: Run Scalafix
+        working-directory: ./scala3
+        run: sbt "scalafixAll --check"
+
       - name: Run tests
         working-directory: ./scala3
         run: sbt test

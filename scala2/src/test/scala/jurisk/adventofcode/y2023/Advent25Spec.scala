@@ -2,6 +2,7 @@ package jurisk.adventofcode.y2023
 
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
+
 import Advent25._
 
 class Advent25Spec extends AnyFreeSpec {

@@ -1,9 +1,10 @@
 package jurisk.adventofcode.y2023
 
-import org.scalatest.freespec.AnyFreeSpec
-import Advent13._
 import jurisk.geometry.Field2D
+import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
+
+import Advent13._
 
 class Advent13Spec extends AnyFreeSpec {
   "part 1" - {

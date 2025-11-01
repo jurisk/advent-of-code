@@ -1,9 +1,10 @@
 package jurisk.adventofcode.y2024
 
-import Advent03._
 import jurisk.utils.FileInput.readFileText
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
+
+import Advent03._
 
 class Advent03Spec extends AnyFreeSpec {
   private def testData00 = readFileText(fileName("-test-00"))

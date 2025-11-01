@@ -1,10 +1,13 @@
 package jurisk.adventofcode.y2023
 
-import org.scalatest.freespec.AnyFreeSpec
-import Advent16._
 import cats.implicits._
-import jurisk.geometry.{Coords2D, CoordsAndDirection2D, Direction2D}
+import jurisk.geometry.Coords2D
+import jurisk.geometry.CoordsAndDirection2D
+import jurisk.geometry.Direction2D
+import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
+
+import Advent16._
 
 class Advent16Spec extends AnyFreeSpec {
   private val testData: Input = parseFile("2023/16-test.txt")

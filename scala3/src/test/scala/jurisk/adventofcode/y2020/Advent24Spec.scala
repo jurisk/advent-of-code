@@ -1,8 +1,8 @@
 package jurisk.adventofcode.y2020
 
 import jurisk.adventofcode.AdventAppSpec
-import jurisk.adventofcode.y2020.Advent24.*
-import org.scalatest.matchers.should.Matchers.*
+import jurisk.adventofcode.y2020.Advent24._
+import org.scalatest.matchers.should.Matchers._
 
 class Advent24Spec extends AdventAppSpec(Advent24):
   "solution1" - {
@@ -24,4 +24,3 @@ class Advent24Spec extends AdventAppSpec(Advent24):
       solution2(realData) shouldEqual 3537
     }
   }
-

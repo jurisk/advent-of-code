@@ -1,9 +1,11 @@
 package jurisk.adventofcode.y2024
 
-import Advent22._
-import cats.implicits.{catsSyntaxOptionId, none}
+import cats.implicits.catsSyntaxOptionId
+import cats.implicits.none
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
+
+import Advent22._
 
 class Advent22Spec extends AnyFreeSpec {
   private def testData0 = parseFile(fileName("-test-00"))

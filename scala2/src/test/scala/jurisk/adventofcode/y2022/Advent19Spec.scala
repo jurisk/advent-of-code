@@ -6,7 +6,7 @@ import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class Advent19Spec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
-  "Solution 19" should "calculate successors" in {
+  "Solution 19" should "calculate successors" in
     testData.asserting { test =>
       val test1 = test.head
 
@@ -39,19 +39,16 @@ class Advent19Spec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
         )
       m4.successors(test1) should contain(m5)
     }
-  }
 
-  it should "test 1 part 1" in {
+  it should "test 1 part 1" in
     testData.asserting { test =>
       test.head.geodesCanOpen(Part1Minutes) shouldEqual 9
     }
-  }
 
-  it should "test 2 part 1" in {
+  it should "test 2 part 1" in
     testData.asserting { test =>
       test(1).geodesCanOpen(Part1Minutes) shouldEqual 12
     }
-  }
 
   it should "part 1 test" in {
     for {
@@ -67,17 +64,15 @@ class Advent19Spec extends AsyncFlatSpec with AsyncIOSpec with Matchers {
     } yield result shouldEqual 1624
   }
 
-  it should "part 2 test 1" ignore {
+  it should "part 2 test 1" ignore
     testData.asserting { test =>
       test.head.geodesCanOpen(Part2Minutes) shouldEqual 56
     }
-  }
 
-  it should "part 2 test 2" ignore {
+  it should "part 2 test 2" ignore
     testData.asserting { test =>
       test(1).geodesCanOpen(Part2Minutes) shouldEqual 62
     }
-  }
 
   it should "part 2 real" ignore {
     for {

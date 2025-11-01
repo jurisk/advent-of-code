@@ -1,8 +1,9 @@
 package jurisk.adventofcode.y2024
 
-import Advent10._
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
+
+import Advent10._
 
 class Advent10Spec extends AnyFreeSpec {
   private def testData = parseFile(fileName("-test-00"))

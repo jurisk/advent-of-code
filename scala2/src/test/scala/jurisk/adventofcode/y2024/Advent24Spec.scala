@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2024
 
-import Advent24._
-import cats.implicits.{catsSyntaxFoldableOps0, catsSyntaxOptionId}
+import cats.implicits.catsSyntaxFoldableOps0
+import cats.implicits.catsSyntaxOptionId
 import jurisk.collections.immutable.SetOfTwo
 import jurisk.utils.Parsing.StringOps
 import org.scalatest.freespec.AnyFreeSpec
@@ -9,6 +9,8 @@ import org.scalatest.matchers.should.Matchers._
 
 import scala.annotation.tailrec
 import scala.util.Random
+
+import Advent24._
 
 class Advent24Spec extends AnyFreeSpec {
   private def testData = parseFile(fileName("-test-00"))

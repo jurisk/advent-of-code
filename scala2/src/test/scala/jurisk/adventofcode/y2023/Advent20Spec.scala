@@ -1,9 +1,11 @@
 package jurisk.adventofcode.y2023
 
+import jurisk.adventofcode.y2023.Advent20.Pulse.High
+import jurisk.adventofcode.y2023.Advent20.Pulse.Low
 import org.scalatest.freespec.AnyFreeSpec
-import Advent20._
-import jurisk.adventofcode.y2023.Advent20.Pulse.{High, Low}
 import org.scalatest.matchers.should.Matchers._
+
+import Advent20._
 
 class Advent20Spec extends AnyFreeSpec {
   private def testData1 = parseFile(fileName("-test-1"))

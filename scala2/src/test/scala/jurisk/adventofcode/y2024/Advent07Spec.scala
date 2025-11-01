@@ -1,9 +1,11 @@
 package jurisk.adventofcode.y2024
 
-import Advent07._
 import cats.effect.testing.scalatest.AsyncIOSpec
-import org.scalatest.freespec.{AnyFreeSpec, AsyncFreeSpec}
+import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.freespec.AsyncFreeSpec
 import org.scalatest.matchers.should.Matchers._
+
+import Advent07._
 
 class Advent07Spec extends AsyncFreeSpec with AsyncIOSpec {
   private def testData = parseFile(fileName("-test-00"))

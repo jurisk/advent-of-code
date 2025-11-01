@@ -1,8 +1,9 @@
 package jurisk.adventofcode.y2023
 
 import org.scalatest.freespec.AnyFreeSpec
-import Advent15._
 import org.scalatest.matchers.should.Matchers._
+
+import Advent15._
 
 class Advent15Spec extends AnyFreeSpec {
   "calculateHash" - {

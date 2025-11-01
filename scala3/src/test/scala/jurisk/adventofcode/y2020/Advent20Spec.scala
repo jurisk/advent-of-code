@@ -1,8 +1,9 @@
 package jurisk.adventofcode.y2020
 
-import org.scalatest.matchers.should.Matchers.*
-import Advent20.*
 import jurisk.adventofcode.AdventAppSpec
+import org.scalatest.matchers.should.Matchers._
+
+import Advent20._
 
 class Advent20Spec extends AdventAppSpec(Advent20):
   "solution1" - {

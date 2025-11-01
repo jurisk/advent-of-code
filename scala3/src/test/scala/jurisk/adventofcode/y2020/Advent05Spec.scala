@@ -1,7 +1,7 @@
 package jurisk.adventofcode.y2020
 
-import cats.implicits.*
-import jurisk.adventofcode.y2020.Advent05.*
+import cats.implicits._
+import jurisk.adventofcode.y2020.Advent05._
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
 

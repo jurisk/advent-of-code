@@ -1,14 +1,15 @@
 package jurisk.adventofcode.y2020
 
-import cats.implicits.*
+import cats.implicits._
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.MultiLineAdventApp
 import jurisk.adventofcode.y2020.Advent04.Passport
 
 import scala.util.Try
+import scala.util.matching.Regex
 
 object Advent04 extends MultiLineAdventApp[Passport, Int, Int]:
-  override val year: Int = 2020
+  override val year: Int     = 2020
   override val exercise: Int = 4
 
   extension (self: String)
@@ -24,7 +25,10 @@ object Advent04 extends MultiLineAdventApp[Passport, Int, Int]:
   )
 
   private object Extractor:
-    def apply[T](key: Key, extractPartial: PartialFunction[String, Option[T]]): Extractor[T] =
+    def apply[T](
+      key: Key,
+      extractPartial: PartialFunction[String, Option[T]],
+    ): Extractor[T] =
       new Extractor(
         key,
         x => if extractPartial.isDefinedAt(x) then extractPartial(x) else none,
@@ -35,19 +39,19 @@ object Advent04 extends MultiLineAdventApp[Passport, Int, Int]:
 
   private type Passport = Map[Key, String]
 
-  private val Year = """(\d{4})""".r
+  private val Year                                                             = """(\d{4})""".r
   private def year(start: Int, end: Int): PartialFunction[String, Option[Int]] =
     case Year(year) => year.between(start, end)
-  
+
   //  byr (Birth Year) - four digits; at least 1920 and at most 2002.
   private val byr = Extractor("byr", year(1920, 2002))
 
   //  iyr (Issue Year) - four digits; at least 2010 and at most 2020.
-  val Iyr = """(\d{4})""".r
+  val Iyr: Regex  = """(\d{4})""".r
   private val iyr = Extractor("iyr", year(2010, 2020))
 
   //  eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
-  val Eyr = """(\d{4})""".r
+  val Eyr: Regex  = """(\d{4})""".r
   private val eyr = Extractor("eyr", year(2020, 2030))
 
   //  hgt (Height) - a number followed by either cm or in:
@@ -55,10 +59,13 @@ object Advent04 extends MultiLineAdventApp[Passport, Int, Int]:
   //    If in, the number must be at least 59 and at most 76.
   private val HgtCm = """(\d+)cm""".r
   private val HgtIn = """(\d+)in""".r
-  private val hgt = Extractor("hgt", {
-    case HgtCm(x) => x.between(150, 193)
-    case HgtIn(x) => x.between(59, 76)
-  })
+  private val hgt   = Extractor(
+    "hgt",
+    {
+      case HgtCm(x) => x.between(150, 193)
+      case HgtIn(x) => x.between(59, 76)
+    },
+  )
 
   //  hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f.
   private val Hcl = """(#[0-9a-f]{6})""".r
@@ -67,7 +74,7 @@ object Advent04 extends MultiLineAdventApp[Passport, Int, Int]:
   //  ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth.
   enum Ecl:
     case amb, blu, brn, gry, grn, hzl, oth
-  
+
   private val ecl = Extractor("ecl", x => Try(Ecl.valueOf(x)).toOption)
 
   //  pid (Passport ID) - a nine-digit number, including leading zeroes.
@@ -82,7 +89,7 @@ object Advent04 extends MultiLineAdventApp[Passport, Int, Int]:
   private def valid2(passport: Passport): Boolean =
     Extractors.forall { extractor =>
       passport.get(extractor.key).exists { x =>
-        extractor.extract(x).isDefined 
+        extractor.extract(x).isDefined
       }
     }
 

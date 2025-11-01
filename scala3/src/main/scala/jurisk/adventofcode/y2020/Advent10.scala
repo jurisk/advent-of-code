@@ -1,21 +1,19 @@
 package jurisk.adventofcode.y2020
 
-import cats.implicits.*
+import cats.implicits._
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.SingleLineAdventApp
 
-import scala.annotation.tailrec
-
 object Advent10 extends SingleLineAdventApp[Int, Long, Long]:
-  val year: Int = 2020
+  val year: Int     = 2020
   val exercise: Int = 10
-  
+
   case class Solution(d1: Int = 0, d2: Int = 0, d3: Int = 0)
-  
+
   def solution1(testCases: List[Int]): Long =
     val sorted = (0 :: (testCases.max + 3) :: testCases).sorted
-    val diffs = (sorted.init zip sorted.tail).map { case (a, b) => b - a }
-    
+    val diffs  = (sorted.init zip sorted.tail).map { case (a, b) => b - a }
+
     val solution = diffs.foldLeft(Solution()) { (acc, x) =>
       x match
         case 1 => acc.copy(d1 = acc.d1 + 1)
@@ -23,9 +21,9 @@ object Advent10 extends SingleLineAdventApp[Int, Long, Long]:
         case 3 => acc.copy(d3 = acc.d3 + 1)
         case _ => sys.error(s"Unexpected diff $x")
     }
-    
+
     solution.d1 * solution.d3
-  
+
   private def memoize[I, O](f: I => O): I => O =
     val cache = scala.collection.mutable.HashMap[I, O]()
     key => cache.synchronized(cache.getOrElseUpdate(key, f(key)))
@@ -34,17 +32,15 @@ object Advent10 extends SingleLineAdventApp[Int, Long, Long]:
     val sorted = testCases.sorted.toVector
 
     lazy val m: ((Int, Int)) => Long = memoize[(Int, Int), Long](f)
-    
+
     def f: ((Int, Int)) => Long = { case (voltage, pointer) =>
       val x = sorted(pointer)
-      if pointer == sorted.length - 1 
-      then
-        if (x - voltage > 3) 0 else 1
+      if pointer == sorted.length - 1
+      then if (x - voltage > 3) 0 else 1
+      else if (x - voltage > 3)
+        0
       else
-          if (x - voltage > 3)
-            0
-          else
-            m((x, pointer + 1)) + m((voltage, pointer + 1))
+        m((x, pointer + 1)) + m((voltage, pointer + 1))
     }
 
     m((0, 0))

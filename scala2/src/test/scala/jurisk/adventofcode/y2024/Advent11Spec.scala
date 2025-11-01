@@ -1,8 +1,9 @@
 package jurisk.adventofcode.y2024
 
-import Advent11._
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
+
+import Advent11._
 
 class Advent11Spec extends AnyFreeSpec {
   "part 1" - {

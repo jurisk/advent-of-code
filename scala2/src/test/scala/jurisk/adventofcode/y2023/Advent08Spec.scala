@@ -1,8 +1,9 @@
 package jurisk.adventofcode.y2023
 
-import Advent08._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
+
+import Advent08._
 
 class Advent08Spec extends AnyFlatSpec {
   "Advent08" should "test part 1" in {

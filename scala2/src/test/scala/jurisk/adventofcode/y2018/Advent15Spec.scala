@@ -1,12 +1,13 @@
 package jurisk.adventofcode.y2018
 
-import org.scalatest.flatspec.AnyFlatSpec
-import Advent15._
 import jurisk.adventofcode.y2018.Advent15.Race.Elf
 import jurisk.geometry.Coords2D
 import jurisk.utils.FileInput.readFileText
 import jurisk.utils.Parsing.StringOps
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
+
+import Advent15._
 
 class Advent15Spec extends AnyFlatSpec {
   "Advent 15" should "transition test 1 round 23 to round 24" in {

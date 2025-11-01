@@ -1,6 +1,9 @@
 package jurisk.geometry
 
-import jurisk.geometry.Rotation.{Left90, NoRotation, Right90, TurnAround}
+import jurisk.geometry.Rotation.Left90
+import jurisk.geometry.Rotation.NoRotation
+import jurisk.geometry.Rotation.Right90
+import jurisk.geometry.Rotation.TurnAround
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
 

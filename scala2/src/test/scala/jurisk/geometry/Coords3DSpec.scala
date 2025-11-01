@@ -1,8 +1,8 @@
 package jurisk.geometry
 
+import jurisk.geometry.Coords3D.areVectorsParallel
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
-import jurisk.geometry.Coords3D.areVectorsParallel
 
 class Coords3DSpec extends AnyFreeSpec {
   // https://www.mathsisfun.com/algebra/vectors-cross-product.html

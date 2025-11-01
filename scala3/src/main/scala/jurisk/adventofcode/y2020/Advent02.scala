@@ -1,12 +1,12 @@
 package jurisk.adventofcode.y2020
 
+import cats.implicits._
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.SingleLineAdventApp
-import cats.implicits.*
 import jurisk.adventofcode.y2020.Advent02.Item
 
 object Advent02 extends SingleLineAdventApp[Item, Int, Int]:
-  val year: Int = 2020
+  val year: Int     = 2020
   val exercise: Int = 2
 
   final case class Item(
@@ -22,14 +22,13 @@ object Advent02 extends SingleLineAdventApp[Item, Int, Int]:
     def isValid2: Boolean =
       List(password(a - 1), password(b - 1)).count(_ == letter) == 1
 
-
   override def parseLine(line: String): Either[ErrorMessage, Item] = {
     val Pattern = """(\d+)-(\d+) (\w): (\w+)""".r
 
     line match
       case Pattern(a, b, letter, password) if letter.length == 1 =>
         Item(a.toInt, b.toInt, letter.head, password).asRight
-      case _ =>
+      case _                                                     =>
         ErrorMessage(s"Couldn't parse $line").asLeft
   }
 

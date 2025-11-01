@@ -117,7 +117,7 @@ object Advent04 {
     val info = segmented.map {
       case (BeginsShift(guardId, _), tail) =>
         require(tail.length % 2 == 0)
-        guardId            -> tail
+        guardId -> tail
           .grouped(2)
           .map(group => SleepInterval(group.head.timestamp, group(1).timestamp))
           .toList

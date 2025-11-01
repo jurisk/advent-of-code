@@ -1,16 +1,16 @@
 package jurisk.adventofcode.y2020
 
-import cats.implicits.*
+import cats.implicits._
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.SingleLineAdventApp
 
 import scala.annotation.tailrec
 
 object Advent09 extends SingleLineAdventApp[Long, Long, Long]:
-  val year: Int = 2020
+  val year: Int     = 2020
   val exercise: Int = 9
 
-  extension [T] (self: Boolean)
+  extension [T](self: Boolean)
     def option(x: => T): Option[T] = if (self) x.some else none
 
   def solution1(testCases: List[Long]): Long =
@@ -19,11 +19,13 @@ object Advent09 extends SingleLineAdventApp[Long, Long, Long]:
   def solution1(testCases: List[Long], preambleSize: Int): Option[Long] =
     @tailrec
     def f(preamble: Vector[Long], remaining: List[Long]): Option[Long] =
-      def isSumOfTwo(x: Long): Boolean = preamble.combinations(2).exists(_.sum == x)
+      def isSumOfTwo(x: Long): Boolean =
+        preamble.combinations(2).exists(_.sum == x)
 
       remaining match
-        case Nil => None
-        case x :: xs => if isSumOfTwo(x) then f(preamble.tail :+ x, xs) else x.some
+        case Nil     => None
+        case x :: xs =>
+          if isSumOfTwo(x) then f(preamble.tail :+ x, xs) else x.some
 
     val (a, b) = testCases.splitAt(preambleSize)
     f(a.toVector, b)
@@ -37,7 +39,7 @@ object Advent09 extends SingleLineAdventApp[Long, Long, Long]:
 
       (1 until idx).flatMap { sliceSize =>
         (0 until (idx - sliceSize)).flatMap { start =>
-          val end = start + sliceSize
+          val end   = start + sliceSize
           val slice = testCases.slice(start, end)
           (slice.sum == n).option(slice.min + slice.max)
         }

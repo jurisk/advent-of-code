@@ -91,9 +91,8 @@ object Advent16 {
     def next(field: Input): State = {
       val newIncomingQueue = outgoingQueue.flatMap { next =>
         val neighbour = next.nextStraight
-        field.isValidCoordinate(neighbour.coords) option {
+        field.isValidCoordinate(neighbour.coords) option
           neighbour.invertDirection
-        }
       } -- incomingEdgesProcessed
 
       val newOutgoingQueue = for {

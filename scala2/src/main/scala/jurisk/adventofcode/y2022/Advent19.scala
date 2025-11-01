@@ -193,40 +193,42 @@ object Advent19 extends IOApp {
 
   def part1(data: Parsed): IO[Int] = for {
     _       <- Console[IO].println(s"Blueprint count: ${data.length}")
-    results <- data.parTraverse { blueprint =>
-                 for {
-                   _  <-
-                     Console[IO].println(
-                       s"${Thread.currentThread().getName}: Calculating for:\n$blueprint"
-                     )
-                   ql <- IO {
-                           blueprint.id * blueprint.geodesCanOpen(Part1Minutes)
-                         }
-                   _  <-
-                     Console[IO].println(
-                       s"${Thread.currentThread().getName}: Quality level: $ql\n"
-                     )
-                 } yield ql
-               }
+    results <-
+      data.parTraverse { blueprint =>
+        for {
+          _  <-
+            Console[IO].println(
+              s"${Thread.currentThread().getName}: Calculating for:\n$blueprint"
+            )
+          ql <- IO {
+                  blueprint.id * blueprint.geodesCanOpen(Part1Minutes)
+                }
+          _  <-
+            Console[IO].println(
+              s"${Thread.currentThread().getName}: Quality level: $ql\n"
+            )
+        } yield ql
+      }
   } yield results.sum
 
   def part2(data: Parsed): IO[Int] = {
     require(data.length == 3)
 
     for {
-      results <- data.parTraverse { blueprint =>
-                   for {
-                     _      <-
-                       Console[IO].println(
-                         s"${Thread.currentThread().getName}: Calculating for:\n$blueprint"
-                       )
-                     result <- IO(blueprint.geodesCanOpen(Part2Minutes))
-                     _      <-
-                       Console[IO].println(
-                         s"${Thread.currentThread().getName}: Can open $result\n"
-                       )
-                   } yield result
-                 }
+      results <-
+        data.parTraverse { blueprint =>
+          for {
+            _      <-
+              Console[IO].println(
+                s"${Thread.currentThread().getName}: Calculating for:\n$blueprint"
+              )
+            result <- IO(blueprint.geodesCanOpen(Part2Minutes))
+            _      <-
+              Console[IO].println(
+                s"${Thread.currentThread().getName}: Can open $result\n"
+              )
+          } yield result
+        }
     } yield results.product
   }
 

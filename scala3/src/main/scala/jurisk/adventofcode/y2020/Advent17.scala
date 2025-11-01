@@ -1,22 +1,24 @@
 package jurisk.adventofcode.y2020
 
-import cats.implicits.*
+import cats.implicits._
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.SingleLineAdventApp
-import jurisk.adventofcode.y2020.Advent17.Coordinates.{Coordinates3D, Coordinates4D}
+import jurisk.adventofcode.y2020.Advent17.Coordinates.Coordinates3D
+import jurisk.adventofcode.y2020.Advent17.Coordinates.Coordinates4D
 
 import scala.annotation.targetName
 
 object Advent17 extends SingleLineAdventApp[List[Boolean], Int, Int]:
-  val year: Int = 2020
+  val year: Int     = 2020
   val exercise: Int = 17
 
   sealed trait Coordinates[C <: Coordinates[C]]:
     infix def to(other: C): Seq[C]
 
-    def neighbours: Seq[C] = (this.minusOne to this.plusOne).filterNot(_ == this)
-    
-    def plusOne: C = this + One
+    def neighbours: Seq[C] =
+      (this.minusOne to this.plusOne).filterNot(_ == this)
+
+    def plusOne: C  = this + One
     def minusOne: C = this - One
 
     @targetName("minus")
@@ -31,12 +33,13 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int, Int]:
 
     infix def lower(other: C): C = biProject(other, (a, b) => Math.min(a, b))
     infix def upper(other: C): C = biProject(other, (a, b) => Math.max(a, b))
-  
+
   object Coordinates:
     object Coordinates3D:
       def fromXY(x: Int, y: Int): Coordinates3D = Coordinates3D(x, y, 0)
-    
-    final case class Coordinates3D(x: Int, y: Int, z: Int) extends Coordinates[Coordinates3D]:
+
+    final case class Coordinates3D(x: Int, y: Int, z: Int)
+        extends Coordinates[Coordinates3D]:
       infix def to(other: Coordinates3D): Seq[Coordinates3D] =
         for
           x <- x to other.x
@@ -55,8 +58,9 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int, Int]:
 
     object Coordinates4D:
       def fromXY(x: Int, y: Int): Coordinates4D = Coordinates4D(x, y, 0, 0)
-    
-    final case class Coordinates4D(x: Int, y: Int, z: Int, w: Int) extends Coordinates[Coordinates4D]:
+
+    final case class Coordinates4D(x: Int, y: Int, z: Int, w: Int)
+        extends Coordinates[Coordinates4D]:
       infix def to(other: Coordinates4D): Seq[Coordinates4D] =
         for
           x <- x to other.x
@@ -66,7 +70,7 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int, Int]:
         yield Coordinates4D(x, y, z, w)
 
       def One: Coordinates4D = Coordinates4D(1, 1, 1, 1)
-      
+
       def biProject(other: Coordinates4D, f: (Int, Int) => Int): Coordinates4D =
         Coordinates4D(
           f(x, other.x),
@@ -74,33 +78,34 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int, Int]:
           f(z, other.z),
           f(w, other.w),
         )
-  
+
   final case class Grid[C <: Coordinates[C]](data: Map[C, Boolean]):
-    def at(coordinates: C): Boolean = data.getOrElse(coordinates, false)
-    def set(coordinates: C, value: Boolean): Grid[C] = copy(data = data + (coordinates -> value))
-      
+    def at(coordinates: C): Boolean                  = data.getOrElse(coordinates, false)
+    def set(coordinates: C, value: Boolean): Grid[C] =
+      copy(data = data + (coordinates -> value))
+
     def countActive: Int = data.count { case (_, value) => value }
-    
+
     def coordinatesSet: Set[C] = data.keySet
-    
+
     private def lowerCoordinates: C = data.keySet.reduce(_ lower _)
     private def upperCoordinates: C = data.keySet.reduce(_ upper _)
-    
+
     private def neighbourCount(coordinates: C): Int =
       coordinates.neighbours.count(at)
-    
+
     private def nextValue(coordinates: C): Boolean =
       val neighboursActive = neighbourCount(coordinates)
 
       (at(coordinates), neighboursActive) match
-        case (_, 3) => true
+        case (_, 3)    => true
         case (true, 2) => true
-        case _ => false
-    
+        case _         => false
+
     def nextIteration: Grid[C] =
       val newData = (lowerCoordinates.minusOne to upperCoordinates.plusOne)
         .map(coordinates => coordinates -> nextValue(coordinates))
-      
+
       Grid(newData.toMap)
 
   private object Grid:
@@ -109,17 +114,19 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int, Int]:
   def solve[C <: Coordinates[C]](grid: Grid[C], iterations: Int): Int =
     val resultingGrid = (0 until iterations)
       .foldLeft(grid) { case (acc, iteration) =>
-        acc.nextIteration 
+        acc.nextIteration
       }
-    
+
     resultingGrid.countActive
-  
+
   def solution1(input: List[List[Boolean]]): Int =
-    val grid: Grid[Coordinates3D] = convertInput(input, Coordinates.Coordinates3D.fromXY)
+    val grid: Grid[Coordinates3D] =
+      convertInput(input, Coordinates.Coordinates3D.fromXY)
     solve(grid, 6)
 
   def solution2(input: List[List[Boolean]]): Int =
-    val grid: Grid[Coordinates4D] = convertInput(input, Coordinates.Coordinates4D.fromXY)
+    val grid: Grid[Coordinates4D] =
+      convertInput(input, Coordinates.Coordinates4D.fromXY)
     solve(grid, 6)
 
   def parseLine(line: String): Either[ErrorMessage, List[Boolean]] =
@@ -132,7 +139,10 @@ object Advent17 extends SingleLineAdventApp[List[Boolean], Int, Int]:
       .toList
       .sequence
 
-  private def convertInput[C <: Coordinates[C]](data: List[List[Boolean]], fromXY: (Int, Int) => C): Grid[C] =
+  private def convertInput[C <: Coordinates[C]](
+    data: List[List[Boolean]],
+    fromXY: (Int, Int) => C,
+  ): Grid[C] =
     data.zipWithIndex
       .flatMap { case (y, yIdx) =>
         y.zipWithIndex

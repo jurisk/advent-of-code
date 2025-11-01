@@ -1,38 +1,49 @@
 package jurisk.adventofcode.y2020
 
+import cats.implicits._
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.MultiLineAdventApp
-import jurisk.adventofcode.y2020.Advent20.{TileData, TileId}
-import cats.implicits.*
+import jurisk.adventofcode.y2020.Advent20.TileData
+import jurisk.adventofcode.y2020.Advent20.TileId
+
 import scala.annotation.tailrec
 import scala.math.sqrt
 
 object Advent20 extends MultiLineAdventApp[(TileId, TileData), Long, Int]:
-  override val year: TileId = 2020
+  override val year: TileId     = 2020
   override val exercise: TileId = 20
 
   opaque type TileId = Int
 
-  opaque type Edge = String
+  opaque type Edge   = String
   private type Pixel = Char
 
   final case class TileData(lines: List[String]):
     override def toString: String = "\n" + lines.mkString("\n") + "\n"
 
-    def width: Int = lines.head.length
+    def width: Int  = lines.head.length
     def height: Int = lines.length
 
     // all these are clockwise and it's important to remember this!
-    def top: Edge = lines.head
+    def top: Edge    = lines.head
     def bottom: Edge = lines.last.reverse
-    def right: Edge = lines.map(_.last).mkString
-    def left: Edge = lines.map(_.head).reverse.mkString
+    def right: Edge  = lines.map(_.last).mkString
+    def left: Edge   = lines.map(_.head).reverse.mkString
 
     private def flipVertically: TileData = TileData(lines.map(_.reverse))
 
     def allEdges: List[Edge] =
       val flipped = flipVertically
-      List(top, right, bottom, left, flipped.top, flipped.right, flipped.bottom, flipped.left)
+      List(
+        top,
+        right,
+        bottom,
+        left,
+        flipped.top,
+        flipped.right,
+        flipped.bottom,
+        flipped.left,
+      )
 
     def orient(orientation: Orientation): TileData = orientation match
       case Orientation.N000 => this
@@ -45,13 +56,14 @@ object Advent20 extends MultiLineAdventApp[(TileId, TileData), Long, Int]:
       case Orientation.F270 => flipVertically.rot90.rot90.rot90
 
     private def rot90: TileData = TileData(
-      lines.head.indices.map { col =>
-        lines.indices.map { row =>
-          lines(row)(col)
-        }.mkString
-      }
-      .map(_.reverse)
-      .toList
+      lines.head.indices
+        .map { col =>
+          lines.indices.map { row =>
+            lines(row)(col)
+          }.mkString
+        }
+        .map(_.reverse)
+        .toList
     )
 
     def snipEdges: TileData = TileData(
@@ -84,22 +96,25 @@ object Advent20 extends MultiLineAdventApp[(TileId, TileData), Long, Int]:
   private def findTopLeftCorner(tiles: Map[TileId, TileData]): OrientedTile =
     val allEdges = tiles.values.flatMap(_.allEdges)
 
-    tiles.find { (_, tileData) =>
-      val top = tileData.top
-      val left = tileData.left
+    tiles
+      .find { (_, tileData) =>
+        val top  = tileData.top
+        val left = tileData.left
 
-      allEdges.count(_ == top) == 1 && allEdges.count(_ == left) == 1
-    }
-    .map { case (tileId, _) => OrientedTile(Orientation.N000, tileId) }
-    .getOrElse(sys.error("Failed to find"))
+        allEdges.count(_ == top) == 1 && allEdges.count(_ == left) == 1
+      }
+      .map { case (tileId, _) => OrientedTile(Orientation.N000, tileId) }
+      .getOrElse(sys.error("Failed to find"))
 
-  private def arrangeTiles(tiles: Map[TileId, TileData]): List[List[OrientedTile]] =
+  private def arrangeTiles(
+    tiles: Map[TileId, TileData]
+  ): List[List[OrientedTile]] =
     val topLeftCorner = findTopLeftCorner(tiles)
-    val size: Int = sqrt(tiles.size).round.toInt
+    val size: Int     = sqrt(tiles.size).round.toInt
 
     def allExceptMe(tile: OrientedTile): List[OrientedTile] = for
       orientation <- Orientation.values.toList
-      tileId <- tiles.keySet
+      tileId      <- tiles.keySet
       if tileId != tile.tileId // not me
     yield OrientedTile(orientation, tileId)
 
@@ -128,23 +143,27 @@ object Advent20 extends MultiLineAdventApp[(TileId, TileData), Long, Int]:
     @tailrec
     def fillRowHorizontally(row: List[OrientedTile]): List[OrientedTile] =
       if row.size == size
-        then row
-        else fillRowHorizontally(row ++ List(findMatchingTileHorizontally(row.last)))
+      then row
+      else
+        fillRowHorizontally(row ++ List(findMatchingTileHorizontally(row.last)))
 
     def findMatchingTileVertically(tile: OrientedTile): OrientedTile =
       allExceptMe(tile)
         .find { x =>
           matchesVertically(tile, x)
-        }.getOrElse(sys.error("Failed to find matching tile vertically"))
+        }
+        .getOrElse(sys.error("Failed to find matching tile vertically"))
 
     def findMatchingRow(row: List[OrientedTile]): List[OrientedTile] =
       row map findMatchingTileVertically
 
     @tailrec
-    def fillRowsVertically(rows: List[List[OrientedTile]]): List[List[OrientedTile]] =
+    def fillRowsVertically(
+      rows: List[List[OrientedTile]]
+    ): List[List[OrientedTile]] =
       if rows.size == size
-        then rows
-        else fillRowsVertically(rows ++ List(findMatchingRow(rows.last)))
+      then rows
+      else fillRowsVertically(rows ++ List(findMatchingRow(rows.last)))
 
     val topRow = fillRowHorizontally(topLeftCorner :: Nil)
 
@@ -158,7 +177,10 @@ object Advent20 extends MultiLineAdventApp[(TileId, TileData), Long, Int]:
       arrangement.last.last.tileId,
     ).product
 
-  private def mergeArrangement(map: Map[TileId, TileData], arrangement: List[List[OrientedTile]]): TileData =
+  private def mergeArrangement(
+    map: Map[TileId, TileData],
+    arrangement: List[List[OrientedTile]],
+  ): TileData =
     val tileDatas: List[List[TileData]] = arrangement.map { row =>
       row map { tile =>
         map(tile.tileId).orient(tile.orientation).snipEdges
@@ -166,7 +188,10 @@ object Advent20 extends MultiLineAdventApp[(TileId, TileData), Long, Int]:
     }
 
     def mergeRow(row: List[TileData]): List[String] =
-      def mergeHorizontally(left: List[String], right: List[String]): List[String] =
+      def mergeHorizontally(
+        left: List[String],
+        right: List[String],
+      ): List[String] =
         (left zip right).map((a, b) => a + b)
 
       row.map(_.lines).reduce((l, r) => mergeHorizontally(l, r))
@@ -175,7 +200,10 @@ object Advent20 extends MultiLineAdventApp[(TileId, TileData), Long, Int]:
 
     TileData(result)
 
-  private def subtractMonsterEverywhereAndCountHashes(monster: TileData, merged: TileData): Int =
+  private def subtractMonsterEverywhereAndCountHashes(
+    monster: TileData,
+    merged: TileData,
+  ): Int =
     val monsterPositions = for
       x <- 0 until (merged.width - monster.width)
       y <- 0 until (merged.height - monster.height)
@@ -200,11 +228,11 @@ object Advent20 extends MultiLineAdventApp[(TileId, TileData), Long, Int]:
           .foldLeft(data) { case (acc, (xm, ym)) =>
             acc.set(x + xm, y + ym, 'O')
           }
-      else
-        data
+      else data
 
-    val withoutMonsters = monsterPositions.foldLeft(merged) { case (acc, (x, y)) =>
-      subtractMonsterIfThere(acc, x, y)
+    val withoutMonsters = monsterPositions.foldLeft(merged) {
+      case (acc, (x, y)) =>
+        subtractMonsterIfThere(acc, x, y)
     }
 
     withoutMonsters.lines.map(_.count(_ == '#')).sum
@@ -224,24 +252,26 @@ object Advent20 extends MultiLineAdventApp[(TileId, TileData), Long, Int]:
 
   private val TileIdRe = """Tile (\d+):""".r
 
-  override def parseLines(lines: List[String]): Either[ErrorMessage, (TileId, TileData)] =
+  override def parseLines(
+    lines: List[String]
+  ): Either[ErrorMessage, (TileId, TileData)] =
     lines match
-      case Nil => ErrorMessage("Empty lines").asLeft
+      case Nil     => ErrorMessage("Empty lines").asLeft
       case x :: xs =>
         val tileId: Int = x match
           case TileIdRe(id) => id.toInt
-          case _ => sys.error("Failed to match $x")
+          case _            => sys.error("Failed to match $x")
         (tileId, TileData(xs)).asRight
 
   override def solution1(input: List[(TileId, TileData)]): Long = {
-    val tiles = input.toMap
+    val tiles    = input.toMap
     val arranged = arrangeTiles(input.toMap)
     solve1(arranged)
   }
 
   override def solution2(input: List[(TileId, TileData)]): TileId = {
-    val tiles = input.toMap
+    val tiles    = input.toMap
     val arranged = arrangeTiles(input.toMap)
-    val merged = mergeArrangement(tiles, arranged)
+    val merged   = mergeArrangement(tiles, arranged)
     solve2(monster, merged)
   }

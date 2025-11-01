@@ -1,8 +1,9 @@
 package jurisk.adventofcode.y2023
 
-import Advent07._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers._
+
+import Advent07._
 
 class Advent07Spec extends AnyFlatSpec {
   private def parseValue(game: PokerGame, ranks: String): Value =

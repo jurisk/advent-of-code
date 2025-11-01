@@ -1,11 +1,12 @@
 package jurisk.adventofcode.y2023
 
-import org.scalatest.freespec.AnyFreeSpec
-import Advent11._
 import jurisk.geometry.Coordinates2D
+import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
 
 import scala.collection.immutable.ArraySeq
+
+import Advent11._
 
 class Advent11Spec extends AnyFreeSpec {
   "expand" - {

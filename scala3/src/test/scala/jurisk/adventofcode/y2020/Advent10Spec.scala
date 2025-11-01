@@ -1,27 +1,28 @@
 package jurisk.adventofcode.y2020
 
 import org.scalatest.freespec.AnyFreeSpec
-import org.scalatest.matchers.should.Matchers.*
 
 import scala.util.Properties
 
 class Advent10Spec extends AnyFreeSpec:
   private val inputA = """
-    |16
-    |10
-    |15
-    |5
-    |1
-    |11
-    |7
-    |19
-    |6
-    |12
-    |4
-    |""".stripMargin
-  
-  private def parse(x: String) = Advent10.parseInput(x.split(Properties.lineSeparator).filter(_.nonEmpty).iterator)
-  
+                         |16
+                         |10
+                         |15
+                         |5
+                         |1
+                         |11
+                         |7
+                         |19
+                         |6
+                         |12
+                         |4
+                         |""".stripMargin
+
+  private def parse(x: String) = Advent10.parseInput(
+    x.split(Properties.lineSeparator).filter(_.nonEmpty).iterator
+  )
+
   private val testsA = parse(inputA).getOrElse(sys.error("failed"))
 
   "solution1" in {
@@ -77,11 +78,11 @@ class Advent10Spec extends AnyFreeSpec:
     assert(Advent10.solution2(1 :: 2 :: Nil) == 2)
     assert(Advent10.solution2(1 :: 2 :: 3 :: Nil) == 4)
 
-    val solved3 = Advent10.solution2(testsA)
+    val solved3   = Advent10.solution2(testsA)
     val expected3 = 8
     require(solved3 == expected3, s"$solved3 did not equal $expected3")
 
-    val solved4 = Advent10.solution2(testsB)
+    val solved4   = Advent10.solution2(testsB)
     val expected4 = 19208
     require(solved4 == expected4, s"$solved4 did not equal $expected4")
   }

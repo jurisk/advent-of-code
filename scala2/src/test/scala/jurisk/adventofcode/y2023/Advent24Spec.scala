@@ -1,9 +1,10 @@
 package jurisk.adventofcode.y2023
 
-import org.scalatest.freespec.AnyFreeSpec
-import Advent24._
 import jurisk.geometry.Coords3D
+import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
+
+import Advent24._
 
 class Advent24Spec extends AnyFreeSpec {
   // https://www.math3d.org/G5JHCaIly

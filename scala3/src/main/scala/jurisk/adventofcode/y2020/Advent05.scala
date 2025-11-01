@@ -1,18 +1,21 @@
 package jurisk.adventofcode.y2020
 
-import cats.implicits.*
+import cats.implicits._
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.SingleLineAdventApp
 
 object Advent05 extends SingleLineAdventApp[Int, Int, Int]:
-  override val year: Int = 2020
+  override val year: Int     = 2020
   override val exercise: Int = 5
 
-  private def decode(zero: Char, one: Char)(input: String): Either[ErrorMessage, Int] =
-    input.map {
+  private def decode(zero: Char, one: Char)(
+    input: String
+  ): Either[ErrorMessage, Int] =
+    input
+      .map {
         case `zero` => 0.asRight
-        case `one` => 1.asRight
-        case c => ErrorMessage(s"Unexpected character $c in $input").asLeft
+        case `one`  => 1.asRight
+        case c      => ErrorMessage(s"Unexpected character $c in $input").asLeft
       }
       .toList
       .sequence
@@ -20,12 +23,13 @@ object Advent05 extends SingleLineAdventApp[Int, Int, Int]:
 
   private[y2020] def seatId(x: String): Either[ErrorMessage, Int] =
     for
-      encoded <- if x.length == 10
-      then x.splitAt(7).asRight
-      else ErrorMessage(s"Invalid input $x").asLeft
+      encoded                    <-
+        if x.length == 10
+        then x.splitAt(7).asRight
+        else ErrorMessage(s"Invalid input $x").asLeft
       (encodedRow, encodedColumn) = encoded
-      row <- decode('F', 'B')(encodedRow)
-      column <- decode('L', 'R')(encodedColumn)
+      row                        <- decode('F', 'B')(encodedRow)
+      column                     <- decode('L', 'R')(encodedColumn)
     yield row * 8 + column
 
   private def findLast(sortedSeatIds: List[Int]): Int =

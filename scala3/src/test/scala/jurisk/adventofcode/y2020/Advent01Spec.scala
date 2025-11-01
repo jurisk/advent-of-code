@@ -1,8 +1,9 @@
 package jurisk.adventofcode.y2020
 
 import jurisk.adventofcode.AdventAppSpec
-import jurisk.adventofcode.y2020.Advent01.{solution1, solution2}
-import org.scalatest.matchers.should.Matchers.*
+import jurisk.adventofcode.y2020.Advent01.solution1
+import jurisk.adventofcode.y2020.Advent01.solution2
+import org.scalatest.matchers.should.Matchers._
 
 class Advent01Spec extends AdventAppSpec(Advent01):
   private val testData = List(1721, 979, 366, 299, 675, 1456)

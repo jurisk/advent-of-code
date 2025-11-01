@@ -1,12 +1,12 @@
 package jurisk.adventofcode.y2020
 
-import cats.implicits.*
+import cats.implicits._
 import jurisk.adventofcode.AdventApp.ErrorMessage
 import jurisk.adventofcode.SingleLineAdventApp
 import jurisk.adventofcode.y2020.Advent07.Bag
 
 object Advent07 extends SingleLineAdventApp[Bag, Int, Int]:
-  val year: Int = 2020
+  val year: Int     = 2020
   val exercise: Int = 7
 
   opaque type Colour = String
@@ -16,11 +16,16 @@ object Advent07 extends SingleLineAdventApp[Bag, Int, Int]:
 
   // a tree would be more suitable, but a `Map` will do
   private def toMap(testCases: List[Bag]): Map[Colour, Bag] =
-    testCases.groupBy(_.colour).view.mapValues {
-      case Nil => sys.error("Unexpectedly got empty list")
-      case x :: Nil => x
-      case xs => sys.error(s"Unexpectedly got more than one entry for colour: $xs")
-    }.toMap
+    testCases
+      .groupBy(_.colour)
+      .view
+      .mapValues {
+        case Nil      => sys.error("Unexpectedly got empty list")
+        case x :: Nil => x
+        case xs       =>
+          sys.error(s"Unexpectedly got more than one entry for colour: $xs")
+      }
+      .toMap
 
   def solution1(testCases: List[Bag]): Int =
     val map: Map[Colour, Bag] = toMap(testCases)
@@ -36,15 +41,18 @@ object Advent07 extends SingleLineAdventApp[Bag, Int, Int]:
     val map: Map[Colour, Bag] = toMap(testCases)
 
     def count(colour: Colour): Int =
-      1 + map.get(colour).map { x =>
-        x.counts.map { case (k, v) => count(k) * v }.sum
-      }.getOrElse(0)
+      1 + map
+        .get(colour)
+        .map { x =>
+          x.counts.map { case (k, v) => count(k) * v }.sum
+        }
+        .getOrElse(0)
 
     count(Target) - 1 // subtracting 1 as we don't count our target bag
 
-  private val OuterRegEx = """([\w ]+) bags contain (.*)\.""".r
+  private val OuterRegEx      = """([\w ]+) bags contain (.*)\.""".r
   private val InnerRegExEmpty = """no other bags"""
-  private val InnerRegExFull = """(\d+) ([\w ]+) bag[s]?""".r
+  private val InnerRegExFull  = """(\d+) ([\w ]+) bag[s]?""".r
 
   def parseLine(line: String): Either[ErrorMessage, Bag] =
     line match
@@ -57,15 +65,13 @@ object Advent07 extends SingleLineAdventApp[Bag, Int, Int]:
             inner
               .split(", ")
               .toList
-              .map { x =>
+              .traverse { x =>
                 x match {
-                  case InnerRegExFull(count, colour)
-                    => (colour -> count.toInt).asRight
-                  case _
-                    => ErrorMessage(x).asLeft
+                  case InnerRegExFull(count, colour) =>
+                    (colour -> count.toInt).asRight
+                  case _                             => ErrorMessage(x).asLeft
                 }
               }
-              .sequence
 
         counts.map(x => Bag(bag, x.toMap))
 

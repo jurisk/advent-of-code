@@ -1,13 +1,13 @@
 package jurisk.adventofcode.y2024
 
-import Advent13._
-import jurisk.adventofcode.y2024.Advent13.SolutionMode.{LinearEquations, Z3}
-import jurisk.adventofcode.y2024.Advent13.SolutionMode.Z3Mode.{
-  External,
-  Internal,
-}
+import jurisk.adventofcode.y2024.Advent13.SolutionMode.LinearEquations
+import jurisk.adventofcode.y2024.Advent13.SolutionMode.Z3
+import jurisk.adventofcode.y2024.Advent13.SolutionMode.Z3Mode.External
+import jurisk.adventofcode.y2024.Advent13.SolutionMode.Z3Mode.Internal
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
+
+import Advent13._
 
 class Advent13Spec extends AnyFreeSpec {
   private def testData = parseFile(fileName("-test-00"))

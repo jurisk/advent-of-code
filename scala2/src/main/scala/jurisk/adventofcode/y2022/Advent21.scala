@@ -99,15 +99,15 @@ object Advent21 {
             Literal(operation.execute(a, b))
 
           // (a - x) == (x - a) * -1
-          case (Literal(a), Minus, b)              =>
+          case (Literal(a), Minus, b) =>
             (b - Literal(a)) * Literal(-1)
 
           // a * x == x * a
-          case (Literal(a), Multiply, b)           =>
+          case (Literal(a), Multiply, b) =>
             b * Literal(a)
 
           // a + x == x + a
-          case (Literal(a), Plus, b)               =>
+          case (Literal(a), Plus, b) =>
             b + Literal(a)
 
           case (a, _, b) =>
