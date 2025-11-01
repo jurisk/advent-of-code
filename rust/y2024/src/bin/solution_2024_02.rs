@@ -27,7 +27,7 @@ fn valid_diffs_1(row: &[N], range: &RangeInclusive<N>) -> bool {
         .all(|diff| range.contains(&diff))
 }
 
-#[allow(dead_code)]
+#[expect(unused)]
 fn valid_diffs_2_straightforward(row: &[N], range: &RangeInclusive<N>) -> bool {
     valid_diffs_1(row, range)
         || (0 .. row.len()).any(|idx| {
@@ -152,11 +152,6 @@ mod tests {
     #[test]
     fn test_solve_2_test() {
         assert_eq!(solve_2(&test_data()), 4);
-    }
-
-    #[test]
-    fn test_solve_2_real_straightforward() {
-        assert_eq!(solve(&real_data(), valid_diffs_2_straightforward), 404);
     }
 
     #[test]

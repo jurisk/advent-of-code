@@ -126,7 +126,7 @@ fn part_2(input: &str) -> i32 {
     solve_2(&data)
 }
 
-#[allow(clippy::unreadable_literal)]
+#[expect(clippy::unreadable_literal)]
 fn main() {
     let test_data = "forward 5
 down 5

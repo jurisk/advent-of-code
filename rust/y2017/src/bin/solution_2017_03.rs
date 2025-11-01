@@ -5,7 +5,7 @@ use integer_sqrt::IntegerSquareRoot;
 
 type Coords = Coords2D<i32>;
 
-#[allow(clippy::cast_possible_wrap)]
+#[expect(clippy::cast_possible_wrap)]
 fn location_1(n: u32) -> Coords {
     let sqrt = n.integer_sqrt();
     if sqrt * sqrt == n && sqrt % 2 == 1 {
@@ -54,7 +54,7 @@ fn solve_1(n: u32) -> i32 {
     location_1(n).manhattan_distance_to_origin()
 }
 
-#[allow(clippy::redundant_else)]
+#[expect(clippy::redundant_else)]
 fn solve_2(limit: u32) -> u32 {
     let mut values: HashMap<Coords, u32> = HashMap::new();
     values.insert(Coords2D::origin(), 1);

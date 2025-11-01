@@ -32,7 +32,7 @@ fn parse(s: &str) -> Vec<Vec<Cell>> {
         .collect()
 }
 
-#[allow(clippy::cast_possible_truncation)]
+#[expect(clippy::cast_possible_truncation)]
 fn asteroid_angle(from: Coords, to: Coords) -> Angle {
     const PI_2: f64 = 2f64 * PI as f64;
     let c = from - to;

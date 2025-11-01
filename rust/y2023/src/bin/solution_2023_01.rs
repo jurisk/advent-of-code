@@ -7,7 +7,7 @@ const DATA: &str = include_str!("../../resources/01.txt");
 type Data = Vec<String>;
 type N = u32;
 
-#[allow(clippy::cast_lossless)]
+#[expect(clippy::cast_lossless)]
 fn digits_dictionary() -> HashMap<String, N> {
     (0 ..= 9)
         .map(|n| (vec![(b'0' + n) as char].into_iter().collect(), n as N))

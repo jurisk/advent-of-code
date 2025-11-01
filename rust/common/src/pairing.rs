@@ -57,7 +57,7 @@ impl<T> From<Pairing<T>> for (T, T) {
 
 impl<T: Copy> Copy for Pairing<T> {}
 
-#[allow(clippy::expl_impl_clone_on_copy)]
+#[expect(clippy::expl_impl_clone_on_copy)]
 impl<T: Clone> Clone for Pairing<T> {
     fn clone(&self) -> Self {
         Self {

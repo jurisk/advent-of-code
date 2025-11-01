@@ -67,7 +67,7 @@ fn solve_1(data: &Data) -> Name {
         .values()
         .filter(|x| !children.contains(&x.name))
         .collect();
-    single_result(&parents).unwrap().name.to_string()
+    single_result(&parents).unwrap().name.clone()
 }
 
 // We could have memoized this

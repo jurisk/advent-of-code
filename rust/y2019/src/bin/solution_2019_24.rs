@@ -23,7 +23,7 @@ fn parse(data: &str) -> Field {
 
 const DATA: &str = include_str!("../../resources/24.txt");
 
-#[allow(clippy::cast_sign_loss)]
+#[expect(clippy::cast_sign_loss)]
 fn at(field: &Field, x: i32, y: i32) -> bool {
     if x < 0 || x as usize >= SIZE || y < 0 || y as usize >= SIZE {
         false
@@ -84,7 +84,7 @@ fn find_loop_simple(field: Field) -> Field {
     }
 }
 
-#[allow(clippy::needless_range_loop)]
+#[expect(clippy::needless_range_loop)]
 fn biodiversity(field: Field) -> u128 {
     let mut result: u128 = 0;
     for x in 0 .. SIZE {
@@ -135,7 +135,7 @@ fn new_level(data: &HashMap<i32, Field>, level: i32) -> Field {
     result
 }
 
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 fn bool_count(vec: Vec<bool>) -> usize {
     vec.iter().filter(|x| **x).count()
 }
@@ -174,7 +174,7 @@ fn next_complex(data: &HashMap<i32, Field>) -> HashMap<i32, Field> {
         .collect()
 }
 
-#[allow(clippy::needless_range_loop)]
+#[expect(clippy::needless_range_loop)]
 fn count_bugs_complex(field: Field) -> u128 {
     let mut result = 0;
     for x in 0 .. SIZE {

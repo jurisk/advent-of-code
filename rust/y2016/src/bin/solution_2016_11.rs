@@ -9,7 +9,6 @@ use crate::Object::{Generator, Microchip};
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone, Ord, PartialOrd, EnumIter, Debug)]
 #[repr(u8)]
-#[allow(dead_code)]
 enum Element {
     Curium    = b'C',
     Dilithium = b'D',

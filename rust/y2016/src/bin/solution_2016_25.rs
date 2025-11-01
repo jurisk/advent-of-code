@@ -2,7 +2,7 @@ use advent_of_code_2016::assembunny::{Instruction, N, State, parse_instructions}
 use advent_of_code_common::parsing::Error;
 use itertools::Either;
 
-#[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+#[expect(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
 fn valid_signal(instructions: &[Instruction], input: N) -> bool {
     // We could instead test for loops, but this is easier, and works
     const OUTPUT_THRESHOLD: usize = 256;

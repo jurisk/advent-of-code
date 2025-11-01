@@ -87,7 +87,7 @@ impl Ipv7Addr {
             .iter()
             .filter_map(|x| {
                 match x {
-                    Element::SuperNet { value } => Some(value.to_string()),
+                    Element::SuperNet { value } => Some(value.clone()),
                     Element::HyperNet { .. } => None,
                 }
             })
@@ -100,7 +100,7 @@ impl Ipv7Addr {
             .filter_map(|x| {
                 match x {
                     Element::SuperNet { .. } => None,
-                    Element::HyperNet { value } => Some(value.to_string()),
+                    Element::HyperNet { value } => Some(value.clone()),
                 }
             })
             .collect()

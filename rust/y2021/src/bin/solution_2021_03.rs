@@ -68,7 +68,7 @@ fn part_2(input: &str) -> usize {
     binary_mult(&oxygen_generator_rating, &co2_scrubber_rating)
 }
 
-#[allow(clippy::unreadable_literal)]
+#[expect(clippy::unreadable_literal)]
 fn main() {
     let test_data = "00100
 11110

@@ -2,7 +2,7 @@ use itertools::Itertools;
 
 type N = u64;
 
-#[allow(clippy::redundant_else)]
+#[expect(clippy::redundant_else)]
 fn solve(data: &[N], group_count: N) -> N {
     let sum: N = data.iter().sum();
     assert_eq!(sum % group_count, 0);

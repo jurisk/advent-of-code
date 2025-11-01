@@ -44,13 +44,13 @@ const PASSAGE: char = '.';
 
 type Name = [char; 2];
 
-#[allow(clippy::cast_possible_wrap)]
-#[allow(clippy::cast_possible_truncation)]
+#[expect(clippy::cast_possible_wrap)]
+#[expect(clippy::cast_possible_truncation)]
 impl Maze {
     fn build_temp_portals(chars: &[Vec<char>]) -> Vec<(Name, CoordsXY)> {
         let mut temp_portals: Vec<(Name, CoordsXY)> = Vec::new();
 
-        #[allow(clippy::needless_range_loop)]
+        #[expect(clippy::needless_range_loop)]
         for y in 0 .. chars.len() {
             let r = &chars[y];
             for x in 0 .. r.len() - 2 {
@@ -177,7 +177,7 @@ impl Maze {
         }
     }
 
-    #[allow(clippy::cast_sign_loss)]
+    #[expect(clippy::cast_sign_loss)]
     fn passage_at(&self, c: CoordsXY) -> bool {
         self.open_passages
             .get(c.y as usize)

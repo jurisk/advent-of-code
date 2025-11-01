@@ -73,7 +73,7 @@ where
         .collect();
     println!("{potential:?}");
     assert_eq!(potential.len(), 1);
-    potential[0].0.to_string()
+    potential[0].0.clone()
 }
 
 fn part_1(sues_input: &str, ticker_input: &str) -> Result<AuntId, Error> {

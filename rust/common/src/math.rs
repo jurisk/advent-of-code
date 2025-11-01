@@ -1,7 +1,7 @@
 use num_traits::Num;
 
 #[must_use]
-#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+#[expect(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 pub fn factors(n: u32) -> Vec<u32> {
     let upper_bound = f64::from(n).sqrt().floor() as u32;
     let mut results: Vec<_> = Vec::new();

@@ -248,7 +248,7 @@ pub fn parse_u8_matrix(input: &str) -> Result<Matrix<u8>, Error> {
 /// # Errors
 ///
 /// Will return `Err` if parsing fails.
-#[allow(clippy::redundant_closure, clippy::missing_panics_doc)]
+#[expect(clippy::redundant_closure, clippy::missing_panics_doc)]
 pub fn parse_matrix<T, TE, PF>(input: &str, parse_element: PF) -> Result<Matrix<T>, TE>
 where
     PF: Fn(char) -> Result<T, TE>,

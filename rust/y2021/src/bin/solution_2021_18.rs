@@ -143,7 +143,7 @@ impl SnailfishNumber {
     // the entire exploding pair is replaced with the regular number 0.
     //
     // Returns Some if "explode" succeeded, None if failed
-    #[allow(clippy::collapsible_else_if, clippy::comparison_chain)]
+    #[expect(clippy::collapsible_else_if, clippy::comparison_chain)]
     fn attempt_explode_internal(
         &self,
         depth_at: usize,
@@ -206,10 +206,10 @@ impl SnailfishNumber {
     // and rounded up.
     //
     // Returns Some if "split" succeeded, None if failed
-    #[allow(clippy::manual_map)]
-    #[allow(clippy::cast_sign_loss)]
-    #[allow(clippy::cast_possible_truncation)]
-    #[allow(clippy::cast_precision_loss)]
+    #[expect(clippy::manual_map)]
+    #[expect(clippy::cast_sign_loss)]
+    #[expect(clippy::cast_possible_truncation)]
+    #[expect(clippy::cast_precision_loss)]
     fn attempt_split_step(&self) -> Option<SnailfishNumber> {
         match self {
             SnailfishNumber::Literal { value } => {

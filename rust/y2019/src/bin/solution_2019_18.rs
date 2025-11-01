@@ -109,7 +109,7 @@ impl Maze {
         Maze { field, entrances }
     }
 
-    #[allow(clippy::cast_sign_loss)]
+    #[expect(clippy::cast_sign_loss)]
     fn at(&self, coords: Coords) -> Square {
         self.field[coords.y as usize][coords.x as usize]
     }

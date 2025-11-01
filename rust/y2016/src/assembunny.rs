@@ -265,7 +265,7 @@ impl FromStr for Instruction {
     }
 }
 
-#[allow(clippy::missing_errors_doc)]
+#[expect(clippy::missing_errors_doc)]
 pub fn parse_instructions(input: &str) -> Result<Vec<Instruction>, Error> {
     parse_lines_to_vec(input)
 }

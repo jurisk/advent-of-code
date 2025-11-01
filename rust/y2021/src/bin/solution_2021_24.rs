@@ -8,7 +8,7 @@ const DATA: &str = include_str!("../../resources/24.txt");
 type N = i64;
 
 #[derive(Debug)]
-#[allow(clippy::struct_field_names)]
+#[expect(clippy::struct_field_names)]
 struct Subroutine {
     line_4:  N,
     line_5:  N,
@@ -101,7 +101,7 @@ impl State {
 // Not a general purpose solution, though a general purpose solution could be
 // done in a somewhat similar way, by memoizing all (register_state,
 // instruction_pointer, input_value) combinations.
-#[allow(clippy::similar_names, clippy::redundant_closure_for_method_calls)]
+#[expect(clippy::similar_names, clippy::redundant_closure_for_method_calls)]
 fn parse(input: &str) -> Result<Vec<Subroutine>, Error> {
     let lines: Vec<String> = input
         .lines()
@@ -116,7 +116,7 @@ fn parse(input: &str) -> Result<Vec<Subroutine>, Error> {
     for idx in 0 .. L {
         let options: Vec<String> = chunks
             .iter()
-            .map(|chunk| chunk[idx].to_string())
+            .map(|chunk| chunk[idx].clone())
             .unique()
             .collect();
         println!("Line {idx}: {options:?}");

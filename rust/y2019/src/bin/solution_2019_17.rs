@@ -65,7 +65,7 @@ struct Board {
 }
 
 impl Board {
-    #[allow(clippy::cast_sign_loss)]
+    #[expect(clippy::cast_sign_loss)]
     fn parse(s: &str) -> Board {
         let map_squares: Vec<Vec<MapSquare>> = s
             .lines()
@@ -116,7 +116,7 @@ impl Board {
         coords.iter().all(|x| self.is_scaffold(*x))
     }
 
-    #[allow(clippy::cast_sign_loss)]
+    #[expect(clippy::cast_sign_loss)]
     fn is_scaffold(&self, c: Coords) -> bool {
         *self
             .scaffolds

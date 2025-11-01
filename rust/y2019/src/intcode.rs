@@ -168,7 +168,7 @@ impl Process {
         }
     }
 
-    #[allow(clippy::cast_sign_loss)]
+    #[expect(clippy::cast_sign_loss)]
     fn op_at_ip(&self) -> Operation {
         let op = self.read_from_memory_offset_by_ip(0);
         let op_code = OperationCode::of((op % 100) as u8);

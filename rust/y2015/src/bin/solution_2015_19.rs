@@ -9,7 +9,7 @@ use pathfinding::prelude::astar;
 use strum::{Display, EnumIter, EnumString, IntoEnumIterator};
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone, EnumIter, EnumString, Display, Debug)]
-#[allow(non_camel_case_types)]
+#[expect(non_camel_case_types)]
 enum Element {
     Al,
     B,

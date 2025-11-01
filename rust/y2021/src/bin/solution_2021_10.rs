@@ -153,7 +153,7 @@ fn part_2(data: &[ParsingResult]) -> u64 {
     completion_scores[completion_scores.len() / 2]
 }
 
-#[allow(clippy::unreadable_literal)]
+#[expect(clippy::unreadable_literal)]
 fn main() {
     let test_data = parse_data(
         "[({(<(())[]>[[{[]{<()<>>

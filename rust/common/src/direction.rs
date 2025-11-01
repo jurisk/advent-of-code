@@ -29,7 +29,7 @@ impl From<Direction> for u32 {
 }
 
 impl Direction {
-    #[allow(clippy::match_same_arms)]
+    #[expect(clippy::match_same_arms)]
     #[must_use]
     pub fn rotate(self, rotation: Rotation) -> Direction {
         match (rotation, self) {

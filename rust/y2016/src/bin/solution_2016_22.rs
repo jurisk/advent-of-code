@@ -203,7 +203,7 @@ fn create(data: &ParsedInputData) -> (Matrix<u16>, CompleteState) {
 }
 
 // This takes too long for larger levels
-#[allow(unused)]
+#[expect(unused)]
 fn solve_2_using_complete_state(data: &ParsedInputData) -> Option<usize> {
     let (capacities, complete_state) = create(data);
 

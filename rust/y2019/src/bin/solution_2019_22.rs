@@ -39,14 +39,14 @@ impl<T: Copy + Clone + Eq> SimpleDeck<T> {
                 cards.reverse();
                 SimpleDeck { cards }
             },
-            #[allow(clippy::cast_sign_loss)]
+            #[expect(clippy::cast_sign_loss)]
             Cut(n) if *n > 0 => {
                 let m = *n as usize;
                 SimpleDeck {
                     cards: [&self.cards[m ..], &self.cards[.. m]].concat(),
                 }
             },
-            #[allow(clippy::cast_sign_loss)]
+            #[expect(clippy::cast_sign_loss)]
             Cut(n) => {
                 let m = (isize::try_from(self.cards.len()).unwrap() + *n) as usize;
                 SimpleDeck {

@@ -122,7 +122,7 @@ impl<const N: usize> Room<N> {
         }
     }
 
-    #[allow(clippy::cast_possible_truncation)]
+    #[expect(clippy::cast_possible_truncation)]
     fn has_space(&self) -> Option<Steps> {
         // Makes some assumptions about data consistency, but it should be OK
         if self.amphipods.iter().all(Option::is_some) {
@@ -280,7 +280,7 @@ impl<const N: usize> State<N> {
     //       \  / \   / \   /  \  /
     //        A0    B0    C0    D0
     //        A1    B1    C1    D1
-    #[allow(clippy::match_same_arms)]
+    #[expect(clippy::match_same_arms)]
     fn path_from_hallway_square_to_room(
         hallway_square: HallwaySquare,
         room: Amphipod,

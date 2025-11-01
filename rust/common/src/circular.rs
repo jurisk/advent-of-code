@@ -12,7 +12,7 @@ impl<T> Circular<T> {
     }
 
     #[must_use]
-    #[allow(clippy::len_without_is_empty)]
+    #[expect(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.vec.len()
     }

@@ -6,7 +6,6 @@ use itertools::Itertools;
 use recap::Recap;
 use serde::Deserialize;
 
-#[allow(non_local_definitions)]
 #[derive(Deserialize, Recap)]
 #[recap(
     regex = r#"^(?P<who>\w+) would (?P<do_what>\w+) (?P<how_many>\d+) happiness units by sitting next to (?P<next_to_who>\w+).$"#

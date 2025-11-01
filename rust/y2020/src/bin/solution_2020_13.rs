@@ -49,7 +49,7 @@ fn solve1(input: &TestData) -> Number {
 }
 
 // From https://rosettacode.org/wiki/Chinese_remainder_theorem#Rust
-#[allow(clippy::many_single_char_names)]
+#[expect(clippy::many_single_char_names)]
 fn egcd(a: Number, b: Number) -> (Number, Number, Number) {
     if a == 0 {
         (b, 0, 1)
@@ -74,7 +74,7 @@ fn chinese_remainder(residues: &[Number], modulii: &[Number]) -> Option<Number> 
     Some(sum % prod)
 }
 
-#[allow(clippy::cast_possible_wrap)]
+#[expect(clippy::cast_possible_wrap)]
 fn solve2(schedule: &[Option<Number>]) -> Number {
     // divisors
     let n: Vec<Number> = flatten_schedule(schedule);

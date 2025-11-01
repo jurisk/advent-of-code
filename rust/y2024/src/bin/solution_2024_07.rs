@@ -31,11 +31,6 @@ fn parse(input: &str) -> Result<Data, Error> {
     parse_lines_to_vec(input)
 }
 
-#[allow(
-    clippy::cast_possible_truncation,
-    clippy::cast_sign_loss,
-    clippy::cast_precision_loss
-)]
 fn concat(a: N, b: N) -> N {
     let b_length = b.ilog10() + 1;
     a * 10u64.pow(b_length) + b

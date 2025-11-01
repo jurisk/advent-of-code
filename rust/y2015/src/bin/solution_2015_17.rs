@@ -6,7 +6,6 @@ fn parse(input: &str) -> Result<Vec<u16>, Error> {
     parse_lines_to_vec(input)
 }
 
-#[allow(dead_code)]
 fn select(data: &[u16], selection: u32) -> u16 {
     let mut current: u16 = 0;
 
@@ -19,7 +18,6 @@ fn select(data: &[u16], selection: u32) -> u16 {
     current
 }
 
-#[allow(dead_code)]
 fn valid_selections(data: &[u16], target: u16) -> Vec<u32> {
     let mut result = vec![];
 
@@ -32,13 +30,13 @@ fn valid_selections(data: &[u16], target: u16) -> Vec<u32> {
     result
 }
 
-#[allow(dead_code)]
+#[expect(dead_code)]
 fn solve_1_old(data: &[u16], target: u16) -> usize {
     let selections = valid_selections(data, target);
     selections.len()
 }
 
-#[allow(dead_code)]
+#[expect(dead_code)]
 fn solve_2_old(data: &[u16], target: u16) -> usize {
     let selections = valid_selections(data, target);
     let minimum_number_of_containers = selections.iter().map(|x| x.count_ones()).min().unwrap();
@@ -49,7 +47,7 @@ fn solve_2_old(data: &[u16], target: u16) -> usize {
 }
 
 #[memoize]
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 fn solve_1(data: Vec<u16>, target: u16) -> usize {
     if target == 0 {
         1
@@ -70,7 +68,7 @@ fn solve_1(data: Vec<u16>, target: u16) -> usize {
 }
 
 #[memoize]
-#[allow(clippy::needless_pass_by_value)]
+#[expect(clippy::needless_pass_by_value)]
 fn solve_2_int(data: Vec<u16>, target: u16, bottles_remaining: u16) -> usize {
     if bottles_remaining == 0 {
         usize::from(target == 0)

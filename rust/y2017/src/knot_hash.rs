@@ -1,6 +1,6 @@
 use advent_of_code_common::circular::Circular;
 
-#[allow(clippy::module_name_repetitions)]
+#[expect(clippy::module_name_repetitions)]
 pub fn knot_hash_make_folds(data: &mut Circular<u8>, fold_lengths: &[u8], rounds: usize) {
     let mut current: usize = 0;
     let mut skip_size: usize = 0;
@@ -17,7 +17,7 @@ pub fn knot_hash_make_folds(data: &mut Circular<u8>, fold_lengths: &[u8], rounds
 const STANDARD_LENGTH_SUFFIXES: [u8; 5] = [17, 31, 73, 47, 23];
 
 #[must_use]
-#[allow(clippy::module_name_repetitions)]
+#[expect(clippy::module_name_repetitions)]
 /// # Panics
 ///
 /// Should not panic
@@ -36,7 +36,7 @@ pub fn knot_hash_as_u8(input: &str) -> Vec<u8> {
 }
 
 #[must_use]
-#[allow(clippy::module_name_repetitions, clippy::format_collect)]
+#[expect(clippy::module_name_repetitions, clippy::format_collect)]
 pub fn knot_hash_as_string(input: &str) -> String {
     let dense_hash = knot_hash_as_u8(input);
     let result: String = dense_hash.iter().map(|x| format!("{x:02x}")).collect();

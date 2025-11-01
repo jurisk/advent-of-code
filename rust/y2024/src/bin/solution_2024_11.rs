@@ -23,7 +23,7 @@ fn halves(n: N) -> Option<(N, N)> {
 }
 
 #[memoize]
-#[allow(clippy::collapsible_else_if)]
+#[expect(clippy::collapsible_else_if)]
 fn solve_one(n: N, blinks: usize) -> R {
     if blinks == 0 {
         1

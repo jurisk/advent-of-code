@@ -65,7 +65,7 @@ fn solve(data: &[Route], prune: bool) -> i32 {
                 None => {
                     locations
                         .iter()
-                        .map(|location| (vec![location.to_string()], 0))
+                        .map(|location| (vec![location.clone()], 0))
                         .collect::<Vec<_>>()
                 },
                 Some(last) => {

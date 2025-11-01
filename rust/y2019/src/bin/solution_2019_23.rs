@@ -54,7 +54,7 @@ fn send_message_buffers_to_computers(
     computers: &mut [Process],
     buffers: &mut MessageBuffers<usize, XYPair>,
 ) {
-    #[allow(clippy::needless_range_loop)]
+    #[expect(clippy::needless_range_loop)]
     for idx in 0 .. computers.len() {
         let computer = &mut computers[idx];
 
@@ -78,7 +78,7 @@ fn solve_1() {
 
     loop {
         // get all computers hungry for input or halted
-        #[allow(clippy::needless_range_loop)]
+        #[expect(clippy::needless_range_loop)]
         for idx in 0 .. COMPUTER_COUNT {
             let computer = &mut computers[idx];
             let halted = computer.run_to_unsatisfied_input();
@@ -91,8 +91,8 @@ fn solve_1() {
         send_message_buffers_to_computers(&mut computers, &mut buffers);
 
         // place messages from computers into message buffers
-        #[allow(clippy::needless_range_loop)]
-        #[allow(clippy::cast_sign_loss)]
+        #[expect(clippy::needless_range_loop)]
+        #[expect(clippy::cast_sign_loss)]
         for idx in 0 .. COMPUTER_COUNT {
             let computer = &mut computers[idx];
 
@@ -126,7 +126,7 @@ fn solve_2() {
 
     loop {
         // get all computers hungry for input or halted
-        #[allow(clippy::needless_range_loop)]
+        #[expect(clippy::needless_range_loop)]
         for idx in 0 .. computer_count {
             let computer = &mut computers[idx];
             let halted = computer.run_to_unsatisfied_input();
@@ -156,8 +156,8 @@ fn solve_2() {
         send_message_buffers_to_computers(&mut computers, &mut buffers);
 
         // place messages from computers into message buffers
-        #[allow(clippy::needless_range_loop)]
-        #[allow(clippy::cast_sign_loss)]
+        #[expect(clippy::needless_range_loop)]
+        #[expect(clippy::cast_sign_loss)]
         for idx in 0 .. computer_count {
             let computer = &mut computers[idx];
 

@@ -92,7 +92,7 @@ impl Directory {
             },
 
             Some((dir, t)) => {
-                let key = dir.to_string();
+                let key = dir.clone();
                 let found = new_directories.get(&key).unwrap();
                 let result = found.add_output_lines(t, output_lines);
                 new_directories.insert(key, result);

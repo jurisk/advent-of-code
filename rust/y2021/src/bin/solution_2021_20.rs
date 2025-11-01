@@ -42,7 +42,7 @@ impl Image {
         }
     }
 
-    #[allow(clippy::cast_sign_loss)]
+    #[expect(clippy::cast_sign_loss)]
     fn bit_at(&self, r: i32, c: i32) -> usize {
         let pixel = if r < 0 || c < 0 {
             &self.surrounding_pixels
