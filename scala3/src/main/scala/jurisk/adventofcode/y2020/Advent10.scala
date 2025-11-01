@@ -26,10 +26,9 @@ object Advent10 extends SingleLineAdventApp[Int, Long, Long]:
     
     solution.d1 * solution.d3
   
-  private def memoize[I, O](f: I => O): I => O = 
-    new scala.collection.mutable.HashMap[I, O]() { self =>
-      override def apply(key: I): O = self.synchronized(getOrElseUpdate(key, f(key)))
-    }
+  private def memoize[I, O](f: I => O): I => O =
+    val cache = scala.collection.mutable.HashMap[I, O]()
+    key => cache.synchronized(cache.getOrElseUpdate(key, f(key)))
 
   def solution2(testCases: List[Int]): Long =
     val sorted = testCases.sorted.toVector
