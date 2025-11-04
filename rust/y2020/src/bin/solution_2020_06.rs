@@ -9,9 +9,6 @@ type Answer = char;
 type Form = HashSet<Answer>;
 type Group = Vec<Form>;
 
-#[derive(Debug)]
-struct Error;
-
 fn parse_multi_line(input: &str) -> Vec<Vec<&str>> {
     input
         .split("\n\n")
@@ -21,18 +18,18 @@ fn parse_multi_line(input: &str) -> Vec<Vec<&str>> {
 
 type MergeFunction<T> = fn(HashSet<T>, other: HashSet<T>) -> HashSet<T>;
 
-fn parse(input: &str) -> Result<Data, Error> {
-    Ok(parse_multi_line(input)
+fn parse(input: &str) -> Data {
+    parse_multi_line(input)
         .into_iter()
         .map(|x| {
             x.into_iter()
                 .map(|s| s.chars().collect::<HashSet<Answer>>())
                 .collect()
         })
-        .collect())
+        .collect()
 }
 
-#[allow(clippy::ptr_arg)]
+#[expect(clippy::ptr_arg)]
 fn merge_group(group: &Vec<HashSet<Answer>>, f: MergeFunction<Answer>) -> HashSet<Answer> {
     group.clone().into_iter().reduce(f).unwrap_or_default()
 }
@@ -57,16 +54,14 @@ fn solve_2(data: &Data) -> R {
     solve(data, intersection)
 }
 
-fn main() -> Result<(), Error> {
-    let data = parse(DATA)?;
+fn main() {
+    let data = parse(DATA);
 
     let result_1 = solve_1(&data);
     println!("Part 1: {result_1}");
 
     let result_2 = solve_2(&data);
     println!("Part 2: {result_2}");
-
-    Ok(())
 }
 
 #[cfg(test)]
@@ -76,11 +71,11 @@ mod tests {
     const TEST_DATA: &str = include_str!("../../resources/06-test.txt");
 
     fn test_data() -> Data {
-        parse(TEST_DATA).unwrap()
+        parse(TEST_DATA)
     }
 
     fn real_data() -> Data {
-        parse(DATA).unwrap()
+        parse(DATA)
     }
 
     #[test]
