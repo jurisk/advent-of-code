@@ -1,5 +1,17 @@
 use std::collections::HashSet;
 
+const DATA: &str = include_str!("../../resources/06.txt");
+
+type R = usize;
+type Data = Vec<Group>;
+
+type Answer = char;
+type Form = HashSet<Answer>;
+type Group = Vec<Form>;
+
+#[derive(Debug)]
+struct Error;
+
 fn parse_multi_line(input: &str) -> Vec<Vec<&str>> {
     input
         .split("\n\n")
@@ -7,13 +19,20 @@ fn parse_multi_line(input: &str) -> Vec<Vec<&str>> {
         .collect::<Vec<_>>()
 }
 
-type Answer = char;
-type Form = HashSet<Answer>;
-type Group = Vec<Form>;
-
 type MergeFunction<T> = fn(HashSet<T>, other: HashSet<T>) -> HashSet<T>;
 
-#[expect(clippy::ptr_arg)]
+fn parse(input: &str) -> Result<Data, Error> {
+    Ok(parse_multi_line(input)
+        .into_iter()
+        .map(|x| {
+            x.into_iter()
+                .map(|s| s.chars().collect::<HashSet<Answer>>())
+                .collect()
+        })
+        .collect())
+}
+
+#[allow(clippy::ptr_arg)]
 fn merge_group(group: &Vec<HashSet<Answer>>, f: MergeFunction<Answer>) -> HashSet<Answer> {
     group.clone().into_iter().reduce(f).unwrap_or_default()
 }
@@ -22,30 +41,65 @@ fn solve(groups: &[Group], f: MergeFunction<Answer>) -> usize {
     groups.iter().map(|g| merge_group(g, f).len()).sum()
 }
 
-#[expect(clippy::needless_for_each)]
-fn main() {
-    let raw_data = include_str!("../../resources/06.txt");
-
-    let groups: Vec<Group> = parse_multi_line(raw_data)
-        .into_iter()
-        .map(|x| {
-            x.into_iter()
-                .map(|s| s.chars().collect::<HashSet<Answer>>())
-                .collect()
-        })
-        .collect();
-
+fn solve_1(data: &Data) -> R {
     let union: MergeFunction<Answer> = |a: HashSet<Answer>, b: HashSet<Answer>| {
         HashSet::union(&a, &b).copied().collect::<HashSet<Answer>>()
     };
+    solve(data, union)
+}
 
+fn solve_2(data: &Data) -> R {
     let intersection: MergeFunction<Answer> = |a: HashSet<Answer>, b: HashSet<Answer>| {
         HashSet::intersection(&a, &b)
             .copied()
             .collect::<HashSet<Answer>>()
     };
+    solve(data, intersection)
+}
 
-    vec![union, intersection]
-        .into_iter()
-        .for_each(|f| println!("{}", solve(&groups, f)));
+fn main() -> Result<(), Error> {
+    let data = parse(DATA)?;
+
+    let result_1 = solve_1(&data);
+    println!("Part 1: {result_1}");
+
+    let result_2 = solve_2(&data);
+    println!("Part 2: {result_2}");
+
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_DATA: &str = include_str!("../../resources/06-test.txt");
+
+    fn test_data() -> Data {
+        parse(TEST_DATA).unwrap()
+    }
+
+    fn real_data() -> Data {
+        parse(DATA).unwrap()
+    }
+
+    #[test]
+    fn test_solve_1_test() {
+        assert_eq!(solve_1(&test_data()), 11);
+    }
+
+    #[test]
+    fn test_solve_1_real() {
+        assert_eq!(solve_1(&real_data()), 6351);
+    }
+
+    #[test]
+    fn test_solve_2_test() {
+        assert_eq!(solve_2(&test_data()), 6);
+    }
+
+    #[test]
+    fn test_solve_2_real() {
+        assert_eq!(solve_2(&real_data()), 3143);
+    }
 }
