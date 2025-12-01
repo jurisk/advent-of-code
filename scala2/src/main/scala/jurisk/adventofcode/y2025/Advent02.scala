@@ -1,12 +1,9 @@
-package jurisk.adventofcode
+package jurisk.adventofcode.y2025
 
-import cats.implicits._
-import jurisk.utils.CollectionOps.IterableOps
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
-import org.scalatest.matchers.should.Matchers._
 
-object Advent00 {
+object Advent02 {
   type Input = List[Command]
   type N     = Long
 
@@ -40,7 +37,7 @@ object Advent00 {
     parse(readFileText(fileName))
 
   def fileName(suffix: String): String =
-    s"2025/00$suffix.txt"
+    s"2025/02$suffix.txt"
 
   def main(args: Array[String]): Unit = {
     val realData: Input = parseFile(fileName(""))
