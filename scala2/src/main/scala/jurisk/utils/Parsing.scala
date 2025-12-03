@@ -114,6 +114,12 @@ object Parsing {
     ): List[T] =
       s.split(separator).toList.map(parser)
 
+    def parseList[T](
+      separator: Char,
+      parser: String => T,
+    ): List[T] =
+      s.split(separator).toList.map(parser)
+
     def parseLines[T](
       parser: String => T
     ): List[T] = parseList("\n", parser)

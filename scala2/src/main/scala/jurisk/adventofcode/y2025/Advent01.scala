@@ -8,7 +8,7 @@ import scala.annotation.tailrec
 
 object Advent01 {
   type Input = List[Command]
-  type N     = Long
+  type N     = Int
 
   sealed trait Command extends Product with Serializable {
     def diff: Int = this match {

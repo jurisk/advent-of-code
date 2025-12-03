@@ -72,3 +72,11 @@ final case class DiscreteInterval[N: Numeric: Enumerated](
       )
     }
 }
+
+object DiscreteInterval {
+  def inclusive[N: Numeric: Enumerated](
+    from: N,
+    to: N,
+  ): DiscreteInterval[N] =
+    DiscreteInterval(from, to)
+}

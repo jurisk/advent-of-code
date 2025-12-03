@@ -1,31 +1,31 @@
 package jurisk.adventofcode.y2025
 
+import jurisk.adventofcode.y2025.Advent03._
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers._
 
-import Advent02._
-
-class Advent02Spec extends AnyFreeSpec {
+class Advent03Spec extends AnyFreeSpec {
   private def testData = parseFile(fileName("-test-00"))
+
   private def realData = parseFile(fileName(""))
 
   "part 1" - {
     "test" in {
-      part1(testData) shouldEqual 1227775554L
+      part1(testData) shouldEqual 0
     }
 
     "real" in {
-      part1(realData) shouldEqual 12850231731L
+      part1(realData) shouldEqual 0
     }
   }
 
   "part 2" - {
     "test" in {
-      part2(testData) shouldEqual 4174379265L
+      part2(testData) shouldEqual 0
     }
 
     "real" in {
-      part2(realData) shouldEqual 24774350322L
+      part2(realData) shouldEqual 0
     }
   }
 }

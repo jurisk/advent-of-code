@@ -1,37 +1,50 @@
 package jurisk.adventofcode.y2025
 
+import jurisk.math.DiscreteInterval
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent02 {
-  type Input = List[Command]
+  type Input = List[DiscreteInterval[Long]]
   type N     = Long
 
-  sealed trait Command extends Product with Serializable
-  object Command {
-    case object Noop                      extends Command
-    final case class Something(
-      values: List[N]
-    ) extends Command
-    final case class Other(value: String) extends Command
+  def parse(input: String): Input =
+    input.parseList(',', _.parsePairUnsafe('-', _.toLong, _.toLong)).map {
+      case (a, b) => DiscreteInterval.inclusive(a, b)
+    }
 
-    def parse(s: String): Command =
-      s match {
-        case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractLongList)
-        case s if s.nonEmpty   => Other(s)
-        case _                 => s.failedToParse
-      }
+  private def isInvalid(n: Long, m: Int): Boolean = {
+    val s = n.toString
+    if (s.length % m == 0) {
+      val q = s.length / m
+      s.grouped(q).toSet.size == 1
+    } else {
+      false
+    }
   }
 
-  def parse(input: String): Input =
-    input.parseLines(Command.parse)
+  private def isInvalid1(n: Long): Boolean =
+    isInvalid(n, 2)
+
+  private val MAX                          = Long.MaxValue.toString.length
+  private def isInvalid2(n: Long): Boolean =
+    (2 to MAX) exists { m =>
+      isInvalid(n, m)
+    }
+
+  private def solve(data: Input, isInvalid: N => Boolean): N =
+    data
+      .flatMap {
+        _.toSeq
+      }
+      .filter(isInvalid)
+      .sum
 
   def part1(data: Input): N =
-    0
+    solve(data, isInvalid1)
 
   def part2(data: Input): N =
-    0
+    solve(data, isInvalid2)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
