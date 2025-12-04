@@ -1,37 +1,37 @@
 package jurisk.adventofcode.y2025
 
+import cats.implicits._
+import jurisk.geometry.Coords2D
+import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
-import jurisk.utils.Parsing.StringOps
+import jurisk.utils.Simulation
 
 object Advent04 {
-  type Input = List[Command]
-  type N     = Long
-
-  sealed trait Command extends Product with Serializable
-  object Command {
-    case object Noop                      extends Command
-    final case class Something(
-      values: List[N]
-    ) extends Command
-    final case class Other(value: String) extends Command
-
-    def parse(s: String): Command =
-      s match {
-        case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractLongList)
-        case s if s.nonEmpty   => Other(s)
-        case _                 => s.failedToParse
-      }
-  }
+  type Input = Field2D[Boolean]
+  type N     = Int
 
   def parse(input: String): Input =
-    input.parseLines(Command.parse)
+    Field2D.parseBooleanField(input, trueChar = '@')
+
+  private def removable(data: Input): Seq[Coords2D] =
+    data.allCoords.filter { c =>
+      data.at(c) == true.some && data.adjacent8Values(c).count(_ == true) < 4
+    }
 
   def part1(data: Input): N =
-    0
+    removable(data).size
 
   def part2(data: Input): N =
-    0
+    Simulation.run((data, 0)) { case (state, count) =>
+      val removed = removable(state)
+      if (removed.isEmpty) count.asLeft
+      else {
+        val newState = removed.foldLeft(state) { case (s, c) =>
+          s.updatedAtUnsafe(c, false)
+        }
+        (newState, count + removed.size).asRight
+      }
+    }
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
