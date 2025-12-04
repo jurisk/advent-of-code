@@ -1,40 +1,50 @@
 package jurisk.adventofcode.y2025
 
+import cats.implicits._
+import jurisk.math.pow
 import jurisk.utils.FileInput._
+import jurisk.utils.Memoize
 import jurisk.utils.Parsing.StringOps
 
 object Advent03 {
-  type Input = List[Command]
-  type N     = Long
-
-  sealed trait Command extends Product with Serializable
-
-  object Command {
-    case object Noop extends Command
-
-    final case class Something(
-      values: List[N]
-    ) extends Command
-
-    final case class Other(value: String) extends Command
-
-    def parse(s: String): Command =
-      s match {
-        case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractLongList)
-        case s if s.nonEmpty   => Other(s)
-        case _                 => s.failedToParse
-      }
-  }
+  private type Battery = Short
+  private type Bank    = List[Battery]
+  type Input           = List[Bank]
+  type N               = Long
 
   def parse(input: String): Input =
-    input.parseLines(Command.parse)
+    input.parseLines { s =>
+      s.toList.map(n => (n - '0').toShort)
+    }
+
+  private val joltsMemoized = Memoize.memoize2(jolts)
+
+  private[y2025] def jolts(bank: Bank, digitsLeft: Int): Option[N] =
+    if (digitsLeft == 0) {
+      0L.some
+    } else {
+      bank match {
+        case head :: tail =>
+          List(
+            joltsMemoized(tail, digitsLeft - 1).map { usingHeadResult =>
+              head * pow(10, digitsLeft - 1) + usingHeadResult
+            },
+            joltsMemoized(tail, digitsLeft),
+          ).flatten.maxOption
+        case Nil          => none
+      }
+    }
+
+  private def solve(data: Input, digits: Int): N =
+    data.flatMap { bank =>
+      jolts(bank, digits)
+    }.sum
 
   def part1(data: Input): N =
-    0
+    solve(data, 2)
 
   def part2(data: Input): N =
-    0
+    solve(data, 12)
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
