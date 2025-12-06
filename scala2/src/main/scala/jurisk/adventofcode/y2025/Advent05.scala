@@ -1,40 +1,37 @@
 package jurisk.adventofcode.y2025
 
+import cats.implicits._
+import jurisk.math.DiscreteInterval
+import jurisk.math.DiscreteIntervalSet
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent05 {
-  type Input = List[Command]
-  type N     = Long
+  private type Ingredient = Long
+  type Input              = (List[DiscreteInterval[Ingredient]], List[Ingredient])
+  type N                  = Long
 
-  sealed trait Command extends Product with Serializable
-
-  object Command {
-    case object Noop extends Command
-
-    final case class Something(
-      values: List[N]
-    ) extends Command
-
-    final case class Other(value: String) extends Command
-
-    def parse(s: String): Command =
-      s match {
-        case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractLongList)
-        case s if s.nonEmpty   => Other(s)
-        case _                 => s.failedToParse
-      }
+  def parse(input: String): Input = {
+    val (a, b)      = input.splitPairByDoubleNewline
+    val ranges      = a.splitLines.map { line =>
+      val (from, to) = line.splitPairUnsafe('-').bimap(_.toLong, _.toLong)
+      DiscreteInterval.inclusive(from, to)
+    }
+    val ingredients = b.splitLines.map(_.toLong)
+    (ranges, ingredients)
   }
 
-  def parse(input: String): Input =
-    input.parseLines(Command.parse)
+  def part1(data: Input): N = {
+    val (ranges, ingredients) = data
+    val set                   = DiscreteIntervalSet.from(ranges)
+    ingredients.count(ingredient => set.contains(ingredient))
+  }
 
-  def part1(data: Input): N =
-    0
-
-  def part2(data: Input): N =
-    0
+  def part2(data: Input): N = {
+    val (ranges, _) = data
+    val set         = DiscreteIntervalSet.from(ranges)
+    set.size
+  }
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))

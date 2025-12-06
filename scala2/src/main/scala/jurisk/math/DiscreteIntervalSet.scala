@@ -65,6 +65,9 @@ final case class DiscreteIntervalSet[N: Numeric](
 
   def valuesSet: Set[N] = intervals.flatMap(_.toList).toSet
 
+  def contains(value: N): Boolean =
+    intervals.exists(_.contains(value))
+
   def minOption: Option[N] = intervals.map(_.from).minOption
   def maxOption: Option[N] = intervals.map(_.to).maxOption
 }
@@ -95,4 +98,11 @@ object DiscreteIntervalSet {
 
   def empty[N: Numeric]: DiscreteIntervalSet[N] =
     new DiscreteIntervalSet[N](Vector.empty)
+
+  def from[N: Numeric](
+    intervals: Seq[DiscreteInterval[N]]
+  ): DiscreteIntervalSet[N] =
+    intervals.foldLeft(DiscreteIntervalSet.empty[N]) { case (acc, x) =>
+      acc add x
+    }
 }
