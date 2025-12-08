@@ -15,13 +15,13 @@ class Advent08Spec extends AnyFreeSpec {
     }
 
     "real" in {
-      part1(realData, 1000, 3) shouldEqual 12345
+      part1(realData, 1000, 3) shouldEqual 330786
     }
   }
 
   "part 2" - {
     "test" in {
-      part2(testData) shouldEqual 12345
+      part2(testData) shouldEqual 25272
     }
 
     "real" in {

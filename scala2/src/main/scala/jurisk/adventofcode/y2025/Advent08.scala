@@ -17,11 +17,12 @@ object Advent08 {
 
   final class MutableState(
     val circuits: DisjointSets[Point3D],
-    var distancesRemainingSorted: List[(Distance, SetOfTwo[Point3D])],
+    val sortedDistances: ArraySeq[(Distance, SetOfTwo[Point3D])],
+    var nextToConnectIndex: Int = 0,
   ) {
     def connectMutable(): Unit = {
-      val next        = distancesRemainingSorted.head
-      distancesRemainingSorted = distancesRemainingSorted.tail
+      val next        = sortedDistances(nextToConnectIndex)
+      nextToConnectIndex += 1
       val (_, points) = next
       val (a, b)      = points.tupleInArbitraryOrder
       circuits.union(a, b)
@@ -29,35 +30,35 @@ object Advent08 {
 
     override def toString: String = {
       val setSizes = circuits.toSets.toList.map(_.size).sorted
-      s"MutableState(sizes=$setSizes, circuits=${circuits.toSets}, distancesRemainingSorted.size=${distancesRemainingSorted.size})"
+      s"MutableState(sizes=$setSizes, circuits=${circuits.toSets}"
     }
   }
 
   private def pointDistance(a: Point3D, b: Point3D): Distance = {
-    val dx = a.x - b.x
-    val dy = a.y - b.y
-    val dz = a.z - b.z
+    val dx = (a.x - b.x).toLong
+    val dy = (a.y - b.y).toLong
+    val dz = (a.z - b.z).toLong
     dx * dx + dy * dy + dz * dz
   }
 
   private object MutableState {
     def make(points: ArraySeq[Point3D]): MutableState = {
-      val distancesRemainingSorted = points
-        .combinations(2)
-        .map {
-          case Seq(a, b) =>
-            val distance = pointDistance(a, b)
-            (distance, SetOfTwo(a, b))
-          case other     =>
-            sys.error(s"Unexpected $other")
-        }
-        .toSet[(Distance, SetOfTwo[Point3D])]
-        .toList
+      val distancesRemainingSorted = ArraySeq
+        .from(
+          points
+            .combinations(2)
+            .map {
+              case Seq(a, b) =>
+                val distance = pointDistance(a, b)
+                (distance, SetOfTwo(a, b))
+              case other     =>
+                sys.error(s"Unexpected $other")
+            }
+            .toSet[(Distance, SetOfTwo[Point3D])]
+        )
         .sortBy { case (distance, _) => distance }
 
       val circuits = DisjointSets[Point3D](points: _*)
-
-      println(distancesRemainingSorted)
 
       new MutableState(
         circuits,
@@ -78,7 +79,7 @@ object Advent08 {
     (0 until connectionsToMake).foreach { _ =>
       state.connectMutable()
     }
-    println(state)
+
     state.circuits.toSets.toList
       .sortBy(-_.size)
       .take(largestCircuitsToMultiply)
@@ -86,8 +87,10 @@ object Advent08 {
       .product
   }
 
-  def part2(data: Input): N =
+  def part2(data: Input): N = {
+    val state = MutableState.make(data)
     0
+  }
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
