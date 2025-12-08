@@ -28,6 +28,12 @@ object Advent08 {
       circuits.union(a, b)
     }
 
+    def lastConnected(): SetOfTwo[Point3D] = {
+      val lastIndex   = nextToConnectIndex - 1
+      val (_, points) = sortedDistances(lastIndex)
+      points
+    }
+
     override def toString: String = {
       val setSizes = circuits.toSets.toList.map(_.size).sorted
       s"MutableState(sizes=$setSizes, circuits=${circuits.toSets}"
@@ -88,8 +94,12 @@ object Advent08 {
   }
 
   def part2(data: Input): N = {
-    val state = MutableState.make(data)
-    0
+    val state         = MutableState.make(data)
+    while (state.circuits.toSets.size > 1)
+      state.connectMutable()
+    val lastConnected = state.lastConnected()
+    val (a, b)        = lastConnected.tupleInArbitraryOrder
+    a.x.toLong * b.x.toLong
   }
 
   def parseFile(fileName: String): Input =
