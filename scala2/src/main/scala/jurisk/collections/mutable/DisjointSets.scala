@@ -68,6 +68,11 @@ private class DisjointSetsImpl[T](labels: T*) extends DisjointSets[T] {
       .values
       .map(results => results.map(mapping.rightToLeftUnsafe).toSet)
       .toSet
+
+  override def toString: String = {
+    val sets = toSets
+    sets.mkString("DisjointSets(", ", ", ")")
+  }
 }
 
 object DisjointSets {

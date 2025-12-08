@@ -11,21 +11,21 @@ class Advent08Spec extends AnyFreeSpec {
 
   "part 1" - {
     "test" in {
-      part1(testData) shouldEqual 0
+      part1(testData, 10, 3) shouldEqual 5 * 4 * 2
     }
 
     "real" in {
-      part1(realData) shouldEqual 0
+      part1(realData, 1000, 3) shouldEqual 12345
     }
   }
 
   "part 2" - {
     "test" in {
-      part2(testData) shouldEqual 0
+      part2(testData) shouldEqual 12345
     }
 
     "real" in {
-      part2(realData) shouldEqual 0
+      part2(realData) shouldEqual 12345
     }
   }
 }
