@@ -36,6 +36,9 @@ final case class Area2D[N: Numeric](
   def height: N = (max.y - min.y) + One
   def width: N  = (max.x - min.x) + One
 
+  def areaLong: Long =
+    implicitly[Numeric[N]].toLong(width) * implicitly[Numeric[N]].toLong(height)
+
   def left: N   = min.x
   def right: N  = max.x
   def top: N    = min.y
@@ -54,6 +57,15 @@ final case class Area2D[N: Numeric](
 }
 
 object Area2D {
+  def fromTwoPoints[N: Numeric](
+    a: Coordinates2D[N],
+    b: Coordinates2D[N],
+  ): Area2D[N] =
+    Area2D(
+      Coordinates2D.of(a.x min b.x, a.y min b.y),
+      Coordinates2D.of(a.x max b.x, a.y max b.y),
+    )
+
   def fromLeftTopWidthHeight[N: Numeric](
     left: N,
     top: N,

@@ -25,7 +25,7 @@ class Advent09Spec extends AnyFreeSpec {
     }
 
     "real" in {
-      part2(realData) shouldEqual 0
+      part2(realData) shouldEqual 1654141440
     }
   }
 }
