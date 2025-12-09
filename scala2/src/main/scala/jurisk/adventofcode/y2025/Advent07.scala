@@ -4,6 +4,7 @@ import cats.implicits._
 import jurisk.geometry.Coords2D
 import jurisk.geometry.Field2D
 import jurisk.utils.FileInput._
+import jurisk.utils.Parsing.StringOps
 
 object Advent07 {
   type C = Int
@@ -94,13 +95,13 @@ object Advent07 {
   def parse(input: String): Diagram = {
     val charField = Field2D.parseCharField(input)
     val startX    = charField.row(0).indexWhere(_ == 'S') match {
-      case -1  => sys.error("No starting position 'S' found in the first row")
+      case -1  => "No starting position 'S' found in the first row".fail
       case idx => idx
     }
     val splitters = charField.map {
       case '^'       => true
       case 'S' | '.' => false
-      case ch        => sys.error(s"Unexpected character '$ch' in diagram")
+      case ch        => s"Unexpected character '$ch' in diagram".fail
     }
     Diagram(
       startX,
