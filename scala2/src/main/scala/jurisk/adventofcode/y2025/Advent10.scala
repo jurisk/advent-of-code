@@ -1,40 +1,121 @@
 package jurisk.adventofcode.y2025
 
+import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
+import scala.collection.immutable.ArraySeq
+
 object Advent10 {
-  type Input = List[Command]
-  type N     = Long
+  type Input           = List[Machine]
+  private type LightId = Int
+  type N               = Int
 
-  sealed trait Command extends Product with Serializable
+  private type IndicatorLightState = ArraySeq[Boolean]
+  private type Joltage             = ArraySeq[Int]
 
-  object Command {
-    case object Noop extends Command
+  final case class Machine(
+    indicatorLights: IndicatorLightState,
+    buttons: ArraySeq[ArraySeq[LightId]],
+    joltageRequirements: Joltage,
+  ) {
+    def minimumButtonsToGetIndicatorLights: Int = {
+      def start: IndicatorLightState =
+        ArraySeq.fill(indicatorLights.length)(false)
 
-    final case class Something(
-      values: List[N]
-    ) extends Command
+      def successors(
+        state: IndicatorLightState
+      ): Seq[IndicatorLightState] =
+        buttons.map { button =>
+          button.foldLeft(state) { case (currentState, lightId) =>
+            currentState.updated(lightId, !currentState(lightId))
+          }
+        }
 
-    final case class Other(value: String) extends Command
+      def success(
+        state: IndicatorLightState
+      ): Boolean =
+        state == indicatorLights
 
-    def parse(s: String): Command =
-      s match {
-        case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractLongList)
-        case s if s.nonEmpty   => Other(s)
-        case _                 => s.failedToParse
+      Dijkstra.dijkstraWithIdenticalCosts[IndicatorLightState, Int](
+        start,
+        successors,
+        success,
+      ) match {
+        case Some((_, b)) => b
+        case None         => "No solution found".fail
       }
+    }
+
+    def minimumButtonsToGetJoltageRequirements: Int = {
+      def start: Joltage =
+        ArraySeq.fill(indicatorLights.length)(0)
+
+      def successors(
+        state: Joltage
+      ): Seq[Joltage] =
+        buttons
+          .map { button =>
+            button.foldLeft(state) { case (currentState, lightId) =>
+              currentState.updated(lightId, currentState(lightId) + 1)
+            }
+          }
+          .filter { nextState =>
+            nextState.indices
+              .forall(i => nextState(i) <= joltageRequirements(i))
+          }
+
+      def success(
+        state: Joltage
+      ): Boolean =
+        state == joltageRequirements
+
+      Dijkstra.dijkstraWithIdenticalCosts[Joltage, Int](
+        start,
+        successors,
+        success,
+      ) match {
+        case Some((_, b)) => b
+        case None         => "No solution found".fail
+      }
+    }
+  }
+
+  object Machine {
+    private val LinePattern   = """^\[([.#]+)]\s+(.+)\s+\{([^}]+)}$""".r
+    private val ButtonPattern = """\(([^)]*)\)""".r
+
+    def parse(line: String): Machine = line match {
+      case LinePattern(lights, buttonsStr, joltage) =>
+        val indicatorLights     = ArraySeq.from(lights.map(_ == '#'))
+        val buttons             = ArraySeq.from(
+          ButtonPattern
+            .findAllMatchIn(buttonsStr)
+            .map { m =>
+              val ids = m.group(1)
+              ArraySeq.from(
+                if (ids.isEmpty) Seq.empty
+                else ids.split(",").map(_.toInt)
+              )
+            }
+            .toSeq
+        )
+        val joltageRequirements = ArraySeq.from(joltage.split(",").map(_.toInt))
+        Machine(indicatorLights, buttons, joltageRequirements)
+
+      case _ =>
+        s"Cannot parse line: $line".fail
+    }
   }
 
   def parse(input: String): Input =
-    input.parseLines(Command.parse)
+    input.parseLines(Machine.parse)
 
   def part1(data: Input): N =
-    0
+    data.map(_.minimumButtonsToGetIndicatorLights).sum
 
   def part2(data: Input): N =
-    0
+    data.map(_.minimumButtonsToGetJoltageRequirements).sum
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
