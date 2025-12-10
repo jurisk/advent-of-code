@@ -1,5 +1,6 @@
 package jurisk.adventofcode.y2025
 
+import jurisk.algorithms.pathfinding.AStar
 import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -51,9 +52,7 @@ object Advent10 {
       def start: Joltage =
         ArraySeq.fill(indicatorLights.length)(0)
 
-      def successors(
-        state: Joltage
-      ): Seq[Joltage] =
+      def neighbours(state: Joltage): Seq[(Joltage, Int)] =
         buttons
           .map { button =>
             button.foldLeft(state) { case (currentState, lightId) =>
@@ -64,19 +63,22 @@ object Advent10 {
             nextState.indices
               .forall(i => nextState(i) <= joltageRequirements(i))
           }
+          .map(s => (s, 1))
 
-      def success(
-        state: Joltage
-      ): Boolean =
+      def heuristic(state: Joltage): Int =
+        state.indices.map(i => joltageRequirements(i) - state(i)).max
+
+      def isGoal(state: Joltage): Boolean =
         state == joltageRequirements
 
-      Dijkstra.dijkstraWithIdenticalCosts[Joltage, Int](
+      AStar.aStar[Joltage, Int](
         start,
-        successors,
-        success,
+        neighbours,
+        heuristic,
+        isGoal,
       ) match {
-        case Some((_, b)) => b
-        case None         => "No solution found".fail
+        case Some((_, cost)) => cost
+        case None            => "No solution found".fail
       }
     }
   }
@@ -115,7 +117,10 @@ object Advent10 {
     data.map(_.minimumButtonsToGetIndicatorLights).sum
 
   def part2(data: Input): N =
-    data.map(_.minimumButtonsToGetJoltageRequirements).sum
+    data.zipWithIndex.map { case (machine, idx) =>
+      println(s"Processing machine $idx / ${data.size}")
+      machine.minimumButtonsToGetJoltageRequirements
+    }.sum
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
