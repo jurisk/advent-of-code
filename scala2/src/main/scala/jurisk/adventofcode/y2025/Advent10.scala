@@ -49,29 +49,39 @@ object Advent10 {
     }
 
     def minimumButtonsToGetJoltageRequirements: Int = {
-      def start: Joltage =
-        ArraySeq.fill(indicatorLights.length)(0)
+      final case class JoltageState(
+        joltage: Joltage,
+        minimumNextButtonIndex: Int,
+      )
 
-      def neighbours(state: Joltage): Seq[(Joltage, Int)] =
-        buttons
-          .map { button =>
-            button.foldLeft(state) { case (currentState, lightId) =>
-              currentState.updated(lightId, currentState(lightId) + 1)
+      def start: JoltageState =
+        JoltageState(ArraySeq.fill(indicatorLights.length)(0), 0)
+
+      def neighbours(state: JoltageState): Seq[(JoltageState, Int)] =
+        buttons.zipWithIndex
+          .drop(state.minimumNextButtonIndex)
+          .map { case (button, buttonIndex) =>
+            val newJoltage = button.foldLeft(state.joltage) {
+              case (currentState, lightId) =>
+                currentState.updated(lightId, currentState(lightId) + 1)
             }
+            JoltageState(newJoltage, buttonIndex)
           }
           .filter { nextState =>
-            nextState.indices
-              .forall(i => nextState(i) <= joltageRequirements(i))
+            nextState.joltage.indices
+              .forall(i => nextState.joltage(i) <= joltageRequirements(i))
           }
           .map(s => (s, 1))
 
-      def heuristic(state: Joltage): Int =
-        state.indices.map(i => joltageRequirements(i) - state(i)).max
+      def heuristic(state: JoltageState): Int =
+        state.joltage.indices
+          .map(i => joltageRequirements(i) - state.joltage(i))
+          .max
 
-      def isGoal(state: Joltage): Boolean =
-        state == joltageRequirements
+      def isGoal(state: JoltageState): Boolean =
+        state.joltage == joltageRequirements
 
-      AStar.aStar[Joltage, Int](
+      AStar.aStar[JoltageState, Int](
         start,
         neighbours,
         heuristic,
