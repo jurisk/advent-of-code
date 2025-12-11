@@ -2,7 +2,6 @@ package jurisk.adventofcode.y2025
 
 import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.utils.FileInput._
-import jurisk.utils.Memoize
 import jurisk.utils.Parsing.StringOps
 
 import scala.collection.immutable.ArraySeq
@@ -71,15 +70,13 @@ object Advent10 {
         else {
           val results = buttons.indices.flatMap { buttonIndex =>
             val newJoltage = current + buttons(buttonIndex)
-            if (isValid(newJoltage)) memoizedF(newJoltage).map(_ + 1)
+            if (isValid(newJoltage)) f(newJoltage).map(_ + 1)
             else None
           }
           if (results.isEmpty) None else Some(results.min)
         }
 
-      lazy val memoizedF = Memoize.memoize1(f)
-
-      memoizedF(Joltage(ArraySeq.fill(indicatorLights.length)(0))).getOrElse(
+      f(Joltage(ArraySeq.fill(indicatorLights.length)(0))).getOrElse(
         "No solution found".fail
       )
     }
