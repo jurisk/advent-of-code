@@ -1,5 +1,6 @@
 package jurisk.adventofcode.y2025
 
+import jurisk.algorithms.pathfinding.AStar
 import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
@@ -12,25 +13,13 @@ object Advent10 {
   type N               = Int
 
   private type IndicatorLightState = ArraySeq[Boolean]
-  final case class Joltage(joltages: ArraySeq[Int]) {
-    def +(indices: ArraySeq[Int]): Joltage =
-      Joltage(indices.foldLeft(joltages) { case (state, idx) =>
-        state.updated(idx, state(idx) + 1)
-      })
-  }
+  private type Joltage             = ArraySeq[Int]
 
   final case class Machine(
     indicatorLights: IndicatorLightState,
     buttons: ArraySeq[ArraySeq[LightId]],
     joltageRequirements: Joltage,
   ) {
-    private val buttonsJoltage: ArraySeq[Joltage] =
-      buttons.map { button =>
-        Joltage {
-          button.map(lightId => if (indicatorLights(lightId)) 1 else 0)
-        }
-      }
-
     def minimumButtonsToGetIndicatorLights: Int = {
       def start: IndicatorLightState =
         ArraySeq.fill(indicatorLights.length)(false)
@@ -60,25 +49,47 @@ object Advent10 {
     }
 
     def minimumButtonsToGetJoltageRequirements: Int = {
-      def isValid(joltage: Joltage): Boolean =
-        joltage.joltages.indices.forall(i =>
-          joltage.joltages(i) <= joltageRequirements.joltages(i)
-        )
-
-      def f(current: Joltage): Option[Int] =
-        if (current == joltageRequirements) Some(0)
-        else {
-          val results = buttons.indices.flatMap { buttonIndex =>
-            val newJoltage = current + buttons(buttonIndex)
-            if (isValid(newJoltage)) f(newJoltage).map(_ + 1)
-            else None
-          }
-          if (results.isEmpty) None else Some(results.min)
-        }
-
-      f(Joltage(ArraySeq.fill(indicatorLights.length)(0))).getOrElse(
-        "No solution found".fail
+      final case class JoltageState(
+        joltage: Joltage,
+        minimumNextButtonIndex: Int,
       )
+
+      def start: JoltageState =
+        JoltageState(ArraySeq.fill(indicatorLights.length)(0), 0)
+
+      def neighbours(state: JoltageState): Seq[(JoltageState, Int)] =
+        buttons.zipWithIndex
+          .drop(state.minimumNextButtonIndex)
+          .map { case (button, buttonIndex) =>
+            val newJoltage = button.foldLeft(state.joltage) {
+              case (currentState, lightId) =>
+                currentState.updated(lightId, currentState(lightId) + 1)
+            }
+            JoltageState(newJoltage, buttonIndex)
+          }
+          .filter { nextState =>
+            nextState.joltage.indices
+              .forall(i => nextState.joltage(i) <= joltageRequirements(i))
+          }
+          .map(s => (s, 1))
+
+      def heuristic(state: JoltageState): Int =
+        state.joltage.indices
+          .map(i => joltageRequirements(i) - state.joltage(i))
+          .max
+
+      def isGoal(state: JoltageState): Boolean =
+        state.joltage == joltageRequirements
+
+      AStar.aStar[JoltageState, Int](
+        start,
+        neighbours,
+        heuristic,
+        isGoal,
+      ) match {
+        case Some((_, cost)) => cost
+        case None            => "No solution found".fail
+      }
     }
   }
 
@@ -102,7 +113,7 @@ object Advent10 {
             .toSeq
         )
         val joltageRequirements = ArraySeq.from(joltage.split(",").map(_.toInt))
-        Machine(indicatorLights, buttons, Joltage(joltageRequirements))
+        Machine(indicatorLights, buttons, joltageRequirements)
 
       case _ =>
         s"Cannot parse line: $line".fail
