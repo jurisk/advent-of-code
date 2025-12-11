@@ -13,7 +13,13 @@ object Advent10 {
   type N               = Int
 
   private type IndicatorLightState = ArraySeq[Boolean]
-  private type Joltage             = ArraySeq[Int]
+
+  final case class Joltage(values: ArraySeq[Int]) {
+    def +(indices: ArraySeq[Int]): Joltage =
+      Joltage(indices.foldLeft(values) { case (state, idx) =>
+        state.updated(idx, state(idx) + 1)
+      })
+  }
 
   final case class Machine(
     indicatorLights: IndicatorLightState,
@@ -55,27 +61,24 @@ object Advent10 {
       )
 
       def start: JoltageState =
-        JoltageState(ArraySeq.fill(indicatorLights.length)(0), 0)
+        JoltageState(Joltage(ArraySeq.fill(indicatorLights.length)(0)), 0)
 
-      def neighbours(state: JoltageState): Seq[(JoltageState, Int)] =
+      def neighbours(state: JoltageState): Seq[JoltageState] =
         buttons.zipWithIndex
           .drop(state.minimumNextButtonIndex)
           .map { case (button, buttonIndex) =>
-            val newJoltage = button.foldLeft(state.joltage) {
-              case (currentState, lightId) =>
-                currentState.updated(lightId, currentState(lightId) + 1)
-            }
-            JoltageState(newJoltage, buttonIndex)
+            JoltageState(state.joltage + button, buttonIndex)
           }
           .filter { nextState =>
-            nextState.joltage.indices
-              .forall(i => nextState.joltage(i) <= joltageRequirements(i))
+            nextState.joltage.values.indices
+              .forall(i =>
+                nextState.joltage.values(i) <= joltageRequirements.values(i)
+              )
           }
-          .map(s => (s, 1))
 
       def heuristic(state: JoltageState): Int =
-        state.joltage.indices
-          .map(i => joltageRequirements(i) - state.joltage(i))
+        state.joltage.values.indices
+          .map(i => joltageRequirements.values(i) - state.joltage.values(i))
           .max
 
       def isGoal(state: JoltageState): Boolean =
@@ -83,7 +86,7 @@ object Advent10 {
 
       AStar.aStar[JoltageState, Int](
         start,
-        neighbours,
+        s => neighbours(s).map(n => (n, 1)),
         heuristic,
         isGoal,
       ) match {
@@ -112,7 +115,9 @@ object Advent10 {
             }
             .toSeq
         )
-        val joltageRequirements = ArraySeq.from(joltage.split(",").map(_.toInt))
+        val joltageRequirements = Joltage(
+          ArraySeq.from(joltage.split(",").map(_.toInt))
+        )
         Machine(indicatorLights, buttons, joltageRequirements)
 
       case _ =>
