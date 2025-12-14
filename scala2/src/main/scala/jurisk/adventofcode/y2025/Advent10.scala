@@ -16,10 +16,12 @@ object Advent10 {
   private type IndicatorLightState = ArraySeq[Boolean]
 
   final case class Joltage(values: ArraySeq[Int]) {
-    def +(indices: ArraySeq[Int]): Joltage =
-      Joltage(indices.foldLeft(values) { case (state, idx) =>
-        state.updated(idx, state(idx) + 1)
-      })
+    def -(indices: ArraySeq[Int]): Option[Joltage] = {
+      val result = indices.foldLeft(values) { case (state, idx) =>
+        state.updated(idx, state(idx) - 1)
+      }
+      if (result.forall(_ >= 0)) Some(Joltage(result)) else None
+    }
   }
 
   object Joltage {
@@ -60,26 +62,28 @@ object Advent10 {
     }
 
     def minimumButtonsToGetJoltageRequirements: Int = {
-      val start = Joltage.zero(indicatorLights.length)
-      var set   = Set(start)
-      var result = 0
+      val goal = Joltage.zero(indicatorLights.length)
+      val sortedButtons = buttons.sortBy(-_.length)
+      var callCount = 0
 
-      def next(set: Set[Joltage]): Set[Joltage] =
-        buttons.foldLeft(set) { case (acc, button) =>
-          acc ++ set.map(_ + button)
+      def f(state: Joltage): Option[Int] = {
+        callCount += 1
+        if (callCount % 100_000 == 0) {
+          println(s"Call count: $callCount, state: $state")
         }
-
-      while (!set.contains(joltageRequirements)) {
-        val newSet = next(set)
-        println(s"Current set size at $result: " + newSet.size)
-        if (newSet == set) {
-          "No solution found".fail
+        if (state == goal) Some(0)
+        else {
+          val results = sortedButtons.flatMap { button =>
+            val prev = state - button
+            prev.flatMap(p => memoizedF(p).map(_ + 1))
+          }
+          if (results.isEmpty) None else Some(results.min)
         }
-        set = newSet
-        result += 1
       }
 
-      result
+      lazy val memoizedF: Joltage => Option[Int] = Memoize.memoize1(f)
+
+      memoizedF(joltageRequirements).getOrElse("No solution found".fail)
     }
   }
 
