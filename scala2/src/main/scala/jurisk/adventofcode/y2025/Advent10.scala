@@ -67,6 +67,7 @@ object Advent10 {
       def neighbours(state: JoltageState): Seq[JoltageState] =
         buttons.zipWithIndex
           .drop(state.minimumNextButtonIndex)
+          .sortBy { case (button, _) => -button.length }
           .map { case (button, buttonIndex) =>
             JoltageState(state.joltage + button, buttonIndex)
           }
