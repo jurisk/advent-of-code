@@ -16,16 +16,10 @@ object Advent10 {
   private type IndicatorLightState = ArraySeq[Boolean]
 
   final case class Joltage(values: ArraySeq[Int]) {
-    def -(indices: ArraySeq[Int]): Option[Joltage] = {
-      val result = indices.foldLeft(values) { case (state, idx) =>
-        state.updated(idx, state(idx) - 1)
-      }
-      if (result.forall(_ >= 0)) Some(Joltage(result)) else None
-    }
-  }
-
-  object Joltage {
-    def zero(length: Int): Joltage = Joltage(ArraySeq.fill(length)(0))
+    def +(indices: ArraySeq[Int]): Joltage =
+      Joltage(indices.foldLeft(values) { case (state, idx) =>
+        state.updated(idx, state(idx) + 1)
+      })
   }
 
   final case class Machine(
@@ -62,28 +56,47 @@ object Advent10 {
     }
 
     def minimumButtonsToGetJoltageRequirements: Int = {
-      val goal = Joltage.zero(indicatorLights.length)
-      val sortedButtons = buttons.sortBy(-_.length)
-      var callCount = 0
+      final case class JoltageState(
+        joltage: Joltage,
+        minimumNextButtonIndex: Int,
+      )
 
-      def f(state: Joltage): Option[Int] = {
-        callCount += 1
-        if (callCount % 100_000 == 0) {
-          println(s"Call count: $callCount, state: $state")
-        }
-        if (state == goal) Some(0)
-        else {
-          val results = sortedButtons.flatMap { button =>
-            val prev = state - button
-            prev.flatMap(p => memoizedF(p).map(_ + 1))
+      def start: JoltageState =
+        JoltageState(Joltage(ArraySeq.fill(indicatorLights.length)(0)), 0)
+
+      def neighbours(state: JoltageState): Seq[JoltageState] =
+        buttons.zipWithIndex
+          .drop(state.minimumNextButtonIndex)
+          .sortBy { case (button, _) => -button.length }
+          .map { case (button, buttonIndex) =>
+            JoltageState(state.joltage + button, buttonIndex)
           }
-          if (results.isEmpty) None else Some(results.min)
-        }
+          .filter { nextState =>
+            nextState.joltage.values.indices
+              .forall(i =>
+                nextState.joltage.values(i) <= joltageRequirements.values(i)
+              )
+          }
+
+      val memoizedNeighbours = Memoize.memoize1(neighbours)
+
+      def heuristic(state: JoltageState): Int =
+        state.joltage.values.indices
+          .map(i => joltageRequirements.values(i) - state.joltage.values(i))
+          .max
+
+      def isGoal(state: JoltageState): Boolean =
+        state.joltage == joltageRequirements
+
+      AStar.aStar[JoltageState, Int](
+        start,
+        s => memoizedNeighbours(s).map(n => (n, 1)),
+        heuristic,
+        isGoal,
+      ) match {
+        case Some((_, cost)) => cost
+        case None            => "No solution found".fail
       }
-
-      lazy val memoizedF: Joltage => Option[Int] = Memoize.memoize1(f)
-
-      memoizedF(joltageRequirements).getOrElse("No solution found".fail)
     }
   }
 
