@@ -3,7 +3,6 @@ package jurisk.adventofcode.y2025
 import jurisk.algorithms.pathfinding.AStar
 import jurisk.algorithms.pathfinding.Dijkstra
 import jurisk.utils.FileInput._
-import jurisk.utils.Memoize
 import jurisk.utils.Parsing.StringOps
 
 import scala.collection.immutable.ArraySeq
@@ -78,8 +77,6 @@ object Advent10 {
               )
           }
 
-      val memoizedNeighbours = Memoize.memoize1(neighbours)
-
       def heuristic(state: JoltageState): Int =
         state.joltage.values.indices
           .map(i => joltageRequirements.values(i) - state.joltage.values(i))
@@ -90,7 +87,7 @@ object Advent10 {
 
       AStar.aStar[JoltageState, Int](
         start,
-        s => memoizedNeighbours(s).map(n => (n, 1)),
+        s => neighbours(s).map(n => (n, 1)),
         heuristic,
         isGoal,
       ) match {
