@@ -22,6 +22,10 @@ object Advent10 {
       })
   }
 
+  object Joltage {
+    def zero(length: Int): Joltage = Joltage(ArraySeq.fill(length)(0))
+  }
+
   final case class Machine(
     indicatorLights: IndicatorLightState,
     buttons: ArraySeq[ArraySeq[LightId]],
@@ -56,47 +60,26 @@ object Advent10 {
     }
 
     def minimumButtonsToGetJoltageRequirements: Int = {
-      final case class JoltageState(
-        joltage: Joltage,
-        minimumNextButtonIndex: Int,
-      )
+      val start = Joltage.zero(indicatorLights.length)
+      var set   = Set(start)
+      var result = 0
 
-      def start: JoltageState =
-        JoltageState(Joltage(ArraySeq.fill(indicatorLights.length)(0)), 0)
+      def next(set: Set[Joltage]): Set[Joltage] =
+        buttons.foldLeft(set) { case (acc, button) =>
+          acc ++ set.map(_ + button)
+        }
 
-      def neighbours(state: JoltageState): Seq[JoltageState] =
-        buttons.zipWithIndex
-          .drop(state.minimumNextButtonIndex)
-          .sortBy { case (button, _) => -button.length }
-          .map { case (button, buttonIndex) =>
-            JoltageState(state.joltage + button, buttonIndex)
-          }
-          .filter { nextState =>
-            nextState.joltage.values.indices
-              .forall(i =>
-                nextState.joltage.values(i) <= joltageRequirements.values(i)
-              )
-          }
-
-      val memoizedNeighbours = Memoize.memoize1(neighbours)
-
-      def heuristic(state: JoltageState): Int =
-        state.joltage.values.indices
-          .map(i => joltageRequirements.values(i) - state.joltage.values(i))
-          .max
-
-      def isGoal(state: JoltageState): Boolean =
-        state.joltage == joltageRequirements
-
-      AStar.aStar[JoltageState, Int](
-        start,
-        s => memoizedNeighbours(s).map(n => (n, 1)),
-        heuristic,
-        isGoal,
-      ) match {
-        case Some((_, cost)) => cost
-        case None            => "No solution found".fail
+      while (!set.contains(joltageRequirements)) {
+        val newSet = next(set)
+        println(s"Current set size at $result: " + newSet.size)
+        if (newSet == set) {
+          "No solution found".fail
+        }
+        set = newSet
+        result += 1
       }
+
+      result
     }
   }
 
