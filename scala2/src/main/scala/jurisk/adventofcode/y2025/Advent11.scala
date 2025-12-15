@@ -1,17 +1,18 @@
 package jurisk.adventofcode.y2025
 
-import jurisk.algorithms.pathfinding.Dfs
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
+import scala.collection.immutable.BitSet
+
 object Advent11 {
-  private type Node = String
+  private type Node   = String
+  private type NodeId = Int
 
   type Input = Map[Node, List[Node]]
   type N     = Long
 
-  private val Start: Node = "you"
-  private val End: Node   = "out"
+  private val End: Node = "out"
 
   def parse(input: String): Input =
     input.parseLines { line =>
@@ -20,40 +21,63 @@ object Advent11 {
       from -> targets
     }.toMap
 
+  private def buildNodeMap(data: Input): Map[Node, NodeId] = {
+    val allNodes = data.keys ++ data.values.flatten
+    allNodes.toSet.zipWithIndex.toMap
+  }
+
   private def countPaths(data: Input, from: Node, to: Node): N = {
     val startTime = System.currentTimeMillis()
     println(s"  countPaths($from -> $to) starting...")
-    var count     = 0L
-    Dfs.dfsAllPaths[Node](
-      start = from,
-      successors = node => data.getOrElse(node, Nil),
-      isGoal = _ == to,
-      visit = _ => {
-        count += 1
-        if (count % 1_000 == 0) println(s"    ... $count paths found")
-      },
-    )
-    val elapsed   = System.currentTimeMillis() - startTime
+
+    val nodeMap                              = buildNodeMap(data)
+    val adjacency: Map[NodeId, List[NodeId]] =
+      data.map { case (k, vs) => nodeMap(k) -> vs.map(nodeMap) }
+
+    val startId = nodeMap(from)
+    val endId   = nodeMap(to)
+
+    var count = 0L
+
+    def backtrack(current: NodeId, visited: BitSet): Unit =
+      if (!visited.contains(current)) {
+        if (current == endId) {
+          count += 1
+          if (count % 1000 == 0) println(s"    ... $count paths found")
+        } else {
+          val newVisited = visited + current
+          adjacency.getOrElse(current, Nil).foreach { next =>
+            backtrack(next, newVisited)
+          }
+        }
+      }
+
+    backtrack(startId, BitSet.empty)
+
+    val elapsed = System.currentTimeMillis() - startTime
     println(s"  countPaths($from -> $to) = $count (${elapsed}ms)")
     count
   }
 
-  def part1(data: Input): N =
+  def part1(data: Input): N = {
+    val Start: Node = "you"
     countPaths(data, Start, End)
+  }
 
   def part2(data: Input): N = {
-    val (a, b) = ("dac", "fft")
+    val Start: Node = "svr"
+    val (a, b)      = ("dac", "fft")
+
     // Paths visiting both a and b = paths where a comes before b + paths where b comes before a
-    countPaths(data, "svr", a) * countPaths(data, a, b) * countPaths(
-      data,
-      b,
-      End,
-    ) +
-      countPaths(data, "svr", b) * countPaths(data, b, a) * countPaths(
-        data,
-        a,
-        End,
-      )
+    val startToA = countPaths(data, Start, a)
+    val aToB     = countPaths(data, a, b)
+    val bToEnd   = countPaths(data, b, End)
+
+    val startToB = countPaths(data, Start, b)
+    val bToA     = countPaths(data, b, a)
+    val aToEnd   = countPaths(data, a, End)
+
+    startToA * aToB * bToEnd + startToB * bToA * aToEnd
   }
 
   def parseFile(fileName: String): Input =
