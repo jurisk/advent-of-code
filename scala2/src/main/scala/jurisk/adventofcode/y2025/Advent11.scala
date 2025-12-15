@@ -5,11 +5,13 @@ import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent11 {
-  type Input = Map[String, List[String]]
+  private type Node = String
+
+  type Input = Map[Node, List[Node]]
   type N     = Long
 
-  private val Start = "you"
-  private val End   = "out"
+  private val Start: Node = "you"
+  private val End: Node   = "out"
 
   def parse(input: String): Input =
     input.parseLines { line =>
@@ -18,19 +20,30 @@ object Advent11 {
       from -> targets
     }.toMap
 
-  def part1(data: Input): N = {
+  private def solve(
+    data: Input,
+    from: Node,
+    to: Node,
+    mustVisit: Set[Node],
+  ): N = {
     var count = 0L
-    Dfs.dfsAllPaths[String](
-      start = Start,
+    Dfs.dfsAllPaths[Node](
+      start = from,
       successors = node => data.getOrElse(node, Nil),
-      isGoal = _ == End,
-      visit = _ => count += 1,
+      isGoal = _ == to,
+      visit = path =>
+        if (mustVisit.forall(path.contains)) {
+          count += 1
+        },
     )
     count
   }
 
+  def part1(data: Input): N =
+    solve(data, Start, End, Set.empty)
+
   def part2(data: Input): N =
-    0
+    solve(data, "svr", End, Set("dac", "fft"))
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
