@@ -3,11 +3,10 @@ package jurisk.adventofcode.y2025
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
-import scala.collection.immutable.BitSet
+import scala.collection.mutable
 
 object Advent11 {
-  private type Node   = String
-  private type NodeId = Int
+  private type Node = String
 
   type Input = Map[Node, List[Node]]
   type N     = Long
@@ -27,42 +26,24 @@ object Advent11 {
       .mapValues(vs => vs.filterNot(nodes.contains))
       .toMap
 
-  private def buildNodeMap(data: Input): Map[Node, NodeId] = {
-    val allNodes = data.keys ++ data.values.flatten
-    allNodes.toSet.zipWithIndex.toMap
-  }
-
   private def countPaths(data: Input, from: Node, to: Node): N = {
     val startTime = System.currentTimeMillis()
     println(s"  countPaths($from -> $to) starting...")
 
-    val nodeMap                              = buildNodeMap(data)
-    val adjacency: Map[NodeId, List[NodeId]] =
-      data.map { case (k, vs) => nodeMap(k) -> vs.map(nodeMap) }
+    val memo = mutable.Map.empty[Node, N]
 
-    val startId = nodeMap(from)
-    val endId   = nodeMap(to)
+    def dp(current: Node): N =
+      if (current == to) 1L
+      else
+        memo.getOrElseUpdate(
+          current,
+          data.getOrElse(current, Nil).map(dp).sum,
+        )
 
-    var count = 0L
-
-    def backtrack(current: NodeId, visited: BitSet): Unit =
-      if (!visited.contains(current)) {
-        if (current == endId) {
-          count += 1
-          if (count % 1000 == 0) println(s"    ... $count paths found")
-        } else {
-          val newVisited = visited + current
-          adjacency.getOrElse(current, Nil).foreach { next =>
-            backtrack(next, newVisited)
-          }
-        }
-      }
-
-    backtrack(startId, BitSet.empty)
-
+    val result  = dp(from)
     val elapsed = System.currentTimeMillis() - startTime
-    println(s"  countPaths($from -> $to) = $count (${elapsed}ms)")
-    count
+    println(s"  countPaths($from -> $to) = $result (${elapsed}ms)")
+    result
   }
 
   def part1(data: Input): N = {
