@@ -20,30 +20,41 @@ object Advent11 {
       from -> targets
     }.toMap
 
-  private def solve(
-    data: Input,
-    from: Node,
-    to: Node,
-    mustVisit: Set[Node],
-  ): N = {
-    var count = 0L
+  private def countPaths(data: Input, from: Node, to: Node): N = {
+    val startTime = System.currentTimeMillis()
+    println(s"  countPaths($from -> $to) starting...")
+    var count     = 0L
     Dfs.dfsAllPaths[Node](
       start = from,
       successors = node => data.getOrElse(node, Nil),
       isGoal = _ == to,
-      visit = path =>
-        if (mustVisit.forall(path.contains)) {
-          count += 1
-        },
+      visit = _ => {
+        count += 1
+        if (count % 1_000 == 0) println(s"    ... $count paths found")
+      },
     )
+    val elapsed   = System.currentTimeMillis() - startTime
+    println(s"  countPaths($from -> $to) = $count (${elapsed}ms)")
     count
   }
 
   def part1(data: Input): N =
-    solve(data, Start, End, Set.empty)
+    countPaths(data, Start, End)
 
-  def part2(data: Input): N =
-    solve(data, "svr", End, Set("dac", "fft"))
+  def part2(data: Input): N = {
+    val (a, b) = ("dac", "fft")
+    // Paths visiting both a and b = paths where a comes before b + paths where b comes before a
+    countPaths(data, "svr", a) * countPaths(data, a, b) * countPaths(
+      data,
+      b,
+      End,
+    ) +
+      countPaths(data, "svr", b) * countPaths(data, b, a) * countPaths(
+        data,
+        a,
+        End,
+      )
+  }
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
