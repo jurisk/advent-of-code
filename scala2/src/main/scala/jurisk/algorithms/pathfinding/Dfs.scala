@@ -49,6 +49,32 @@ object Dfs {
     }
   }
 
+  def dfsAllPaths[N](
+    start: N,
+    successors: N => IterableOnce[N],
+    isGoal: N => Boolean,
+    visit: List[N] => Unit,
+  ): Unit = {
+    def backtrack(
+      current: N,
+      visited: Set[N],
+      path: List[N],
+    ): Unit =
+      if (!visited.contains(current)) {
+        val newPath = current :: path
+        if (isGoal(current)) {
+          visit(newPath.reverse)
+        } else {
+          val newVisited = visited + current
+          successors(current).iterator.foreach { successor =>
+            backtrack(successor, newVisited, newPath)
+          }
+        }
+      }
+
+    backtrack(start, Set.empty, Nil)
+  }
+
   def dfsLength[N](
     start: N,
     successors: N => IterableOnce[N],

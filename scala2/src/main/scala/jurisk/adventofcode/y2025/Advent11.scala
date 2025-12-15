@@ -1,37 +1,33 @@
 package jurisk.adventofcode.y2025
 
+import jurisk.algorithms.pathfinding.Dfs
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
 object Advent11 {
-  type Input = List[Command]
+  type Input = Map[String, List[String]]
   type N     = Long
 
-  sealed trait Command extends Product with Serializable
-
-  object Command {
-    case object Noop extends Command
-
-    final case class Something(
-      values: List[N]
-    ) extends Command
-
-    final case class Other(value: String) extends Command
-
-    def parse(s: String): Command =
-      s match {
-        case "noop"            => Noop
-        case s"something $rem" => Something(rem.extractLongList)
-        case s if s.nonEmpty   => Other(s)
-        case _                 => s.failedToParse
-      }
-  }
+  private val Start = "you"
+  private val End   = "out"
 
   def parse(input: String): Input =
-    input.parseLines(Command.parse)
+    input.parseLines { line =>
+      val (from, targets) =
+        line.parsePairUnsafe(": ", identity, _.parseList(' ', identity))
+      from -> targets
+    }.toMap
 
-  def part1(data: Input): N =
-    0
+  def part1(data: Input): N = {
+    var count = 0L
+    Dfs.dfsAllPaths[String](
+      start = Start,
+      successors = node => data.getOrElse(node, Nil),
+      isGoal = _ == End,
+      visit = _ => count += 1,
+    )
+    count
+  }
 
   def part2(data: Input): N =
     0
