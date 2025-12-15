@@ -21,6 +21,12 @@ object Advent11 {
       from -> targets
     }.toMap
 
+  private def removeNodes(data: Input, nodes: Set[Node]): Input =
+    data.view
+      .filterKeys(k => !nodes.contains(k))
+      .mapValues(vs => vs.filterNot(nodes.contains))
+      .toMap
+
   private def buildNodeMap(data: Input): Map[Node, NodeId] = {
     val allNodes = data.keys ++ data.values.flatten
     allNodes.toSet.zipWithIndex.toMap
@@ -69,13 +75,14 @@ object Advent11 {
     val (a, b)      = ("dac", "fft")
 
     // Paths visiting both a and b = paths where a comes before b + paths where b comes before a
-    val startToA = countPaths(data, Start, a)
-    val aToB     = countPaths(data, a, b)
-    val bToEnd   = countPaths(data, b, End)
+    // Each segment must not pass through the other waypoints
+    val startToA = countPaths(removeNodes(data, Set(b, End)), Start, a)
+    val aToB     = countPaths(removeNodes(data, Set(Start, End)), a, b)
+    val bToEnd   = countPaths(removeNodes(data, Set(Start, a)), b, End)
 
-    val startToB = countPaths(data, Start, b)
-    val bToA     = countPaths(data, b, a)
-    val aToEnd   = countPaths(data, a, End)
+    val startToB = countPaths(removeNodes(data, Set(a, End)), Start, b)
+    val bToA     = countPaths(removeNodes(data, Set(Start, End)), b, a)
+    val aToEnd   = countPaths(removeNodes(data, Set(Start, b)), a, End)
 
     startToA * aToB * bToEnd + startToB * bToA * aToEnd
   }
