@@ -1,7 +1,11 @@
 package jurisk.adventofcode.y2025
 
-import jurisk.algorithms.pathfinding.AStar
+import com.microsoft.z3.IntExpr
 import jurisk.algorithms.pathfinding.Dijkstra
+import jurisk.optimization.ImplicitConversions.RichArithExprIntSort
+import jurisk.optimization.ImplicitConversions.RichExpr
+import jurisk.optimization.ImplicitConversions.RichInt
+import jurisk.optimization.Optimizer
 import jurisk.utils.FileInput._
 import jurisk.utils.Parsing.StringOps
 
@@ -55,44 +59,44 @@ object Advent10 {
     }
 
     def minimumButtonsToGetJoltageRequirements: Int = {
-      final case class JoltageState(
-        joltage: Joltage,
-        minimumNextButtonIndex: Int,
-      )
+      implicit val optimizer: Optimizer = Optimizer.z3()
+      import optimizer._
 
-      def start: JoltageState =
-        JoltageState(Joltage(ArraySeq.fill(indicatorLights.length)(0)), 0)
+      // Create a variable for each button: how many times it's pressed
+      val buttonVars: ArraySeq[IntExpr] = buttons.indices
+        .map { i =>
+          labeledInt(s"b$i")
+        }
+        .to(ArraySeq)
 
-      def neighbours(state: JoltageState): Seq[JoltageState] =
-        buttons.zipWithIndex
-          .drop(state.minimumNextButtonIndex)
-          .sortBy { case (button, _) => -button.length }
-          .map { case (button, buttonIndex) =>
-            JoltageState(state.joltage + button, buttonIndex)
-          }
-          .filter { nextState =>
-            nextState.joltage.values.indices
-              .forall(i =>
-                nextState.joltage.values(i) <= joltageRequirements.values(i)
-              )
-          }
+      // Each button press count must be non-negative
+      buttonVars.foreach { v =>
+        addConstraints(v >= Zero)
+      }
 
-      def heuristic(state: JoltageState): Int =
-        state.joltage.values.indices
-          .map(i => joltageRequirements.values(i) - state.joltage.values(i))
-          .max
+      // For each light, the sum of button presses affecting it must equal the requirement
+      val numLights = joltageRequirements.values.length
+      for (lightIdx <- 0 until numLights) {
+        val requirement         = joltageRequirements.values(lightIdx)
+        // Find all buttons that affect this light
+        val contributingButtons = buttons.indices.filter { buttonIdx =>
+          buttons(buttonIdx).contains(lightIdx)
+        }
 
-      def isGoal(state: JoltageState): Boolean =
-        state.joltage == joltageRequirements
+        val lightSum = sum(contributingButtons.map(buttonVars): _*)
+        addConstraints(lightSum === requirement.constant)
+      }
 
-      AStar.aStar[JoltageState, Int](
-        start,
-        s => neighbours(s).map(n => (n, 1)),
-        heuristic,
-        isGoal,
-      ) match {
-        case Some((_, cost)) => cost
-        case None            => "No solution found".fail
+      // Minimize total button presses
+      val cost = labeledInt("cost")
+      addConstraints(cost === sum(buttonVars: _*))
+      val _    = minimize(cost)
+
+      runExternal("cost") match {
+        case Some(results) =>
+          resultToInt(results.head)
+        case None          =>
+          "No solution found".fail
       }
     }
   }
@@ -133,10 +137,7 @@ object Advent10 {
     data.map(_.minimumButtonsToGetIndicatorLights).sum
 
   def part2(data: Input): N =
-    data.zipWithIndex.map { case (machine, idx) =>
-      println(s"Processing machine $idx / ${data.size}")
-      machine.minimumButtonsToGetJoltageRequirements
-    }.sum
+    data.map(_.minimumButtonsToGetJoltageRequirements).sum
 
   def parseFile(fileName: String): Input =
     parse(readFileText(fileName))
