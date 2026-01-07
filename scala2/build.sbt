@@ -2,7 +2,7 @@ import org.typelevel.scalacoptions.ScalacOptions
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
-ThisBuild / scalaVersion := "2.13.17"
+ThisBuild / scalaVersion := "2.13.18"
 
 ThisBuild / semanticdbEnabled := true                        // For ScalaFix
 ThisBuild / semanticdbVersion := scalafixSemanticdb.revision // For ScalaFix
