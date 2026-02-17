@@ -7,7 +7,7 @@ version = "0.1.0"
 authors = ["jurisk <jurisk@users.noreply.github.com>"]
 license = "UNLICENSED"
 edition = "2021"
-rust-version = "1.93.0"
+rust-version = "1.93.1"
 
 [workspace.lints.clippy]
 pedantic = "warn"
