@@ -91,6 +91,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[expect(clippy::redundant_else)]
     fn test_check_unique_locations() {
         let mut seen: HashMap<Coords, u32> = HashMap::new();
         for n in 1 ..= 4096 {

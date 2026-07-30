@@ -16,7 +16,7 @@ fn solve_1() {
     let mut program = Process::from_string(include_str!("../../resources/13.txt"));
     program.run_to_halt();
     let results = program.read_output();
-    let chunked: Vec<_> = results.chunks_exact(3).collect();
+    let (chunked, _) = results.as_chunks::<3>();
     let tiles: Vec<Tile> = chunked
         .iter()
         .map(|arr| Tile::from_i128(arr[2]).unwrap())

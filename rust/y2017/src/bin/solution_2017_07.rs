@@ -60,8 +60,8 @@ fn parse(input: &str) -> Result<Data, Error> {
 
 fn solve_1(data: &Data) -> Name {
     let children: HashSet<_> = data
-        .iter()
-        .flat_map(|(_name, info)| info.holding.clone())
+        .values()
+        .flat_map(|info| info.holding.clone())
         .collect();
     let parents: Vec<_> = data
         .values()

@@ -22,6 +22,8 @@ fn is_valid_1(vec: &[u8]) -> bool {
 }
 
 const COUNT: usize = 26 - FORBIDDEN.len();
+
+#[expect(clippy::redundant_else)]
 fn next_1(vec: &mut [u8]) {
     let mut idx = vec.len() - 1;
 
