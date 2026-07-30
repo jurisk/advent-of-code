@@ -43,7 +43,7 @@ impl<'a, T> MutableBitSet<'a, T> {
 
     #[must_use]
     pub fn len(&self) -> usize {
-        self.underlying.len()
+        self.underlying.count()
     }
 
     #[must_use]
