@@ -14,8 +14,7 @@ advent-of-code-common = { path = "../common" }
 itertools.workspace = true
 regex.workspace = true
 nom.workspace = true
+parse-display.workspace = true
 pathfinding.workspace = true
 strum.workspace = true
-recap.workspace = true
-serde.workspace = true
 num_enum.workspace = true

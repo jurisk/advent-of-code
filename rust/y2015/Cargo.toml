@@ -14,8 +14,7 @@ advent-of-code-common = { path = "../common" }
 num_enum.workspace = true
 itertools.workspace = true
 nonempty.workspace = true
-recap.workspace = true
-serde.workspace = true
+parse-display.workspace = true
 pathfinding.workspace = true
 serde_json.workspace = true
 memoize.workspace = true

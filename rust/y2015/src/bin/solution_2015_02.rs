@@ -1,10 +1,9 @@
 use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
 use nonempty::{NonEmpty, nonempty};
-use recap::Recap;
-use serde::Deserialize;
+use parse_display::FromStr;
 
-#[derive(Debug, Deserialize, Recap)]
-#[recap(regex = r#"^(?P<l>\d+)x(?P<w>\d+)x(?P<h>\d+)$"#)]
+#[derive(Debug, FromStr)]
+#[display("{l}x{w}x{h}")]
 struct Box {
     l: u32,
     w: u32,

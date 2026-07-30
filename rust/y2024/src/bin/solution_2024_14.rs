@@ -3,18 +3,15 @@ use std::fmt::{Debug, Formatter};
 use advent_of_code_common::direction_with_diagonals::DirectionWithDiagonals;
 use advent_of_code_common::grid2d::{Coords, Grid2D, MatrixGrid2D};
 use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
-use recap::Recap;
-use serde::Deserialize;
+use parse_display::FromStr;
 
 const DATA: &str = include_str!("../../resources/14.txt");
 
 type R = usize;
 type Data = Vec<PositionAndVelocityFlat>;
 
-#[derive(Recap, Deserialize, Debug, Copy, Clone)]
-#[recap(
-    regex = r#"^p=(?P<position_x>[-+]?\d+),(?P<position_y>[-+]?\d+) v=(?P<velocity_x>[-+]?\d+),(?P<velocity_y>[-+]?\d+)$"#
-)]
+#[derive(FromStr, Debug, Copy, Clone)]
+#[display("p={position_x},{position_y} v={velocity_x},{velocity_y}")]
 struct PositionAndVelocityFlat {
     position_x: i32,
     position_y: i32,

@@ -1,14 +1,13 @@
 use std::collections::HashSet;
 
 use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
+use parse_display::FromStr;
 use pathfinding::prelude::dfs_reach;
-use recap::Recap;
-use serde::Deserialize;
 
 type Location = String;
 
-#[derive(Debug, Deserialize, Recap, Clone)]
-#[recap(regex = r#"^(?P<from>[A-Za-z]+) to (?P<to>[A-Za-z]+) = (?P<distance>\d+)$"#)]
+#[derive(Debug, FromStr, Clone)]
+#[display("{from} to {to} = {distance}")]
 struct Route {
     from:     Location,
     to:       Location,

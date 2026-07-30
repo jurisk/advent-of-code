@@ -1,14 +1,15 @@
 use std::cmp::min;
 
 use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
-use recap::Recap;
-use serde::Deserialize;
+use parse_display::FromStr;
 
-#[derive(Debug, Deserialize, Recap)]
-#[recap(
-    regex = r#"^\w+ can fly (?P<speed>\d+) km/s for (?P<fly_for_how_long>\d+) seconds, but then must rest for (?P<rest_for_how_long>\d+) seconds.$"#
+#[derive(Debug, FromStr)]
+#[display(
+    "{name} can fly {speed} km/s for {fly_for_how_long} seconds, but then must rest for {rest_for_how_long} seconds."
 )]
 struct Reindeer {
+    #[expect(dead_code)]
+    name:              String,
     speed:             u32,
     fly_for_how_long:  u32,
     rest_for_how_long: u32,

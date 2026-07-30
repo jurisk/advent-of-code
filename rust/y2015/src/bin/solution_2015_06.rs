@@ -3,27 +3,25 @@ use std::collections::{HashMap, HashSet};
 use advent_of_code_common::area2d::Area2D;
 use advent_of_code_common::coords2d::Coords2D;
 use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
-use recap::Recap;
-use serde::Deserialize;
+use parse_display::FromStr;
 
-#[derive(Debug, Deserialize, Copy, Clone)]
+#[derive(Debug, FromStr, Copy, Clone)]
 enum Operation {
-    #[serde(rename = "turn on")]
+    #[display("turn on")]
     TurnOn,
-    #[serde(rename = "turn off")]
+    #[display("turn off")]
     TurnOff,
-    #[serde(rename = "toggle")]
+    #[display("toggle")]
     Toggle,
 }
 
 type Coords = Coords2D<u16>;
 type Area = Area2D<u16>;
 
-#[derive(Debug, Deserialize, Recap, Copy, Clone)]
-#[recap(
-    regex = r#"^(?P<operation>[a-z\s]+) (?P<from_x>\d+),(?P<from_y>\d+) through (?P<to_x>\d+),(?P<to_y>\d+)$"#
-)]
+#[derive(Debug, FromStr, Copy, Clone)]
+#[display("{operation} {from_x},{from_y} through {to_x},{to_y}")]
 struct Command {
+    #[from_str(regex = "[a-z ]+")]
     operation: Operation,
     from_x:    u16,
     from_y:    u16,

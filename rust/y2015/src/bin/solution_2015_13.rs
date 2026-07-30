@@ -3,13 +3,10 @@ use std::str::FromStr;
 
 use advent_of_code_common::parsing::{Error, parse_lines_to_vec, parse_str};
 use itertools::Itertools;
-use recap::Recap;
-use serde::Deserialize;
+use parse_display::FromStr as DisplayFromStr;
 
-#[derive(Deserialize, Recap)]
-#[recap(
-    regex = r#"^(?P<who>\w+) would (?P<do_what>\w+) (?P<how_many>\d+) happiness units by sitting next to (?P<next_to_who>\w+).$"#
-)]
+#[derive(DisplayFromStr)]
+#[display("{who} would {do_what} {how_many} happiness units by sitting next to {next_to_who}.")]
 struct RawProximity {
     who:         String,
     do_what:     String,

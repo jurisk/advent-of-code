@@ -1,11 +1,8 @@
 use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
-use recap::Recap;
-use serde::Deserialize;
+use parse_display::FromStr;
 
-#[derive(Debug, Deserialize, Recap)]
-#[recap(
-    regex = r#"^Disc #(?P<id>\d+) has (?P<positions>\d+) positions; at time=0, it is at position (?P<at_time_0>\d+).$"#
-)]
+#[derive(Debug, FromStr)]
+#[display("Disc #{id} has {positions} positions; at time=0, it is at position {at_time_0}.")]
 struct Disc {
     id:        usize,
     positions: usize,

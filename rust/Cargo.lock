@@ -11,9 +11,8 @@ dependencies = [
  "memoize",
  "nonempty",
  "num_enum",
+ "parse-display",
  "pathfinding",
- "recap",
- "serde",
  "serde_json",
  "strum",
 ]
@@ -26,10 +25,9 @@ dependencies = [
  "itertools",
  "nom",
  "num_enum",
+ "parse-display",
  "pathfinding",
- "recap",
  "regex",
- "serde",
  "strum",
 ]
 
@@ -117,12 +115,11 @@ dependencies = [
  "chumsky",
  "itertools",
  "memoize",
+ "parse-display",
  "pathfinding",
  "rand",
  "rayon",
- "recap",
  "regex",
- "serde",
 ]
 
 [[package]]
@@ -360,15 +357,6 @@ name = "either"
 version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e5e8f6c15a24b9a3ee5efec809ccd006d3b30e8b3bb63c39af737c7f87daa1d"
-
-[[package]]
-name = "envy"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f47e0157f2cb54f5ae1bd371b30a2ae4311e1c028f575cd4e81de7353215965"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "equivalent"
@@ -720,6 +708,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
+name = "parse-display"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e78deb158fb1d73b29efb4b7e9b9860b78059c670de06bd28df8d0b458ded0eb"
+dependencies = [
+ "parse-display-derive",
+ "regex",
+ "regex-syntax",
+]
+
+[[package]]
+name = "parse-display-derive"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e95a50d1084dab562913062c4c34bb204b68fc6ec38a1395909ff5aaaf4f10a"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "regex",
+ "regex-syntax",
+ "structmeta",
+ "syn 2.0.119",
+]
+
+[[package]]
 name = "pathfinding"
 version = "4.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -817,29 +830,6 @@ checksum = "22e18b0f0062d30d4230b2e85ff77fdfe4326feb054b9783a3460d8435c8ab91"
 dependencies = [
  "crossbeam-deque",
  "crossbeam-utils",
-]
-
-[[package]]
-name = "recap"
-version = "0.1.2"
-source = "git+https://github.com/jurisk/recap?branch=fix_warn_non_local_definitions#b7668960a5e448edcd0386828f00218b2e99df7a"
-dependencies = [
- "envy",
- "lazy_static",
- "recap-derive",
- "regex",
- "serde",
-]
-
-[[package]]
-name = "recap-derive"
-version = "0.1.2"
-source = "git+https://github.com/jurisk/recap?branch=fix_warn_non_local_definitions#b7668960a5e448edcd0386828f00218b2e99df7a"
-dependencies = [
- "proc-macro2",
- "quote",
- "regex",
- "syn 1.0.109",
 ]
 
 [[package]]
@@ -970,6 +960,29 @@ dependencies = [
  "libc",
  "psm",
  "windows-sys",
+]
+
+[[package]]
+name = "structmeta"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e1575d8d40908d70f6fd05537266b90ae71b15dbbe7a8b7dffa2b759306d329"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "structmeta-derive",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "structmeta-derive"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "152a0b65a590ff6c3da95cabe2353ee04e6167c896b28e3b14478c2636c922fc"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
 ]
 
 [[package]]

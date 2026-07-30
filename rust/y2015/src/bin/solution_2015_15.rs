@@ -1,14 +1,15 @@
 use std::cmp::max;
 
 use advent_of_code_common::parsing::{Error, parse_lines_to_vec};
-use recap::Recap;
-use serde::Deserialize;
+use parse_display::FromStr;
 
-#[derive(Debug, Deserialize, Recap)]
-#[recap(
-    regex = r#"^\w+: capacity (?P<capacity>-?\d+), durability (?P<durability>-?\d+), flavor (?P<flavor>-?\d+), texture (?P<texture>-?\d+), calories (?P<calories>\d+)$"#
+#[derive(Debug, FromStr)]
+#[display(
+    "{name}: capacity {capacity}, durability {durability}, flavor {flavor}, texture {texture}, calories {calories}"
 )]
 struct Ingredient {
+    #[expect(dead_code)]
+    name:       String,
     capacity:   i32,
     durability: i32,
     flavor:     i32,
