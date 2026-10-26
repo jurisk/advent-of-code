@@ -28,7 +28,7 @@ impl State {
 
 fn valid(ch: Option<char>) -> bool {
     if let Some(c) = ch {
-        matches!(c, 'b' | 'c' | 'd' | 'e' | 'f')
+        matches!(c, 'b' ..= 'f')
     } else {
         false
     }

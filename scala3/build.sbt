@@ -10,14 +10,14 @@ lazy val root = project
       "-deprecation",
       "-Wunused:imports",
     ),
-    scalaVersion := "3.7.4",
+    scalaVersion := "3.9.0",
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-effect" % "3.6.3",
-      "org.typelevel" %% "cats-effect-testing-scalatest" % "1.7.0" % Test,
-      "org.scalatest" %% "scalatest" % "3.2.19" % Test,
+      "org.typelevel" %% "cats-effect" % "3.7.1",
+      "org.typelevel" %% "cats-effect-testing-scalatest" % "1.8.0" % Test,
+      "org.scalatest" %% "scalatest" % "3.2.20" % Test,
     ),
     scalafixDependencies ++= List(
-      "org.typelevel"       %% "typelevel-scalafix" % "0.5.0",
+      "org.typelevel"       %% "typelevel-scalafix" % "0.6.0",
     ),
     // Scalafix settings
     semanticdbEnabled := true,

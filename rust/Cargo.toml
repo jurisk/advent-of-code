@@ -7,7 +7,7 @@ version = "0.1.0"
 authors = ["jurisk <jurisk@users.noreply.github.com>"]
 license = "UNLICENSED"
 edition = "2021"
-rust-version = "1.97.1"
+rust-version = "1.99.1"
 
 [workspace.lints.clippy]
 pedantic = "warn"
@@ -34,7 +34,6 @@ pathfinding = "4.15"
 rand = "0.10"
 rayon = "1.12"
 regex = "1.13"
-serde = "1.0"
 serde_json = "1.0"
 strum = { version = "0.28", features = ["derive"] }
 

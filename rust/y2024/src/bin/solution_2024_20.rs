@@ -64,11 +64,8 @@ fn solve(data: &Input, save_at_least: N, max_cheat: N) -> R {
     println!("Without cheats = {cost}, goal cost threshold = {goal_cost_threshold}");
 
     let valid_cheat = |cheat: &Cheat| -> bool {
-        let start_cost = from_start
-            .get(&cheat.from)
-            .map(|(_, c)| *c)
-            .unwrap_or_default();
-        let end_cost = from_end.get(&cheat.to).map(|(_, c)| *c).unwrap_or_default();
+        let start_cost = from_start.get(&cheat.from).map_or_default(|(_, c)| *c);
+        let end_cost = from_end.get(&cheat.to).map_or_default(|(_, c)| *c);
         start_cost + end_cost + cheat.distance() <= goal_cost_threshold
     };
 

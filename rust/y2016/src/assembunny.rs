@@ -208,7 +208,7 @@ impl FromStr for Instruction {
         fn parse_register(x: &str) -> Result<RegisterId, Error> {
             if x.len() == 1 {
                 let ch = x.chars().next().unwrap();
-                if matches!(ch, 'a' | 'b' | 'c' | 'd') {
+                if matches!(ch, 'a' ..= 'd') {
                     Ok(ch)
                 } else {
                     Err(format!("Unrecognized register {x}"))
