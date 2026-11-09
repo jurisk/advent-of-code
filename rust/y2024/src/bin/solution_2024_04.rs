@@ -47,11 +47,7 @@ fn is_valid_1<D: Grid2D<C>>(
 ) -> bool {
     match head_tail(options) {
         Some((head, tail)) => {
-            if data.get(coords) == Some(head) {
-                is_valid_1(data, coords + direction, direction, tail)
-            } else {
-                false
-            }
+            data.get(coords) == Some(head) && is_valid_1(data, coords + direction, direction, tail)
         },
         _ => true,
     }
