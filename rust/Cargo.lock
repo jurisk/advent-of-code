@@ -137,7 +137,6 @@ dependencies = [
  "itertools",
  "md5",
  "nonempty",
- "num-derive",
  "num-traits",
  "pathfinding",
 ]
