@@ -3,13 +3,13 @@
 # Housekeeping script - runs Scalafmt and Scalafix
 # Similar to cargo clippy for Scala 3
 
-set -e
+# --jvm-client: the native sbtn client swallows server error messages
+SBT="sbt --jvm-client"
 
 echo "🧹 Running Scala housekeeping..."
 
 echo "📝 Running Scalafmt (formatter)..."
-sbt scalafmtAll
-if [ $? -eq 0 ]; then
+if $SBT scalafmtAll; then
     echo "✅ Scalafmt completed successfully"
 else
     echo "❌ Scalafmt failed"
@@ -17,13 +17,11 @@ else
 fi
 
 echo "🔍 Running Scalafix (linter)..."
-sbt "scalafixAll --check"
-if [ $? -eq 0 ]; then
+if $SBT "scalafixAll --check"; then
     echo "✅ Scalafix completed successfully - no issues found"
 else
     echo "⚠️  Scalafix found issues. Running with auto-fix..."
-    sbt scalafixAll
-    if [ $? -eq 0 ]; then
+    if $SBT scalafixAll; then
         echo "✅ Scalafix auto-fixes applied successfully"
     else
         echo "❌ Scalafix failed to apply fixes"
